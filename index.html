@@ -2187,6 +2187,11 @@ function start(){
   async function googleNative(){
     // 앱(WebView)에서는 네이티브 구글 로그인 플러그인으로 인증 → Firebase 자격증명으로 로그인
     const GA = window.Capacitor.Plugins.GoogleAuth;
+    await GA.initialize({
+      clientId: '1032038131088-pgv6aiv1b66njk867s2q4l8kq34aucee.apps.googleusercontent.com',
+      scopes: ['profile','email'],
+      grantOfflineAccess: true
+    });
     const res = await GA.signIn();
     const idToken = res && res.authentication && res.authentication.idToken;
     if(!idToken) throw {code:'auth/no-id-token'};
