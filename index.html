@@ -159,6 +159,14 @@ h1 .em{color:var(--accent)}
   transform:translate(-50%,-50%) rotate(var(--spin,0deg));z-index:5;
   box-shadow:0 14px 34px rgba(0,0,0,.65), inset 0 0 16px rgba(0,0,0,.55)}
 .lp.pulled .disc.spinning{transition:box-shadow .4s}   /* no transform transition while dragging so it tracks the finger */
+/* 30초 미리듣기 재생 중 자동 회전 */
+@keyframes lp-discplay{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.lp.pulled .disc.playing{transition:box-shadow .4s;animation:lp-discplay 2.4s linear infinite}
+#preview-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(18px);
+  background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:13px;font-weight:600;
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap;
+  box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#preview-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .lp.pulled .art{filter:brightness(.55)}
 /* edit button appears only while the disc is raised */
 /* small pencil button at bottom-right, appears only while the disc is raised */
@@ -938,6 +946,7 @@ function renderChips(){
 }
 
 function renderGrid(){
+  stopPreview();   // 목록이 다시 그려지면 재생 중이던 미리듣기 정지
   $('#grid').classList.toggle('list', filter.view==='list');
   let list=DATA.filter(passes);
   const cmp={
@@ -979,12 +988,12 @@ function renderGrid(){
     const art=el.querySelector('.art');
     const disc=el.querySelector('.disc');
     el.onclick=()=>{
-      if(el.classList.contains('pulled')){ el.classList.remove('pulled'); return; }  // tap elsewhere: slide disc back
+      if(el.classList.contains('pulled')){ el.classList.remove('pulled'); stopPreview(); return; }  // tap elsewhere: slide disc back
       openDetail(el.dataset.id);
     };
     if(art) art.onclick=(e)=>{
       e.stopPropagation();
-      if(el.classList.contains('pulled')){ el.classList.remove('pulled'); return; }   // cover tap closes the pulled disc
+      if(el.classList.contains('pulled')){ el.classList.remove('pulled'); stopPreview(); return; }   // cover tap closes the pulled disc
       openDetail(el.dataset.id,'cover');
     };
     if(disc){
@@ -1014,7 +1023,11 @@ function renderGrid(){
       disc.onclick=(e)=>{
         e.stopPropagation();
         if(moved){ moved=false; return; }   // was a spin, not a tap
+        const willPull = !el.classList.contains('pulled');
         el.classList.toggle('pulled');       // tap to raise / slide back
+        const it = DATA.find(d=>d.id===el.dataset.id);
+        if(willPull){ playPreview(it, disc); }   // 판을 올리면 30초 미리듣기 재생 + 자동 회전
+        else { stopPreview(); }                  // 판을 내리면 정지
       };
     }
     const editBtn=el.querySelector('.disc-edit');
@@ -1027,6 +1040,49 @@ function renderGrid(){
     ents.forEach(e=>{ if(e.isIntersecting){ const id=e.target.dataset.id; if(byId[id])loadArt(byId[id]); obs.unobserve(e.target);} });
   },{rootMargin:'300px'});
   document.querySelectorAll('.lp[data-id]').forEach(el=>window._artObs.observe(el));
+}
+
+/* ---------- 30초 미리듣기 (iTunes previewUrl) ---------- */
+const _preview = { audio:null, id:null, discEl:null, cache:{} };
+async function _fetchPreviewUrl(it){
+  if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
+  const term = ((it.artist||'')+' '+(it.album||'')).trim();
+  let url = null;
+  if(term){
+    try{
+      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=1&term='+encodeURIComponent(term));
+      const j = await r.json();
+      if(j.results && j.results[0] && j.results[0].previewUrl) url = j.results[0].previewUrl;
+    }catch(e){}
+  }
+  _preview.cache[it.id] = url;
+  return url;
+}
+function stopPreview(){
+  if(_preview.audio){ try{_preview.audio.pause();}catch(e){} _preview.audio=null; }
+  if(_preview.discEl){ _preview.discEl.classList.remove('playing'); _preview.discEl=null; }
+  _preview.id=null;
+}
+async function playPreview(it, disc){
+  if(!it) return;
+  if(_preview.id===it.id){ stopPreview(); return; }   // 같은 판 다시 탭 → 정지
+  stopPreview();
+  _preview.id = it.id;
+  const url = await _fetchPreviewUrl(it);
+  if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 눌렀으면 취소
+  if(!url){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
+  const a = new Audio(url); a.preload='auto';
+  _preview.audio=a; _preview.discEl=disc;
+  disc.classList.add('playing');
+  a.onended=()=>stopPreview();
+  a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
+  a.play().catch(()=>{ previewToast('재생할 수 없어요'); stopPreview(); });
+}
+function previewToast(msg){
+  let t=document.getElementById('preview-toast');
+  if(!t){ t=document.createElement('div'); t.id='preview-toast'; document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(previewToast._t); previewToast._t=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
 async function loadArt(it){
@@ -1052,6 +1108,7 @@ async function loadArt(it){
 let detailId=null;
 function openDetail(id, mode){
   const it=DATA.find(x=>x.id===id);if(!it)return;
+  stopPreview();   // 상세로 들어가면 미리듣기 정지
   detailId=id;
   const key=artKey(it.artist,it.album);
   const art=pickedArt[key]||it._art||artCache[key];
