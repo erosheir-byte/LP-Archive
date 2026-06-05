@@ -2019,7 +2019,7 @@ if('serviceWorker' in navigator){
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, signOut, GoogleAuthProvider,
-         signInWithPopup, signInWithRedirect, getRedirectResult }
+         signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
@@ -2183,10 +2183,20 @@ function start(){
   // 리다이렉트 로그인으로 돌아왔을 때 결과/에러 처리 (구글 에러 메시지를 그대로 표면화)
   getRedirectResult(auth).catch(e=>{ if(e&&e.code) showErr(mapErr(e.code)); });
   const _isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  async function googleNative(){
+    // 앱(WebView)에서는 네이티브 구글 로그인 플러그인으로 인증 → Firebase 자격증명으로 로그인
+    const GA = window.Capacitor.Plugins.GoogleAuth;
+    const res = await GA.signIn();
+    const idToken = res && res.authentication && res.authentication.idToken;
+    if(!idToken) throw {code:'auth/no-id-token'};
+    await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+  }
   $('#auth-google').onclick=async()=>{
     showErr('');
     const provider=new GoogleAuthProvider();
     try{
+      if(_isNative){ await googleNative(); return; }
       // 모바일/웹뷰는 팝업이 자주 막혀서 리다이렉트, 데스크톱은 팝업
       if(_isMobileUA){ await signInWithRedirect(auth,provider); }
       else{ await signInWithPopup(auth,provider); }
@@ -2195,7 +2205,7 @@ function start(){
       if(e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment'){
         try{ await signInWithRedirect(auth,provider); return; }catch(e2){ showErr(mapErr(e2.code)); return; }
       }
-      if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request') showErr(mapErr(e.code));
+      if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request'&&String(e&&e.code||'').indexOf('popup_closed')<0) showErr(mapErr(e&&e.code));
     }
   };
 
