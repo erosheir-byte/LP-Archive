@@ -1,0 +1,2135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>LP 보관함</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e0d11">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LP 보관함">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0d11;
+  --bg2:#16141b;
+  --card:#1b1922;
+  --card2:#221f2b;
+  --line:#2c2935;
+  --txt:#f3eef7;
+  --muted:#9d96aa;
+  --dim:#6a6478;
+  --accent:#e8643c;
+  --accent2:#f2a444;
+  --green:#5ec27e;
+  --red:#e85c6a;
+  --blue:#6aa0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none}
+body{padding-bottom:90px;max-width:560px;margin:0 auto;position:relative;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(900px 500px at 80% -10%, rgba(232,100,60,.14), transparent 60%),
+  radial-gradient(700px 500px at 0% 100%, rgba(106,160,232,.10), transparent 55%);
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1}
+
+/* Header */
+header{padding:30px 20px 16px;position:relative}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;line-height:.95;letter-spacing:-.02em;text-transform:uppercase}
+h1 .em{color:var(--accent)}
+.sub{color:var(--muted);font-size:13px;margin-top:12px;font-weight:500}
+.sub b{color:var(--txt);font-weight:700}
+.sub .sep{color:var(--dim);margin:0 7px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:6px 20px 16px}
+.stat{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:18px;padding:14px 15px;position:relative;overflow:hidden}
+.stat .lab{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.stat .val{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:25px;margin-top:5px;letter-spacing:-.02em}
+.stat .val.sm{font-size:21px}
+.stat.pos .val{color:var(--green)}
+.stat .deco{position:absolute;right:-8px;bottom:-10px;font-size:54px;opacity:.07;font-family:'Bricolage Grotesque'}
+
+/* Cover Flow */
+.cf-wrap{padding:10px 0 4px;margin-bottom:6px}
+.cf-stage{position:relative;height:240px;overflow:hidden;touch-action:pan-y;cursor:grab;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.18));perspective:1100px;user-select:none}
+.cf-stage:active{cursor:grabbing}
+.cf-stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:46%;
+  background:linear-gradient(180deg,transparent,rgba(14,13,17,.85));pointer-events:none}
+.cf-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:20;width:38px;height:38px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.14);background:rgba(20,18,26,.45);backdrop-filter:blur(8px);
+  color:rgba(255,255,255,.82);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .15s,transform .15s;padding:0}
+.cf-nav svg{width:20px;height:20px}
+.cf-nav:hover{background:rgba(232,100,60,.6);color:#fff}
+.cf-nav:active{transform:translateY(-50%) scale(.88)}
+.cf-nav.prev{left:14px}
+.cf-nav.next{right:14px}
+.cf-track{position:absolute;left:50%;top:30px;width:0;height:0;transform-style:preserve-3d}
+.cf-card{position:absolute;width:150px;height:150px;left:-75px;top:0;will-change:transform;transition:transform .35s cubic-bezier(.22,1,.36,1);transform-origin:center center}
+.cf-card .cf-art{position:relative;width:100%;height:100%;border-radius:5px;overflow:hidden;background:#26222e;box-shadow:0 18px 30px rgba(0,0,0,.55)}
+.cf-card .cf-art img{width:100%;height:100%;object-fit:cover;display:block}
+.cf-card .cf-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;background:linear-gradient(135deg,#efeae3,#dcd6cc);color:#8a847c;font-size:10px;text-align:center;padding:0 8px}
+.cf-card .cf-ph .v{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#888 18%,#444 19%,#666 26%,#333 34%,#555 42%)}
+/* reflection */
+.cf-card .cf-art::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.28),transparent 40%);pointer-events:none}
+.cf-info{text-align:center;padding:10px 20px 2px;min-height:46px}
+.cf-info h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:17px;line-height:1.15;letter-spacing:-.01em}
+.cf-info p{color:var(--accent2);font-size:12.5px;font-weight:600;margin-top:2px}
+.cf-info .tap{color:var(--dim);font-size:10.5px;margin-top:4px}
+.stars{display:inline-flex;gap:2px;margin:4px 0 2px;font-size:14px;line-height:1}
+.stars .star{position:relative;color:#46414f;display:inline-block}
+.stars .star .sfill{position:absolute;left:0;top:0;overflow:hidden;color:#f2b84a;white-space:nowrap}
+.stars.edit .star{cursor:pointer;font-size:30px}
+.stars.edit .star.big{padding:0 1px}
+.stars.edit .hit{position:absolute;top:0;height:100%;width:50%;cursor:pointer;z-index:2}
+.stars.edit .hit.half{left:0}
+.stars.edit .hit.full{right:0}
+
+/* Toolbar */
+.toolbar{padding:4px 20px 14px;display:flex;flex-direction:column;gap:10px}
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.search svg{flex:none}
+.search input{background:none;border:none;outline:none;color:var(--txt);font-size:15px;width:100%;font-family:inherit}
+.search input::placeholder{color:var(--dim)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 15px;border-radius:100px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#160d09}
+.subchips{margin-top:-4px}
+.chip.sm{padding:6px 13px;font-size:12px;background:transparent;border-color:var(--line);color:var(--dim)}
+.chip.sm.on{background:rgba(232,100,60,.18);border-color:var(--accent);color:var(--accent2)}
+.count{font-size:12px;color:var(--dim)}
+.countrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 20px 12px}
+.ctrls{display:flex;gap:7px;align-items:center}
+.viewtoggle{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.viewtoggle .vt{background:none;border:none;color:var(--dim);padding:6px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.viewtoggle .vt.on{background:var(--accent);color:#160d09}
+.sortsel{background:var(--card);border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:10px;outline:none;cursor:pointer}
+.sortsel:focus{border-color:var(--accent)}
+.count b{color:var(--muted)}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:0 20px}
+/* list view */
+.grid.list{grid-template-columns:1fr;gap:10px}
+.grid.list .lp{display:flex;align-items:center;gap:13px;padding:10px;border-radius:14px}
+.grid.list .artwrap{flex:0 0 auto;width:60px;aspect-ratio:1;border-radius:8px;overflow:hidden}
+.grid.list .disc{display:none}
+.grid.list .art{position:static;width:100%;height:100%;transform:none;border-radius:8px;box-shadow:none}
+.grid.list .meta{flex:1;min-width:0;padding:0;margin-top:0;background:none}
+.grid.list .meta .al{min-height:0;-webkit-line-clamp:1}
+.grid.list .metabtm{margin-top:5px}
+.lp{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s;animation:rise .5s both}
+/* single continuous glow spanning the disc area down through the title, so the whole card reads as one piece */
+.lp::before{content:'';position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:150%;height:62%;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.13) 0%, rgba(255,255,255,.08) 32%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.02) 66%, rgba(255,255,255,0) 80%);
+  z-index:0;pointer-events:none}
+.lp .artwrap,.lp .meta{position:relative;z-index:1}
+.lp:active{transform:scale(.97)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* artwrap = sleeve; the vinyl disc peeks out below the jacket */
+.artwrap{position:relative;aspect-ratio:1/1.3;overflow:hidden;background:transparent}
+/* LP disc peeks out below the bottom edge of the square jacket */
+.disc{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);width:118%;height:118%;aspect-ratio:1;border-radius:50%;
+  background:
+    conic-gradient(from 0deg at 50% 50%,
+      rgba(255,255,255,.08) 0deg, rgba(255,255,255,0) 30deg,
+      rgba(0,0,0,.2) 70deg, rgba(255,255,255,0) 110deg,
+      rgba(255,255,255,.1) 150deg, rgba(255,255,255,0) 190deg,
+      rgba(0,0,0,.2) 250deg, rgba(255,255,255,0) 290deg,
+      rgba(255,255,255,.08) 330deg, rgba(255,255,255,.08) 360deg),
+    repeating-radial-gradient(circle at 50% 50%,
+      rgba(0,0,0,.05) 0 1.2px, rgba(255,255,255,.015) 1.2px 2.4px),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 32%, rgba(255,255,255,0) 50%, rgba(0,0,0,.22) 100%),
+    var(--disc,#1a1a1a);
+  background-blend-mode: screen, multiply, normal, normal;
+  box-shadow:inset 0 0 16px rgba(0,0,0,.6), inset 0 1px 1px rgba(255,255,255,.15), 0 4px 9px rgba(0,0,0,.5);z-index:1;
+  transition:transform .55s cubic-bezier(.25,.8,.3,1), width .55s cubic-bezier(.25,.8,.3,1), height .55s cubic-bezier(.25,.8,.3,1), top .55s cubic-bezier(.25,.8,.3,1), bottom .55s cubic-bezier(.25,.8,.3,1), box-shadow .4s}
+/* pulled: the record slides up over the jacket so the whole disc shows; tap again to edit */
+/* pulled: the record lifts onto the jacket and shows as a full, clean circle; tap again to edit */
+.lp.pulled .disc{width:84%;height:auto;aspect-ratio:1;left:50%;bottom:auto;top:46%;
+  transform:translate(-50%,-50%) rotate(var(--spin,0deg));z-index:5;
+  box-shadow:0 14px 34px rgba(0,0,0,.65), inset 0 0 16px rgba(0,0,0,.55)}
+.lp.pulled .disc.spinning{transition:box-shadow .4s}   /* no transform transition while dragging so it tracks the finger */
+.lp.pulled .art{filter:brightness(.55)}
+/* edit button appears only while the disc is raised */
+/* small pencil button at bottom-right, appears only while the disc is raised */
+.disc-edit{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(20,18,26,.85);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--txt);
+  cursor:pointer;z-index:7;opacity:0;pointer-events:none;transform:scale(.7);transition:opacity .3s,transform .3s}
+.lp.pulled .disc-edit{opacity:1;pointer-events:auto;transform:scale(1)}
+.disc-edit:active{transform:scale(.85)}
+.disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:25%;height:25%;border-radius:50%;
+  background:var(--disc,#1a1a1a);filter:brightness(.65);
+  box-shadow:0 0 0 1px rgba(0,0,0,.4), inset 0 0 6px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.1)}
+/* spindle pin-hole */
+.disc::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5.5%;height:5.5%;border-radius:50%;
+  background:radial-gradient(circle at 40% 38%, #e6e1d8, #c8c2b6);box-shadow:0 0 0 1px rgba(0,0,0,.35), inset 0 0 2px rgba(0,0,0,.4);z-index:1}
+/* album jacket: 1:1 square pinned to the top; disc peeks out below */
+.art{position:absolute;left:0;top:0;width:100%;aspect-ratio:1;background:#26222e;overflow:hidden;z-index:2;border-radius:3px;box-shadow:0 5px 14px rgba(0,0,0,.5);transition:filter .35s}
+.lp.pulled .artwrap{overflow:visible}
+.art img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s;background:#26222e;position:relative;z-index:1}
+.art img.ld{opacity:1}
+.art .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#9a948c;background:linear-gradient(135deg,#efeae3,#e3ddd4);z-index:0}
+.art .ph .vinyl{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#888 18%,#444 19%,#666 26%,#333 34%,#555 42%);border:1px solid #777}
+.art .ph .pn{font-size:10px;letter-spacing:.04em;text-align:center;padding:0 6px}
+.cdot{position:absolute;top:8px;right:8px;width:15px;height:15px;border-radius:50%;z-index:4;border:2px solid rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.badge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:4px 8px;border-radius:7px;backdrop-filter:blur(6px);letter-spacing:.02em;z-index:3}
+.badge.sold{background:rgba(232,92,106,.9);color:#fff}
+.badge.sealed{background:rgba(94,194,126,.92);color:#08130c}
+.badge.gift{background:rgba(242,164,68,.92);color:#1c1304}
+.meta{padding:10px 11px 12px;position:relative;z-index:3}
+.meta .al{font-weight:700;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
+.meta .ar{color:var(--muted);font-size:11.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .st{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.02em}
+.st.own{background:rgba(106,160,232,.16);color:#9cc0f0;border:1px solid rgba(106,160,232,.3)}
+.st.open{background:rgba(242,164,68,.16);color:#f2bf7a;border:1px solid rgba(242,164,68,.3)}
+.st.seal{background:rgba(94,194,126,.16);color:#86d6a4;border:1px solid rgba(94,194,126,.32)}
+.st.sold{background:rgba(232,92,106,.16);color:#f09aa4;border:1px solid rgba(232,92,106,.32)}
+.st.gift{background:rgba(176,140,232,.16);color:#c3a4f0;border:1px solid rgba(176,140,232,.3)}
+.st.wish{background:rgba(232,180,90,.16);color:#f0cf8a;border:1px solid rgba(232,180,90,.32)}
+.metabtm{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:7px}
+.gtag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;background:rgba(106,160,232,.14);color:#9cc0f0;border:1px solid rgba(106,160,232,.26);--gc:106,160,232}
+.gtag{background:rgba(var(--gc),.15);color:rgb(var(--gc));border-color:rgba(var(--gc),.32)}
+.dt-titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.like-btn{flex:0 0 auto;background:none;border:none;color:var(--accent);font-size:26px;line-height:1;cursor:pointer;padding:0;margin-top:2px;transition:transform .12s}
+.like-btn:active{transform:scale(.8)}
+.like-btn.on{color:#e85c6a}
+.lp .card-like{position:absolute;top:7px;right:7px;z-index:5;font-size:17px;color:#e85c6a;text-shadow:0 1px 4px rgba(0,0,0,.6);pointer-events:none}
+/* Pro lock card */
+.pro-lock{text-align:center;padding:20px 16px;background:linear-gradient(160deg,rgba(242,164,68,.12),rgba(232,100,60,.08));border:1px solid rgba(242,164,68,.3);border-radius:16px}
+.pro-badge{display:inline-block;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-weight:800;font-size:11px;letter-spacing:.08em;padding:3px 9px;border-radius:6px;margin-bottom:10px}
+.pro-badge.sm{margin:0 0 0 6px;vertical-align:middle;font-size:9px;padding:2px 6px}
+.pro-title{font-weight:700;font-size:15px;margin-bottom:6px}
+.pro-desc{color:var(--muted);font-size:12.5px;line-height:1.6;margin-bottom:14px}
+.pro-demo{display:block;width:100%;margin-top:8px;background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;font-family:inherit}
+/* vinyl decorate */
+.vd-preview{display:flex;justify-content:center;padding:14px 0 18px}
+.vd-preview .disc{position:relative;width:120px;height:120px;border-radius:50%;
+  background:
+    conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.08) 0deg,rgba(255,255,255,0) 30deg,rgba(0,0,0,.2) 70deg,rgba(255,255,255,0) 110deg,rgba(255,255,255,.1) 150deg,rgba(255,255,255,0) 190deg,rgba(0,0,0,.2) 250deg,rgba(255,255,255,0) 290deg,rgba(255,255,255,.08) 330deg,rgba(255,255,255,.08) 360deg),
+    repeating-radial-gradient(circle at center,rgba(0,0,0,.04) 0 1px,rgba(255,255,255,.01) 1px 2px),
+    radial-gradient(circle at 40% 35%,rgba(255,255,255,.1) 0%,rgba(255,255,255,0) 40%,rgba(0,0,0,.25) 100%),
+    var(--disc,#1a1a1a);
+  background-blend-mode:screen,multiply,normal,normal;
+  box-shadow:inset 0 0 16px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.15),0 4px 12px rgba(0,0,0,.5)}
+.vd-preview .disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:25%;height:25%;border-radius:50%;background:var(--disc,#1a1a1a);filter:brightness(.65);box-shadow:0 0 0 1px rgba(0,0,0,.4),inset 0 0 6px rgba(0,0,0,.5)}
+.vd-preview .disc::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6%;height:6%;border-radius:50%;background:radial-gradient(circle at 40% 38%,#e6e1d8,#c8c2b6)}
+.vd-range{width:100%;accent-color:var(--accent)}
+/* disc with a custom photo: hide the synthetic gradient so the photo shows */
+.disc.has-photo{background-blend-mode:normal;box-shadow:inset 0 0 16px rgba(0,0,0,.5),0 4px 9px rgba(0,0,0,.5)}
+.disc.has-photo::after{background:rgba(0,0,0,.4);filter:none}
+/* vinyl decorate tabs */
+.vd-tabs{display:flex;gap:8px;margin:4px 0 12px}
+.vd-tab{flex:1;padding:9px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.vd-tab.on{background:var(--accent);border-color:var(--accent);color:#160d09}
+.vd-photodesc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+/* photo stage with circular vinyl guide */
+.vd-stage{position:relative;width:230px;height:230px;margin:0 auto;border-radius:50%;overflow:hidden;background:#0c0b0f;touch-action:none;cursor:grab}
+.vd-stage:active{cursor:grabbing}
+.vd-imgwrap{position:absolute;inset:0}
+.vd-imgwrap .vd-img{position:absolute;left:50%;top:50%;max-width:none;width:230px;height:auto;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.vd-guide{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.5), inset 0 0 0 60px rgba(0,0,0,.08);
+  background:
+    repeating-radial-gradient(circle at center, rgba(255,255,255,.06) 0 1px, transparent 1px 7px);}
+.vd-guide::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28%;height:28%;border-radius:50%;border:2px dashed rgba(255,255,255,.5)}
+.vd-guide::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5%;height:5%;border-radius:50%;background:rgba(255,255,255,.7);z-index:2}
+.vd-guide-label{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:rgba(255,255,255,.6);font-size:12px;pointer-events:none}
+
+/* Bottom nav / FAB */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(14,13,17,.85);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 18px calc(11px + env(safe-area-inset-bottom));z-index:40}
+.nav button{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s}
+.nav button.on{color:var(--accent2)}
+.fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;background:linear-gradient(150deg,var(--accent2),var(--accent));border:none;color:#1a0d06;font-size:30px;font-weight:300;box-shadow:0 8px 24px rgba(232,100,60,.45);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.fab:active{transform:scale(.9)}
+.fab.wish{background:linear-gradient(150deg,#f0cf8a,#e8a23c);color:#3a2406;font-size:26px;box-shadow:0 8px 24px rgba(232,180,90,.5)}
+
+/* Modal / sheet */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:.25s}
+.ov.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:40px}
+.sheet.show{transform:translateX(-50%) translateY(0)}
+.grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:11px auto 4px;cursor:grab}
+.sheet-x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;line-height:1;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
+.sheet-x:active{opacity:.7}
+
+/* Detail */
+.dt-art{margin:8px 20px 0;border-radius:20px;overflow:hidden;aspect-ratio:1;background:#1a1822;position:relative}
+.dt-art img{width:100%;height:100%;object-fit:cover}
+.cover-btns{position:absolute;right:10px;bottom:10px;display:flex;gap:7px;z-index:3}
+.cover-btn{background:rgba(14,13,17,.82);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--txt);font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer}
+.cover-btn:active{opacity:.8}
+.picker{display:none;margin-top:10px}
+.picker.show{display:block}
+.dt-art .picker{position:absolute;left:0;right:0;bottom:0;top:0;background:rgba(12,11,15,.94);backdrop-filter:blur(4px);overflow-y:auto;padding:14px;z-index:4}
+.pk-title,.pk-load{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:10px;text-align:center}
+.pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#f-cands{display:none;grid-template-columns:repeat(4,1fr);gap:7px}
+#f-cands.show{display:grid}
+.pk-item{cursor:pointer;border-radius:9px;overflow:hidden;border:2px solid transparent;background:var(--card);transition:.12s}
+.pk-item.sel{border-color:var(--accent)}
+.pk-item:active{transform:scale(.95)}
+.pk-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.pk-cap{font-size:9px;color:var(--muted);padding:3px 4px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-manual{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.dt-art .pk-manual{margin-top:14px}
+.pk-up{display:block;text-align:center;background:var(--card2);border:1px dashed var(--line);border-radius:11px;padding:12px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer}
+.pk-up:active{opacity:.8}
+.pk-url{display:flex;gap:7px}
+.pk-url input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
+.pk-url input:focus{border-color:var(--accent)}
+.pk-url button{flex:none;background:var(--accent);border:none;color:#160d09;font-family:inherit;font-weight:700;font-size:13px;padding:0 16px;border-radius:11px;cursor:pointer}
+.dt-body{padding:18px 22px 0}
+.dt-body h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;line-height:1.1;letter-spacing:-.01em}
+.dt-body .dar{color:var(--accent2);font-size:14px;font-weight:600;margin-top:5px}
+.dt-rate{margin-top:10px}
+.dt-act{margin:16px 0 0}
+.act-btn{width:100%;padding:13px;border-radius:13px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.act-btn:active{opacity:.85}
+.act-btn.solid{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;border:none;margin-top:6px}
+.dt-inline{margin-top:12px}
+.dt-inline:empty{margin:0}
+.inl-title{font-weight:700;font-size:14px;margin-bottom:10px;color:var(--accent2)}
+.dt-inline .fld{margin-bottom:11px}
+.dt-inline .fld label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.dt-inline .fld input,.dt-inline .fld select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:15px;font-family:inherit;outline:none}
+.dt-inline .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.inl-check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:11px;cursor:pointer}
+.inl-check input{width:17px;height:17px;accent-color:var(--accent)}
+/* color palette picker */
+/* vinyl-color palette — wraps into 2-3 rows, fits on screen */
+.palette{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px;padding:12px;background:#14121a;border-radius:14px;border:1px solid var(--line)}
+.palette .sw{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.12);background:var(--sw);background-size:cover;cursor:pointer;padding:0;position:relative;transition:transform .12s,border-color .12s,box-shadow .12s;box-shadow:inset 0 1px 2px rgba(255,255,255,.2),0 1px 3px rgba(0,0,0,.45)}
+.palette .sw:active{transform:scale(.9)}
+.palette .sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent),0 4px 12px rgba(0,0,0,.5);transform:scale(1.08)}
+.palette .sw.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);font-weight:800}
+.palette .sw[data-label="투명"]{border:2px dashed rgba(255,255,255,.4)}
+/* color field: current swatch + toggle button */
+.colorfield{display:flex;align-items:center;gap:9px}
+.colorfield input{flex:1}
+.color-dot{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 2px rgba(255,255,255,.2),0 1px 3px rgba(0,0,0,.4)}
+.color-toggle{flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--accent2);font-size:20px;font-weight:300;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.color-toggle:active{opacity:.8}
+.palette.collapsed{display:none}
+.dt-rows{margin-top:18px;display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dt-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:13px 15px;font-size:13.5px}
+.dt-row .k{color:var(--muted)}
+.dt-row .v{font-weight:600;text-align:right;max-width:62%}
+.profit-pos{color:var(--green)}.profit-neg{color:var(--red)}
+
+/* Form */
+.form{padding:6px 22px 0}
+.form h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;margin-bottom:4px}
+.form .fhint{color:var(--muted);font-size:12.5px;margin-bottom:16px}
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px;letter-spacing:.02em}
+.fld input,.fld select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--txt);font-size:15px;font-family:inherit;outline:none}
+.fld input:focus,.fld select:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.preview{display:flex;gap:13px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:14px}
+.preview .pa{width:60px;height:60px;border-radius:10px;background:#26222e;flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--dim)}
+.preview .pa img{width:100%;height:100%;object-fit:cover}
+.preview .pt{font-size:12.5px;color:var(--muted)}
+.btnrow{display:flex;gap:10px;margin-top:8px}
+.btn{flex:1;padding:14px;border-radius:13px;border:none;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.btn.primary{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06}
+.btn.ghost{background:var(--card);color:var(--muted);border:1px solid var(--line);flex:0 0 auto;padding:14px 18px}
+.btn:active{opacity:.85}
+.searching{font-size:11.5px;color:var(--accent2);margin-top:6px;display:none}
+.empty{text-align:center;color:var(--dim);padding:50px 20px;font-size:14px}
+
+/* views */
+.view{display:none}
+.view.on{display:block}
+.export-note{margin:0 20px 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:12.5px;color:var(--muted);line-height:1.6}
+/* calendar */
+.cal-head{display:flex;align-items:center;justify-content:center;gap:18px;padding:18px 20px 8px}
+.cal-title{font-family:'Bricolage Grotesque';font-weight:800;font-size:20px;min-width:130px;text-align:center}
+.cal-nav{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:20px;line-height:1;cursor:pointer}
+.cal-nav:active{opacity:.7}
+.cal-legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:4px 20px 12px;font-size:11px;color:var(--muted)}
+.cal-legend span{display:flex;align-items:center;gap:5px}
+.cal-legend .lg{width:11px;height:11px;border-radius:3px;display:inline-block}
+.lg-arrive{background:#c9b48a}
+.lg-buy{background:#c9b48a;opacity:.5}
+.lg-sold{background:#888;filter:grayscale(1)}
+.lg-open{background:#1c1c1c;border:1px solid #555;border-radius:50%!important}
+.cal-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 14px 4px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 14px;align-content:start}
+.cal-dow{text-align:center;font-size:10.5px;color:var(--dim);font-weight:600;padding:4px 0}
+.cal-cell{position:relative;aspect-ratio:1;border-radius:7px;background:var(--card);overflow:hidden;border:1px solid transparent}
+.cal-cell.empty{background:transparent}
+.cal-cell .dnum{position:absolute;top:2px;left:4px;font-size:9.5px;color:var(--dim);z-index:3;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.cal-cell.today{border-color:var(--accent)}
+.cal-cell .ph-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cal-cell .ph-buy{opacity:.6}
+.cal-cell .ph-sold{filter:grayscale(1)}
+.cal-cell .ph-cd{position:absolute;inset:14%;border-radius:50%;background:
+  conic-gradient(from 0deg,rgba(255,255,255,.1),rgba(0,0,0,.2),rgba(255,255,255,.12),rgba(0,0,0,.2),rgba(255,255,255,.1)),
+  radial-gradient(circle at 40% 35%,rgba(255,255,255,.15),rgba(0,0,0,.3) 70%),var(--disc,#1a1a1a);
+  background-blend-mode:screen,normal,normal;box-shadow:inset 0 0 6px rgba(0,0,0,.6)}
+.cal-cell .ph-cd::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30%;height:30%;border-radius:50%;background:rgba(0,0,0,.4)}
+.cal-cell .multi{position:absolute;bottom:2px;right:3px;font-size:8px;background:rgba(0,0,0,.6);color:#fff;border-radius:4px;padding:0 3px;z-index:3}
+.cal-empty{text-align:center;color:var(--dim);font-size:13px;padding:24px 20px}
+
+/* ---------- Auth / Boot ---------- */
+#boot,#auth-screen{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;
+  align-items:center;justify-content:center;background:var(--bg);
+  background-image:
+    radial-gradient(900px 500px at 80% -10%, rgba(232,100,60,.16), transparent 60%),
+    radial-gradient(700px 500px at 0% 100%, rgba(106,160,232,.12), transparent 55%)}
+body.state-boot #boot{display:flex}
+body.state-auth #auth-screen{display:flex}
+body:not(.state-app) .wrap,
+body:not(.state-app) .fab,
+body:not(.state-app) .nav{display:none!important}
+.boot-spin{width:46px;height:46px;border-radius:50%;border:3px solid var(--line);
+  border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#auth-screen{padding:24px}
+.auth-card{width:100%;max-width:360px;background:linear-gradient(165deg,var(--card2),var(--card));
+  border:1px solid var(--line);border-radius:24px;padding:30px 24px 26px;
+  box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.auth-logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:38px;
+  line-height:.95;letter-spacing:-.02em;text-transform:uppercase;text-align:center}
+.auth-logo .em{color:var(--accent)}
+.auth-tagline{text-align:center;color:var(--muted);font-size:13px;margin-top:12px;font-weight:500}
+.auth-tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:13px;padding:4px;margin:22px 0 18px}
+.auth-tab{flex:1;padding:10px;border:none;border-radius:10px;background:none;color:var(--muted);
+  font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+.auth-tab.on{background:var(--accent);color:#160d09}
+.auth-fields{display:flex;flex-direction:column;gap:10px}
+.auth-fields input{width:100%;background:var(--card);border:1px solid var(--line);
+  border-radius:13px;padding:14px 15px;color:var(--txt);font-size:15px;font-family:inherit;outline:none}
+.auth-fields input:focus{border-color:var(--accent)}
+.auth-err{display:none;color:#f09aa4;font-size:12.5px;margin-top:12px;line-height:1.5;
+  background:rgba(232,92,106,.1);border:1px solid rgba(232,92,106,.3);border-radius:11px;padding:10px 12px}
+.auth-err.show{display:block}
+.auth-btn{width:100%;padding:14px;border-radius:13px;border:none;font-family:inherit;
+  font-weight:700;font-size:15px;cursor:pointer;margin-top:16px;display:flex;
+  align-items:center;justify-content:center;gap:9px;transition:.15s}
+.auth-btn.primary{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06}
+.auth-btn.primary:active{opacity:.85}
+.auth-btn.google{background:#fff;color:#1f1f1f;margin-top:10px}
+.auth-btn.google:active{opacity:.9}
+.auth-btn.google svg{width:18px;height:18px}
+.auth-btn:disabled{opacity:.55;cursor:default}
+.auth-or{display:flex;align-items:center;gap:12px;margin:18px 2px 0;color:var(--dim);font-size:11px}
+.auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:var(--line)}
+.auth-foot{color:var(--dim);font-size:11.5px;margin-top:20px;text-align:center;max-width:340px;line-height:1.6}
+/* account chip in header */
+.acct{position:absolute;top:30px;right:20px;z-index:20}
+.acct-btn{display:flex;align-items:center;gap:6px;max-width:150px;background:var(--card);
+  border:1px solid var(--line);border-radius:100px;padding:7px 13px;color:var(--muted);
+  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.acct-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-btn:active{opacity:.8}
+.acct-menu{display:none;position:absolute;top:42px;right:0;background:var(--card2);
+  border:1px solid var(--line);border-radius:13px;padding:6px;min-width:130px;
+  box-shadow:0 14px 30px rgba(0,0,0,.5)}
+.acct-menu.show{display:block}
+.acct-menu button{width:100%;background:none;border:none;color:var(--txt);font-family:inherit;
+  font-size:13px;font-weight:600;text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer}
+.acct-menu button:active{background:var(--card)}
+</style>
+</head>
+<body class="state-boot">
+<div id="boot"><div class="boot-spin"></div></div>
+
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">MY Vinyl<br><span class="em">Archive</span></div>
+    <div class="auth-tagline">내 바이닐 컬렉션을 어디서나</div>
+    <div class="auth-tabs">
+      <button class="auth-tab on" data-mode="login">로그인</button>
+      <button class="auth-tab" data-mode="signup">회원가입</button>
+    </div>
+    <div class="auth-fields">
+      <input id="auth-email" type="email" placeholder="이메일" autocomplete="email">
+      <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
+      <input id="auth-pw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" style="display:none">
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+    <button class="auth-btn primary" id="auth-submit">로그인</button>
+    <div class="auth-or"><span>또는</span></div>
+    <button class="auth-btn google" id="auth-google">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Google로 계속하기
+    </button>
+  </div>
+  <div class="auth-foot">로그인하면 이 기기의 기존 기록이 계정으로 한 번 옮겨집니다.</div>
+</div>
+
+<div class="wrap">
+<header>
+  <div class="acct" id="acct">
+    <button class="acct-btn" id="acct-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+      <span id="acct-email">계정</span>
+    </button>
+    <div class="acct-menu" id="acct-menu">
+      <button id="acct-logout">로그아웃</button>
+    </div>
+  </div>
+  <h1>MY Vinyl<br><span class="em">Archive</span></h1>
+  <div class="sub" id="hsub">불러오는 중…</div>
+</header>
+
+<!-- COLLECTION VIEW -->
+<div class="view on" id="view-coll">
+
+  <!-- Cover Flow -->
+  <div class="cf-wrap">
+    <div class="cf-stage" id="cf-stage">
+      <button class="cf-nav prev" id="cf-prev" aria-label="이전">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <div class="cf-track" id="cf-track"></div>
+      <button class="cf-nav next" id="cf-next" aria-label="다음">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <div class="cf-info" id="cf-info"></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9d96aa" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+      <input id="q" placeholder="가수, 앨범, 컬러 검색…" autocomplete="off">
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="chips subchips" id="subchips" style="display:none"></div>
+  </div>
+  <div class="countrow">
+    <div class="count" id="count"></div>
+    <div class="ctrls">
+      <select id="genre" class="sortsel"><option value="">전체 장르</option></select>
+      <select id="sort" class="sortsel">
+        <option value="default">기본순</option>
+        <option value="album">앨범명 순</option>
+        <option value="artist">가수 순</option>
+        <option value="rating">별점 순</option>
+        <option value="priceHigh">가격 높은순</option>
+        <option value="priceLow">가격 낮은순</option>
+      </select>
+      <div class="viewtoggle">
+        <button id="view-grid-btn" class="vt on" title="앨범형" aria-label="앨범형">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </button>
+        <button id="view-list-btn" class="vt" title="리스트형" aria-label="리스트형">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- STATS VIEW -->
+<div class="view" id="view-stats">
+  <div class="stats" id="stats2" style="padding-top:16px"></div>
+  <div class="export-note" id="bigstats"></div>
+</div>
+
+<div class="view" id="view-cal">
+  <div class="cal-head">
+    <button class="cal-nav" id="cal-prev" aria-label="이전 달">‹</button>
+    <div class="cal-title" id="cal-title"></div>
+    <button class="cal-nav" id="cal-next" aria-label="다음 달">›</button>
+  </div>
+  <div class="cal-legend">
+    <span><i class="lg lg-arrive"></i>도착·구매</span>
+    <span><i class="lg lg-buy"></i>배송중</span>
+    <span><i class="lg lg-sold"></i>판매</span>
+    <span><i class="lg lg-open"></i>개봉(CD)</span>
+  </div>
+  <div class="cal-dows" id="cal-dows"></div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="cal-empty" id="cal-empty"></div>
+</div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" title="LP 추가">+</button>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="on" data-v="coll"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>보관함</button>
+  <button data-v="cal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>달력</button>
+  <button data-v="stats"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>통계</button>
+</nav>
+
+<!-- DETAIL SHEET -->
+<div class="ov" id="ov-detail"></div>
+<div class="sheet" id="sheet-detail">
+  <div class="grab" id="grab-detail"></div>
+  <button class="sheet-x" data-close="detail" aria-label="닫기">✕</button>
+  <div class="dt-art" id="dt-art"></div>
+  <div class="dt-body" id="dt-body"></div>
+</div>
+
+<!-- ADD SHEET -->
+<div class="ov" id="ov-add"></div>
+<div class="sheet" id="sheet-add">
+  <div class="grab" id="grab-add"></div>
+  <button class="sheet-x" data-close="add" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2>LP 추가</h2>
+    <div class="fhint">가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.</div>
+    <div class="preview">
+      <div class="pa" id="pa-prev">art</div>
+      <div class="pt" id="pt-prev">가수·앨범 입력 후 미리보기</div>
+    </div>
+    <div class="pk-manual" style="margin-bottom:13px">
+      <label class="pk-up">📷 사진에서 직접 올리기
+        <input type="file" accept="image/*" id="f-file" hidden>
+      </label>
+      <div class="pk-url">
+        <input id="f-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
+        <button id="f-urlbtn" type="button">적용</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>가수</label><input id="f-artist" placeholder="예: Tom Misch"></div>
+      <div class="fld"><label>앨범명</label><input id="f-album" placeholder="예: Geography"></div>
+    </div>
+    <div class="searching" id="f-searching">앨범아트 검색 중…</div>
+    <div class="picker" id="f-cands"></div>
+    <div class="row2">
+      <div class="fld buyonly"><label>컬러</label>
+        <div class="colorfield">
+          <span class="color-dot" id="f-colordot"></span>
+          <input id="f-color" placeholder="블랙">
+          <button type="button" class="color-toggle" id="f-coltoggle" title="팔레트 열기">+</button>
+        </div>
+      </div>
+      <div class="fld" id="f-status-fld"><label>상태</label>
+        <select id="f-status">
+          <option>미개봉</option><option>개봉</option><option>배송전</option><option>판매</option><option>교환</option><option>선물</option><option>위시</option>
+        </select>
+      </div>
+    </div>
+    <div class="palette collapsed buyonly" id="f-palette"></div>
+    <div class="row2 buyonly">
+      <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
+      <div class="fld"><label>단가 (원)</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
+    </div>
+    <div class="row2 buyonly">
+      <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
+      <div class="fld"><label>결제방법</label>
+        <select id="f-pay"><option>카드</option><option>현금</option><option>복지포인트</option><option>선물</option></select>
+      </div>
+    </div>
+    <div class="fld"><label>비고 (선택)</label><input id="f-note" placeholder="메모"></div>
+    <div class="btnrow">
+      <button class="btn ghost" id="add-cancel">취소</button>
+      <button class="btn primary" id="add-save">보관함에 추가</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SEED = [{"no": 1, "artist": "Tom Misch", "album": "Geography", "color": "그레이", "store": "레코드스톡", "orig": 41000, "price": 41000, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 2, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 3, "artist": "Adele", "album": "25", "color": "블랙", "store": "yes24", "orig": 40800, "price": 40800, "pay": "복지포인트", "buy": "2022-05-01", "arrive": "2022-04-28", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 4, "artist": "Sam Smith", "album": "The Thrill of it all", "color": "화이트", "store": "yes24", "orig": 35800, "price": 35800, "pay": "복지포인트", "buy": "2022-05-03", "arrive": "2022-05-03", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 5, "artist": "데이먼스 이어", "album": "Headache", "color": "자주", "store": "SSE RECORD", "orig": 45000, "price": 45000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 6, "artist": "Christian Kuria", "album": "Borderline", "color": "그레이", "store": "공홈", "orig": 39000, "price": 39000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 7, "artist": "Ed Seeran", "album": "=(equals)", "color": "블랙", "store": "레코드스톡", "orig": 38000, "price": 38000, "pay": "카드", "buy": "2022-05-16", "arrive": "2022-05-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 8, "artist": "-", "album": "라라랜드", "color": "블랙", "store": "선물", "orig": null, "price": null, "pay": "", "buy": "2022-05-22", "arrive": "2022-05-22", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 from 채린", "genre": "OST"}, {"no": 9, "artist": "오존", "album": "Tallgrass / R ", "color": "블랙", "store": "yes24", "orig": 33200, "price": 33200, "pay": "복지포인트", "buy": "2022-06-01", "arrive": "2022-06-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 10, "artist": "92914", "album": "sunset and home", "color": "블랙", "store": "공홈", "orig": 48000, "price": 48000, "pay": "카드", "buy": "2022-06-02", "arrive": "2022-06-02", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 11, "artist": "-", "album": "그해우리는 OST", "color": "블랙", "store": "당근마켓", "orig": 47700, "price": 50000, "pay": "현금", "buy": "2022-06-04", "arrive": "2022-06-04", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 12, "artist": "AKMU", "album": "낙하", "color": "블루", "store": "당근마켓", "orig": 56800, "price": 70000, "pay": "현금", "buy": "2022-07-15", "arrive": "2022-07-15", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 13, "artist": "검정치마", "album": "TEAM BABY", "color": "스플레터", "store": "yes24", "orig": 55000, "price": 45000, "pay": "카드", "buy": "2022-07-28", "arrive": "2022-11-03", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 14, "artist": "Ed Seeran", "album": "DIVIDE", "color": "블랙", "store": "팍스뮤직", "orig": 58300, "price": 55000, "pay": "카드", "buy": "2022-08-15", "arrive": "2022-08-15", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 15, "artist": "LANA DEL LAY", "album": "BORN TO DIE", "color": "레드", "store": "중고나라", "orig": 52300, "price": 25000, "pay": "현금", "buy": "2022-09-26", "arrive": "2022-09-26", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 16, "artist": "이강승", "album": "Korean Dream ", "color": "블랙", "store": "공홈", "orig": 43200, "price": 35000, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-04", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 17, "artist": "이강승", "album": "In other words it's all made by Kyaongsuk", "color": "블랙", "store": "공홈", "orig": 43200, "price": 35000, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-04", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 18, "artist": "Mariah Carey", "album": "Merry Christmas", "color": "레드", "store": "yes24", "orig": 28600, "price": 28600, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-11", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 19, "artist": "백예린", "album": "선물", "color": "블랙", "store": "yes24", "orig": 47600, "price": 38600, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-06-05", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 20, "artist": "-", "album": "뷰티인사이드 OST", "color": "퍼플", "store": "yes24", "orig": 80600, "price": 65300, "pay": "카드", "buy": "2023-01-25", "arrive": "2023-04-30", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 21, "artist": "Honne", "album": "Love Me / Love Me Not ", "color": "블랙", "store": "미드나잇스낵", "orig": 46600, "price": 49000, "pay": "카드", "buy": "2023-02-17", "arrive": "2023-02-23", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 22, "artist": "조성진", "album": "쇼팽 : 피아노 협주곡 2번 & 스케르초", "color": "블랙", "store": "알라딘", "orig": 66500, "price": 40900, "pay": "카드", "buy": "2023-02-17", "arrive": "2023-02-18", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "클래식"}, {"no": 23, "artist": "Ed Seeran", "album": "-(subtract)", "color": "옐로우", "store": "yes24", "orig": 44100, "price": 35800, "pay": "복지포인트", "buy": "2023-03-08", "arrive": "2023-05-10", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 24, "artist": "죠지", "album": "FRR", "color": "블랙", "store": "켄타포", "orig": 60490, "price": 49000, "pay": "카드", "buy": "2023-05-28", "arrive": "2023-08-19", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 25, "artist": "Lauv", "album": "I met you when i was 18", "color": "블루", "store": "yes24", "orig": 67400, "price": 51100, "pay": "카드", "buy": "2023-06-13", "arrive": "2023-07-29", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 26, "artist": "아이유", "album": "꽃갈피", "color": "블랙", "store": "EDAM", "orig": 60000, "price": 60000, "pay": "현금", "buy": "2023-08-16", "arrive": null, "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "아림 계좌이체", "genre": "가요"}, {"no": 27, "artist": "어반자카파", "album": "1집 01", "color": "불투명 화이트", "store": "yes24", "orig": 65000, "price": 45000, "pay": "카드", "buy": "2023-08-18", "arrive": null, "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "인디"}, {"no": 28, "artist": "라쿠나", "album": "Summer Tales", "color": "블랙", "store": "yes24", "orig": 49500, "price": 40100, "pay": "카드", "buy": "2023-10-04", "arrive": "2023-10-05", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 29, "artist": "잔나비", "album": "The land of fantasy", "color": "블루&옐로우", "store": "선물", "orig": null, "price": null, "pay": "", "buy": "2024-05-31", "arrive": null, "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 from  유종", "genre": "록"}, {"no": 30, "artist": "검정치마", "album": "Teen Troubles", "color": "에메랄드그린", "store": "yes24", "orig": 95000, "price": 77000, "pay": "카드", "buy": "2024-08-14", "arrive": "2024-11-02", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 31, "artist": "혁오", "album": "AAA", "color": "투명 마블", "store": "CREAM", "orig": 65900, "price": 90800, "pay": "카드", "buy": "2024-10-19", "arrive": "2024-10-18", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 32, "artist": "-", "album": "블랙팬서", "color": "블랙", "store": "번개장터", "orig": 66000, "price": 30000, "pay": "현금", "buy": "2024-10-26", "arrive": "2024-11-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 33, "artist": "MILLIC", "album": "VIDA", "color": "오렌지", "store": "알라딘", "orig": 49000, "price": 49000, "pay": "카드", "buy": "2024-10-28", "arrive": "2024-11-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 34, "artist": "카더가든", "album": "Harmony", "color": "투명", "store": "yes24", "orig": 60500, "price": 49000, "pay": "카드", "buy": "2024-09-23", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 35, "artist": "카더가든", "album": "Harmony", "color": "투명", "store": "yes24", "orig": 60500, "price": 49000, "pay": "카드", "buy": "2024-09-23", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 36, "artist": "이센스", "album": "저금통", "color": "블랙", "store": "서레페", "orig": 59600, "price": 63000, "pay": "카드", "buy": "2024-09-30", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 37, "artist": "ZionT", "album": "Red Light", "color": "레드", "store": "yes24", "orig": 67900, "price": 50000, "pay": "카드", "buy": "2024-11-01", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 38, "artist": "ZionT", "album": "Red Light", "color": "레드", "store": "yes24", "orig": 67900, "price": 50000, "pay": "카드", "buy": "2024-11-01", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 39, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 40, "artist": "Adele", "album": "21", "color": "블랙", "store": "yes24", "orig": 40800, "price": 40800, "pay": "복지포인트", "buy": "2022-05-03", "arrive": "2022-05-03", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 41, "artist": "Christian Kuria", "album": "Borderline", "color": "그레이", "store": "공홈", "orig": 39000, "price": 39000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 42, "artist": "예지&오혁", "album": "Year to year", "color": "블랙", "store": "yes24", "orig": 20400, "price": 20400, "pay": "복지포인트", "buy": "2022-05-09", "arrive": "2022-05-11", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 43, "artist": "폴킴", "album": "pkalbum", "color": "다크그린", "store": "yes24", "orig": 56400, "price": 56400, "pay": "복지포인트", "buy": "2022-05-12", "arrive": "2022-11-01", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 44, "artist": "프롬", "album": "Midnight Candy", "color": "아이스블루", "store": "SSE RECORD", "orig": 49500, "price": 45800, "pay": "카드", "buy": "2022-08-19", "arrive": "2023-05-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 45, "artist": "프롬", "album": "Midnight Candy", "color": "아이스블루", "store": "SSE RECORD", "orig": 49500, "price": 45800, "pay": "카드", "buy": "2022-08-19", "arrive": "2023-05-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 46, "artist": "잔나비", "album": "The land of fantasy", "color": "옐로우", "store": "F.O.F", "orig": 59000, "price": 59000, "pay": "카드", "buy": "2022-09-06", "arrive": "2022-09-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 47, "artist": "이강승", "album": "In other words it's all made by Kyaongsuk", "color": "블랙", "store": "공홈", "orig": 43200, "price": 35000, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-04", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 48, "artist": "백예린", "album": "tellusboutyourself", "color": "블랙", "store": "yes24", "orig": 65000, "price": 60000, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 49, "artist": "백예린", "album": "Turn on that Blue Vinyl ", "color": "블루", "store": "yes24", "orig": 67700, "price": 52900, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 50, "artist": "백예린", "album": "선물", "color": "블랙", "store": "팍스뮤직", "orig": 47600, "price": 45000, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-06-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 51, "artist": "-", "album": "뷰티인사이드 OST", "color": "퍼플", "store": "yes24", "orig": 80600, "price": 65300, "pay": "카드", "buy": "2023-01-25", "arrive": "2023-04-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 52, "artist": "박지윤", "album": "꽃, 다시 첫번째", "color": "투명", "store": "김밥레코즈", "orig": 60400, "price": 49000, "pay": "카드", "buy": "2023-02-23", "arrive": "2023-03-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 53, "artist": " DAY6", "album": "MOONRISE", "color": "오렌지", "store": "서울바이닐", "orig": 104900, "price": 82500, "pay": "카드", "buy": "2023-04-09", "arrive": "2023-05-02", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 54, "artist": "-", "album": "나의아저씨 OST", "color": "블랙", "store": "선물", "orig": null, "price": null, "pay": "", "buy": "2023-05-17", "arrive": "2023-05-17", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 from 승열님", "genre": "OST"}, {"no": 55, "artist": "wave to earth", "album": "flaws and all", "color": "마블", "store": "yes24", "orig": 84300, "price": 54800, "pay": "카드", "buy": "2023-05-22", "arrive": null, "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 56, "artist": "죠지", "album": "FRR", "color": "블랙", "store": "켄타포", "orig": 60490, "price": 49000, "pay": "카드", "buy": "2023-05-28", "arrive": "2023-08-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 57, "artist": "Lauv", "album": "I met you when i was 18", "color": "블루", "store": "yes24", "orig": 67400, "price": 51100, "pay": "카드", "buy": "2023-06-13", "arrive": "2023-07-29", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 58, "artist": "유재하", "album": "사랑하기떄문에", "color": "마블", "store": "드림레코드", "orig": 77000, "price": 62400, "pay": "카드", "buy": "2023-06-15", "arrive": "2023-06-22", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 59, "artist": "백예린", "album": "tellusboutyourself", "color": "블랙", "store": "팍스뮤직", "orig": 65000, "price": 70000, "pay": "현금", "buy": "2023-08-05", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 60, "artist": "백예린", "album": "Turn on that Blue Vinyl ", "color": "블루", "store": "팍스뮤직", "orig": 67700, "price": 59000, "pay": "현금", "buy": "2023-08-05", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 61, "artist": "코드쿤스트", "album": " People", "color": " Snow White & Heavenly Pink", "store": "yes24", "orig": 80600, "price": 65300, "pay": "카드", "buy": "2024-04-18", "arrive": null, "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 62, "artist": "AKMU", "album": "Love Episode", "color": "레드", "store": "yes24", "orig": 61700, "price": 50000, "pay": "카드", "buy": "2024-06-17", "arrive": "2024-10-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 63, "artist": "검정치마", "album": "Teen Troubles", "color": "에메랄드그린", "store": "yes24", "orig": 95000, "price": 80000, "pay": "현금", "buy": "2024-08-14", "arrive": "2024-11-02", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "판규 계좌이체", "genre": "가요"}, {"no": null, "artist": "카더가든", "album": "Apartment", "color": "블랙마블", "store": "공홈", "orig": 66000, "price": 66000, "pay": "카드", "buy": "2023-08-29", "arrive": "2024-01-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 65, "artist": "-", "album": "헤어질결심 OST", "color": "투명", "store": "yes24", "orig": 91700, "price": 74300, "pay": "카드", "buy": "2024-09-26", "arrive": "2024-09-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 66, "artist": "-", "album": "헤어질결심 OST", "color": "투명", "store": "yes24", "orig": 91700, "price": 74300, "pay": "카드", "buy": "2024-09-26", "arrive": "2024-09-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 67, "artist": "빈지노", "album": "Nowitzki", "color": "클리어그린&화이트", "store": "김밥레코즈", "orig": 68750, "price": 66000, "pay": "카드", "buy": "2024-09-30", "arrive": "2024-10-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 68, "artist": "혁오", "album": "AAA", "color": "투명 마블", "store": "CREAM", "orig": 65900, "price": 85600, "pay": "카드", "buy": "2024-10-19", "arrive": "2024-10-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 69, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "선물", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 to 령원", "genre": "록"}, {"no": 70, "artist": "Lauv", "album": "How I’m Feeling", "color": "투명", "store": "미드나잇스낵", "orig": 52900, "price": 41000, "pay": "카드", "buy": "2023-05-05", "arrive": "2023-05-10", "status": "선물", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 to 수현", "genre": "팝"}, {"no": 71, "artist": "So!YoON! ", "album": "Episode1 : Love", "color": "블랙", "store": "yes24", "orig": 60500, "price": 17000, "pay": "카드", "buy": "2023-04-28", "arrive": null, "status": "확인필요", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 72, "artist": "Sia", "album": "Everyday is christmas snowman", "color": "레드 스플래터", "store": "김밥레코즈", "orig": 35000, "price": 35000, "pay": "카드", "buy": "2024-11-24", "arrive": "2024-11-26", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 97, "artist": "김광석", "album": "김광석베스트앨범", "color": "블랙", "store": "테리픽잼", "orig": 85300, "price": 69500, "pay": "카드", "buy": "2022-06-02", "arrive": "2022-06-03", "status": "판매", "sellDate": "2024-10-09", "sellPrice": 100000, "profit": 30500, "note": "당근", "genre": "가요"}, {"no": 98, "artist": "잔나비", "album": "The land of fantasy", "color": "블랙", "store": "F.O.F", "orig": 59000, "price": 59000, "pay": "카드", "buy": "2022-09-06", "arrive": "2022-09-30", "status": "판매", "sellDate": "2024-10-19", "sellPrice": 94900, "profit": 35900, "note": "크림", "genre": "록"}, {"no": 99, "artist": "wave to earth", "album": "flaws and all", "color": "마블", "store": "yes24", "orig": 84300, "price": 54800, "pay": "카드", "buy": "2023-05-22", "arrive": null, "status": "판매", "sellDate": "2024-10-09", "sellPrice": 164000, "profit": 109200, "note": "크림", "genre": "록"}, {"no": 100, "artist": "92914", "album": "sunset and home", "color": "블랙", "store": "공홈", "orig": 48000, "price": 48000, "pay": "카드", "buy": "2022-06-02", "arrive": "2022-06-02", "status": "판매", "sellDate": "2024-10-09", "sellPrice": 90100, "profit": 42100, "note": "크림", "genre": "록"}, {"no": 101, "artist": "김아름", "album": "AQUA CITY", "color": "레드", "store": "인터파크", "orig": 46000, "price": 46000, "pay": "카드", "buy": "2022-05-04", "arrive": "2022-05-04", "status": "판매", "sellDate": "2024-08-10", "sellPrice": 42000, "profit": -4000, "note": "당근", "genre": "팝"}, {"no": 102, "artist": "데이먼스 이어", "album": "Headache", "color": "자주", "store": "SSE RECORD", "orig": 45000, "price": 45000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "판매", "sellDate": "2024-08-27", "sellPrice": 140000, "profit": 95000, "note": "당근", "genre": "R&B·소울"}, {"no": 103, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "복지포인트", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "판매", "sellDate": "2022-05-30", "sellPrice": 50000, "profit": 11400, "note": "당근", "genre": "록"}, {"no": null, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "판매", "sellDate": "2024-10-25", "sellPrice": 85400, "profit": 46800, "note": "크림", "genre": "록"}, {"no": null, "artist": "아이유", "album": "꽃갈피", "color": "블랙", "store": "EDAM", "orig": 60000, "price": 60000, "pay": "현금", "buy": "2023-08-16", "arrive": null, "status": "판매", "sellDate": "2024-10-28", "sellPrice": 152300, "profit": 92300, "note": "크림", "genre": "가요"}, {"no": null, "artist": "카더가든", "album": "Apartment", "color": "블랙마블", "store": "공홈", "orig": 66000, "price": 66000, "pay": "카드", "buy": "2023-08-29", "arrive": "2024-01-09", "status": "판매", "sellDate": "2024-11-01", "sellPrice": 83500, "profit": 17500, "note": "크림", "genre": "R&B·소울"}];
+let DATA = SEED.map((x,i)=>({...x, id:'s'+i}));
+// 유료(Pro) 회원 여부 — 결제 연동 전까지는 localStorage 토글로 데모
+let IS_PRO = localStorage.getItem('lp_pro')==='1';
+const artCache = {};
+
+/* ---------- album art via iTunes Search API ---------- */
+const pickedArt = {};            // key -> user-chosen artwork url (overrides everything)
+const candCache = {};            // term -> candidate list
+function cleanAlbum(a){return String(a).replace(/\(.*?\)|\[.*?\]|OST|ost/g,'').replace(/[\/].*$/,'').trim();}
+function artKey(artist,album){return (artist+'|'+album).toLowerCase();}
+
+// ---- per-source searchers (each returns [{img, artist, album, year}]) ----
+
+// 1) iTunes (Apple) — no key, CORS-friendly
+async function searchItunes(term, limit){
+  const url='https://itunes.apple.com/search?media=music&entity=album&limit='+limit+'&term='+encodeURIComponent(term);
+  try{const r=await fetch(url);const j=await r.json();
+    return (j.results||[]).filter(x=>x.artworkUrl100).map(x=>({
+      img:x.artworkUrl100.replace('100x100','600x600'),
+      artist:x.artistName||'', album:x.collectionName||'',
+      year:(x.releaseDate||'').slice(0,4), genre:normGenre(x.primaryGenreName), src:'iTunes'
+    }));
+  }catch(e){return [];}
+}
+// normalize iTunes genre into a short Korean label
+function normGenre(g){
+  if(!g) return '';
+  const m={'K-Pop':'가요','Korean':'가요','J-Pop':'J-Pop','Pop':'팝','Rock':'록','Alternative':'얼터너티브',
+    'R&B/Soul':'R&B/소울','Hip-Hop/Rap':'힙합','Hip Hop/Rap':'힙합','Dance':'댄스','Electronic':'일렉트로닉',
+    'Jazz':'재즈','Classical':'클래식','Soundtrack':'OST','Singer/Songwriter':'싱어송라이터',
+    'Folk':'포크','Country':'컨트리','World':'월드뮤직','Indie':'인디','Indie Pop':'인디팝','Metal':'메탈',
+    'Blues':'블루스','Reggae':'레게','Funk':'펑크','Easy Listening':'이지리스닝','New Age':'뉴에이지'};
+  return m[g]||g;
+}
+
+// 2) Deezer — no key; uses JSONP to avoid CORS
+function searchDeezer(term, limit){
+  return new Promise(res=>{
+    const cb='dz_'+Math.random().toString(36).slice(2);
+    const t=setTimeout(()=>{cleanup();res([]);},6000);
+    function cleanup(){clearTimeout(t);delete window[cb];s.remove();}
+    window[cb]=data=>{
+      let out=[];
+      try{ out=(data.data||[]).filter(x=>x.album&&x.album.cover_big).map(x=>({
+        img:x.album.cover_big, artist:(x.artist&&x.artist.name)||'',
+        album:x.album.title||'', year:'', src:'Deezer'
+      }));}catch(e){}
+      cleanup();res(out);
+    };
+    const s=document.createElement('script');
+    s.onerror=()=>{cleanup();res([]);};
+    s.src='https://api.deezer.com/search?limit='+limit+'&q='+encodeURIComponent(term)+'&output=jsonp&callback='+cb;
+    document.body.appendChild(s);
+  });
+}
+
+// 3) MusicBrainz + Cover Art Archive — no key, CORS-friendly (slower, rate-limited)
+async function searchMusicBrainz(term, limit){
+  try{
+    const u='https://musicbrainz.org/ws/2/release-group/?fmt=json&limit='+limit+'&query='+encodeURIComponent(term);
+    const r=await fetch(u,{headers:{'Accept':'application/json'}});
+    const j=await r.json();
+    const groups=(j['release-groups']||[]).slice(0,limit);
+    const out=[];
+    for(const g of groups){
+      out.push({
+        img:'https://coverartarchive.org/release-group/'+g.id+'/front-250',
+        artist:(g['artist-credit']&&g['artist-credit'][0]&&g['artist-credit'][0].name)||'',
+        album:g.title||'', year:(g['first-release-date']||'').slice(0,4), src:'MusicBrainz'
+      });
+    }
+    return out;
+  }catch(e){return [];}
+}
+
+// run one term across sources in order until enough results are found
+async function searchTerm(term, limit){
+  if(candCache[term]) return candCache[term];
+  let out=await searchItunes(term, limit);
+  if(out.length<2){ const dz=await searchDeezer(term, limit); out=out.concat(dz); }
+  if(out.length===0){ const mb=await searchMusicBrainz(term, limit); out=out.concat(mb); }
+  const seen={}; out=out.filter(c=>{if(seen[c.img])return false;seen[c.img]=1;return true;});
+  candCache[term]=out;
+  return out;
+}
+
+// gather candidates from several query forms, merged & de-duped
+async function fetchCandidates(artist, album){
+  const ar=(artist||'').replace(/[-]/g,'').trim();
+  const al=cleanAlbum(album);
+  const terms=[];
+  if(ar&&al) terms.push((ar+' '+al).trim());
+  if(al) terms.push(al);
+  if(ar&&!al) terms.push(ar);
+  let all=[];
+  for(const t of terms){
+    all=all.concat(await searchTerm(t,8));
+    if(all.length>=4) break;   // enough good candidates, stop early
+  }
+  const seen={}; all=all.filter(c=>{if(seen[c.img])return false;seen[c.img]=1;return true;});
+  return all;
+}
+
+// best single guess (used for first auto-load); respects a prior user pick
+const genreCache={};  // artKey -> genre string
+async function fetchArt(artist, album){
+  const key=artKey(artist,album);
+  if(pickedArt[key]!==undefined) return pickedArt[key];
+  if(artCache[key]!==undefined) return artCache[key];
+  const cands=await fetchCandidates(artist,album);
+  const img=cands.length?cands[0].img:null;
+  artCache[key]=img;
+  const g=cands.find(c=>c.genre)||{}; if(g.genre) genreCache[key]=g.genre;
+  return img;
+}
+
+/* ---------- color swatch ---------- */
+// solid hex per color keyword — used for both the dot swatch and the vinyl disc tint
+const COLORHEX=[
+  ['블랙마블','#2b2b2b'],['블랙','#1c1c1c'],
+  ['화이트','#ececec'],['불투명 화이트','#e6e6e6'],['스노우','#eef0f2'],
+  ['그레이','#8a8a8a'],
+  ['레드 스플','#cf3a3a'],['스플레터','#b86b4a'],['스플','#c24a4a'],['레드','#d63a3a'],
+  ['블루&옐','#5a7fd0'],['아이스블루','#9cd0e8'],['블루','#3a6fd6'],
+  ['에메랄드','#1faa7a'],['다크그린','#23613f'],['클리어그린','#4fb37a'],['그린','#36a35a'],
+  ['퍼플','#8a4fd6'],['옐로우','#e6c23a'],['오렌지','#e8843a'],
+  ['자주','#8a2b4f'],['핑크','#e08ab0'],
+  ['투명 마블','#cfcad6'],['투명','#cfd2d8'],['클리어','#cfd2d8'],
+  ['마블','#9a9a9a'],
+];
+function discColor(c){
+  if(!c) return '#1a1a1a';
+  for(const [k,v] of COLORHEX){ if(c.includes(k)) return v; }
+  return '#1a1a1a';
+}
+function swatch(c){ return discColor(c); }
+// inline style for a disc, honoring Pro custom color, opacity & photo
+function discStyle(it){
+  if(it.discPhoto){
+    return `background-image:url(${it.discPhoto});background-size:cover;background-position:center`;
+  }
+  const col = it.discColorCustom || discColor(it.color);
+  const op = (it.discOpacity!=null) ? it.discOpacity : 1;
+  return `--disc:${col};opacity:${op}`;
+}
+
+// curated palette for the visual color picker: [label, hex]
+const PALETTE=[
+  ['블랙','#1c1c1c'],['레드','#d63a3a'],['오렌지','#e8843a'],['옐로우','#e6c23a'],
+  ['그린','#36a35a'],['블루','#3a6fd6'],['네이비','#23344d'],['퍼플','#8a4fd6'],
+  ['핑크','#e08ab0'],['골드','#c9a227'],['실버','#c8c8cc'],
+  ['투명','#cfd6e0'],['연보라','#cdbdf0'],['연두','#a8e08a'],['하늘','#9cd0e8'],
+  ['화이트','#ececec'],['그레이','#8a8a8a'],
+  ['멀티컬러','conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)'],
+  ['스플래터','radial-gradient(circle at 35% 35%,#f0c23a,#e8843a 40%,#d63a3a 75%)'],
+  ['브라운','#7a4a28'],
+  ['그라데이션','linear-gradient(135deg,#3a6fd6,#36a35a,#e6c23a)'],
+];
+// render swatches into a container; onPick(label) fires when a swatch is tapped
+function renderPalette(containerId, inputId, onPick){
+  const box=document.getElementById(containerId); if(!box) return;
+  const cur=(document.getElementById(inputId)||{}).value||'';
+  box.innerHTML=PALETTE.map(([label,bg])=>{
+    const on = cur && cur.replace(/\s+/g,'') === label.replace(/\s+/g,'') ? ' on':'';
+    return `<button type="button" class="sw${on}" data-label="${label}" title="${label}" style="--sw:${bg}"></button>`;
+  }).join('');
+  box.querySelectorAll('.sw').forEach(el=>el.onclick=()=>{
+    const label=el.dataset.label;
+    const inp=document.getElementById(inputId);
+    if(inp) inp.value=label;
+    renderPalette(containerId, inputId, onPick);   // re-render so the ✓ lands on the picked swatch
+    if(onPick) onPick(label);
+  });
+}
+// wire up a color field: live preview dot + "+" toggle for the palette
+function setupColorField(prefix){   // prefix: 'f' or 'e'
+  const inp=document.getElementById(prefix+'-color');
+  const dot=document.getElementById(prefix+'-colordot');
+  const pal=document.getElementById(prefix+'-palette');
+  const tog=document.getElementById(prefix+'-coltoggle');
+  if(!inp||!dot||!pal||!tog) return;
+  const refresh=()=>{
+    dot.style.background=discColor(inp.value);
+    renderPalette(prefix+'-palette', prefix+'-color', refresh);
+  };
+  // open palette automatically if no color yet; otherwise keep it collapsed
+  pal.classList.toggle('collapsed', !!inp.value.trim());
+  tog.textContent = inp.value.trim() ? '+' : '+';
+  tog.onclick=()=>{ pal.classList.toggle('collapsed'); };
+  inp.oninput=refresh;
+  refresh();
+}
+
+/* ---------- helpers ---------- */
+const won=n=> n||n===0 ? '₩'+Number(n).toLocaleString('ko-KR') : '–';
+const $=s=>document.querySelector(s);
+function statusBadge(s){
+  if(s==='판매') return '<span class="badge sold">판매완료</span>';
+  if(s==='미개봉') return '<span class="badge sealed">미개봉</span>';
+  if(s==='선물') return '<span class="badge gift">선물</span>';
+  return '';
+}
+// star rating display (read-only). r = 0..5
+function starsView(r){
+  r=r||0;
+  let s='';
+  for(let i=1;i<=5;i++){
+    const fill = r>=i ? 100 : (r>=i-0.5 ? 50 : 0);
+    s+=`<span class="star"><span class="sfill" style="width:${fill}%">★</span>★</span>`;
+  }
+  return `<span class="stars">${s}</span>`;
+}
+// interactive stars for the detail sheet (tap left half = .5, right half = 1.0)
+function starsEdit(it){
+  const r=it.rating||0;
+  let s='';
+  for(let i=1;i<=5;i++){
+    const fill = r>=i ? 100 : (r>=i-0.5 ? 50 : 0);
+    s+=`<span class="star big" data-i="${i}"><span class="sfill" style="width:${fill}%">★</span>★<span class="hit half" data-r="${i-0.5}"></span><span class="hit full" data-r="${i}"></span></span>`;
+  }
+  return `<span class="stars edit" data-id="${it.id}">${s}</span>`;
+}
+
+// genre -> rgb triplet for colored tags
+const GENRE_RGB={
+  '가요':'232,140,170','팝':'106,160,232','R&B·소울':'176,140,232','R&B/소울':'176,140,232',
+  '힙합':'232,164,68','록':'232,92,76','재즈':'94,194,160','OST':'150,160,180',
+  '인디':'120,200,140','클래식':'200,180,120'
+};
+function genreTag(g){
+  if(!g) return '';
+  const rgb=GENRE_RGB[g]||'140,150,170';
+  return `<span class="gtag" style="--gc:${rgb}">${g}</span>`;
+}
+
+// bottom status chip on each card
+function statusChip(s){
+  if(s==='판매') return '<span class="st sold">판매완료</span>';
+  if(s==='교환') return '<span class="st sold">교환</span>';
+  if(s==='선물') return '<span class="st gift">선물함</span>';
+  if(s==='위시') return '<span class="st wish">위시</span>';
+  if(s==='미개봉') return '<span class="st seal">미개봉 · 보유중</span>';
+  if(s==='개봉') return '<span class="st open">개봉 · 보유중</span>';
+  if(s==='도착 전'||s==='배송전') return '<span class="st own">배송전</span>';
+  if(s==='확인필요') return '<span class="st own">확인필요 · 보유중</span>';
+  return '<span class="st own">보유중</span>';
+}
+
+/* ---------- render grid ---------- */
+let filter={q:'',chip:'전체',sub:'',sort:'default',genre:'',view:'grid'};   // view: 'grid'|'list'
+
+// classify a record's status into a top-level group
+function statusGroup(s){
+  if(s==='위시') return '위시';
+  if(s==='도착 전'||s==='배송전') return '배송전';
+  if(s==='판매'||s==='교환'||s==='선물') return '판매·교환';
+  return '보유중';   // 개봉, 미개봉, 확인필요 등
+}
+const CHIPS=['전체','배송전','보유중','판매·교환','위시'];
+const SUBCHIPS=['개봉','미개봉'];
+
+function passes(it){
+  const q=filter.q.toLowerCase();
+  if(q && !(it.artist.toLowerCase().includes(q)||it.album.toLowerCase().includes(q)||(it.color||'').toLowerCase().includes(q))) return false;
+  if(filter.genre && (it.genre||'')!==filter.genre) return false;
+  const g=statusGroup(it.status);
+  const c=filter.chip;
+  if(c==='전체') return g!=='위시';        // 전체에서 위시 제외
+  if(c==='보유중'){
+    if(g!=='보유중') return false;
+    if(filter.sub==='개봉') return it.status==='개봉';
+    if(filter.sub==='미개봉') return it.status==='미개봉';
+    return true;
+  }
+  return g===c;
+}
+
+function renderChips(){
+  let html=CHIPS.map(c=>`<div class="chip ${c===filter.chip?'on':''}" data-c="${c}">${c}</div>`).join('');
+  $('#chips').innerHTML=html;
+  document.querySelectorAll('#chips .chip').forEach(el=>el.onclick=()=>{
+    filter.chip=el.dataset.c; filter.sub=''; renderChips(); renderGrid();
+  });
+  // sub-chips appear only under 보유중
+  const sub=$('#subchips');
+  if(filter.chip==='보유중'){
+    sub.style.display='flex';
+    sub.innerHTML='<div class="chip sm '+(filter.sub===''?'on':'')+'" data-s="">전체</div>'+
+      SUBCHIPS.map(s=>`<div class="chip sm ${filter.sub===s?'on':''}" data-s="${s}">${s}</div>`).join('');
+    sub.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{filter.sub=el.dataset.s;renderChips();renderGrid();});
+  }else{
+    sub.style.display='none'; sub.innerHTML='';
+  }
+}
+
+function renderGrid(){
+  $('#grid').classList.toggle('list', filter.view==='list');
+  let list=DATA.filter(passes);
+  const cmp={
+    album:(a,b)=>(a.album||'').localeCompare(b.album||'','ko'),
+    artist:(a,b)=>(a.artist||'').localeCompare(b.artist||'','ko'),
+    rating:(a,b)=>(b.rating||0)-(a.rating||0),
+    priceHigh:(a,b)=>(b.price||0)-(a.price||0),
+    priceLow:(a,b)=>(a.price||0)-(b.price||0),
+  }[filter.sort];
+  if(cmp) list=[...list].sort(cmp);
+  $('#count').innerHTML=`<b>${list.length}</b>장 표시 중`;
+  const isWish=filter.chip==='위시';
+  // FAB reflects context: wish vs normal add
+  const fab=$('#fab');
+  if(fab){
+    fab.classList.toggle('wish', isWish);
+    fab.innerHTML = '+';
+    fab.title = isWish ? '위시 추가' : 'LP 추가';
+  }
+  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
+  $('#grid').innerHTML=list.map((it,i)=>`
+    <div class="lp" data-id="${it.id}" style="animation-delay:${Math.min(i*30,400)}ms">
+      <div class="artwrap">
+        <div class="disc${it.discPhoto?' has-photo':''}" style="${discStyle(it)}"></div>
+        <div class="art">
+          <div class="ph"><div class="vinyl"></div><div class="pn">${it.artist||'?'}</div></div>
+          <img data-art="${it.id}" alt="">
+        </div>
+        ${it.liked?'<span class="card-like">♥</span>':''}
+        <button class="disc-edit" data-edit="${it.id}" aria-label="바이닐 꾸미기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      </div>
+      <div class="meta">
+        <div class="al">${it.album||'—'}</div>
+        <div class="ar">${it.artist||'—'}</div>
+        <div class="metabtm">${statusChip(it.status)}${genreTag(it.genre)}</div>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.lp[data-id]').forEach(el=>{
+    const art=el.querySelector('.art');
+    const disc=el.querySelector('.disc');
+    el.onclick=()=>{
+      if(el.classList.contains('pulled')){ el.classList.remove('pulled'); return; }  // tap elsewhere: slide disc back
+      openDetail(el.dataset.id);
+    };
+    if(art) art.onclick=(e)=>{
+      e.stopPropagation();
+      if(el.classList.contains('pulled')){ el.classList.remove('pulled'); return; }   // cover tap closes the pulled disc
+      openDetail(el.dataset.id,'cover');
+    };
+    if(disc){
+      let spin=0, dragging=false, moved=false, lastAng=0, cx=0, cy=0;
+      const angle=(x,y)=>Math.atan2(y-cy, x-cx)*180/Math.PI;
+      const down=(x,y)=>{
+        if(!el.classList.contains('pulled')) return;   // only spin when raised
+        const r=disc.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2;
+        dragging=true; moved=false; lastAng=angle(x,y);
+        disc.classList.add('spinning');
+      };
+      const move=(x,y)=>{
+        if(!dragging) return;
+        let a=angle(x,y), d=a-lastAng;
+        if(d>180) d-=360; if(d<-180) d+=360;   // wrap
+        if(Math.abs(d)>1.5) moved=true;
+        spin+=d; lastAng=a;
+        disc.style.setProperty('--spin', spin+'deg');
+      };
+      const up=()=>{ if(!dragging)return; dragging=false; disc.classList.remove('spinning'); };
+      disc.addEventListener('mousedown',e=>{ down(e.clientX,e.clientY);
+        const mm=ev=>move(ev.clientX,ev.clientY), mu=()=>{up();window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+        window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu); });
+      disc.addEventListener('touchstart',e=>down(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+      disc.addEventListener('touchmove',e=>{ if(dragging){e.preventDefault();} move(e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
+      disc.addEventListener('touchend',up);
+      disc.onclick=(e)=>{
+        e.stopPropagation();
+        if(moved){ moved=false; return; }   // was a spin, not a tap
+        el.classList.toggle('pulled');       // tap to raise / slide back
+      };
+    }
+    const editBtn=el.querySelector('.disc-edit');
+    if(editBtn) editBtn.onclick=(e)=>{ e.stopPropagation(); openDetail(el.dataset.id,'vinyl'); };
+  });
+  // lazy-load covers as cards scroll into view (prevents request flooding that left lower cards blank)
+  if(window._artObs) window._artObs.disconnect();
+  const byId={}; list.forEach(it=>byId[it.id]=it);
+  window._artObs=new IntersectionObserver((ents,obs)=>{
+    ents.forEach(e=>{ if(e.isIntersecting){ const id=e.target.dataset.id; if(byId[id])loadArt(byId[id]); obs.unobserve(e.target);} });
+  },{rootMargin:'300px'});
+  document.querySelectorAll('.lp[data-id]').forEach(el=>window._artObs.observe(el));
+}
+
+async function loadArt(it){
+  const img=document.querySelector(`img[data-art="${it.id}"]`);
+  if(!img||img.dataset.done) return;
+  img.dataset.done='1';
+  const key=artKey(it.artist,it.album);
+  const url = it._art || pickedArt[key] || await fetchArt(it.artist,it.album);
+  // auto-fill genre if we learned it during the search
+  if(!it.genre && genreCache[key]){ it.genre=genreCache[key]; saveGenre(it); refreshGenreChips(); }
+  if(!url){ img.dataset.done=''; return; }   // no art found; keep placeholder, allow later retry
+  it._art=url;
+  const ph=img.parentElement.querySelector('.ph');
+  const reveal=()=>{ img.classList.add('ld'); if(ph) ph.style.display='none'; img.dataset.shown='1'; };
+  img.onload=reveal;
+  // if it fails, just keep showing the placeholder — never wipe an image that already displayed
+  img.onerror=()=>{ if(!img.dataset.shown){ img.dataset.done=''; } };
+  img.src=url;
+  if(img.complete && img.naturalWidth>0) reveal();     // already cached
+}
+
+/* ---------- detail ---------- */
+let detailId=null;
+function openDetail(id, mode){
+  const it=DATA.find(x=>x.id===id);if(!it)return;
+  detailId=id;
+  const key=artKey(it.artist,it.album);
+  const art=pickedArt[key]||it._art||artCache[key];
+  $('#dt-art').innerHTML = (art?`<img src="${art}">`:`<div class="ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div class="vinyl" style="width:80px;height:80px"></div></div>`)
+    + `<div class="cover-btns"><button class="cover-btn" id="dt-change">🖼 커버 바꾸기</button><button class="cover-btn" id="dt-decorate">🎨 바이닐 꾸미기</button></div><div class="picker" id="dt-picker"></div>`;
+  const rows=[];
+  const R=(k,v)=>{if(v||v===0)rows.push(`<div class="dt-row"><span class="k">${k}</span><span class="v">${v}</span></div>`)};
+  R('컬러', it.color?`${it.color} <span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-left:4px;background:${swatch(it.color)}"></span>`:'');
+  R('상태', it.status);
+  R('장르', it.genre);
+  R('구매처', it.store);
+  R('단가', won(it.price));
+  R('결제', it.pay);
+  R('구매일', it.buy);
+  R('도착일', it.arrive);
+  if(it.status==='판매'){
+    R('판매일', it.sellDate);
+    R('판매가', won(it.sellPrice));
+    const pc=it.profit>0?'profit-pos':it.profit<0?'profit-neg':'';
+    R('차익', `<span class="${pc}">${it.profit>0?'+':''}${won(it.profit)}</span>`);
+  }
+  R('비고', it.note);
+  const g=statusGroup(it.status);
+  let action='';
+  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
+  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
+  action+=`<button class="act-btn" id="act-edit" style="margin-top:8px">✏️ 정보 수정</button>`;
+  $('#dt-body').innerHTML=`<div class="dt-titlerow"><h2>${it.album||'—'}</h2><button class="like-btn ${it.liked?'on':''}" id="dt-like" aria-label="좋아요">${it.liked?'♥':'♡'}</button></div><div class="dar">${it.artist||'—'}</div>`
+    +`<div class="dt-rate">${starsEdit(it)}</div>`
+    +`<div class="dt-rows">${rows.join('')}</div>`
+    +(action?`<div class="dt-act">${action}</div>`:'')
+    +`<div class="dt-inline" id="dt-inline"></div>`;
+  $('#dt-change').onclick=()=>openCoverPicker(it);
+  $('#dt-decorate').onclick=()=>openVinylDecorate(it);
+  const lk=$('#dt-like'); if(lk) lk.onclick=()=>{
+    it.liked=!it.liked;
+    lk.classList.toggle('on',it.liked);
+    lk.textContent=it.liked?'♥':'♡';
+    saveLiked(it);
+    renderGrid();
+  };
+  // rating: tap a star to set (tap same star again to clear)
+  function bindStarHits(){
+    $('#dt-body').querySelectorAll('.stars.edit .hit').forEach(h=>h.onclick=()=>{
+      const r=+h.dataset.r;
+      it.rating=(it.rating===r)?0:r;   // tap same value again to clear
+      saveRating(it);
+      $('#dt-body').querySelector('.dt-rate').innerHTML=starsEdit(it);
+      bindStarHits();
+      if(cfItems[cfIndex]&&cfItems[cfIndex].id===it.id) layoutCoverFlow();
+    });
+  }
+  bindStarHits();
+  const ab=$('#act-arrive'); if(ab) ab.onclick=()=>showArriveForm(it);
+  const bb=$('#act-buy'); if(bb) bb.onclick=()=>showBuyForm(it);
+  const eb=$('#act-edit'); if(eb) eb.onclick=()=>showEditForm(it);
+  show('detail');
+  // open the right panel based on what was tapped
+  if(mode==='cover') setTimeout(()=>openCoverPicker(it), 50);
+  else if(mode==='vinyl') setTimeout(()=>openVinylDecorate(it), 50);
+}
+
+// 정보 수정: edit all fields of an existing record
+function showEditForm(it){
+  const wish=it.status==='위시';
+  const opt=(v,cur)=>`<option ${v===cur?'selected':''}>${v}</option>`;
+  const statuses=['미개봉','개봉','배송전','판매','교환','선물','위시'];
+  const pays=['카드','현금','복지포인트','선물'];
+  $('#dt-inline').innerHTML=`
+    <div class="inl-title">정보 수정</div>
+    <div class="row2">
+      <div class="fld"><label>가수</label><input id="e-artist" value="${(it.artist||'').replace(/"/g,'&quot;')}"></div>
+      <div class="fld"><label>앨범명</label><input id="e-album" value="${(it.album||'').replace(/"/g,'&quot;')}"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>컬러</label>
+        <div class="colorfield">
+          <span class="color-dot" id="e-colordot"></span>
+          <input id="e-color" value="${(it.color||'').replace(/"/g,'&quot;')}">
+          <button type="button" class="color-toggle" id="e-coltoggle" title="팔레트 열기">+</button>
+        </div>
+      </div>
+      <div class="fld"><label>상태</label><select id="e-status">${statuses.map(s=>opt(s,it.status)).join('')}</select></div>
+    </div>
+    <div class="palette collapsed" id="e-palette"></div>
+    <div class="row2">
+      <div class="fld"><label>구매처</label><input id="e-store" value="${(it.store||'').replace(/"/g,'&quot;')}"></div>
+      <div class="fld"><label>단가 (원)</label><input id="e-price" type="number" inputmode="numeric" value="${it.price!=null?it.price:''}"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>구매일</label><input type="date" id="e-buy" value="${it.buy||''}"></div>
+      <div class="fld"><label>결제</label><select id="e-pay"><option value=""></option>${pays.map(s=>opt(s,it.pay)).join('')}</select></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>도착일</label><input type="date" id="e-arrive" value="${it.arrive||''}"></div>
+      <div class="fld"><label>판매/교환가 (원)</label><input id="e-sell" type="number" inputmode="numeric" value="${it.sellPrice!=null?it.sellPrice:''}"></div>
+    </div>
+    <div class="fld"><label>장르</label><input id="e-genre" value="${(it.genre||'').replace(/"/g,'&quot;')}" placeholder="예: 가요, R&B/소울"></div>
+    <div class="fld"><label>비고</label><input id="e-note" value="${(it.note||'').replace(/"/g,'&quot;')}"></div>
+    <button class="act-btn solid" id="e-save">저장</button>`;
+  setupColorField('e');
+  $('#e-save').onclick=()=>{
+    const oldKey=artKey(it.artist,it.album);
+    it.artist=$('#e-artist').value.trim();
+    it.album=$('#e-album').value.trim();
+    it.color=$('#e-color').value.trim();
+    it.status=$('#e-status').value;
+    it.store=$('#e-store').value.trim();
+    it.price=Number($('#e-price').value)||null;
+    it.buy=$('#e-buy').value||null;
+    it.pay=$('#e-pay').value;
+    it.arrive=$('#e-arrive').value||null;
+    it.sellPrice=Number($('#e-sell').value)||null;
+    if(it.sellPrice!=null && it.price!=null) it.profit=it.sellPrice-it.price;
+    it.note=$('#e-note').value.trim();
+    it.genre=$('#e-genre').value.trim();
+    // if title/artist changed, migrate any chosen cover
+    const newKey=artKey(it.artist,it.album);
+    if(oldKey!==newKey && pickedArt[oldKey]){ pickedArt[newKey]=pickedArt[oldKey]; artCache[newKey]=pickedArt[oldKey]; }
+    persistFull(it);
+    hide('detail');
+    renderChips();renderGrid();renderStats();buildCoverFlow();refreshGenreChips();
+  };
+}
+
+// 바이닐 꾸미기 (Pro 전용): 판 색상 + 투명도 세부 조정, 저장 즉시 반영
+function openVinylDecorate(it){
+  const box=$('#dt-inline');
+  if(!IS_PRO){
+    box.innerHTML=`
+      <div class="pro-lock">
+        <div class="pro-badge">PRO</div>
+        <div class="pro-title">바이닐 꾸미기는 Pro 전용 기능이에요</div>
+        <div class="pro-desc">바이닐 판의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.</div>
+        <button class="act-btn solid" id="pro-upgrade">Pro 멤버십 알아보기</button>
+        <button class="pro-demo" id="pro-demo">(데모: Pro 켜기)</button>
+      </div>`;
+    $('#pro-upgrade').onclick=()=>alert('결제 연동은 준비 중이에요. 곧 만나요!');
+    $('#pro-demo').onclick=()=>{ IS_PRO=true; try{localStorage.setItem('lp_pro','1');}catch(e){} openVinylDecorate(it); };
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+  const curCol = it.discColorCustom || discColor(it.color);
+  const curOp = (it.discOpacity!=null) ? it.discOpacity : 1;
+  box.innerHTML=`
+    <div class="inl-title">🎨 바이닐 꾸미기 <span class="pro-badge sm">PRO</span></div>
+    <div class="vd-tabs">
+      <button class="vd-tab on" data-tab="color">색상</button>
+      <button class="vd-tab" data-tab="photo">사진</button>
+    </div>
+    <div class="vd-pane" id="vd-pane-color">
+      <div class="vd-preview"><div class="disc" id="vd-disc" style="--disc:${curCol};opacity:${curOp}"></div></div>
+      <div class="fld"><label>판 색상</label>
+        <div class="colorfield">
+          <span class="color-dot" id="vd-dot" style="background:${curCol}"></span>
+          <input type="color" id="vd-color" value="${toHex(curCol)}" style="flex:1;height:42px;padding:3px;cursor:pointer">
+        </div>
+      </div>
+      <div class="fld"><label>투명도 <span id="vd-oplab" style="color:var(--accent2)">${Math.round(curOp*100)}%</span></label>
+        <input type="range" id="vd-op" min="20" max="100" value="${Math.round(curOp*100)}" class="vd-range">
+      </div>
+      <button class="act-btn solid" id="vd-save">저장</button>
+      <button class="act-btn" id="vd-reset" style="margin-top:8px">기본값으로 되돌리기</button>
+    </div>
+    <div class="vd-pane" id="vd-pane-photo" style="display:none">
+      <div class="vd-photodesc">레코드판 모양 가이드 안에 사진이 들어가요. 사진을 끌어 위치를 옮기고, 슬라이더로 크기를 맞춰보세요.</div>
+      <div class="vd-stage" id="vd-stage">
+        <div class="vd-imgwrap" id="vd-imgwrap"></div>
+        <div class="vd-guide"></div>
+        <div class="vd-guide-label" id="vd-guide-label">사진을 올려주세요</div>
+      </div>
+      <label class="pk-up" style="margin-top:12px">📷 사진 올리기<input type="file" accept="image/*" id="vd-file" hidden></label>
+      <div class="fld" style="margin-top:12px"><label>크기 <span id="vd-zoomlab" style="color:var(--accent2)">100%</span></label>
+        <input type="range" id="vd-zoom" min="50" max="250" value="100" class="vd-range" disabled>
+      </div>
+      <button class="act-btn solid" id="vd-photo-save" disabled>이 사진으로 저장</button>
+      <button class="act-btn" id="vd-photo-reset" style="margin-top:8px">사진 제거</button>
+    </div>`;
+
+  // ---- tabs ----
+  box.querySelectorAll('.vd-tab').forEach(t=>t.onclick=()=>{
+    box.querySelectorAll('.vd-tab').forEach(x=>x.classList.toggle('on',x===t));
+    $('#vd-pane-color').style.display = t.dataset.tab==='color'?'':'none';
+    $('#vd-pane-photo').style.display = t.dataset.tab==='photo'?'':'none';
+  });
+
+  // ---- color tab ----
+  const disc=$('#vd-disc');
+  const apply=()=>{
+    const c=$('#vd-color').value; const o=$('#vd-op').value/100;
+    disc.style.setProperty('--disc',c); disc.style.opacity=o;
+    $('#vd-dot').style.background=c; $('#vd-oplab').textContent=Math.round(o*100)+'%';
+  };
+  $('#vd-color').oninput=apply;
+  $('#vd-op').oninput=apply;
+  $('#vd-save').onclick=()=>{
+    it.discColorCustom=$('#vd-color').value;
+    it.discOpacity=$('#vd-op').value/100;
+    it.discPhoto=null;   // color overrides photo
+    persistFull(it);
+    hide('detail');
+    renderGrid();buildCoverFlow();
+  };
+  $('#vd-reset').onclick=()=>{
+    it.discColorCustom=null; it.discOpacity=null; it.discPhoto=null;
+    persistFull(it);
+    hide('detail');
+    renderGrid();buildCoverFlow();
+  };
+
+  // ---- photo tab: drag to move, slider to zoom, crop to circle on save ----
+  const stage=$('#vd-stage'), imgwrap=$('#vd-imgwrap'), zoom=$('#vd-zoom');
+  let vimg=null, vx=0, vy=0, vscale=1, baseW=0, baseH=0;
+  function renderImg(){
+    if(!vimg) return;
+    imgwrap.innerHTML='';
+    const im=document.createElement('img');
+    im.src=vimg; im.className='vd-img';
+    im.style.transform=`translate(-50%,-50%) translate(${vx}px,${vy}px) scale(${vscale})`;
+    imgwrap.appendChild(im);
+    imgwrap._im=im;
+  }
+  function place(){
+    const im=imgwrap._im; if(!im)return;
+    im.style.transform=`translate(-50%,-50%) translate(${vx}px,${vy}px) scale(${vscale})`;
+  }
+  $('#vd-file').onchange=async e=>{
+    const f=e.target.files[0]; if(!f)return;
+    try{
+      vimg=await fileToDataURL(f, 1000);
+      vx=0; vy=0; vscale=1; zoom.value=100; zoom.disabled=false;
+      $('#vd-zoomlab').textContent='100%';
+      $('#vd-guide-label').style.display='none';
+      $('#vd-photo-save').disabled=false;
+      renderImg();
+    }catch(err){ alert('이미지를 불러오지 못했어요'); }
+  };
+  zoom.oninput=()=>{ vscale=zoom.value/100; $('#vd-zoomlab').textContent=zoom.value+'%'; place(); };
+  // drag (1 finger) + pinch-zoom (2 fingers)
+  let drag=false,sx=0,sy=0,ox=0,oy=0;
+  let pinch=false,pinchD0=0,pinchScale0=1;
+  const dStart=(x,y)=>{ if(!vimg)return; drag=true;sx=x;sy=y;ox=vx;oy=vy; };
+  const dMove=(x,y)=>{ if(!drag)return; vx=ox+(x-sx); vy=oy+(y-sy); place(); };
+  const dEnd=()=>{ drag=false; };
+  const dist=(t)=>Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
+  stage.addEventListener('touchstart',e=>{
+    if(!vimg) return;
+    if(e.touches.length>=2){ pinch=true; drag=false; pinchD0=dist(e.touches); pinchScale0=vscale; }
+    else dStart(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:true});
+  stage.addEventListener('touchmove',e=>{
+    if(!vimg) return;
+    if(pinch && e.touches.length>=2){
+      e.preventDefault();
+      const ratio=dist(e.touches)/(pinchD0||1);
+      vscale=Math.min(2.5, Math.max(0.5, pinchScale0*ratio));
+      zoom.value=Math.round(vscale*100); $('#vd-zoomlab').textContent=Math.round(vscale*100)+'%';
+      place();
+    } else if(drag){ e.preventDefault(); dMove(e.touches[0].clientX,e.touches[0].clientY); }
+  },{passive:false});
+  stage.addEventListener('touchend',e=>{ if(e.touches.length<2){ pinch=false; } if(e.touches.length===0){ dEnd(); } });
+  stage.addEventListener('mousedown',e=>{ dStart(e.clientX,e.clientY);
+    const mm=ev=>dMove(ev.clientX,ev.clientY), mu=()=>{dEnd();window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+    window.addEventListener('mousemove',mm);window.addEventListener('mouseup',mu); });
+  // wheel zoom on desktop
+  stage.addEventListener('wheel',e=>{ if(!vimg)return; e.preventDefault();
+    vscale=Math.min(2.5,Math.max(0.5, vscale*(e.deltaY<0?1.06:0.94)));
+    zoom.value=Math.round(vscale*100); $('#vd-zoomlab').textContent=Math.round(vscale*100)+'%'; place();
+  },{passive:false});
+  // if already has a photo, preload it
+  if(it.discPhoto){ vimg=it.discPhoto; zoom.disabled=false; $('#vd-photo-save').disabled=false; $('#vd-guide-label').style.display='none'; renderImg(); }
+
+  $('#vd-photo-save').onclick=async ()=>{
+    if(!vimg){ alert('사진을 먼저 올려주세요'); return; }
+    // render the visible circle region to a square canvas, masked to a circle
+    const cropped=await cropToVinyl(imgwrap._im, stage);
+    let url=cropped; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(cropped),'jpg'); }catch(up){}
+    it.discPhoto=url;
+    it.discColorCustom=null; it.discOpacity=null;   // photo overrides color
+    persistFull(it);
+    hide('detail');
+    renderGrid();buildCoverFlow();
+  };
+  $('#vd-photo-reset').onclick=()=>{
+    it.discPhoto=null; persistFull(it);
+    hide('detail'); renderGrid();buildCoverFlow();
+  };
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+// normalize a CSS color (hex or rgb) to #rrggbb for <input type=color>
+function toHex(c){
+  if(!c) return '#1a1a1a';
+  if(c[0]==='#'){ return c.length===4 ? '#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3] : c.slice(0,7); }
+  const m=c.match(/\d+/g); if(!m) return '#1a1a1a';
+  return '#'+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join('');
+}
+// crop the visible square stage region to a circular vinyl image
+function cropToVinyl(imgEl, stageEl){
+  return new Promise((res)=>{
+    const rect=stageEl.getBoundingClientRect();
+    const S=300;                         // output size (smaller = less storage)
+    const scale=S/rect.width;            // stage px -> canvas px
+    const c=document.createElement('canvas'); c.width=S; c.height=S;
+    const ctx=c.getContext('2d');
+    // circular clip
+    ctx.save();
+    ctx.beginPath(); ctx.arc(S/2,S/2,S/2,0,Math.PI*2); ctx.clip();
+    // draw the image as currently positioned within the stage
+    const ir=imgEl.getBoundingClientRect();
+    const dx=(ir.left-rect.left)*scale, dy=(ir.top-rect.top)*scale;
+    const dw=ir.width*scale, dh=ir.height*scale;
+    ctx.drawImage(imgEl, dx, dy, dw, dh);
+    ctx.restore();
+    // subtle vinyl sheen + center label on top so it still reads as a record
+    const g=ctx.createRadialGradient(S*0.4,S*0.35,0,S/2,S/2,S/2);
+    g.addColorStop(0,'rgba(255,255,255,.12)'); g.addColorStop(.4,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(0,0,0,.25)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(S/2,S/2,S/2,0,Math.PI*2); ctx.fill();
+    // center label hole
+    ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.arc(S/2,S/2,S*0.12,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#d8d3cb'; ctx.beginPath(); ctx.arc(S/2,S/2,S*0.025,0,Math.PI*2); ctx.fill();
+    res(c.toDataURL('image/jpeg',0.85));
+  });
+}
+
+// 배송완료: pick arrival date (or skip) + opened/sealed, then move to 보유중
+function showArriveForm(it){
+  const today=new Date().toISOString().slice(0,10);
+  $('#dt-inline').innerHTML=`
+    <div class="inl-title">배송완료 처리</div>
+    <label class="inl-check"><input type="checkbox" id="inl-nodate"> 도착일 입력 생략</label>
+    <div class="fld" id="inl-datewrap"><label>도착일</label><input type="date" id="inl-arrive" value="${today}"></div>
+    <div class="fld"><label>상태</label><select id="inl-open"><option>미개봉</option><option>개봉</option></select></div>
+    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
+  $('#inl-nodate').onchange=e=>{ $('#inl-datewrap').style.display=e.target.checked?'none':''; };
+  $('#inl-save').onclick=()=>{
+    it.arrive=$('#inl-nodate').checked?null:($('#inl-arrive').value||null);
+    it.status=$('#inl-open').value;
+    persistItem(it);
+    hide('detail');
+    renderChips();renderGrid();renderStats();buildCoverFlow();
+  };
+}
+
+// 구매완료: fill purchase fields, then move to 보유중
+function showBuyForm(it){
+  const today=new Date().toISOString().slice(0,10);
+  $('#dt-inline').innerHTML=`
+    <div class="inl-title">구매완료 처리</div>
+    <div class="row2">
+      <div class="fld"><label>구매처</label><input id="inl-store" placeholder="yes24"></div>
+      <div class="fld"><label>단가 (원)</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>구매일</label><input type="date" id="inl-buy" value="${today}"></div>
+      <div class="fld"><label>결제</label><select id="inl-pay"><option>카드</option><option>현금</option><option>복지포인트</option><option>선물</option></select></div>
+    </div>
+    <div class="fld"><label>상태</label><select id="inl-open"><option>미개봉</option><option>개봉</option><option>배송전</option></select></div>
+    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
+  $('#inl-save').onclick=()=>{
+    it.store=$('#inl-store').value.trim();
+    it.price=Number($('#inl-price').value)||null;
+    if(it.orig==null) it.orig=it.price;
+    it.buy=$('#inl-buy').value||today;
+    it.pay=$('#inl-pay').value;
+    it.status=$('#inl-open').value;
+    persistItem(it);
+    hide('detail');
+    renderChips();renderGrid();renderStats();buildCoverFlow();
+  };
+}
+
+// save changes for an item (added items -> localStorage; seed edits -> overrides store)
+function persistItem(it){ cloudSaveItem(it); }
+// save ALL editable fields (used by 정보 수정)
+function persistFull(it){ cloudSaveItem(it); }
+
+// apply a chosen cover (from search, upload, or url) to an item everywhere
+function applyCover(it, url){
+  const key=artKey(it.artist,it.album);
+  pickedArt[key]=url; it._art=url; it.cover=url; artCache[key]=url;
+  cloudSaveItem(it);
+  const dimg=$('#dt-art').querySelector('img');
+  if(dimg) dimg.src=url;
+  else $('#dt-art').insertAdjacentHTML('afterbegin',`<img src="${url}">`);
+  const gi=document.querySelector(`img[data-art="${it.id}"]`);
+  if(gi){gi.src=url;gi.classList.add('ld');}
+  const ci=document.querySelector(`img[data-cf="${it.id}"]`);
+  if(ci){ci.src=url; if(ci.previousElementSibling)ci.previousElementSibling.style.display='none';}
+}
+
+// downscale an uploaded image to keep localStorage small, return dataURL
+function fileToDataURL(file, max=600){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      const im=new Image();
+      im.onload=()=>{
+        let{width:w,height:h}=im;
+        const sc=Math.min(1,max/Math.max(w,h));
+        const c=document.createElement('canvas');
+        c.width=Math.round(w*sc);c.height=Math.round(h*sc);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',0.85));
+      };
+      im.onerror=rej; im.src=r.result;
+    };
+    r.onerror=rej; r.readAsDataURL(file);
+  });
+}
+
+// show candidate grid inside detail; also offer upload + url
+async function openCoverPicker(it){
+  const box=$('#dt-picker');
+  box.classList.add('show');
+  const manual=`
+    <div class="pk-manual">
+      <label class="pk-up">📷 사진에서 직접 올리기
+        <input type="file" accept="image/*" id="pk-file" hidden>
+      </label>
+      <div class="pk-url">
+        <input id="pk-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
+        <button id="pk-urlbtn">적용</button>
+      </div>
+    </div>`;
+  box.innerHTML='<div class="pk-title">앨범아트 검색 중…</div>'+manual;
+  const cands=await fetchCandidates(it.artist,it.album);
+  const head = cands.length ? '<div class="pk-title">맞는 커버를 선택하거나, 직접 올리세요</div>'
+                            : '<div class="pk-title">검색 결과가 없어요 — 직접 올려보세요</div>';
+  const grid = cands.length ? '<div class="pk-grid">'+
+    cands.map((c,i)=>`<div class="pk-item" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('')+'</div>' : '';
+  box.innerHTML=head+grid+manual;
+
+  box.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
+    applyCover(it, cands[+el.dataset.i].img);
+    box.classList.remove('show'); box.innerHTML='';
+  });
+  $('#pk-file').onchange=async e=>{
+    const f=e.target.files[0]; if(!f)return;
+    try{
+      const u=await fileToDataURL(f);
+      let url=u; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); }catch(up){}
+      applyCover(it,url); box.classList.remove('show'); box.innerHTML='';
+    }catch(err){alert('이미지를 불러오지 못했어요');}
+  };
+  $('#pk-urlbtn').onclick=()=>{
+    const u=$('#pk-urlin').value.trim();
+    if(!u){return;}
+    applyCover(it,u); box.classList.remove('show'); box.innerHTML='';
+  };
+}
+
+/* ---------- sheets ---------- */
+function show(name){$('#ov-'+name).classList.add('show');$('#sheet-'+name).classList.add('show');
+  const s=$('#sheet-'+name); s.style.transition='';s.style.transform='';}
+function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
+  const s=$('#sheet-'+name); s.style.transform='';}
+$('#ov-detail').onclick=()=>hide('detail');
+$('#ov-add').onclick=()=>hide('add');
+// close (X) buttons
+document.querySelectorAll('.sheet-x').forEach(b=>b.onclick=()=>hide(b.dataset.close));
+// swipe-down to dismiss (drag from the grab handle / top area)
+function enableSwipeClose(name){
+  const sheet=$('#sheet-'+name);
+  const handle=$('#grab-'+name);
+  let y0=null,dy=0,drag=false;
+  const startY=y=>{ if(sheet.scrollTop>2)return; drag=true;y0=y;dy=0;sheet.style.transition='none'; };
+  const moveY=y=>{ if(!drag)return; dy=y-y0; if(dy<0)dy=0;
+    sheet.style.transform=`translateX(-50%) translateY(${dy}px)`; };
+  const endY=()=>{ if(!drag)return; drag=false; sheet.style.transition='';
+    if(dy>110){ sheet.style.transform=`translateX(-50%) translateY(100%)`; setTimeout(()=>hide(name),200); }
+    else sheet.style.transform=''; };
+  // dragging anywhere on the handle, or on the sheet when scrolled to top
+  [handle,sheet].forEach(el=>{
+    el.addEventListener('touchstart',e=>startY(e.touches[0].clientY),{passive:true});
+    el.addEventListener('touchmove',e=>{ if(drag&&dy>0)e.preventDefault(); moveY(e.touches[0].clientY); },{passive:false});
+    el.addEventListener('touchend',endY);
+  });
+  // mouse (desktop) on handle only
+  handle.addEventListener('mousedown',e=>{startY(e.clientY);
+    const mm=ev=>moveY(ev.clientY), mu=()=>{endY();window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
+    window.addEventListener('mousemove',mm);window.addEventListener('mouseup',mu);});
+}
+enableSwipeClose('detail');
+enableSwipeClose('add');
+
+/* ---------- add form ---------- */
+let prevTimer;
+function schedulePreview(){
+  clearTimeout(prevTimer);
+  prevTimer=setTimeout(async()=>{
+    const ar=$('#f-artist').value.trim(), al=$('#f-album').value.trim();
+    if(!ar&&!al)return;
+    $('#f-searching').style.display='block';
+    const cands=await fetchCandidates(ar,al);
+    $('#f-searching').style.display='none';
+    const box=$('#f-cands');
+    if(cands.length){
+      // default-select the first candidate
+      $('#pa-prev').innerHTML=`<img src="${cands[0].img}">`;
+      $('#pa-prev').dataset.url=cands[0].img;
+      $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 걸 선택하세요`:'앨범아트를 찾았어요 ✓';
+      box.classList.add('show');
+      box.innerHTML=cands.map((c,i)=>`<div class="pk-item ${i===0?'sel':''}" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('');
+      box.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
+        box.querySelectorAll('.pk-item').forEach(x=>x.classList.remove('sel'));
+        el.classList.add('sel');
+        const c=cands[+el.dataset.i];
+        $('#pa-prev').innerHTML=`<img src="${c.img}">`;
+        $('#pa-prev').dataset.url=c.img;
+        $('#pt-prev').textContent='이 커버로 저장돼요 ✓';
+      });
+    }else{
+      $('#pa-prev').textContent='art';$('#pa-prev').dataset.url='';
+      $('#pt-prev').textContent='앨범아트를 찾지 못했어요';
+      box.classList.remove('show');box.innerHTML='';
+    }
+  },550);
+}
+$('#f-artist').oninput=schedulePreview;
+$('#f-album').oninput=schedulePreview;
+
+function setPrevImg(url, msg){
+  $('#pa-prev').innerHTML=`<img src="${url}">`;
+  $('#pa-prev').dataset.url=url;
+  $('#pt-prev').textContent=msg||'이 커버로 저장돼요 ✓';
+  $('#f-cands').classList.remove('show');
+  $('#f-cands').querySelectorAll('.pk-item').forEach(x=>x.classList.remove('sel'));
+}
+$('#f-file').onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    const u=await fileToDataURL(f);
+    setPrevImg(u,'업로드 중…');
+    try{ const url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); setPrevImg(url,'올린 사진으로 저장돼요 ✓'); }
+    catch(up){ setPrevImg(u,'사진 준비됨 ✓'); }
+  }catch(err){alert('이미지를 불러오지 못했어요');}
+};
+$('#f-urlbtn').onclick=()=>{
+  const u=$('#f-urlin').value.trim(); if(!u)return;
+  setPrevImg(u,'입력한 이미지로 저장돼요 ✓');
+};
+
+function toggleBuyFields(){
+  const wish=$('#f-status').value==='위시';
+  document.querySelectorAll('#sheet-add .buyonly').forEach(el=>el.style.display=wish?'none':'');
+  // in wish mode, the status field is fixed to 위시 and hidden (no need to choose)
+  const sf=$('#f-status-fld'); if(sf) sf.style.display=wish?'none':'';
+}
+function openAdd(initStatus){
+  ['f-artist','f-album','f-color','f-store','f-price','f-note','f-urlin'].forEach(i=>$('#'+i).value='');
+  $('#f-file').value='';
+  $('#f-status').value=initStatus||'미개봉';
+  const wish=(initStatus==='위시');
+  $('#sheet-add .form h2').textContent=wish?'위시 추가':'LP 추가';
+  $('#sheet-add .fhint').style.display=wish?'none':'';
+  $('#f-buy').value=new Date().toISOString().slice(0,10);
+  $('#pa-prev').innerHTML='art';$('#pa-prev').dataset.url='';$('#pt-prev').textContent='가수·앨범 입력 후 미리보기';
+  $('#f-cands').classList.remove('show');$('#f-cands').innerHTML='';
+  setupColorField('f');
+  toggleBuyFields();
+  show('add');
+}
+$('#f-status').onchange=toggleBuyFields;
+$('#fab').onclick=()=>openAdd(filter.chip==='위시'?'위시':undefined);
+$('#add-cancel').onclick=()=>hide('add');
+$('#add-save').onclick=()=>{
+  const ar=$('#f-artist').value.trim(), al=$('#f-album').value.trim();
+  if(!ar&&!al){alert('가수 또는 앨범명을 입력해주세요');return;}
+  const url=$('#pa-prev').dataset.url||'';
+  const wish=$('#f-status').value==='위시';
+  const it={
+    id:'u'+Date.now(), no:DATA.length+1,
+    artist:ar, album:al,
+    color:$('#f-color').value.trim(),
+    store:wish?'':$('#f-store').value.trim(),
+    price:wish?null:(Number($('#f-price').value)||null),
+    orig:wish?null:(Number($('#f-price').value)||null),
+    pay:wish?'':$('#f-pay').value,
+    buy:wish?null:$('#f-buy').value, arrive:null,
+    status:$('#f-status').value, sellDate:null, sellPrice:null, profit:null,
+    rating:0, note:$('#f-note').value.trim(), _art:url
+  };
+  if(url){artCache[artKey(ar,al)]=url; pickedArt[artKey(ar,al)]=url; it.cover=url;}
+  DATA.unshift(it);
+  cloudSaveItem(it);
+  hide('add');
+  filter={q:'',chip:wish?'위시':'전체',sub:'',sort:'default'};
+  $('#q').value='';if($('#sort'))$('#sort').value='default';
+  // make sure we're on the collection view so the result is visible
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.v==='coll'));
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  $('#view-coll').classList.add('on');
+  renderChips();renderGrid();renderStats();buildCoverFlow();
+  window.scrollTo(0,0);
+};
+
+/* ---------- persist (in-memory + attempt localStorage) ---------- */
+const ratings={};  // key -> 0..5  (for seed items)
+const genres={};   // ratingKey -> genre (for seed items)
+const likes={};    // ratingKey -> bool (for seed items)
+const seedEdits={}; // seed id -> {status,arrive,store,price,orig,buy,pay} edits
+function ratingKey(it){ return (it.artist+'|'+it.album+'|'+(it.color||'')).toLowerCase(); }
+function saveRating(it){ cloudSaveItem(it); }
+function saveLiked(it){ cloudSaveItem(it); }
+function saveGenre(it){ cloudSaveItem(it); }
+function saveLocal(){ /* 클라우드 모드: 항목별 저장(cloudSaveItem)이 영속성을 담당 */ }
+// 변경된 LP 한 장을 Firebase에 저장 (로그인 모듈이 window.LPCloud를 제공)
+function cloudSaveItem(it){ if(window.LPCloud && window.LPCloud.saveItem) window.LPCloud.saveItem(it); }
+function loadLocal(){
+  try{
+    const picks=JSON.parse(localStorage.getItem('lp_picks')||'{}');
+    Object.assign(pickedArt,picks);
+    Object.keys(picks).forEach(k=>artCache[k]=picks[k]);
+    Object.assign(ratings, JSON.parse(localStorage.getItem('lp_ratings')||'{}'));
+    Object.assign(genres, JSON.parse(localStorage.getItem('lp_genres')||'{}'));
+    Object.assign(likes, JSON.parse(localStorage.getItem('lp_likes')||'{}'));
+    Object.assign(seedEdits, JSON.parse(localStorage.getItem('lp_seededits')||'{}'));
+    const ext=JSON.parse(localStorage.getItem('lp_added')||'[]');
+    if(ext.length){DATA=[...ext,...DATA];ext.forEach(it=>{if(it._art)artCache[artKey(it.artist,it.album)]=it._art;});}
+    // apply chosen covers + saved ratings + genres + seed edits to seed items
+    DATA.forEach(it=>{
+      const k=artKey(it.artist,it.album);if(pickedArt[k])it._art=pickedArt[k];
+      if(it.rating==null){ const rk=ratingKey(it); if(ratings[rk]!=null) it.rating=ratings[rk]; }
+      if(!it.genre){ const rk=ratingKey(it); if(genres[rk]) it.genre=genres[rk]; }
+      { const rk=ratingKey(it); if(it.liked==null && likes[rk]!=null) it.liked=likes[rk]; }
+      if(seedEdits[it.id]) Object.assign(it, seedEdits[it.id]);
+    });
+  }catch(e){}
+}
+
+/* ---------- calendar ---------- */
+let calYear, calMonth;   // current view (month is 0-based)
+function artFor(it){ return it._art || pickedArt[artKey(it.artist,it.album)] || artCache[artKey(it.artist,it.album)] || null; }
+// collect date-events: {date:'YYYY-MM-DD', kind:'arrive'|'buy'|'sold'|'open', it}
+function calEvents(){
+  const ev=[];
+  DATA.forEach(it=>{
+    if(statusGroup(it.status)==='위시') return;
+    const g=statusGroup(it.status);
+    // 판매일 → 흑백
+    if(it.status==='판매' && it.sellDate) ev.push({date:it.sellDate, kind:'sold', it});
+    // 도착일 → 원본 (도착했으면 구매일은 생략, 도착이 대표)
+    if(it.arrive) ev.push({date:it.arrive, kind:'arrive', it});
+    // 구매일: 도착 전(배송중)이면 투명 60%, 도착일이 없을 때만 구매일로 표기
+    if(it.buy && !it.arrive){
+      ev.push({date:it.buy, kind: g==='배송전' ? 'buy' : 'arrive', it});
+    }
+    // 개봉 → CD판 (개봉 상태인 항목을, 도착일 기준으로 'open' 마킹)
+    if(it.status==='개봉'){
+      const od=it.arrive||it.buy;
+      if(od) ev.push({date:od, kind:'open', it});
+    }
+  });
+  return ev;
+}
+function renderCal(){
+  const now=new Date();
+  if(calYear==null){ calYear=now.getFullYear(); calMonth=now.getMonth(); }
+  const first=new Date(calYear, calMonth, 1);
+  const startDow=first.getDay();
+  const daysInMonth=new Date(calYear, calMonth+1, 0).getDate();
+  $('#cal-title').textContent=`${calYear}년 ${calMonth+1}월`;
+  // index events for this month by day
+  const ev=calEvents().filter(e=>{ const d=new Date(e.date); return d.getFullYear()===calYear && d.getMonth()===calMonth; });
+  const byDay={};
+  ev.forEach(e=>{ const day=new Date(e.date).getDate(); (byDay[day]=byDay[day]||[]).push(e); });
+  const dows=['일','월','화','수','목','금','토'];
+  $('#cal-dows').innerHTML=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  let html='';
+  const todayStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const items=byDay[d]||[];
+    const isToday = dateStr===todayStr;
+    let inner='';
+    if(items.length){
+      // priority for the visible tile: open(CD) > sold > arrive > buy
+      const order={open:0,sold:1,arrive:2,buy:3};
+      const top=[...items].sort((a,b)=>order[a.kind]-order[b.kind])[0];
+      const art=artFor(top.it);
+      if(top.kind==='open'){
+        inner=`<div class="ph-cd" style="--disc:${discColor(top.it.color)}"></div>`;
+      } else if(art){
+        const cls = top.kind==='buy'?'ph-buy' : top.kind==='sold'?'ph-sold' : '';
+        inner=`<img class="ph-img ${cls}" src="${art}" alt="">`;
+      } else {
+        const cls = top.kind==='buy'?'ph-buy':top.kind==='sold'?'ph-sold':'';
+        inner=`<div class="ph-img ${cls}" style="background:${discColor(top.it.color)};opacity:${top.kind==='buy'?.6:1}"></div>`;
+      }
+      if(items.length>1) inner+=`<span class="multi">+${items.length-1}</span>`;
+    }
+    html+=`<div class="cal-cell ${isToday?'today':''}" data-date="${dateStr}" ${d===1?`style="grid-column-start:${startDow+1}"`:''}>${inner}<span class="dnum">${d}</span></div>`;
+  }
+  $('#cal-grid').innerHTML=html;
+  $('#cal-empty').textContent = ev.length ? '' : '이 달엔 기록이 없어요';
+  // tap a day with events -> open the first item's detail
+  $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
+    const items=byDay[+cell.dataset.date.slice(-2)]||[];
+    if(items.length) cell.onclick=()=>openDetail(items[0].it.id);
+  });
+}
+
+/* ---------- stats ---------- */
+function renderStats(){
+  const real=DATA.filter(d=>statusGroup(d.status)!=='위시');   // 위시 제외
+  const owned=DATA.filter(d=>statusGroup(d.status)==='보유중');
+  const sold=DATA.filter(d=>d.status==='판매');
+  const soldExch=DATA.filter(d=>statusGroup(d.status)==='판매·교환');
+  const ship=DATA.filter(d=>statusGroup(d.status)==='배송전').length;
+  const opened=DATA.filter(d=>d.status==='개봉').length;
+  const sealed=DATA.filter(d=>d.status==='미개봉').length;
+  const wish=DATA.filter(d=>statusGroup(d.status)==='위시').length;
+  const totalBuy=real.reduce((s,d)=>s+(d.price||0),0);                 // 총 구매가(위시 제외)
+  const totalSell=sold.reduce((s,d)=>s+(d.sellPrice||0),0);            // 총 판매가
+  const profit=sold.reduce((s,d)=>s+(d.profit||0),0);                  // 총 판매 차익
+  $('#stats2').innerHTML=`
+    <div class="stat"><div class="lab">보유 중</div><div class="val">${owned.length}<span style="font-size:14px;color:var(--muted)">장</span></div><div class="deco">♪</div></div>
+    <div class="stat"><div class="lab">판매·교환</div><div class="val">${soldExch.length}<span style="font-size:14px;color:var(--muted)">장</span></div><div class="deco">↻</div></div>
+    <div class="stat"><div class="lab">총 구매가</div><div class="val sm">${won(totalBuy)}</div></div>
+    <div class="stat"><div class="lab">총 판매가</div><div class="val sm">${won(totalSell)}</div></div>
+    <div class="stat ${profit>=0?'pos':''}" style="grid-column:1/-1"><div class="lab">총 판매 차익</div><div class="val sm">${profit>=0?'+':''}${won(profit)}</div></div>`;
+  $('#hsub').innerHTML=`총 <b>${real.length}</b>장<span class="sep">·</span>보유 <b>${owned.length}</b><span class="sep">·</span>개봉 <b>${opened}</b><span class="sep">·</span>미개봉 <b>${sealed}</b>`;
+
+  // color breakdown
+  const byColor={};DATA.forEach(d=>{const c=(d.color||'기타').split(' ')[0];byColor[c]=(byColor[c]||0)+1;});
+  const top=Object.entries(byColor).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const byStore={};DATA.forEach(d=>{if(d.store){byStore[d.store]=(byStore[d.store]||0)+1;}});
+  const tStore=Object.entries(byStore).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  // rating breakdown (only albums that have a rating)
+  const rated=DATA.filter(d=>d.rating>0);
+  const avg = rated.length ? (rated.reduce((s,d)=>s+d.rating,0)/rated.length) : 0;
+  // buckets from 5.0 down to 0.5
+  const buckets=[];
+  for(let v=5; v>=0.5; v-=0.5){
+    const items=rated.filter(d=>d.rating===v);
+    if(items.length) buckets.push([v,items]);
+  }
+  const ratingHTML = rated.length ? `
+    <div style="font-weight:700;color:var(--txt);margin-bottom:8px">별점 통계</div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
+      <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;color:var(--accent2)">${avg.toFixed(1)}</span>
+      <span style="color:var(--muted);font-size:12px">평균 · 평가한 앨범 ${rated.length}장</span>
+    </div>
+    ${buckets.map(([v,items],bi)=>`
+      <div style="margin:8px 0">
+        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;gap:8px;margin-bottom:3px;cursor:pointer">
+          <span style="color:#f2b84a;font-size:12px;min-width:42px">${'★'.repeat(Math.floor(v))}${v%1?'½':''}</span>
+          <span style="flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:${Math.round(items.length/rated.length*100)}%;background:linear-gradient(90deg,var(--accent2),var(--accent))"></span></span>
+          <b style="color:var(--txt);font-size:12px;min-width:18px;text-align:right">${items.length}</b>
+          <span style="color:var(--dim);font-size:11px">▸</span>
+        </div>
+        <div style="display:none;font-size:11.5px;color:var(--muted);padding:6px 0 4px 50px;line-height:1.7">${items.map(d=>`${d.album||'—'} <span style="color:var(--dim)">· ${d.artist||''}</span>`).join('<br>')}</div>
+      </div>`).join('')}
+    <div style="height:1px;background:var(--line);margin:14px 0"></div>` : '';
+
+  $('#bigstats').innerHTML=ratingHTML+`
+    <div style="font-weight:700;color:var(--txt);margin-bottom:8px">컬러 분포</div>
+    ${top.map(([c,n])=>`<div style="display:flex;align-items:center;gap:8px;margin:5px 0"><span style="width:11px;height:11px;border-radius:50%;background:${swatch(c)}"></span><span style="flex:1">${c}</span><b style="color:var(--txt)">${n}</b></div>`).join('')}
+    <div style="font-weight:700;color:var(--txt);margin:14px 0 8px">주요 구매처</div>
+    ${tStore.map(([c,n])=>`<div style="display:flex;justify-content:space-between;margin:5px 0"><span>${c}</span><b style="color:var(--txt)">${n}</b></div>`).join('')}`;
+}
+
+/* ---------- nav ---------- */
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
+  const v=b.dataset.v;
+  if(v==='add-trigger'){openAdd();return;}
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  $('#view-'+v).classList.add('on');
+  if(v==='stats') renderStats();   // refresh stats (ratings may have changed)
+  if(v==='cal') renderCal();
+  window.scrollTo(0,0);
+});
+
+$('#q').oninput=e=>{filter.q=e.target.value;renderGrid();};
+$('#sort').onchange=e=>{filter.sort=e.target.value;renderGrid();};
+$('#genre').onchange=e=>{filter.genre=e.target.value;renderGrid();};
+$('#view-grid-btn').onclick=()=>{filter.view='grid';$('#view-grid-btn').classList.add('on');$('#view-list-btn').classList.remove('on');renderGrid();};
+$('#view-list-btn').onclick=()=>{filter.view='list';$('#view-list-btn').classList.add('on');$('#view-grid-btn').classList.remove('on');renderGrid();};
+$('#cal-prev').onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); };
+$('#cal-next').onclick=()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); };
+
+// rebuild the genre dropdown from genres present in the collection
+function refreshGenreChips(){
+  const sel=$('#genre'); if(!sel) return;
+  const set=new Set();
+  DATA.forEach(d=>{ if(d.genre) set.add(d.genre); });
+  const list=[...set].sort((a,b)=>a.localeCompare(b,'ko'));
+  const cur=filter.genre;
+  sel.innerHTML='<option value="">전체 장르</option>'+list.map(g=>`<option value="${g}" ${g===cur?'selected':''}>${g}</option>`).join('');
+  // if current filter genre no longer exists, reset
+  if(cur && !set.has(cur)){ filter.genre=''; }
+}
+
+/* ---------- Cover Flow ---------- */
+let cfItems=[], cfIndex=0, cfCards=[];
+function buildCoverFlow(){
+  cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
+  if(!cfItems.length) cfItems=DATA.slice();
+  const track=$('#cf-track');
+  track.innerHTML=cfItems.map((it,i)=>`
+    <div class="cf-card" data-i="${i}" data-id="${it.id}">
+      <div class="cf-art">
+        <div class="cf-ph"><div class="v"></div><div>${it.artist||'?'}</div></div>
+        <img data-cf="${it.id}" alt="">
+      </div>
+    </div>`).join('');
+  cfCards=[...track.querySelectorAll('.cf-card')];
+  // load art for each cover-flow card (reuse cache)
+  cfItems.forEach(async it=>{
+    const img=track.querySelector(`img[data-cf="${it.id}"]`);
+    const url=it._art||pickedArt[artKey(it.artist,it.album)]||await fetchArt(it.artist,it.album);
+    if(url&&img){img.src=url;img.onload=()=>{img.previousElementSibling.style.display='none';};}
+  });
+  cfIndex=Math.min(cfIndex,cfItems.length-1);
+  layoutCoverFlow();
+  // tap center card -> detail
+  cfCards.forEach(c=>c.addEventListener('click',()=>{
+    const i=+c.dataset.i;
+    if(i===cfIndex) openDetail(c.dataset.id);
+    else { cfIndex=i; layoutCoverFlow(); }
+  }));
+}
+function layoutCoverFlow(){
+  cfCards.forEach((c,i)=>{
+    const off=i-cfIndex;
+    const ax=Math.abs(off);
+    if(ax>4){c.style.display='none';return;} c.style.display='';
+    const x=off*48;                       // horizontal shelf spacing
+    const z=-ax*120;                      // depth
+    const rot=off===0?0:(off<0?42:-42);   // turn side covers
+    const sc=off===0?1.18:0.92;
+    c.style.transform=`translateX(${x}px) translateZ(${z}px) rotateY(${rot}deg) scale(${sc})`;
+    c.style.zIndex=String(100-ax);
+    c.querySelector('.cf-art').style.boxShadow=off===0?'0 22px 38px rgba(0,0,0,.6)':'0 14px 22px rgba(0,0,0,.45)';
+    c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
+  });
+  const it=cfItems[cfIndex]; if(!it)return;
+  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap">탭하면 상세 정보 · ${it.genre?it.genre+' · ':''}${it.color||''}</div>`;
+}
+function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow(); }
+
+// drag / swipe / wheel
+(function(){
+  const stage=$('#cf-stage');
+  let down=false,sx=0,acc=0,moved=false;
+  const start=x=>{down=true;sx=x;acc=0;moved=false;};
+  const move=x=>{ if(!down)return; const dx=x-sx; if(Math.abs(dx)>6)moved=true;
+    if(Math.abs(dx)>42){ cfMove(dx<0?1:-1); sx=x; } };
+  const end=()=>{down=false;};
+  stage.addEventListener('mousedown',e=>start(e.clientX));
+  window.addEventListener('mousemove',e=>move(e.clientX));
+  window.addEventListener('mouseup',end);
+  stage.addEventListener('touchstart',e=>start(e.touches[0].clientX),{passive:true});
+  stage.addEventListener('touchmove',e=>move(e.touches[0].clientX),{passive:true});
+  stage.addEventListener('touchend',end);
+  stage.addEventListener('click',e=>{ if(moved){e.stopPropagation();e.preventDefault();} },true);
+  let wlock=0;
+  stage.addEventListener('wheel',e=>{ if(Math.abs(e.deltaX)<Math.abs(e.deltaY))return;
+    e.preventDefault(); const now=Date.now(); if(now-wlock<160)return; wlock=now; cfMove(e.deltaX>0?1:-1); },{passive:false});
+  $('#cf-prev').addEventListener('click',e=>{e.stopPropagation();cfMove(-1);});
+  $('#cf-next').addEventListener('click',e=>{e.stopPropagation();cfMove(1);});
+})();
+
+/* ---------- init (로그인 후 Firebase 모듈이 호출) ---------- */
+// 데이터URL → Blob (Storage 업로드용)
+function dataURLToBlob(dataURL){
+  const parts=dataURL.split(','); const head=parts[0]||'';
+  const mime=(head.match(/:(.*?);/)||[])[1]||'image/jpeg';
+  const bin=atob(parts[1]||''); const len=bin.length; const arr=new Uint8Array(len);
+  for(let i=0;i<len;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+// 최초 로그인 시: 기존 SEED + (이 기기의) 로컬 데이터를 모아 반환 → 계정으로 이전
+window.buildInitialData=function(){
+  if(localStorage.getItem('lp_migrated')==='1'){
+    return SEED.map((x,i)=>({...x, id:'s'+i}));   // 이후 새 계정은 기본 시드만
+  }
+  loadLocal();                                    // 최초 1회만 기존 로컬 기록까지 이전
+  try{ localStorage.setItem('lp_migrated','1'); }catch(e){}
+  return DATA;
+};
+// 헤더 계정칩에 이메일 표시
+window.setAccount=function(email){ const e=$('#acct-email'); if(e) e.textContent=email||'계정'; };
+// 로그인 + 데이터 로드 완료 후 앱을 그림
+window.bootApp=function(items){
+  DATA=Array.isArray(items)?items:[];
+  // 이전 사용자 흔적 제거 후, 저장된 커버를 캐시에 반영
+  Object.keys(pickedArt).forEach(k=>delete pickedArt[k]);
+  DATA.forEach(it=>{ if(it._art){ const k=artKey(it.artist,it.album); pickedArt[k]=it._art; artCache[k]=it._art; } });
+  filter={q:'',chip:'전체',sub:'',sort:'default',genre:'',view:'grid'};
+  calYear=null; cfIndex=0;
+  if($('#q')) $('#q').value='';
+  renderChips();renderStats();renderGrid();buildCoverFlow();refreshGenreChips();
+};
+</script>
+<script>
+/* PWA: 서비스워커 등록 (오프라인 앱 셸 + 설치 가능) */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
+         signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup }
+  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
+  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL }
+  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js';
+
+/* ===== ① 여기에 본인 Firebase 설정을 붙여넣으세요 (프로젝트: lp-archive) =====
+   Firebase 콘솔 → 프로젝트 설정(톱니) → 일반 → 내 앱 → "SDK 설정 및 구성"에서
+   apiKey / messagingSenderId / appId 세 값만 복사해 PASTE 부분에 넣으면 됩니다.
+   (도메인 항목은 lp-archive 기준으로 이미 채워두었습니다.) */
+const firebaseConfig = {
+  apiKey: "PASTE_API_KEY",
+  authDomain: "lp-archive.firebaseapp.com",
+  projectId: "lp-archive",
+  storageBucket: "lp-archive.firebasestorage.app",
+  messagingSenderId: "PASTE_SENDER_ID",
+  appId: "PASTE_APP_ID"
+};
+
+const $ = s=>document.querySelector(s);
+const setState = s=>{ document.body.className='state-'+s; };
+const showErr = msg=>{ const e=$('#auth-err'); if(!e)return; e.textContent=msg||''; e.classList.toggle('show',!!msg); };
+
+if(firebaseConfig.apiKey.startsWith('PASTE')){
+  // 설정 미입력 가드
+  setState('auth');
+  showErr('⚙️ 먼저 코드 안 firebaseConfig에 본인 Firebase 설정을 붙여넣어 주세요. (콘솔 → 프로젝트 설정 → 내 앱)');
+  $('#auth-submit').disabled=true; $('#auth-google').disabled=true;
+} else {
+  start();
+}
+
+function start(){
+  const app=initializeApp(firebaseConfig);
+  const auth=getAuth(app);
+  const db=getFirestore(app);
+  const storage=getStorage(app);
+  let currentUser=null;
+  const saveTimers={};
+
+  // LP 한 장을 Firestore 문서로 직렬화 (커버는 cover 필드로 저장)
+  const FIELDS=['no','artist','album','color','store','orig','price','pay','buy','arrive',
+    'status','sellDate','sellPrice','profit','note','genre','rating','liked',
+    'discColorCustom','discOpacity','discPhoto'];
+  function serialize(it){
+    const o={};
+    FIELDS.forEach(f=>{ o[f]=(it[f]===undefined?null:it[f]); });
+    o.cover = it._art || it.cover || null;
+    return o;
+  }
+  function deserialize(id,d){
+    const it=Object.assign({},d,{id});
+    if(d.cover) it._art=d.cover;
+    return it;
+  }
+  async function loadItems(uid){
+    const snap=await getDocs(collection(db,'users',uid,'lps'));
+    const out=[]; snap.forEach(s=>out.push(deserialize(s.id,s.data())));
+    return out;
+  }
+  async function migrate(uid,items){
+    for(let i=0;i<items.length;i+=400){
+      const b=writeBatch(db);
+      items.slice(i,i+400).forEach(it=>b.set(doc(db,'users',uid,'lps',String(it.id)),serialize(it)));
+      await b.commit();
+    }
+  }
+
+  // ===== 앱(classic) → 클라우드 다리 =====
+  window.LPCloud={
+    saveItem(it){
+      if(!currentUser||!it||it.id==null) return;
+      clearTimeout(saveTimers[it.id]);
+      saveTimers[it.id]=setTimeout(async()=>{
+        try{ await setDoc(doc(db,'users',currentUser.uid,'lps',String(it.id)),serialize(it)); }
+        catch(e){ console.error('저장 실패',e); }
+      },400);
+    },
+    async deleteItem(id){
+      if(!currentUser) return;
+      try{ await deleteDoc(doc(db,'users',currentUser.uid,'lps',String(id))); }catch(e){}
+    },
+    async uploadImage(blob,ext){
+      if(!currentUser) throw new Error('not-signed-in');
+      const name=Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+(ext||'jpg');
+      const r=ref(storage,'users/'+currentUser.uid+'/'+name);
+      await uploadBytes(r,blob);
+      return await getDownloadURL(r);
+    },
+    logout(){ return signOut(auth); }
+  };
+
+  // ===== 로그인 상태 감지 =====
+  onAuthStateChanged(auth, async user=>{
+    currentUser=user;
+    if(!user){ setState('auth'); showErr(''); resetInputs(); return; }
+    setState('boot');
+    try{
+      let items=await loadItems(user.uid);
+      if(items.length===0){
+        const seed=window.buildInitialData?window.buildInitialData():[];
+        await migrate(user.uid, seed);
+        items=seed;
+      }
+      if(window.setAccount) window.setAccount(user.email||user.displayName||'계정');
+      if(window.bootApp) window.bootApp(items);
+      setState('app');
+    }catch(e){
+      console.error(e);
+      setState('auth');
+      showErr('데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+    }
+  });
+
+  // ===== 인증 UI =====
+  let mode='login';
+  function resetInputs(){ ['#auth-email','#auth-pw','#auth-pw2'].forEach(s=>{const el=$(s);if(el)el.value='';}); }
+  function setMode(m){
+    mode=m;
+    document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('on',t.dataset.mode===m));
+    $('#auth-pw2').style.display = m==='signup'?'':'none';
+    $('#auth-submit').textContent = m==='signup'?'회원가입':'로그인';
+    showErr('');
+  }
+  document.querySelectorAll('.auth-tab').forEach(t=>t.onclick=()=>setMode(t.dataset.mode));
+
+  function mapErr(code){
+    const m={
+      'auth/invalid-email':'이메일 형식이 올바르지 않아요.',
+      'auth/missing-password':'비밀번호를 입력해 주세요.',
+      'auth/weak-password':'비밀번호는 6자 이상이어야 해요.',
+      'auth/email-already-in-use':'이미 가입된 이메일이에요. 로그인해 주세요.',
+      'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.',
+      'auth/user-not-found':'가입되지 않은 이메일이에요.',
+      'auth/wrong-password':'비밀번호가 올바르지 않아요.',
+      'auth/too-many-requests':'시도가 너무 많아요. 잠시 후 다시 시도해 주세요.',
+      'auth/network-request-failed':'네트워크 연결을 확인해 주세요.',
+      'auth/operation-not-allowed':'이 로그인 방식이 콘솔에서 켜져 있지 않아요. (Authentication → Sign-in method)',
+      'auth/unauthorized-domain':'이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)'
+    };
+    return m[code]||('오류가 발생했어요. ('+code+')');
+  }
+  async function submit(){
+    const email=$('#auth-email').value.trim();
+    const pw=$('#auth-pw').value;
+    showErr(''); const btn=$('#auth-submit'); btn.disabled=true;
+    try{
+      if(mode==='signup'){
+        if(pw!==$('#auth-pw2').value){ showErr('비밀번호가 서로 달라요.'); btn.disabled=false; return; }
+        await createUserWithEmailAndPassword(auth,email,pw);
+      }else{
+        await signInWithEmailAndPassword(auth,email,pw);
+      }
+    }catch(e){ showErr(mapErr(e.code)); }
+    btn.disabled=false;
+  }
+  $('#auth-submit').onclick=submit;
+  $('#auth-pw').addEventListener('keydown',e=>{ if(e.key==='Enter'&&mode==='login')submit(); });
+  $('#auth-pw2').addEventListener('keydown',e=>{ if(e.key==='Enter')submit(); });
+  $('#auth-google').onclick=async()=>{
+    showErr('');
+    try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
+    catch(e){ if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request') showErr(mapErr(e.code)); }
+  };
+
+  // ===== 계정 메뉴 =====
+  const acctBtn=$('#acct-btn'), acctMenu=$('#acct-menu');
+  if(acctBtn) acctBtn.onclick=e=>{ e.stopPropagation(); acctMenu.classList.toggle('show'); };
+  document.addEventListener('click',()=>{ if(acctMenu) acctMenu.classList.remove('show'); });
+  const lo=$('#acct-logout'); if(lo) lo.onclick=()=>{ acctMenu.classList.remove('show'); signOut(auth); };
+}
+</script>
+</body>
+</html>

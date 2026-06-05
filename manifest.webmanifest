@@ -1,0 +1,17 @@
+{
+  "name": "LP 보관함 · My Vinyl Archive",
+  "short_name": "LP 보관함",
+  "description": "내 바이닐(LP) 컬렉션을 기록하고 관리하는 앱",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0d11",
+  "theme_color": "#0e0d11",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

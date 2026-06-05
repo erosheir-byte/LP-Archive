@@ -1,0 +1,6 @@
+{
+  "appId": "app.lparchive.vinyl",
+  "appName": "LP 보관함",
+  "webDir": ".",
+  "server": { "androidScheme": "https" }
+}
