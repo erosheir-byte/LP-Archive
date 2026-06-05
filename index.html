@@ -997,6 +997,7 @@ function renderGrid(){
       openDetail(el.dataset.id,'cover');
     };
     if(disc){
+      const it = DATA.find(d=>d.id===el.dataset.id);
       let spin=0, dragging=false, moved=false, lastAng=0, cx=0, cy=0;
       const angle=(x,y)=>Math.atan2(y-cy, x-cx)*180/Math.PI;
       const down=(x,y)=>{
@@ -1004,16 +1005,18 @@ function renderGrid(){
         const r=disc.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2;
         dragging=true; moved=false; lastAng=angle(x,y);
         disc.classList.add('spinning');
+        if(it) _fetchPreviewUrl(it);   // 회전 시작에 대비해 미리듣기 URL 미리 받아두기
       };
       const move=(x,y)=>{
         if(!dragging) return;
         let a=angle(x,y), d=a-lastAng;
         if(d>180) d-=360; if(d<-180) d+=360;   // wrap
-        if(Math.abs(d)>1.5) moved=true;
+        if(Math.abs(d)>1.5 && !moved){ moved=true; if(it) playPreview(it, disc); }   // 드래그로 회전 시작 → 미리듣기 재생
         spin+=d; lastAng=a;
         disc.style.setProperty('--spin', spin+'deg');
       };
-      const up=()=>{ if(!dragging)return; dragging=false; disc.classList.remove('spinning'); };
+      const up=()=>{ if(!dragging)return; dragging=false; disc.classList.remove('spinning');
+        if(_preview.audio && _preview.discEl===disc) disc.classList.add('playing'); };   // 손 떼면 음악에 맞춰 계속 회전
       disc.addEventListener('mousedown',e=>{ down(e.clientX,e.clientY);
         const mm=ev=>move(ev.clientX,ev.clientY), mu=()=>{up();window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
         window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu); });
@@ -1025,9 +1028,7 @@ function renderGrid(){
         if(moved){ moved=false; return; }   // was a spin, not a tap
         const willPull = !el.classList.contains('pulled');
         el.classList.toggle('pulled');       // tap to raise / slide back
-        const it = DATA.find(d=>d.id===el.dataset.id);
-        if(willPull){ playPreview(it, disc); }   // 판을 올리면 30초 미리듣기 재생 + 자동 회전
-        else { stopPreview(); }                  // 판을 내리면 정지
+        if(!willPull) stopPreview();         // 판을 내리면 미리듣기 정지
       };
     }
     const editBtn=el.querySelector('.disc-edit');
@@ -1065,18 +1066,20 @@ function stopPreview(){
 }
 async function playPreview(it, disc){
   if(!it) return;
-  if(_preview.id===it.id){ stopPreview(); return; }   // 같은 판 다시 탭 → 정지
+  if(_preview.id===it.id) return;        // 이미 이 판이 재생 중이면 그대로 둠
   stopPreview();
   _preview.id = it.id;
-  const url = await _fetchPreviewUrl(it);
-  if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 눌렀으면 취소
+  let url = _preview.cache[it.id];
+  if(url===undefined) url = await _fetchPreviewUrl(it);
+  if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
   if(!url){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
   const a = new Audio(url); a.preload='auto';
   _preview.audio=a; _preview.discEl=disc;
-  disc.classList.add('playing');
   a.onended=()=>stopPreview();
   a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
-  a.play().catch(()=>{ previewToast('재생할 수 없어요'); stopPreview(); });
+  // 손가락으로 돌리는 중(spinning)이 아니면 음악에 맞춰 자동 회전 시작
+  a.play().then(()=>{ if(_preview.discEl===disc && !disc.classList.contains('spinning')) disc.classList.add('playing'); })
+          .catch(()=>{});
 }
 function previewToast(msg){
   let t=document.getElementById('preview-toast');
