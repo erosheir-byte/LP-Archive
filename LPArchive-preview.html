@@ -1014,11 +1014,28 @@ async function fetchArt(artist, album){
   const key=artKey(artist,album);
   if(pickedArt[key]!==undefined) return pickedArt[key];
   if(artCache[key]!==undefined) return artCache[key];
-  const cands=await fetchCandidates(artist,album);
-  const img=cands.length?cands[0].img:null;
+  const img=__demoArt(artist,album);
   artCache[key]=img;
-  const g=cands.find(c=>c.genre)||{}; if(g.genre) genreCache[key]=g.genre;
   return img;
+}
+async function fetchCandidates(artist,album){ return [{img:__demoArt(artist,album),album:album,src:'데모'}]; }
+function __demoArt(artist,album){
+  const s=(artist||'')+'|'+(album||'');
+  let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; }
+  const hue=h%360, hue2=(hue+40)%360;
+  const c1=`hsl(${hue},55%,42%)`, c2=`hsl(${hue2},48%,22%)`;
+  const esc=t=>(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const al=esc((album||'').slice(0,22)), ar=esc((artist||'').slice(0,20));
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/></linearGradient></defs>
+    <rect width='300' height='300' fill='url(#g)'/>
+    <circle cx='150' cy='128' r='52' fill='rgba(0,0,0,.18)'/>
+    <circle cx='150' cy='128' r='15' fill='rgba(255,255,255,.25)'/>
+    <text x='150' y='225' font-family='sans-serif' font-size='20' font-weight='700' fill='rgba(255,255,255,.95)' text-anchor='middle'>${al}</text>
+    <text x='150' y='252' font-family='sans-serif' font-size='14' fill='rgba(255,255,255,.7)' text-anchor='middle'>${ar}</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
 /* ---------- color swatch ---------- */
@@ -2823,217 +2840,26 @@ window.bootApp=function(items){
   renderChips();renderStats();renderGrid();buildCoverFlow();refreshGenreChips();
 };
 </script>
+<!-- sw removed for preview -->
+<!-- firebase module removed for preview -->
+
 <script>
-/* PWA: 서비스워커 등록 (오프라인 앱 셸 + 설치 가능) */
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-}
-</script>
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
-         signInWithEmailAndPassword, signOut, GoogleAuthProvider,
-         signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential }
-  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
-  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
-import { getStorage, ref, uploadBytes, getDownloadURL }
-  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js';
-
-/* ===== ① 여기에 본인 Firebase 설정을 붙여넣으세요 (프로젝트: lp-archive) =====
-   Firebase 콘솔 → 프로젝트 설정(톱니) → 일반 → 내 앱 → "SDK 설정 및 구성"에서
-   apiKey / messagingSenderId / appId 세 값만 복사해 PASTE 부분에 넣으면 됩니다.
-   (도메인 항목은 lp-archive 기준으로 이미 채워두었습니다.) */
-const firebaseConfig = {
-  apiKey: "AIzaSyBpLzWZtSom3XYwenA9Q4zbwBpSRCLYGO0",
-  authDomain: "lp-archive.firebaseapp.com",
-  projectId: "lp-archive",
-  storageBucket: "lp-archive.firebasestorage.app",
-  messagingSenderId: "1032038131088",
-  appId: "1:1032038131088:web:e358c2ac069e58e3143f15",
-  measurementId: "G-S436NSLH6Y"
-};
-
-const $ = s=>document.querySelector(s);
-const setState = s=>{ document.body.className='state-'+s; };
-const showErr = msg=>{ const e=$('#auth-err'); if(!e)return; e.textContent=msg||''; e.classList.toggle('show',!!msg); };
-
-if(firebaseConfig.apiKey.startsWith('PASTE')){
-  // 설정 미입력 가드
-  setState('auth');
-  showErr('⚙️ 먼저 코드 안 firebaseConfig에 본인 Firebase 설정을 붙여넣어 주세요. (콘솔 → 프로젝트 설정 → 내 앱)');
-  $('#auth-submit').disabled=true; $('#auth-google').disabled=true;
-} else {
-  start();
-}
-
-function start(){
-  const app=initializeApp(firebaseConfig);
-  const auth=getAuth(app);
-  const db=getFirestore(app);
-  const storage=getStorage(app);
-  let currentUser=null;
-  const saveTimers={};
-
-  // LP 한 장을 Firestore 문서로 직렬화 (커버는 cover 필드로 저장)
-  const FIELDS=['no','artist','album','color','store','orig','price','pay','buy','arrive',
-    'status','sellDate','sellPrice','profit','note','genre','rating','liked',
-    'discColorCustom','discOpacity','discPhoto'];
-  function serialize(it){
-    const o={};
-    FIELDS.forEach(f=>{ o[f]=(it[f]===undefined?null:it[f]); });
-    o.cover = it._art || it.cover || null;
-    return o;
-  }
-  function deserialize(id,d){
-    const it=Object.assign({},d,{id});
-    if(d.cover) it._art=d.cover;
-    return it;
-  }
-  async function loadItems(uid){
-    const snap=await getDocs(collection(db,'users',uid,'lps'));
-    const out=[]; snap.forEach(s=>out.push(deserialize(s.id,s.data())));
-    return out;
-  }
-  async function migrate(uid,items){
-    for(let i=0;i<items.length;i+=400){
-      const b=writeBatch(db);
-      items.slice(i,i+400).forEach(it=>b.set(doc(db,'users',uid,'lps',String(it.id)),serialize(it)));
-      await b.commit();
-    }
-  }
-
-  // ===== 앱(classic) → 클라우드 다리 =====
-  window.LPCloud={
-    saveItem(it){
-      if(!currentUser||!it||it.id==null) return;
-      clearTimeout(saveTimers[it.id]);
-      saveTimers[it.id]=setTimeout(async()=>{
-        try{ await setDoc(doc(db,'users',currentUser.uid,'lps',String(it.id)),serialize(it)); }
-        catch(e){ console.error('저장 실패',e); }
-      },400);
-    },
-    async deleteItem(id){
-      if(!currentUser) return;
-      try{ await deleteDoc(doc(db,'users',currentUser.uid,'lps',String(id))); }catch(e){}
-    },
-    async uploadImage(blob,ext){
-      if(!currentUser) throw new Error('not-signed-in');
-      const name=Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+(ext||'jpg');
-      const r=ref(storage,'users/'+currentUser.uid+'/'+name);
-      await uploadBytes(r,blob);
-      return await getDownloadURL(r);
-    },
-    logout(){ return signOut(auth); }
-  };
-
-  // ===== 로그인 상태 감지 =====
-  onAuthStateChanged(auth, async user=>{
-    currentUser=user;
-    if(!user){ setState('auth'); showErr(''); resetInputs(); return; }
-    setState('boot');
+(function(){
+  function go(){
     try{
-      let items=await loadItems(user.uid);
-      if(items.length===0){
-        const seed=window.buildInitialData?window.buildInitialData():[];
-        await migrate(user.uid, seed);
-        items=seed;
-      }
-      if(window.setAccount) window.setAccount(user.email||user.displayName||'계정');
-      if(window.bootApp) window.bootApp(items);
-      setState('app');
-    }catch(e){
-      console.error(e);
-      setState('auth');
-      showErr('데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
-    }
-  });
-
-  // ===== 인증 UI =====
-  let mode='login';
-  function resetInputs(){ ['#auth-email','#auth-pw','#auth-pw2'].forEach(s=>{const el=$(s);if(el)el.value='';}); }
-  function setMode(m){
-    mode=m;
-    document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('on',t.dataset.mode===m));
-    $('#auth-pw2').style.display = m==='signup'?'':'none';
-    $('#auth-submit').textContent = m==='signup'?'회원가입':'로그인';
-    showErr('');
+      document.body.className='state-app';
+      if(typeof renderChips==='function') renderChips();
+      if(typeof renderGrid==='function') renderGrid();
+      if(typeof renderStats==='function') renderStats();
+      if(typeof buildCoverFlow==='function') buildCoverFlow();
+      if(typeof refreshGenreChips==='function') refreshGenreChips();
+      if(typeof loadCollections==='function') loadCollections();
+      var hs=document.getElementById('hsub'); if(hs) hs.textContent='미리보기 · '+(typeof DATA!=='undefined'?DATA.length:0)+'장';
+    }catch(e){ console.error('BOOT ERROR',e); }
   }
-  document.querySelectorAll('.auth-tab').forEach(t=>t.onclick=()=>setMode(t.dataset.mode));
-
-  function mapErr(code){
-    const m={
-      'auth/invalid-email':'이메일 형식이 올바르지 않아요.',
-      'auth/missing-password':'비밀번호를 입력해 주세요.',
-      'auth/weak-password':'비밀번호는 6자 이상이어야 해요.',
-      'auth/email-already-in-use':'이미 가입된 이메일이에요. 로그인해 주세요.',
-      'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.',
-      'auth/user-not-found':'가입되지 않은 이메일이에요.',
-      'auth/wrong-password':'비밀번호가 올바르지 않아요.',
-      'auth/too-many-requests':'시도가 너무 많아요. 잠시 후 다시 시도해 주세요.',
-      'auth/network-request-failed':'네트워크 연결을 확인해 주세요.',
-      'auth/operation-not-allowed':'이 로그인 방식이 콘솔에서 켜져 있지 않아요. (Authentication → Sign-in method)',
-      'auth/unauthorized-domain':'이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)'
-    };
-    return m[code]||('오류가 발생했어요. ('+code+')');
-  }
-  async function submit(){
-    const email=$('#auth-email').value.trim();
-    const pw=$('#auth-pw').value;
-    showErr(''); const btn=$('#auth-submit'); btn.disabled=true;
-    try{
-      if(mode==='signup'){
-        if(pw!==$('#auth-pw2').value){ showErr('비밀번호가 서로 달라요.'); btn.disabled=false; return; }
-        await createUserWithEmailAndPassword(auth,email,pw);
-      }else{
-        await signInWithEmailAndPassword(auth,email,pw);
-      }
-    }catch(e){ showErr(mapErr(e.code)); }
-    btn.disabled=false;
-  }
-  $('#auth-submit').onclick=submit;
-  $('#auth-pw').addEventListener('keydown',e=>{ if(e.key==='Enter'&&mode==='login')submit(); });
-  $('#auth-pw2').addEventListener('keydown',e=>{ if(e.key==='Enter')submit(); });
-  // 리다이렉트 로그인으로 돌아왔을 때 결과/에러 처리 (구글 에러 메시지를 그대로 표면화)
-  getRedirectResult(auth).catch(e=>{ if(e&&e.code) showErr(mapErr(e.code)); });
-  const _isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-  async function googleNative(){
-    // 앱(WebView)에서는 네이티브 구글 로그인 플러그인으로 인증 → Firebase 자격증명으로 로그인
-    const GA = window.Capacitor.Plugins.GoogleAuth;
-    await GA.initialize({
-      clientId: '1032038131088-pgv6aiv1b66njk867s2q4l8kq34aucee.apps.googleusercontent.com',
-      scopes: ['profile','email'],
-      grantOfflineAccess: true
-    });
-    const res = await GA.signIn();
-    const idToken = res && res.authentication && res.authentication.idToken;
-    if(!idToken) throw {code:'auth/no-id-token'};
-    await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
-  }
-  $('#auth-google').onclick=async()=>{
-    showErr('');
-    const provider=new GoogleAuthProvider();
-    try{
-      if(_isNative){ await googleNative(); return; }
-      // 모바일/웹뷰는 팝업이 자주 막혀서 리다이렉트, 데스크톱은 팝업
-      if(_isMobileUA){ await signInWithRedirect(auth,provider); }
-      else{ await signInWithPopup(auth,provider); }
-    }catch(e){
-      // 팝업이 차단되면 리다이렉트로 폴백
-      if(e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment'){
-        try{ await signInWithRedirect(auth,provider); return; }catch(e2){ showErr(mapErr(e2.code)); return; }
-      }
-      if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request'&&String(e&&e.code||'').indexOf('popup_closed')<0) showErr(mapErr(e&&e.code));
-    }
-  };
-
-  // ===== 계정 메뉴 =====
-  const acctBtn=$('#acct-btn'), acctMenu=$('#acct-menu');
-  if(acctBtn) acctBtn.onclick=e=>{ e.stopPropagation(); acctMenu.classList.toggle('show'); };
-  document.addEventListener('click',()=>{ if(acctMenu) acctMenu.classList.remove('show'); });
-  const lo=$('#acct-logout'); if(lo) lo.onclick=()=>{ acctMenu.classList.remove('show'); signOut(auth); };
-}
+  if(document.readyState==='complete'||document.readyState==='interactive') setTimeout(go,80);
+  else window.addEventListener('DOMContentLoaded',go);
+})();
 </script>
 </body>
 </html>

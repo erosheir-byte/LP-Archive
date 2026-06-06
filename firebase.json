@@ -8,7 +8,12 @@
       "**/node_modules/**",
       "*.rules",
       "README.md",
-      "capacitor.config.json"
+      "capacitor.config.json",
+      "LPArchive-preview.html",
+      "package.json",
+      "package-lock.json",
+      "**/.github/**",
+      "android/**"
     ],
     "rewrites": [
       { "source": "**", "destination": "/index.html" }

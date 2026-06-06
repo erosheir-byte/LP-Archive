@@ -1,0 +1,17 @@
+{
+  "name": "lp-archive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LP 보관함 — APK 빌드용 Capacitor 설정 (웹 본체는 index.html / 원격 lp-archive.web.app 로드)",
+  "scripts": {
+    "cap": "cap"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
