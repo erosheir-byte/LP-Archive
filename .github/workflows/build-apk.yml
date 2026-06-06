@@ -40,6 +40,18 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Prepare web dir (webDir=., 자기복사 방지용 전용 폴더)
+        run: |
+          # capacitor webDir 가 저장소 루트(".")라 android/ 까지 자기 자신으로 복사하려다
+          # 실패하므로, 웹 자산만 담은 www/ 를 만들어 빌드 시 webDir 로 사용한다.
+          # (APK 는 server.url=lp-archive.web.app 원격 로드 → www 는 오프라인 폴백 셸)
+          mkdir -p www/icons
+          cp index.html www/ 2>/dev/null || true
+          cp manifest.webmanifest www/ 2>/dev/null || true
+          cp sw.js www/ 2>/dev/null || true
+          cp -r icons/. www/icons/ 2>/dev/null || true
+          node -e "const f='capacitor.config.json';const c=require('./'+f);c.webDir='www';require('fs').writeFileSync(f,JSON.stringify(c,null,2));console.log('webDir ->',c.webDir);"
+
       - name: Add Android platform
         run: npx cap add android
 
