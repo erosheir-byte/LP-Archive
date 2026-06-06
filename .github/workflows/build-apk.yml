@@ -68,13 +68,33 @@ jobs:
       - name: Capacitor sync
         run: npx cap sync android
 
-      - name: Use fixed debug keystore (안정적인 SHA-1 유지)
+      - name: Force fixed debug keystore (명시적 signingConfig 주입 — 항상 동일 SHA-1)
         run: |
-          mkdir -p ~/.android
-          cp android-debug.keystore ~/.android/debug.keystore
-          echo "----- 디버그 서명 지문 (Firebase 콘솔에 등록할 값) -----"
-          KT="$JAVA_HOME/bin/keytool"; [ -x "$KT" ] || KT=keytool
-          "$KT" -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey | grep -iE "SHA1:|SHA-1:|SHA256:|SHA-256:"
+          # AGP 기본 디버그 키가 매번 달라 등록한 SHA-1과 불일치 → code 10.
+          # app/build.gradle 의 android{} 에 debug signingConfig 를 명시 주입해
+          # 반드시 커밋된 고정 키스토어로 서명되게 한다.
+          cp android-debug.keystore android/app/debug.keystore
+          python3 - <<'PY'
+          import re
+          p='android/app/build.gradle'
+          s=open(p).read()
+          if 'signingConfigs' not in s:
+              block=("\n    signingConfigs {\n"
+                     "        debug {\n"
+                     "            storeFile file('debug.keystore')\n"
+                     "            storePassword 'android'\n"
+                     "            keyAlias 'androiddebugkey'\n"
+                     "            keyPassword 'android'\n"
+                     "        }\n"
+                     "    }\n")
+              s=re.sub(r'(android\s*\{)', r'\1'+block, s, count=1)
+              open(p,'w').write(s)
+              print('injected signingConfigs.debug')
+          else:
+              print('signingConfigs already present')
+          PY
+          echo '----- android/app/build.gradle (head) -----'
+          sed -n '1,45p' android/app/build.gradle
 
       - name: Build debug APK
         run: |
