@@ -88,6 +88,12 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk dist/LP-Archive.apk
           ls -la dist/
 
+      - name: Verify APK signature (설치될 APK의 실제 서명 SHA-1)
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          echo "===== 설치될 LP-Archive.apk 의 실제 서명 인증서 (이게 Firebase 등록값과 같아야 함) ====="
+          "$APKSIGNER" verify --print-certs dist/LP-Archive.apk | grep -iE "SHA-1|SHA-256" || true
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
