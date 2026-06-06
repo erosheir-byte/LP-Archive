@@ -12,6 +12,7 @@
       "LPArchive-preview.html",
       "package.json",
       "package-lock.json",
+      "android-debug.keystore",
       "**/.github/**",
       "android/**"
     ],

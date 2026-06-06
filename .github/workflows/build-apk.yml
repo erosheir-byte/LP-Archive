@@ -68,6 +68,14 @@ jobs:
       - name: Capacitor sync
         run: npx cap sync android
 
+      - name: Use fixed debug keystore (안정적인 SHA-1 유지)
+        run: |
+          mkdir -p ~/.android
+          cp android-debug.keystore ~/.android/debug.keystore
+          echo "----- 디버그 서명 지문 (Firebase 콘솔에 등록할 값) -----"
+          KT="$JAVA_HOME/bin/keytool"; [ -x "$KT" ] || KT=keytool
+          "$KT" -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey | grep -iE "SHA1:|SHA-1:|SHA256:|SHA-256:"
+
       - name: Build debug APK
         run: |
           cd android
