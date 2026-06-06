@@ -3004,7 +3004,7 @@ function start(){
     await GA.initialize({
       clientId: '1032038131088-pgv6aiv1b66njk867s2q4l8kq34aucee.apps.googleusercontent.com',
       scopes: ['profile','email'],
-      grantOfflineAccess: true
+      grantOfflineAccess: false
     });
     const res = await GA.signIn();
     const idToken = res && res.authentication && res.authentication.idToken;
