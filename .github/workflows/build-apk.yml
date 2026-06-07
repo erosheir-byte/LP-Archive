@@ -68,6 +68,31 @@ jobs:
       - name: Capacitor sync
         run: npx cap sync android
 
+      - name: Generate launcher icon (분위기 있는 LP 이미지)
+        run: |
+          # icons/icon-512.png (블랙 바이닐 + 오렌지 라벨, 분위기 있는 LP)를 소스로
+          # 안드로이드 런처 아이콘(레거시 + 적응형)을 생성한다.
+          npm install --no-save @capacitor/assets
+          mkdir -p assets
+          cat > gen-icons.cjs <<'JS'
+          const sharp = require('sharp');
+          const src = 'icons/icon-512.png';
+          (async () => {
+            // 레거시 아이콘: LP 풀블리드
+            await sharp(src).resize(1024, 1024, { fit: 'cover' }).png().toFile('assets/icon-only.png');
+            // 적응형 배경: 앱 테마색(어두운 톤)
+            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 14, g: 13, b: 17, alpha: 1 } } })
+              .png().toFile('assets/icon-background.png');
+            // 적응형 전경: LP를 세이프존 안에 들어오도록 중앙 배치(투명 여백)
+            const fg = await sharp(src).resize(760, 760, { fit: 'cover' }).png().toBuffer();
+            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+              .composite([{ input: fg, gravity: 'center' }]).png().toFile('assets/icon-foreground.png');
+            console.log('launcher icon assets ready');
+          })();
+          JS
+          node gen-icons.cjs
+          npx @capacitor/assets generate --android --assetPath assets
+
       - name: Force fixed debug keystore (명시적 signingConfig 주입 — 항상 동일 SHA-1)
         run: |
           # AGP 기본 디버그 키가 매번 달라 등록한 SHA-1과 불일치 → code 10.
