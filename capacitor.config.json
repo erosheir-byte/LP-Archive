@@ -1,6 +1,6 @@
 {
   "appId": "app.lparchive.vinyl",
-  "appName": "LP 보관함",
+  "appName": "My Vinyl",
   "webDir": ".",
   "server": {
     "url": "https://lp-archive.web.app",
