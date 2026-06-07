@@ -1,6 +1,6 @@
 {
-  "name": "LP 보관함 · My Vinyl Archive",
-  "short_name": "LP 보관함",
+  "name": "My Vinyl",
+  "short_name": "My Vinyl",
   "description": "내 바이닐(LP) 컬렉션을 기록하고 관리하는 앱",
   "lang": "ko",
   "start_url": "./index.html",
