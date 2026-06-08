@@ -68,6 +68,15 @@ jobs:
           echo "----- strings.xml -----"
           cat "$STRINGS"
 
+      - name: Add camera permission (바코드 스캔용)
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          if ! grep -q "android.permission.CAMERA" "$MANIFEST"; then
+            sed -i 's#<application#<uses-permission android:name="android.permission.CAMERA" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <application#' "$MANIFEST"
+          fi
+          echo "----- AndroidManifest.xml -----"
+          cat "$MANIFEST"
+
       - name: Capacitor sync
         run: npx cap sync android
 
