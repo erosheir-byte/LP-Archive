@@ -598,9 +598,27 @@ body:not(.state-app) .nav{display:none!important}
 .acct-menu button{width:100%;background:none;border:none;color:var(--txt);font-family:inherit;
   font-size:13px;font-weight:600;text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer}
 .acct-menu button:active{background:var(--card)}
+/* ===== Language toggle (top-left pill) ===== */
+.lang-toggle{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:210;
+  display:flex;align-items:center;gap:0;background:rgba(27,25,34,.72);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);border-radius:100px;padding:3px;
+  box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.lang-toggle button{background:none;border:none;color:var(--muted);font-family:inherit;
+  font-size:11px;font-weight:700;letter-spacing:.02em;padding:5px 11px;border-radius:100px;
+  cursor:pointer;line-height:1;transition:.15s}
+.lang-toggle button.on{background:var(--accent);color:#160d09}
+.lang-toggle button:active{opacity:.8}
+/* nudge header controls down so the pill never overlaps them */
+header{padding-top:54px}
+.cf-mode-toggle{top:98px}
+.acct{top:54px}
 </style>
 </head>
 <body class="state-boot">
+<div class="lang-toggle" id="lang-toggle">
+  <button type="button" data-lang="ko">한국어</button>
+  <button type="button" data-lang="en">EN</button>
+</div>
 <div id="boot"><div class="boot-spin"></div></div>
 
 <div id="auth-screen">
@@ -836,7 +854,7 @@ body:not(.state-app) .nav{display:none!important}
       </div>
       <div class="fld" id="f-status-fld"><label>상태</label>
         <select id="f-status">
-          <option>미개봉</option><option>개봉</option><option>배송전</option><option>위시</option>
+          <option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option><option value="위시">위시</option>
         </select>
       </div>
     </div>
@@ -890,7 +908,7 @@ body:not(.state-app) .nav{display:none!important}
       </div>
       <div class="row2">
         <div class="fld"><label>컬러</label><input id="sx-e-color" placeholder="블랙"></div>
-        <div class="fld"><label>상태</label><select id="sx-e-status"><option>미개봉</option><option>개봉</option></select></div>
+        <div class="fld"><label>상태</label><select id="sx-e-status"><option value="미개봉">미개봉</option><option value="개봉">개봉</option></select></div>
       </div>
       <div class="fld"><label>교환일</label><input id="sx-e-date" type="date"></div>
     </div>
@@ -903,6 +921,406 @@ body:not(.state-app) .nav{display:none!important}
   </div>
 </div>
 
+<script>
+/* ====================== i18n engine (KO ⇄ EN display layer) ====================== */
+/* Translates DOM text/attributes at runtime from a KO→EN dictionary WITHOUT
+   touching underlying data or program logic. User data (artist/album/notes/
+   prices/dates) is never translated — only known UI strings in the dictionary. */
+const I18N = {
+  /* --- Auth / boot --- */
+  "내 바이닐 컬렉션을 어디서나":"Your vinyl collection, anywhere",
+  "로그인":"Sign in",
+  "회원가입":"Sign up",
+  "이메일":"Email",
+  "비밀번호 (6자 이상)":"Password (6+ chars)",
+  "비밀번호 확인":"Confirm password",
+  "또는":"or",
+  "Google로 계속하기":"Continue with Google",
+  "로그인하면 이 기기의 기존 기록이 계정으로 한 번 옮겨집니다.":"Signing in moves this device's existing records to your account once.",
+  "계정":"Account",
+  "로그아웃":"Sign out",
+  "불러오는 중…":"Loading…",
+  "데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.":"Couldn't load your data. Please try again shortly.",
+  "⚙️ 먼저 코드 안 firebaseConfig에 본인 Firebase 설정을 붙여넣어 주세요. (콘솔 → 프로젝트 설정 → 내 앱)":"⚙️ First paste your Firebase config into firebaseConfig in the code. (Console → Project settings → Your apps)",
+  /* --- auth error map (mapErr) --- */
+  "이메일 형식이 올바르지 않아요.":"That email address isn't valid.",
+  "비밀번호를 입력해 주세요.":"Please enter a password.",
+  "비밀번호는 6자 이상이어야 해요.":"Password must be at least 6 characters.",
+  "이미 가입된 이메일이에요. 로그인해 주세요.":"This email is already registered. Please sign in.",
+  "이메일 또는 비밀번호가 올바르지 않아요.":"Email or password is incorrect.",
+  "가입되지 않은 이메일이에요.":"This email isn't registered.",
+  "비밀번호가 올바르지 않아요.":"Incorrect password.",
+  "시도가 너무 많아요. 잠시 후 다시 시도해 주세요.":"Too many attempts. Please try again shortly.",
+  "네트워크 연결을 확인해 주세요.":"Please check your network connection.",
+  "이 로그인 방식이 콘솔에서 켜져 있지 않아요. (Authentication → Sign-in method)":"This sign-in method isn't enabled in the console. (Authentication → Sign-in method)",
+  "이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)":"This domain isn't authorized for auth. (Console → Authentication → Settings → Authorized domains)",
+  "비밀번호가 서로 달라요.":"Passwords don't match.",
+  /* --- header / nav --- */
+  "자켓/LP판 보기 전환":"Toggle cover / disc view",
+  "자켓 ↔ LP판 보기":"Cover ↔ disc view",
+  "LP판 보기":"Disc view",
+  "자켓 보기":"Cover view",
+  "LP판 보기로 전환":"Switch to disc view",
+  "자켓 보기로 전환":"Switch to cover view",
+  "보관함":"Library",
+  "달력":"Calendar",
+  "통계":"Stats",
+  "마이":"Me",
+  "이전으로":"Previous",
+  "다음으로":"Next",
+  "이전 달":"Previous month",
+  "다음 달":"Next month",
+  /* --- toolbar / chips / sort / view --- */
+  "가수, 앨범, 컬러 검색…":"Search artist, album, color…",
+  "전체 장르":"All genres",
+  "기본순":"Default",
+  "앨범명 순":"By album",
+  "가수 순":"By artist",
+  "별점 순":"By rating",
+  "가격 높은순":"Price: high→low",
+  "가격 낮은순":"Price: low→high",
+  "앨범형":"Grid",
+  "리스트형":"List",
+  "전체":"All",
+  "배송전":"Pre-arrival",
+  "보유중":"Owned",
+  "판매·교환":"Sold/Exchanged",
+  "위시":"Wishlist",
+  "개봉":"Opened",
+  "미개봉":"Sealed",
+  /* --- status chips / badges --- */
+  "판매완료":"Sold",
+  "교환":"Exchanged",
+  "선물함":"Gifted",
+  "선물":"Gift",
+  "미개봉 · 보유중":"Sealed · Owned",
+  "개봉 · 보유중":"Opened · Owned",
+  "확인필요 · 보유중":"Needs check · Owned",
+  "확인필요":"Needs check",
+  "도착 전":"Pre-arrival",
+  /* --- counts / empty states --- */
+  "장 표시 중":" items shown",
+  "장":" items",
+  "총 ":"Total ",
+  "보유 ":"Owned ",
+  "개봉 ":"Opened ",
+  "미개봉 ":"Sealed ",
+  "검색 결과가 없어요":"No results found",
+  "위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요":"Your wishlist is empty — add one with the + button at the bottom right",
+  "이 달엔 기록이 없어요":"No records this month",
+  "표시할 LP가 없어요":"No records to show",
+  /* --- FAB / add sheet --- */
+  "LP 추가":"Add Vinyl",
+  "위시 추가":"Add to Wishlist",
+  "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
+  "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
+  "📷 사진에서 직접 올리기":"📷 Upload from a photo",
+  "또는 이미지 주소(URL) 붙여넣기":"Or paste an image address (URL)",
+  "적용":"Apply",
+  "가수":"Artist",
+  "앨범명":"Album",
+  "예: Tom Misch":"e.g. Tom Misch",
+  "예: Geography":"e.g. Geography",
+  "예: Adele":"e.g. Adele",
+  "예: 30":"e.g. 30",
+  "앨범아트 검색 중…":"Searching for cover art…",
+  "컬러":"Color",
+  "상태":"Status",
+  "팔레트 열기":"Open palette",
+  "구매처":"Store",
+  "단가 (원)":"Unit price (KRW)",
+  "구매일자":"Purchase date",
+  "개봉일자":"Opened date",
+  "비고 (선택)":"Notes (optional)",
+  "메모":"Note",
+  "취소":"Cancel",
+  "보관함에 추가":"Add to Library",
+  "앨범아트를 찾았어요 ✓":"Found cover art ✓",
+  "앨범아트를 찾지 못했어요":"Couldn't find cover art",
+  "이 커버로 저장돼요 ✓":"This cover will be saved ✓",
+  "업로드 중…":"Uploading…",
+  "올린 사진으로 저장돼요 ✓":"Your uploaded photo will be saved ✓",
+  "사진 준비됨 ✓":"Photo ready ✓",
+  "입력한 이미지로 저장돼요 ✓":"Your image will be saved ✓",
+  "이미지를 불러오지 못했어요":"Couldn't load the image",
+  "가수 또는 앨범명을 입력해주세요":"Please enter an artist or album name",
+  /* --- detail rows / actions --- */
+  "장르":"Genre",
+  "단가":"Unit price",
+  "결제":"Payment",
+  "구매일":"Purchase date",
+  "도착일":"Arrival date",
+  "판매일":"Sale date",
+  "판매가":"Sale price",
+  "차익":"Profit",
+  "비고":"Notes",
+  "커버 수정":"Edit cover",
+  "좋아요":"Like",
+  "바이닐 꾸미기":"Decorate vinyl",
+  "📦 배송완료로 표시":"📦 Mark as delivered",
+  "🛒 구매완료로 표시":"🛒 Mark as purchased",
+  "✏️ 정보 수정":"✏️ Edit details",
+  "정보 수정":"Edit details",
+  "판매/교환가 (원)":"Sale/Exchange price (KRW)",
+  "저장":"Save",
+  "예: 가요, R&B/소울":"e.g. K-Pop, R&B/Soul",
+  /* --- mark delivered / purchased forms --- */
+  "배송완료 처리":"Mark as delivered",
+  "도착일 입력 생략":"Skip arrival date",
+  "보유중으로 이동":"Move to Owned",
+  "구매완료 처리":"Mark as purchased",
+  /* --- cover picker --- */
+  "맞는 커버를 선택하거나, 직접 올리세요":"Pick a matching cover, or upload your own",
+  "검색 결과가 없어요 — 직접 올려보세요":"No results — try uploading your own",
+  "🎨 LP판 꾸미기 (색·사진)":"🎨 Decorate disc (color/photo)",
+  /* --- vinyl decorate (Pro) --- */
+  "바이닐 꾸미기는 Pro 전용 기능이에요":"Vinyl decoration is a Pro-only feature",
+  "바이닐 판의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.":"Fine-tune the color and opacity of each disc to make your collection truly your own.",
+  "Pro 멤버십 알아보기":"Learn about Pro membership",
+  "(데모: Pro 켜기)":"(Demo: turn on Pro)",
+  "결제 연동은 준비 중이에요. 곧 만나요!":"Payments are coming soon. See you then!",
+  "🎨 바이닐 꾸미기 ":"🎨 Decorate vinyl ",
+  "색상":"Color",
+  "사진":"Photo",
+  "판 색상":"Disc color",
+  "투명도 ":"Opacity ",
+  "기본값으로 되돌리기":"Reset to default",
+  "레코드판 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.":"Your photo fits inside the record-shaped guide. Drag with one finger to move, pinch with two to resize/tilt.",
+  "사진을 올려주세요":"Please add a photo",
+  "📷 사진 올리기":"📷 Add photo",
+  "크기 ":"Size ",
+  "기울기 ":"Tilt ",
+  "이 사진으로 저장":"Save this photo",
+  "사진 제거":"Remove photo",
+  "사진을 먼저 올려주세요":"Please add a photo first",
+  /* --- sell / exchange sheet --- */
+  "판매 / 교환":"Sell / Exchange",
+  "판매":"Sell",
+  "어떤 LP를 내보내나요? (보관함에서 선택)":"Which record are you parting with? (pick from Library)",
+  "가수·앨범 검색":"Search artist · album",
+  "판매가 (원)":"Sale price (KRW)",
+  "교환으로 받은 앨범":"Album received in exchange",
+  "교환일":"Exchange date",
+  "메모 (선택)":"Note (optional)",
+  "예: 당근에서 교환":"e.g. exchanged on Karrot",
+  "등록":"Register",
+  "(제목 없음)":"(no title)",
+  "판매/교환할 LP를 보관함에서 선택해주세요":"Please pick a record from your Library to sell/exchange",
+  "선택한 LP를 찾을 수 없어요":"Couldn't find the selected record",
+  "판매가를 입력해주세요":"Please enter a sale price",
+  "교환으로 받은 앨범의 가수 또는 앨범명을 입력해주세요":"Please enter the artist or album of the record you received",
+  /* --- my page / collections --- */
+  "마이페이지":"My Page",
+  "내 컬렉션을 만들어 보세요":"Create your own collections",
+  "내 컬렉션":"My Collections",
+  "+ 새 컬렉션":"+ New collection",
+  "좋아요한 앨범":"Liked albums",
+  "내 취향 요약":"My Taste Summary",
+  "아직 컬렉션이 없어요.":"No collections yet.",
+  "나만의 플레이리스트처럼 LP를 모아보세요.":"Gather records like your own playlists.",
+  "제목 없음":"Untitled",
+  "아직 좋아요한 앨범이 없어요.":"No liked albums yet.",
+  "앨범 상세에서 ♥를 눌러보세요.":"Tap ♥ in an album's detail view.",
+  "아직 데이터가 부족해요.":"Not enough data yet.",
+  "최애 아티스트":"Top artists",
+  "최애 장르":"Top genres",
+  "바이닐 컬러 분포":"Vinyl color breakdown",
+  "자주 간 구매처":"Frequent stores",
+  "수집 연대기":"Collection timeline",
+  "소장 가치":"Collection value",
+  "데이터 없음":"No data",
+  "총 구매가":"Total spent",
+  "판매 차익":"Sale profit",
+  "가장 잘 판 LP":"Best sale",
+  "현재가는 판매 기록 기준 추정값이에요.":"Current value is estimated from sale records.",
+  /* --- collection sheets --- */
+  "새 컬렉션":"New collection",
+  "컬렉션 수정":"Edit collection",
+  "컬렉션 이름":"Collection name",
+  "예) 비 오는 날 듣는 LP":"e.g. Records for rainy days",
+  "설명 (선택)":"Description (optional)",
+  "간단한 메모":"A short note",
+  "커버 색":"Cover color",
+  "컬렉션 이름을 입력해주세요":"Please enter a collection name",
+  "+ LP 담기":"+ Add records",
+  "삭제":"Delete",
+  "수정":"Edit",
+  "담긴 LP가 없어요.":"No records added.",
+  "‘+ LP 담기’로 추가해보세요.":"Add some with '+ Add records'.",
+  "빼기":"Remove",
+  "LP 담기":"Add records",
+  "완료":"Done",
+  /* --- stats --- */
+  "보유 중":"Owned",
+  "총 판매가":"Total sales",
+  "총 판매 차익":"Total profit",
+  "별점 통계":"Rating stats",
+  "평균 · 평가한 앨범":"average · rated albums",
+  "컬러 분포":"Color breakdown",
+  "주요 구매처":"Top stores",
+  /* --- cover flow info --- */
+  "탭하면 상세 정보":"Tap for details",
+  "후보":"candidates",
+  /* --- payment options --- */
+  "카드":"Card",
+  "현금":"Cash",
+  "복지포인트":"Welfare points",
+  /* --- preview toast --- */
+  "🔇 미리듣기를 찾지 못했어요":"🔇 Couldn't find a preview",
+  "재생할 수 없어요":"Can't play this",
+  "미리듣기":"Preview",
+  /* --- common color names --- */
+  "블랙":"Black","화이트":"White","블루":"Blue","레드":"Red","그레이":"Gray",
+  "옐로우":"Yellow","퍼플":"Purple","오렌지":"Orange","투명":"Clear","마블":"Marble",
+  "자주":"Maroon","그린":"Green","기타":"Other",
+  /* --- genres (common) --- */
+  "팝":"Pop","록":"Rock","R&B·소울":"R&B/Soul","R&B/소울":"R&B/Soul","가요":"K-Pop",
+  "힙합":"Hip-hop","클래식":"Classical","인디":"Indie",
+  /* --- misc --- */
+  "닫기":"Close"
+};
+let LANG = localStorage.getItem('lp_lang') || (navigator.language && navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
+function tr(ko){ return (LANG==='en' && I18N[ko]!=null) ? I18N[ko] : ko; }
+
+(function(){
+  const ORIG = new WeakMap();        // text node -> original Korean nodeValue
+  const ATTR_ORIG = new WeakMap();   // element -> {attr: originalValue}
+  const ATTRS = ['placeholder','aria-label','title'];
+  // fallback rules for interpolated count strings (number + Korean unit word)
+  const UNIT = [
+    [/^(\d[\d,]*)\s*장$/, '$1 items'],
+    [/^(\d[\d,]*)\s*개의 컬렉션$/, '$1 collections'],
+    [/^(\d[\d,]*)\s*개$/, '$1'],
+  ];
+  let observer=null, suppress=false;
+
+  function translateString(s){
+    const t=s.trim();
+    if(!t) return null;
+    if(I18N[t]!=null){
+      // preserve surrounding whitespace
+      const lead=s.match(/^\s*/)[0], trail=s.match(/\s*$/)[0];
+      return lead+I18N[t]+trail;
+    }
+    for(const [re,rep] of UNIT){ if(re.test(t)) return s.replace(t, t.replace(re,rep)); }
+    return null;
+  }
+
+  function handleTextNode(n){
+    if(LANG==='en'){
+      let orig = ORIG.has(n) ? ORIG.get(n) : n.nodeValue;
+      const out = translateString(orig);
+      if(out!=null && out!==n.nodeValue){
+        if(!ORIG.has(n)) ORIG.set(n, n.nodeValue);
+        suppress=true; n.nodeValue=out; suppress=false;
+      }
+    }else{
+      if(ORIG.has(n)){ suppress=true; n.nodeValue=ORIG.get(n); suppress=false; ORIG.delete(n); }
+    }
+  }
+
+  function handleAttrs(el){
+    if(!el || el.nodeType!==1) return;
+    let store = ATTR_ORIG.get(el);
+    ATTRS.forEach(a=>{
+      if(!el.hasAttribute(a)) return;
+      if(LANG==='en'){
+        const orig = (store && store[a]!=null) ? store[a] : el.getAttribute(a);
+        const out = translateString(orig);
+        if(out!=null && out!==el.getAttribute(a)){
+          if(!store){ store={}; ATTR_ORIG.set(el,store); }
+          if(store[a]==null) store[a]=el.getAttribute(a);
+          suppress=true; el.setAttribute(a,out); suppress=false;
+        }
+      }else if(store && store[a]!=null){
+        suppress=true; el.setAttribute(a, store[a]); suppress=false; store[a]=null;
+      }
+    });
+    // translate value of <input type=button/submit> only
+    if(el.tagName==='INPUT' && (el.type==='button'||el.type==='submit')){
+      let s2=ATTR_ORIG.get(el);
+      if(LANG==='en'){
+        const orig=(s2&&s2._val!=null)?s2._val:el.value;
+        const out=translateString(orig);
+        if(out!=null && out!==el.value){ if(!s2){s2={};ATTR_ORIG.set(el,s2);} if(s2._val==null)s2._val=el.value; suppress=true; el.value=out; suppress=false; }
+      }else if(s2&&s2._val!=null){ suppress=true; el.value=s2._val; suppress=false; s2._val=null; }
+    }
+  }
+
+  function walk(root){
+    if(!root) return;
+    if(root.nodeType===3){ handleTextNode(root); return; }
+    if(root.nodeType!==1) return;
+    if(root.tagName==='SCRIPT'||root.tagName==='STYLE') return;
+    handleAttrs(root);
+    const tw=document.createTreeWalker(root, NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT, {
+      acceptNode(n){
+        if(n.nodeType===1 && (n.tagName==='SCRIPT'||n.tagName==='STYLE')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let n;
+    while((n=tw.nextNode())){
+      if(n.nodeType===3) handleTextNode(n);
+      else handleAttrs(n);
+    }
+  }
+
+  function translateAll(){ walk(document.body); }
+  window.__i18nTranslate = translateAll;
+
+  function startObserver(){
+    if(observer) return;
+    observer = new MutationObserver(muts=>{
+      if(suppress) return;
+      if(LANG!=='en'){
+        // still need to restore on KO if mutations re-inject Korean; but restore is no-op for fresh nodes
+      }
+      for(const m of muts){
+        if(m.type==='childList'){
+          m.addedNodes.forEach(node=>{ if(LANG==='en') walk(node); });
+        }else if(m.type==='characterData'){
+          if(LANG==='en' && m.target && m.target.nodeType===3) handleTextNode(m.target);
+        }else if(m.type==='attributes'){
+          if(LANG==='en' && m.target) handleAttrs(m.target);
+        }
+      }
+    });
+    observer.observe(document.body,{childList:true,subtree:true,characterData:true,
+      attributes:true,attributeFilter:ATTRS});
+  }
+
+  function setLang(l){
+    LANG=l;
+    try{ localStorage.setItem('lp_lang', l); }catch(e){}
+    document.documentElement.lang = l;
+    // update toggle highlight
+    document.querySelectorAll('#lang-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.lang===l));
+    translateAll();
+    // re-render views whose render functions bake in language-specific text
+    try{ if(typeof renderCal==='function' && document.querySelector('#view-cal') && document.querySelector('#view-cal').classList.contains('on')) renderCal(); }catch(e){}
+    try{ if(typeof renderStats==='function') renderStats(); }catch(e){}
+    try{ if(typeof renderGrid==='function') renderGrid(); }catch(e){}
+    try{ if(typeof layoutCoverFlow==='function') layoutCoverFlow(); }catch(e){}
+    try{ if(typeof renderTaste==='function' && document.querySelector('#view-my') && document.querySelector('#view-my').classList.contains('on')) renderTaste(); }catch(e){}
+    translateAll();
+  }
+  window.__setLang = setLang;
+
+  function init(){
+    document.documentElement.lang = LANG;
+    document.querySelectorAll('#lang-toggle button').forEach(b=>{
+      b.classList.toggle('on', b.dataset.lang===LANG);
+      b.addEventListener('click', ()=>setLang(b.dataset.lang));
+    });
+    startObserver();
+    if(LANG==='en') translateAll();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+/* ==================== end i18n engine ==================== */
+</script>
 <script>
 const SEED = [{"no": 1, "artist": "Tom Misch", "album": "Geography", "color": "그레이", "store": "레코드스톡", "orig": 41000, "price": 41000, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 2, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 3, "artist": "Adele", "album": "25", "color": "블랙", "store": "yes24", "orig": 40800, "price": 40800, "pay": "복지포인트", "buy": "2022-05-01", "arrive": "2022-04-28", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 4, "artist": "Sam Smith", "album": "The Thrill of it all", "color": "화이트", "store": "yes24", "orig": 35800, "price": 35800, "pay": "복지포인트", "buy": "2022-05-03", "arrive": "2022-05-03", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 5, "artist": "데이먼스 이어", "album": "Headache", "color": "자주", "store": "SSE RECORD", "orig": 45000, "price": 45000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 6, "artist": "Christian Kuria", "album": "Borderline", "color": "그레이", "store": "공홈", "orig": 39000, "price": 39000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 7, "artist": "Ed Seeran", "album": "=(equals)", "color": "블랙", "store": "레코드스톡", "orig": 38000, "price": 38000, "pay": "카드", "buy": "2022-05-16", "arrive": "2022-05-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 8, "artist": "-", "album": "라라랜드", "color": "블랙", "store": "선물", "orig": null, "price": null, "pay": "", "buy": "2022-05-22", "arrive": "2022-05-22", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 from 채린", "genre": "OST"}, {"no": 9, "artist": "오존", "album": "Tallgrass / R ", "color": "블랙", "store": "yes24", "orig": 33200, "price": 33200, "pay": "복지포인트", "buy": "2022-06-01", "arrive": "2022-06-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 10, "artist": "92914", "album": "sunset and home", "color": "블랙", "store": "공홈", "orig": 48000, "price": 48000, "pay": "카드", "buy": "2022-06-02", "arrive": "2022-06-02", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 11, "artist": "-", "album": "그해우리는 OST", "color": "블랙", "store": "당근마켓", "orig": 47700, "price": 50000, "pay": "현금", "buy": "2022-06-04", "arrive": "2022-06-04", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 12, "artist": "AKMU", "album": "낙하", "color": "블루", "store": "당근마켓", "orig": 56800, "price": 70000, "pay": "현금", "buy": "2022-07-15", "arrive": "2022-07-15", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 13, "artist": "검정치마", "album": "TEAM BABY", "color": "스플레터", "store": "yes24", "orig": 55000, "price": 45000, "pay": "카드", "buy": "2022-07-28", "arrive": "2022-11-03", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 14, "artist": "Ed Seeran", "album": "DIVIDE", "color": "블랙", "store": "팍스뮤직", "orig": 58300, "price": 55000, "pay": "카드", "buy": "2022-08-15", "arrive": "2022-08-15", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 15, "artist": "LANA DEL LAY", "album": "BORN TO DIE", "color": "레드", "store": "중고나라", "orig": 52300, "price": 25000, "pay": "현금", "buy": "2022-09-26", "arrive": "2022-09-26", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 16, "artist": "이강승", "album": "Korean Dream ", "color": "블랙", "store": "공홈", "orig": 43200, "price": 35000, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-04", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 17, "artist": "이강승", "album": "In other words it's all made by Kyaongsuk", "color": "블랙", "store": "공홈", "orig": 43200, "price": 35000, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-04", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 18, "artist": "Mariah Carey", "album": "Merry Christmas", "color": "레드", "store": "yes24", "orig": 28600, "price": 28600, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-11", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 19, "artist": "백예린", "album": "선물", "color": "블랙", "store": "yes24", "orig": 47600, "price": 38600, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-06-05", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 20, "artist": "-", "album": "뷰티인사이드 OST", "color": "퍼플", "store": "yes24", "orig": 80600, "price": 65300, "pay": "카드", "buy": "2023-01-25", "arrive": "2023-04-30", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 21, "artist": "Honne", "album": "Love Me / Love Me Not ", "color": "블랙", "store": "미드나잇스낵", "orig": 46600, "price": 49000, "pay": "카드", "buy": "2023-02-17", "arrive": "2023-02-23", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 22, "artist": "조성진", "album": "쇼팽 : 피아노 협주곡 2번 & 스케르초", "color": "블랙", "store": "알라딘", "orig": 66500, "price": 40900, "pay": "카드", "buy": "2023-02-17", "arrive": "2023-02-18", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "클래식"}, {"no": 23, "artist": "Ed Seeran", "album": "-(subtract)", "color": "옐로우", "store": "yes24", "orig": 44100, "price": 35800, "pay": "복지포인트", "buy": "2023-03-08", "arrive": "2023-05-10", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 24, "artist": "죠지", "album": "FRR", "color": "블랙", "store": "켄타포", "orig": 60490, "price": 49000, "pay": "카드", "buy": "2023-05-28", "arrive": "2023-08-19", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 25, "artist": "Lauv", "album": "I met you when i was 18", "color": "블루", "store": "yes24", "orig": 67400, "price": 51100, "pay": "카드", "buy": "2023-06-13", "arrive": "2023-07-29", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 26, "artist": "아이유", "album": "꽃갈피", "color": "블랙", "store": "EDAM", "orig": 60000, "price": 60000, "pay": "현금", "buy": "2023-08-16", "arrive": null, "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "아림 계좌이체", "genre": "가요"}, {"no": 27, "artist": "어반자카파", "album": "1집 01", "color": "불투명 화이트", "store": "yes24", "orig": 65000, "price": 45000, "pay": "카드", "buy": "2023-08-18", "arrive": null, "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "인디"}, {"no": 28, "artist": "라쿠나", "album": "Summer Tales", "color": "블랙", "store": "yes24", "orig": 49500, "price": 40100, "pay": "카드", "buy": "2023-10-04", "arrive": "2023-10-05", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 29, "artist": "잔나비", "album": "The land of fantasy", "color": "블루&옐로우", "store": "선물", "orig": null, "price": null, "pay": "", "buy": "2024-05-31", "arrive": null, "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 from  유종", "genre": "록"}, {"no": 30, "artist": "검정치마", "album": "Teen Troubles", "color": "에메랄드그린", "store": "yes24", "orig": 95000, "price": 77000, "pay": "카드", "buy": "2024-08-14", "arrive": "2024-11-02", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 31, "artist": "혁오", "album": "AAA", "color": "투명 마블", "store": "CREAM", "orig": 65900, "price": 90800, "pay": "카드", "buy": "2024-10-19", "arrive": "2024-10-18", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 32, "artist": "-", "album": "블랙팬서", "color": "블랙", "store": "번개장터", "orig": 66000, "price": 30000, "pay": "현금", "buy": "2024-10-26", "arrive": "2024-11-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 33, "artist": "MILLIC", "album": "VIDA", "color": "오렌지", "store": "알라딘", "orig": 49000, "price": 49000, "pay": "카드", "buy": "2024-10-28", "arrive": "2024-11-01", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 34, "artist": "카더가든", "album": "Harmony", "color": "투명", "store": "yes24", "orig": 60500, "price": 49000, "pay": "카드", "buy": "2024-09-23", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 35, "artist": "카더가든", "album": "Harmony", "color": "투명", "store": "yes24", "orig": 60500, "price": 49000, "pay": "카드", "buy": "2024-09-23", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 36, "artist": "이센스", "album": "저금통", "color": "블랙", "store": "서레페", "orig": 59600, "price": 63000, "pay": "카드", "buy": "2024-09-30", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 37, "artist": "ZionT", "album": "Red Light", "color": "레드", "store": "yes24", "orig": 67900, "price": 50000, "pay": "카드", "buy": "2024-11-01", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 38, "artist": "ZionT", "album": "Red Light", "color": "레드", "store": "yes24", "orig": 67900, "price": 50000, "pay": "카드", "buy": "2024-11-01", "arrive": null, "status": "도착 전", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 39, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 40, "artist": "Adele", "album": "21", "color": "블랙", "store": "yes24", "orig": 40800, "price": 40800, "pay": "복지포인트", "buy": "2022-05-03", "arrive": "2022-05-03", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 41, "artist": "Christian Kuria", "album": "Borderline", "color": "그레이", "store": "공홈", "orig": 39000, "price": 39000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 42, "artist": "예지&오혁", "album": "Year to year", "color": "블랙", "store": "yes24", "orig": 20400, "price": 20400, "pay": "복지포인트", "buy": "2022-05-09", "arrive": "2022-05-11", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 43, "artist": "폴킴", "album": "pkalbum", "color": "다크그린", "store": "yes24", "orig": 56400, "price": 56400, "pay": "복지포인트", "buy": "2022-05-12", "arrive": "2022-11-01", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 44, "artist": "프롬", "album": "Midnight Candy", "color": "아이스블루", "store": "SSE RECORD", "orig": 49500, "price": 45800, "pay": "카드", "buy": "2022-08-19", "arrive": "2023-05-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 45, "artist": "프롬", "album": "Midnight Candy", "color": "아이스블루", "store": "SSE RECORD", "orig": 49500, "price": 45800, "pay": "카드", "buy": "2022-08-19", "arrive": "2023-05-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 46, "artist": "잔나비", "album": "The land of fantasy", "color": "옐로우", "store": "F.O.F", "orig": 59000, "price": 59000, "pay": "카드", "buy": "2022-09-06", "arrive": "2022-09-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 47, "artist": "이강승", "album": "In other words it's all made by Kyaongsuk", "color": "블랙", "store": "공홈", "orig": 43200, "price": 35000, "pay": "카드", "buy": "2022-11-04", "arrive": "2022-11-04", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 48, "artist": "백예린", "album": "tellusboutyourself", "color": "블랙", "store": "yes24", "orig": 65000, "price": 60000, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 49, "artist": "백예린", "album": "Turn on that Blue Vinyl ", "color": "블루", "store": "yes24", "orig": 67700, "price": 52900, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 50, "artist": "백예린", "album": "선물", "color": "블랙", "store": "팍스뮤직", "orig": 47600, "price": 45000, "pay": "카드", "buy": "2022-11-25", "arrive": "2023-06-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 51, "artist": "-", "album": "뷰티인사이드 OST", "color": "퍼플", "store": "yes24", "orig": 80600, "price": 65300, "pay": "카드", "buy": "2023-01-25", "arrive": "2023-04-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 52, "artist": "박지윤", "album": "꽃, 다시 첫번째", "color": "투명", "store": "김밥레코즈", "orig": 60400, "price": 49000, "pay": "카드", "buy": "2023-02-23", "arrive": "2023-03-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 53, "artist": " DAY6", "album": "MOONRISE", "color": "오렌지", "store": "서울바이닐", "orig": 104900, "price": 82500, "pay": "카드", "buy": "2023-04-09", "arrive": "2023-05-02", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 54, "artist": "-", "album": "나의아저씨 OST", "color": "블랙", "store": "선물", "orig": null, "price": null, "pay": "", "buy": "2023-05-17", "arrive": "2023-05-17", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 from 승열님", "genre": "OST"}, {"no": 55, "artist": "wave to earth", "album": "flaws and all", "color": "마블", "store": "yes24", "orig": 84300, "price": 54800, "pay": "카드", "buy": "2023-05-22", "arrive": null, "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 56, "artist": "죠지", "album": "FRR", "color": "블랙", "store": "켄타포", "orig": 60490, "price": 49000, "pay": "카드", "buy": "2023-05-28", "arrive": "2023-08-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 57, "artist": "Lauv", "album": "I met you when i was 18", "color": "블루", "store": "yes24", "orig": 67400, "price": 51100, "pay": "카드", "buy": "2023-06-13", "arrive": "2023-07-29", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 58, "artist": "유재하", "album": "사랑하기떄문에", "color": "마블", "store": "드림레코드", "orig": 77000, "price": 62400, "pay": "카드", "buy": "2023-06-15", "arrive": "2023-06-22", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 59, "artist": "백예린", "album": "tellusboutyourself", "color": "블랙", "store": "팍스뮤직", "orig": 65000, "price": 70000, "pay": "현금", "buy": "2023-08-05", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 60, "artist": "백예린", "album": "Turn on that Blue Vinyl ", "color": "블루", "store": "팍스뮤직", "orig": 67700, "price": 59000, "pay": "현금", "buy": "2023-08-05", "arrive": "2023-08-05", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 61, "artist": "코드쿤스트", "album": " People", "color": " Snow White & Heavenly Pink", "store": "yes24", "orig": 80600, "price": 65300, "pay": "카드", "buy": "2024-04-18", "arrive": null, "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 62, "artist": "AKMU", "album": "Love Episode", "color": "레드", "store": "yes24", "orig": 61700, "price": 50000, "pay": "카드", "buy": "2024-06-17", "arrive": "2024-10-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "가요"}, {"no": 63, "artist": "검정치마", "album": "Teen Troubles", "color": "에메랄드그린", "store": "yes24", "orig": 95000, "price": 80000, "pay": "현금", "buy": "2024-08-14", "arrive": "2024-11-02", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "판규 계좌이체", "genre": "가요"}, {"no": null, "artist": "카더가든", "album": "Apartment", "color": "블랙마블", "store": "공홈", "orig": 66000, "price": 66000, "pay": "카드", "buy": "2023-08-29", "arrive": "2024-01-09", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 65, "artist": "-", "album": "헤어질결심 OST", "color": "투명", "store": "yes24", "orig": 91700, "price": 74300, "pay": "카드", "buy": "2024-09-26", "arrive": "2024-09-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 66, "artist": "-", "album": "헤어질결심 OST", "color": "투명", "store": "yes24", "orig": 91700, "price": 74300, "pay": "카드", "buy": "2024-09-26", "arrive": "2024-09-30", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "OST"}, {"no": 67, "artist": "빈지노", "album": "Nowitzki", "color": "클리어그린&화이트", "store": "김밥레코즈", "orig": 68750, "price": 66000, "pay": "카드", "buy": "2024-09-30", "arrive": "2024-10-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "힙합"}, {"no": 68, "artist": "혁오", "album": "AAA", "color": "투명 마블", "store": "CREAM", "orig": 65900, "price": 85600, "pay": "카드", "buy": "2024-10-19", "arrive": "2024-10-18", "status": "미개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "록"}, {"no": 69, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "선물", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 to 령원", "genre": "록"}, {"no": 70, "artist": "Lauv", "album": "How I’m Feeling", "color": "투명", "store": "미드나잇스낵", "orig": 52900, "price": 41000, "pay": "카드", "buy": "2023-05-05", "arrive": "2023-05-10", "status": "선물", "sellDate": null, "sellPrice": null, "profit": null, "note": "선물 to 수현", "genre": "팝"}, {"no": 71, "artist": "So!YoON! ", "album": "Episode1 : Love", "color": "블랙", "store": "yes24", "orig": 60500, "price": 17000, "pay": "카드", "buy": "2023-04-28", "arrive": null, "status": "확인필요", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "R&B·소울"}, {"no": 72, "artist": "Sia", "album": "Everyday is christmas snowman", "color": "레드 스플래터", "store": "김밥레코즈", "orig": 35000, "price": 35000, "pay": "카드", "buy": "2024-11-24", "arrive": "2024-11-26", "status": "개봉", "sellDate": null, "sellPrice": null, "profit": null, "note": "", "genre": "팝"}, {"no": 97, "artist": "김광석", "album": "김광석베스트앨범", "color": "블랙", "store": "테리픽잼", "orig": 85300, "price": 69500, "pay": "카드", "buy": "2022-06-02", "arrive": "2022-06-03", "status": "판매", "sellDate": "2024-10-09", "sellPrice": 100000, "profit": 30500, "note": "당근", "genre": "가요"}, {"no": 98, "artist": "잔나비", "album": "The land of fantasy", "color": "블랙", "store": "F.O.F", "orig": 59000, "price": 59000, "pay": "카드", "buy": "2022-09-06", "arrive": "2022-09-30", "status": "판매", "sellDate": "2024-10-19", "sellPrice": 94900, "profit": 35900, "note": "크림", "genre": "록"}, {"no": 99, "artist": "wave to earth", "album": "flaws and all", "color": "마블", "store": "yes24", "orig": 84300, "price": 54800, "pay": "카드", "buy": "2023-05-22", "arrive": null, "status": "판매", "sellDate": "2024-10-09", "sellPrice": 164000, "profit": 109200, "note": "크림", "genre": "록"}, {"no": 100, "artist": "92914", "album": "sunset and home", "color": "블랙", "store": "공홈", "orig": 48000, "price": 48000, "pay": "카드", "buy": "2022-06-02", "arrive": "2022-06-02", "status": "판매", "sellDate": "2024-10-09", "sellPrice": 90100, "profit": 42100, "note": "크림", "genre": "록"}, {"no": 101, "artist": "김아름", "album": "AQUA CITY", "color": "레드", "store": "인터파크", "orig": 46000, "price": 46000, "pay": "카드", "buy": "2022-05-04", "arrive": "2022-05-04", "status": "판매", "sellDate": "2024-08-10", "sellPrice": 42000, "profit": -4000, "note": "당근", "genre": "팝"}, {"no": 102, "artist": "데이먼스 이어", "album": "Headache", "color": "자주", "store": "SSE RECORD", "orig": 45000, "price": 45000, "pay": "카드", "buy": "2022-05-06", "arrive": "2022-05-30", "status": "판매", "sellDate": "2024-08-27", "sellPrice": 140000, "profit": 95000, "note": "당근", "genre": "R&B·소울"}, {"no": 103, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "복지포인트", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "판매", "sellDate": "2022-05-30", "sellPrice": 50000, "profit": 11400, "note": "당근", "genre": "록"}, {"no": null, "artist": "더발룬티어스", "album": "The Volunteers", "color": "블랙", "store": "yes24", "orig": 38600, "price": 38600, "pay": "카드", "buy": "2022-04-29", "arrive": "2022-05-01", "status": "판매", "sellDate": "2024-10-25", "sellPrice": 85400, "profit": 46800, "note": "크림", "genre": "록"}, {"no": null, "artist": "아이유", "album": "꽃갈피", "color": "블랙", "store": "EDAM", "orig": 60000, "price": 60000, "pay": "현금", "buy": "2023-08-16", "arrive": null, "status": "판매", "sellDate": "2024-10-28", "sellPrice": 152300, "profit": 92300, "note": "크림", "genre": "가요"}, {"no": null, "artist": "카더가든", "album": "Apartment", "color": "블랙마블", "store": "공홈", "orig": 66000, "price": 66000, "pay": "카드", "buy": "2023-08-29", "arrive": "2024-01-09", "status": "판매", "sellDate": "2024-11-01", "sellPrice": 83500, "profit": 17500, "note": "크림", "genre": "R&B·소울"}];
 let DATA = SEED.map((x,i)=>({...x, id:'s'+i}));
@@ -1493,7 +1911,7 @@ function openDetail(id, mode){
 // 정보 수정: edit all fields of an existing record
 function showEditForm(it){
   const wish=it.status==='위시';
-  const opt=(v,cur)=>`<option ${v===cur?'selected':''}>${v}</option>`;
+  const opt=(v,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${v}</option>`;
   const statuses=['미개봉','개봉','배송전','판매','교환','선물','위시'];
   const pays=['카드','현금','복지포인트','선물'];
   $('#dt-inline').innerHTML=`
@@ -1800,7 +2218,7 @@ function showArriveForm(it){
     <div class="inl-title">배송완료 처리</div>
     <label class="inl-check"><input type="checkbox" id="inl-nodate"> 도착일 입력 생략</label>
     <div class="fld" id="inl-datewrap"><label>도착일</label><input type="date" id="inl-arrive" value="${today}"></div>
-    <div class="fld"><label>상태</label><select id="inl-open"><option>미개봉</option><option>개봉</option></select></div>
+    <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option></select></div>
     <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
   $('#inl-nodate').onchange=e=>{ $('#inl-datewrap').style.display=e.target.checked?'none':''; };
   $('#inl-save').onclick=()=>{
@@ -1823,9 +2241,9 @@ function showBuyForm(it){
     </div>
     <div class="row2">
       <div class="fld"><label>구매일</label><input type="date" id="inl-buy" value="${today}"></div>
-      <div class="fld"><label>결제</label><select id="inl-pay"><option>카드</option><option>현금</option><option>복지포인트</option><option>선물</option></select></div>
+      <div class="fld"><label>결제</label><select id="inl-pay"><option value="카드">카드</option><option value="현금">현금</option><option value="복지포인트">복지포인트</option><option value="선물">선물</option></select></div>
     </div>
-    <div class="fld"><label>상태</label><select id="inl-open"><option>미개봉</option><option>개봉</option><option>배송전</option></select></div>
+    <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option></select></div>
     <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
   $('#inl-save').onclick=()=>{
     it.store=$('#inl-store').value.trim();
@@ -1981,7 +2399,7 @@ function schedulePreview(){
       // default-select the first candidate
       $('#pa-prev').innerHTML=`<img src="${cands[0].img}">`;
       $('#pa-prev').dataset.url=cands[0].img;
-      $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 걸 선택하세요`:'앨범아트를 찾았어요 ✓';
+      $('#pt-prev').textContent=cands.length>1?(LANG==='en'?`${cands.length} candidates — pick the right one`:`후보 ${cands.length}개 — 맞는 걸 선택하세요`):tr('앨범아트를 찾았어요 ✓');
       box.classList.add('show');
       box.innerHTML=cands.map((c,i)=>`<div class="pk-item ${i===0?'sel':''}" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('');
       box.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
@@ -2255,7 +2673,9 @@ function renderCal(){
   const first=new Date(calYear, calMonth, 1);
   const startDow=first.getDay();
   const daysInMonth=new Date(calYear, calMonth+1, 0).getDate();
-  $('#cal-title').textContent=`${calYear}년 ${calMonth+1}월`;
+  $('#cal-title').textContent = LANG==='en'
+    ? ['January','February','March','April','May','June','July','August','September','October','November','December'][calMonth]+' '+calYear
+    : `${calYear}년 ${calMonth+1}월`;
   // index events for this month by day
   const ev=calEvents().filter(e=>{ const d=new Date(e.date); return d.getFullYear()===calYear && d.getMonth()===calMonth; });
   const byDay={};
@@ -2335,7 +2755,7 @@ function renderStats(){
     <div style="font-weight:700;color:var(--txt);margin-bottom:8px">별점 통계</div>
     <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
       <span style="font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;color:var(--accent2)">${avg.toFixed(1)}</span>
-      <span style="color:var(--muted);font-size:12px">평균 · 평가한 앨범 ${rated.length}장</span>
+      <span style="color:var(--muted);font-size:12px"><span>평균 · 평가한 앨범</span> ${rated.length}<span>장</span></span>
     </div>
     ${buckets.map(([v,items],bi)=>`
       <div style="margin:8px 0">
@@ -2393,7 +2813,7 @@ function renderCollections(){
       <div class="coll-meta">
         <div class="nm">${escapeHtml(c.name||'제목 없음')}</div>
         ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
-        <div class="ct">LP ${ (c.ids||[]).length }장</div>
+        <div class="ct">LP ${ (c.ids||[]).length }<span>장</span></div>
       </div>
     </div>`;
   }).join('');
@@ -2466,7 +2886,7 @@ function renderTaste(){
   // 최애 아티스트
   cards.push(`<div class="t-card">
     <div class="t-head">최애 아티스트</div>
-    ${artistRank.map((r,i)=>`<div class="t-row"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.a)}</span><span class="t-val">${r.cnt}장${r.avg?` · ★${r.avg.toFixed(1)}`:''}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+    ${artistRank.map((r,i)=>`<div class="t-row"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.a)}</span><span class="t-val">${r.cnt}<span class="u">장</span>${r.avg?` · ★${r.avg.toFixed(1)}`:''}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
   // 최애 장르
@@ -2479,7 +2899,7 @@ function renderTaste(){
   cards.push(`<div class="t-card">
     <div class="t-head">바이닐 컬러 분포</div>
     <div class="t-colorbar">${colorTop.map(([c,n])=>`<span style="flex:${n};background:${colorHexFor(c)}" title="${escapeHtml(c)} ${n}장"></span>`).join('')}</div>
-    <div class="t-colorlegend">${colorTop.map(([c,n])=>`<span class="t-cl"><i style="background:${colorHexFor(c)}"></i>${escapeHtml(c)} ${Math.round(n/colorTotal*100)}%</span>`).join('')}</div>
+    <div class="t-colorlegend">${colorTop.map(([c,n])=>`<span class="t-cl"><i style="background:${colorHexFor(c)}"></i><span>${escapeHtml(c)}</span> ${Math.round(n/colorTotal*100)}%</span>`).join('')}</div>
   </div>`);
 
   // 단골 구매처
@@ -2723,7 +3143,7 @@ function layoutCoverFlow(){
     c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
   });
   const it=cfItems[cfIndex]; if(!it)return;
-  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap">탭하면 상세 정보 · ${it.genre?it.genre+' · ':''}${it.color||''}</div>`;
+  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 상세 정보</span> · ${it.genre?`<span>${it.genre}</span> · `:''}<span>${it.color||''}</span></div>`;
 }
 function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow(); }
 
