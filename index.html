@@ -2612,38 +2612,71 @@ $('#f-urlbtn').onclick=()=>{
 };
 
 /* ===== 바코드 스캔 → Discogs 조회 ===== */
-let _bcStream=null, _bcRAF=null, _bcDetector=null;
+let _bcStream=null, _bcRAF=null, _bcDetector=null, _bcReader=null, _bcControls=null;
 function bcStatus(msg){ const s=$('#bc-status'); if(s) s.textContent=msg||''; }
+function bcT(en,ko){ return isEN()?en:ko; }
+// ZXing(폴백) 지연 로드 — BarcodeDetector 미지원 브라우저/웹뷰용
+let _zxingPromise=null;
+function loadZXing(){
+  if(_zxingPromise) return _zxingPromise;
+  _zxingPromise = import('https://esm.sh/@zxing/browser@0.1.5').catch(()=>import('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm'));
+  return _zxingPromise;
+}
+function onBarcodeFound(num){
+  stopBarcodeScan();
+  try{ if(navigator.vibrate) navigator.vibrate(60); }catch(e){}
+  bcStatus(bcT('✓ Read: '+num,'✓ 인식됨: '+num));
+  lookupBarcode(num);
+}
 async function startBarcodeScan(){
   const box=$('#bc-box'), vid=$('#bc-video');
   box.style.display='block';
-  // BarcodeDetector 지원 여부
-  if(!('BarcodeDetector' in window)){
-    vid.style.display='none';
-    bcStatus('이 브라우저는 카메라 바코드 인식을 지원하지 않아요. 아래에 번호를 직접 입력하세요.');
-    return;
-  }
+  // 1) 카메라 열기 (권한 필요)
   try{
-    _bcDetector=new window.BarcodeDetector({formats:['ean_13','upc_a','ean_8','upc_e']});
-    _bcStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    vid.srcObject=_bcStream; vid.style.display='block'; await vid.play();
-    bcStatus('바코드를 카메라에 비춰주세요…');
-    const scan=async()=>{
-      if(!_bcStream) return;
-      try{
-        const codes=await _bcDetector.detect(vid);
-        if(codes && codes.length){ const num=codes[0].rawValue; stopBarcodeScan(); lookupBarcode(num); return; }
-      }catch(e){}
-      _bcRAF=requestAnimationFrame(scan);
-    };
-    _bcRAF=requestAnimationFrame(scan);
+    _bcStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
   }catch(err){
     vid.style.display='none';
-    bcStatus('카메라를 열 수 없어요. 아래에 번호를 직접 입력하세요.');
+    bcStatus(bcT('Cannot open the camera (permission needed). Enter the number below.',
+                 '카메라를 열 수 없어요(권한 필요). 아래에 번호를 직접 입력하세요.'));
+    return;
+  }
+  vid.srcObject=_bcStream; vid.setAttribute('playsinline',''); vid.style.display='block';
+  try{ await vid.play(); }catch(e){}
+  bcStatus(bcT('Point the barcode at the camera…','바코드를 카메라에 비춰주세요…'));
+  // 2) BarcodeDetector(네이티브) 우선
+  if('BarcodeDetector' in window){
+    try{
+      _bcDetector=new window.BarcodeDetector({formats:['ean_13','upc_a','ean_8','upc_e','code_128']});
+      const scan=async()=>{
+        if(!_bcStream) return;
+        try{
+          const codes=await _bcDetector.detect(vid);
+          if(codes && codes.length){ onBarcodeFound(codes[0].rawValue); return; }
+        }catch(e){}
+        _bcRAF=requestAnimationFrame(scan);
+      };
+      _bcRAF=requestAnimationFrame(scan);
+      return;
+    }catch(e){ /* ZXing 폴백으로 진행 */ }
+  }
+  // 3) ZXing 폴백 (BarcodeDetector 미지원 시)
+  try{
+    bcStatus(bcT('Loading scanner…','스캐너 불러오는 중…'));
+    const ZX=await loadZXing();
+    const Reader = ZX.BrowserMultiFormatReader || (ZX.default && ZX.default.BrowserMultiFormatReader);
+    _bcReader=new Reader();
+    bcStatus(bcT('Point the barcode at the camera…','바코드를 카메라에 비춰주세요…'));
+    _bcControls=await _bcReader.decodeFromStream(_bcStream, vid, (result)=>{
+      if(result){ onBarcodeFound(result.getText ? result.getText() : result.text); }
+    });
+  }catch(e){
+    bcStatus(bcT('Scanner unavailable. Enter the number below.','스캔을 사용할 수 없어요. 아래에 번호를 직접 입력하세요.'));
   }
 }
 function stopBarcodeScan(){
   if(_bcRAF){ cancelAnimationFrame(_bcRAF); _bcRAF=null; }
+  if(_bcControls){ try{ _bcControls.stop(); }catch(e){} _bcControls=null; }
+  if(_bcReader){ try{ _bcReader.reset && _bcReader.reset(); }catch(e){} _bcReader=null; }
   if(_bcStream){ _bcStream.getTracks().forEach(t=>t.stop()); _bcStream=null; }
   const vid=$('#bc-video'); if(vid){ vid.style.display='none'; try{vid.srcObject=null;}catch(e){} }
 }
