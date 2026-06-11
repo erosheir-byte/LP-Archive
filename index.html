@@ -647,18 +647,7 @@ body:not(.state-app) .nav{display:none!important}
 .acct-menu button{width:100%;background:none;border:none;color:var(--txt);font-family:inherit;
   font-size:13px;font-weight:600;text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer}
 .acct-menu button:active{background:var(--card)}
-/* ===== Language toggle (top-left pill) ===== */
-.lang-toggle{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:210;
-  display:flex;align-items:center;gap:0;background:rgba(27,25,34,.72);backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.14);border-radius:100px;padding:3px;
-  box-shadow:0 4px 14px rgba(0,0,0,.35)}
-.lang-toggle button{background:none;border:none;color:var(--muted);font-family:inherit;
-  font-size:11px;font-weight:700;letter-spacing:.02em;padding:5px 11px;border-radius:100px;
-  cursor:pointer;line-height:1;transition:.15s}
-.lang-toggle button.on{background:var(--accent);color:#160d09}
-.lang-toggle button:active{opacity:.8}
-/* nudge header controls down so the pill never overlaps them */
-header{padding-top:54px}
+/* 언어 선택은 설정 시트(#set-lang)로 이동 */
 .cf-mode-toggle{top:98px}
 .acct{top:54px}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
@@ -666,10 +655,6 @@ header{padding-top:54px}
 </style>
 </head>
 <body class="state-boot">
-<div class="lang-toggle" id="lang-toggle">
-  <button type="button" data-lang="ko">한국어</button>
-  <button type="button" data-lang="en">EN</button>
-</div>
 <div id="boot"><div class="boot-spin"></div></div>
 
 <div id="auth-screen">
@@ -1016,6 +1001,7 @@ const I18N = {
   "📤 컬렉션 카드 공유":"📤 Share collection card",
   "LP 지직거림 사운드":"Vinyl crackle sound",
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
+  "앱 표시 언어를 선택해요":"Choose the app display language",
   "약하게":"Subtle",
   "끔":"Off",
   "기본":"Default",
@@ -1437,8 +1423,8 @@ function tr(ko){ return (LANG==='en' && I18N[ko]!=null) ? I18N[ko] : ko; }
     LANG=l;
     try{ localStorage.setItem('lp_lang', l); }catch(e){}
     document.documentElement.lang = l;
-    // update toggle highlight
-    document.querySelectorAll('#lang-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.lang===l));
+    // update toggle highlight (언어 선택은 설정 시트 안으로 이동)
+    document.querySelectorAll('#set-lang button').forEach(b=>b.classList.toggle('on', b.dataset.lang===l));
     translateAll();
     // re-render views whose render functions bake in language-specific text
     try{ if(typeof renderCal==='function' && document.querySelector('#view-cal') && document.querySelector('#view-cal').classList.contains('on')) renderCal(); }catch(e){}
@@ -1454,10 +1440,7 @@ function tr(ko){ return (LANG==='en' && I18N[ko]!=null) ? I18N[ko] : ko; }
 
   function init(){
     document.documentElement.lang = LANG;
-    document.querySelectorAll('#lang-toggle button').forEach(b=>{
-      b.classList.toggle('on', b.dataset.lang===LANG);
-      b.addEventListener('click', ()=>setLang(b.dataset.lang));
-    });
+    // 언어 선택 UI는 설정 시트(#set-lang)로 이동, renderSettings에서 연결
     startObserver();
     if(LANG==='en') translateAll();
   }
@@ -3410,6 +3393,13 @@ function renderSettings(){
   const tog=(on)=>`<span class="set-toggle${on?' on':''}"><span class="set-knob"></span></span>`;
   wrap.innerHTML=`
     <div class="set-card">
+      <div class="set-row col">
+        <div class="set-l"><div class="set-t">언어 / Language</div><div class="set-d">앱 표시 언어를 선택해요</div></div>
+        <div class="set-seg" id="set-lang">
+          <button type="button" class="${isEN()?'':'on'}" data-lang="ko">한국어</button>
+          <button type="button" class="${isEN()?'on':''}" data-lang="en">English</button>
+        </div>
+      </div>
       <div class="set-row" data-act="hideMoney">
         <div class="set-l"><div class="set-t">금액 표시 숨기기</div><div class="set-d">구매가·판매가를 ••••로 가려요</div></div>
         ${tog(SETTINGS.hideMoney)}
@@ -3465,6 +3455,10 @@ function renderSettings(){
     saveSettings(); applySettings(); renderGrid(); renderStats();
   });
   // 보기 모드
+  wrap.querySelectorAll('#set-lang button').forEach(b=>b.onclick=()=>{
+    wrap.querySelectorAll('#set-lang button').forEach(x=>x.classList.toggle('on',x===b));
+    if(window.__setLang) window.__setLang(b.dataset.lang);
+  });
   wrap.querySelectorAll('#set-crackle button').forEach(b=>b.onclick=()=>{
     SETTINGS.crackleLevel=b.dataset.crackle;
     wrap.querySelectorAll('#set-crackle button').forEach(x=>x.classList.toggle('on',x===b));
