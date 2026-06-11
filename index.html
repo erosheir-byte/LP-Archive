@@ -1015,7 +1015,10 @@ header{padding-top:54px}
 const I18N = {
   "📤 컬렉션 카드 공유":"📤 Share collection card",
   "LP 지직거림 사운드":"Vinyl crackle sound",
-  "미리듣기 재생 중 아날로그 잡음을 깔아요":"Adds warm analog noise while previewing",
+  "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
+  "약하게":"Subtle",
+  "끔":"Off",
+  "기본":"Default",
   /* --- Auth / boot --- */
   "내 바이닐 컬렉션을 어디서나":"Your vinyl collection, anywhere",
   "로그인":"Sign in",
@@ -1688,11 +1691,14 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, vinylCrackle:true };
+const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, crackleLevel:'low' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
-  try{ SETTINGS=Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem('lp_settings')||'{}')); }catch(e){ SETTINGS=Object.assign({},DEFAULT_SETTINGS); }
+  let raw={}; try{ raw=JSON.parse(localStorage.getItem('lp_settings')||'{}'); }catch(e){ raw={}; }
+  SETTINGS=Object.assign({}, DEFAULT_SETTINGS, raw);
+  // 구버전 마이그레이션: vinylCrackle(불리언) → crackleLevel
+  if(raw.crackleLevel===undefined && raw.vinylCrackle===false) SETTINGS.crackleLevel='off';
   applySettings(true);
 }
 function saveSettings(){ try{ localStorage.setItem('lp_settings', JSON.stringify(SETTINGS)); }catch(e){} }
@@ -1939,7 +1945,12 @@ function renderGrid(){
 /* ---------- 30초 미리듣기 (iTunes previewUrl) ---------- */
 /* ===== LP 지직거림(크래클) — Web Audio 절차적 생성 (외부 음원 불필요) ===== */
 const VinylNoise = (function(){
-  let ctx=null, master=null, hissSrc=null, popTimer=null, running=false;
+  let ctx=null, master=null, hissSrc=null, hissGain=null, popTimer=null, running=false;
+  // 강도별 파라미터 — gap(간격)이 클수록·chance가 낮을수록 빈도↓
+  const LV = {
+    low:    { gapMin:380, gapMax:2400, chance:0.5,  amp:0.20, hiss:0.016, master:0.24, cluster:0.07 },
+    normal: { gapMin:170, gapMax:1300, chance:0.75, amp:0.46, hiss:0.034, master:0.32, cluster:0.13 }
+  };
   function ensure(){
     if(ctx) return ctx;
     const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
@@ -1952,41 +1963,57 @@ const VinylNoise = (function(){
     for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
     return b;
   }
-  function start(){
+  // 단발 팝/클릭 — 길이·음높이·세기 모두 무작위
+  function click(peak){
+    if(!ctx) return;
+    const dur=0.0018+Math.random()*0.02;
+    const src=ctx.createBufferSource(); src.buffer=noiseBuf(dur);
+    const g=ctx.createGain(); const t=ctx.currentTime;
+    g.gain.setValueAtTime(Math.max(0.0008,peak),t);
+    g.gain.exponentialRampToValueAtTime(0.0006,t+dur+0.018);
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass';
+    bp.frequency.value=800+Math.random()*4200; bp.Q.value=0.4+Math.random()*1.4;
+    src.connect(bp); bp.connect(g); g.connect(master); try{src.start();}catch(e){}
+  }
+  function start(level){
     if(running || !ensure()) return;
     if(ctx.state==='suspended') ctx.resume().catch(()=>{});
     running=true;
-    // 지속적인 표면 잡음(히스): 대역 필터 + 작은 게인
-    hissSrc=ctx.createBufferSource(); hissSrc.buffer=noiseBuf(2); hissSrc.loop=true;
-    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2600;
-    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=700;
-    const hg=ctx.createGain(); hg.gain.value=0.05;
-    hissSrc.connect(hp); hp.connect(lp); lp.connect(hg); hg.connect(master);
+    const cfg=LV[level]||LV.low;
+    // 표면 잡음(히스): 대역 필터 + 작은 게인
+    hissSrc=ctx.createBufferSource(); hissSrc.buffer=noiseBuf(2.3); hissSrc.loop=true;
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2400;
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=820;
+    hissGain=ctx.createGain(); hissGain.gain.value=cfg.hiss;
+    hissSrc.connect(hp); hp.connect(lp); lp.connect(hissGain); hissGain.connect(master);
     try{ hissSrc.start(); }catch(e){}
-    // 무작위 팝/클릭("지직")
-    const pop=()=>{
+    // 무작위 팝 — 빈도 낮게, 변동 크게
+    const tick=()=>{
       if(!running) return;
-      const dur=0.003+Math.random()*0.012;
-      const src=ctx.createBufferSource(); src.buffer=noiseBuf(dur);
-      const g=ctx.createGain(); const t=ctx.currentTime; const peak=0.12+Math.random()*0.4;
-      g.gain.setValueAtTime(peak,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur+0.012);
-      const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200+Math.random()*3500; bp.Q.value=0.7;
-      src.connect(bp); bp.connect(g); g.connect(master); try{src.start();}catch(e){}
-      popTimer=setTimeout(pop, 50+Math.random()*330);
+      if(Math.random()<cfg.chance){
+        click(cfg.amp*(0.1+Math.random()*Math.random()));        // 대체로 약하고 드물게 도드라짐
+        if(Math.random()<cfg.cluster){                           // 가끔 빠른 연타(군집)
+          const extra=1+Math.floor(Math.random()*2);
+          for(let k=1;k<=extra;k++) setTimeout(()=>{ if(running) click(cfg.amp*(0.08+Math.random()*Math.random())); }, k*(18+Math.random()*70));
+        }
+      }
+      let gap=cfg.gapMin+Math.random()*(cfg.gapMax-cfg.gapMin);
+      if(Math.random()<0.22) gap*=(1.7+Math.random()*3.5);       // 가끔 긴 정적
+      popTimer=setTimeout(tick, gap);
     };
-    pop();
+    setTimeout(tick, 200+Math.random()*700);
     const t=ctx.currentTime; master.gain.cancelScheduledValues(t);
-    master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0.35,t+0.4);
+    master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(cfg.master,t+0.5);
   }
   function stop(){
     if(!running) return; running=false;
     if(popTimer){ clearTimeout(popTimer); popTimer=null; }
-    if(ctx&&master){ const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+0.25); }
-    setTimeout(()=>{ try{ if(hissSrc){ hissSrc.stop(); hissSrc.disconnect(); } }catch(e){} hissSrc=null; },320);
+    if(ctx&&master){ const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+0.3); }
+    setTimeout(()=>{ try{ if(hissSrc){ hissSrc.stop(); hissSrc.disconnect(); } }catch(e){} hissSrc=null; },360);
   }
   return { start, stop };
 })();
-function crackleOn(){ return !(typeof SETTINGS!=='undefined' && SETTINGS.vinylCrackle===false); }
+function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
 const _preview = { audio:null, id:null, discEl:null, cache:{} };
 async function _fetchPreviewUrl(it){
@@ -2023,7 +2050,7 @@ async function playPreview(it, disc){
   a.onended=()=>stopPreview();
   a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
   // 손가락으로 돌리는 중(spinning)이 아니면 음악에 맞춰 자동 회전 시작
-  a.play().then(()=>{ if(crackleOn()) try{ VinylNoise.start(); }catch(e){}
+  a.play().then(()=>{ const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
             if(_preview.discEl===disc && !disc.classList.contains('spinning')){
             const cur=parseFloat(getComputedStyle(disc).getPropertyValue('--spin'))||0;
             const norm=((cur%360)+360)%360;
@@ -3391,9 +3418,13 @@ function renderSettings(){
         <div class="set-l"><div class="set-t">장르 표기</div><div class="set-d">카드에 장르 태그를 표시해요</div></div>
         ${tog(SETTINGS.showGenre)}
       </div>
-      <div class="set-row" data-act="vinylCrackle">
-        <div class="set-l"><div class="set-t">LP 지직거림 사운드</div><div class="set-d">미리듣기 재생 중 아날로그 잡음을 깔아요</div></div>
-        ${tog(SETTINGS.vinylCrackle!==false)}
+      <div class="set-row col">
+        <div class="set-l"><div class="set-t">LP 지직거림 사운드</div><div class="set-d">미리듣기 재생 중 깔리는 아날로그 잡음</div></div>
+        <div class="set-seg" id="set-crackle">
+          <button type="button" class="${SETTINGS.crackleLevel==='off'?'on':''}" data-crackle="off">끔</button>
+          <button type="button" class="${(SETTINGS.crackleLevel==='low'||SETTINGS.crackleLevel==null)?'on':''}" data-crackle="low">약하게</button>
+          <button type="button" class="${SETTINGS.crackleLevel==='normal'?'on':''}" data-crackle="normal">기본</button>
+        </div>
       </div>
       <div class="set-row" data-act="showGrade">
         <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 컨디션 등급(M/NM/VG+/VG/G)을 기록해요</div></div>
@@ -3434,6 +3465,12 @@ function renderSettings(){
     saveSettings(); applySettings(); renderGrid(); renderStats();
   });
   // 보기 모드
+  wrap.querySelectorAll('#set-crackle button').forEach(b=>b.onclick=()=>{
+    SETTINGS.crackleLevel=b.dataset.crackle;
+    wrap.querySelectorAll('#set-crackle button').forEach(x=>x.classList.toggle('on',x===b));
+    saveSettings();
+    try{ if(SETTINGS.crackleLevel==='off') VinylNoise.stop(); }catch(e){}
+  });
   wrap.querySelectorAll('#set-view button').forEach(b=>b.onclick=()=>{
     SETTINGS.defaultView=b.dataset.view;
     wrap.querySelectorAll('#set-view button').forEach(x=>x.classList.toggle('on',x===b));
