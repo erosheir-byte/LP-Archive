@@ -171,6 +171,13 @@ h1 .em{color:var(--accent)}
 .viewtoggle{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .viewtoggle .vt{background:none;border:none;color:var(--dim);padding:6px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .viewtoggle .vt.on{background:var(--accent);color:#160d09}
+.discmode-btn{background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--dim);padding:6px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s}
+.discmode-btn.on{background:var(--accent);color:#160d09;border-color:var(--accent)}
+.discmode-btn:active{transform:scale(.94)}
+/* 그리드 'LP판 보기' 모드: 자켓을 숨기고 꾸민 디스크를 카드에 꽉 차게 표시 */
+.grid:not(.list).disc-on .lp .art{opacity:0;pointer-events:none}
+.grid:not(.list).disc-on .lp .disc{bottom:auto;top:50%;left:50%;width:100%;height:auto;aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;box-shadow:0 6px 16px rgba(0,0,0,.4),inset 0 0 14px rgba(0,0,0,.45)}
+.grid:not(.list).disc-on .lp .disc-edit{opacity:1;pointer-events:auto;transform:scale(1)}
 .sortsel{background:var(--card);border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:10px;outline:none;cursor:pointer}
 .sortsel:focus{border-color:var(--accent)}
 .count b{color:var(--muted)}
@@ -836,6 +843,9 @@ body:not(.state-app) .nav{display:none!important}
         <option value="priceHigh">가격 높은순</option>
         <option value="priceLow">가격 낮은순</option>
       </select>
+      <button id="disc-mode-btn" class="discmode-btn" type="button" title="자켓 ↔ LP판 보기" aria-label="자켓/LP판 보기 전환">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6"/></svg>
+      </button>
       <div class="viewtoggle">
         <button id="view-grid-btn" class="vt on" title="앨범형" aria-label="앨범형">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -1189,6 +1199,8 @@ const I18N = {
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
   "앱 표시 언어를 선택해요":"Choose the app display language",
   "테마":"Theme",
+  "자켓 ↔ LP판 보기":"Jacket ↔ Vinyl view",
+  "자켓/LP판 보기 전환":"Toggle jacket/vinyl view",
   "화면 밝기 모드를 선택해요":"Choose light or dark mode",
   "다크":"Dark",
   "브라이트":"Bright",
@@ -1957,6 +1969,7 @@ function statusChip(s){
 
 /* ---------- render grid ---------- */
 let filter={q:'',chip:'전체',sub:'',sort:'default',genre:'',view:'grid'};   // view: 'grid'|'list'
+let gridDisc = (()=>{ try{ return localStorage.getItem('lp_griddisc')==='1'; }catch(e){ return false; } })();   // 그리드 LP판 보기
 
 // classify a record's status into a top-level group
 function statusGroup(s){
@@ -2005,6 +2018,7 @@ function renderChips(){
 function renderGrid(){
   stopPreview();   // 목록이 다시 그려지면 재생 중이던 미리듣기 정지
   $('#grid').classList.toggle('list', filter.view==='list');
+  $('#grid').classList.toggle('disc-on', gridDisc);
   let list=DATA.filter(passes);
   const cmp={
     album:(a,b)=>(a.album||'').localeCompare(b.album||'','ko'),
@@ -4067,6 +4081,8 @@ $('#sort').onchange=e=>{filter.sort=e.target.value;renderGrid();};
 $('#genre').onchange=e=>{filter.genre=e.target.value;renderGrid();};
 $('#view-grid-btn').onclick=()=>{filter.view='grid';$('#view-grid-btn').classList.add('on');$('#view-list-btn').classList.remove('on');renderGrid();};
 $('#view-list-btn').onclick=()=>{filter.view='list';$('#view-list-btn').classList.add('on');$('#view-grid-btn').classList.remove('on');renderGrid();};
+{ const db=$('#disc-mode-btn'); if(db){ db.classList.toggle('on', gridDisc);
+  db.onclick=()=>{ gridDisc=!gridDisc; try{localStorage.setItem('lp_griddisc', gridDisc?'1':'0');}catch(e){} db.classList.toggle('on', gridDisc); renderGrid(); }; } }
 $('#cal-prev').onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); };
 $('#cal-next').onclick=()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); };
 
