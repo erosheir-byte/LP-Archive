@@ -2665,7 +2665,7 @@ function openVinylDecorate(it){
   $('#vd-photo-save').onclick=async ()=>{
     if(!vimg){ alert('사진을 먼저 올려주세요'); return; }
     // render the visible circle region to a square canvas, masked to a circle
-    const cropped=await cropToVinyl(imgwrap._im, stage, vopacity);
+    const cropped=await cropToVinyl(imgwrap._im, stage, {vx,vy,vscale,vrot,opacity:vopacity});
     let url=cropped; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(cropped),'jpg'); }catch(up){}
     it.discPhoto=url;
     it.discColorCustom=null; it.discOpacity=null;   // photo overrides color
@@ -2687,11 +2687,12 @@ function toHex(c){
   return '#'+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join('');
 }
 // crop the visible square stage region to a circular vinyl image (회전·투명도 반영)
-function cropToVinyl(imgEl, stageEl, opacity){
+function cropToVinyl(imgEl, stageEl, t){
   return new Promise((res)=>{
     const rect=stageEl.getBoundingClientRect();
-    const S=300;                         // output size
-    const scale=S/rect.width;            // stage px -> canvas px
+    const St=rect.width||230;             // 스테이지 CSS 크기
+    const S=300;                          // output size
+    const scale=S/St;                     // stage px -> canvas px
     const c=document.createElement('canvas'); c.width=S; c.height=S;
     const ctx=c.getContext('2d');
     // circular clip
@@ -2699,17 +2700,18 @@ function cropToVinyl(imgEl, stageEl, opacity){
     ctx.beginPath(); ctx.arc(S/2,S/2,S/2,0,Math.PI*2); ctx.clip();
     // 검은 배경(투명 영역이 비치지 않도록)
     ctx.fillStyle='#111'; ctx.fillRect(0,0,S,S);
-    // 화면에 보이던 변환(translate→rotate→scale)을 캔버스에 그대로 재현
-    const cs=getComputedStyle(imgEl);
-    let m=new DOMMatrix(cs.transform==='none'?'':cs.transform);
-    // imgEl은 stage 중심(50%,50%) 기준 absolute. 중심을 캔버스 중심으로 맞춤
-    ctx.translate(S/2, S/2);
-    ctx.scale(scale, scale);
-    ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-    ctx.globalAlpha = (opacity!=null?opacity:1);
-    // computed transform에 translate(-50%,-50%)가 이미 포함 → 좌상단(0,0) 기준으로 그림
-    const w=imgEl.offsetWidth||imgEl.naturalWidth, h=imgEl.offsetHeight||imgEl.naturalHeight;
-    ctx.drawImage(imgEl, 0, 0, w, h);
+    // 편집기 변환의 '실제 효과'를 그대로 재현:
+    //  - 이미지는 stage 중심에서 (vx,vy)만큼 이동한 지점이 '이미지 중심'
+    //  - 그 중심을 기준으로 vrot 회전 · vscale 배율 (transform-origin: center)
+    const o = t || {};
+    const Wd = imgEl.offsetWidth  || imgEl.naturalWidth;   // 화면 표시 크기(CSS px, 보통 230)
+    const Hd = imgEl.offsetHeight || imgEl.naturalHeight;
+    const dw = Wd*scale, dh = Hd*scale;                    // 캔버스에서의 기본(배율1) 표시 크기
+    ctx.translate(S/2 + (o.vx||0)*scale, S/2 + (o.vy||0)*scale);
+    ctx.rotate((o.vrot||0)*Math.PI/180);
+    ctx.scale(o.vscale||1, o.vscale||1);
+    ctx.globalAlpha = (o.opacity!=null ? o.opacity : 1);
+    ctx.drawImage(imgEl, -dw/2, -dh/2, dw, dh);            // 중심 기준으로 그림
     ctx.globalAlpha=1;
     ctx.restore();
     // subtle vinyl sheen
