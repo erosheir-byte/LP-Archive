@@ -1,0 +1,181 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  width: 340px;
+  margin: 0;
+  padding: 16px;
+  font-family: "Roboto", "Noto Sans KR", Arial, sans-serif;
+  font-size: 14px;
+  background: #fff;
+  color: #0f0f0f;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #181818;
+    color: #f1f1f1;
+  }
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.tagline {
+  margin: 4px 0 16px;
+  font-size: 12px;
+  color: #888;
+}
+
+section {
+  margin-bottom: 18px;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+}
+
+/* 프리셋 목록 */
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preset {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.preset:has(input:checked) {
+  border-color: #e0245e;
+  background: rgba(224, 36, 94, 0.08);
+}
+
+.preset input {
+  margin-top: 2px;
+}
+
+.preset span {
+  display: flex;
+  flex-direction: column;
+}
+
+.preset small {
+  color: #888;
+  font-size: 11px;
+}
+
+textarea {
+  width: 100%;
+  margin-top: 8px;
+  box-sizing: border-box;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 8px;
+  padding: 8px;
+  font: inherit;
+  resize: vertical;
+  background: transparent;
+  color: inherit;
+}
+
+.hidden {
+  display: none;
+}
+
+/* 체크박스 옵션 */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+/* 토글 스위치 */
+.switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: #999;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.switch input:checked + .slider {
+  background: #e0245e;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+/* 링크 버튼 */
+.link-btn {
+  display: block;
+  margin-bottom: 6px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.12);
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link-btn:hover {
+  background: rgba(128, 128, 128, 0.22);
+}
+
+.hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+}
+
+.hint.small {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
