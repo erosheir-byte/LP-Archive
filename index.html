@@ -104,7 +104,7 @@ h1 .em{color:var(--accent)}
     var(--disc,#1a1a1a);
   background-blend-mode:screen,multiply,normal,normal;
   box-shadow:inset 0 0 20px rgba(0,0,0,.6),0 8px 20px rgba(0,0,0,.5)}
-.cf-card .cf-disc.has-photo{background:var(--photo) center/cover;background-blend-mode:normal}
+.cf-card .cf-disc.has-photo{background:var(--photo) center/cover no-repeat;background-blend-mode:normal}
 .cf-card .cf-disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30%;height:30%;border-radius:50%;background:var(--disc,#1a1a1a);filter:brightness(.6);box-shadow:0 0 0 1px rgba(0,0,0,.4),inset 0 0 8px rgba(0,0,0,.5)}
 .cf-card .cf-disc::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6%;height:6%;border-radius:50%;background:radial-gradient(circle at 40% 38%,#e6e1d8,#c8c2b6);z-index:1}
 .cf-card .cf-disc.has-photo::after,.cf-card .cf-disc.has-photo::before{display:none!important;content:none!important}
@@ -238,6 +238,7 @@ h1 .em{color:var(--accent)}
 .meta{padding:10px 11px 12px;position:relative;z-index:3}
 .meta .al{font-weight:700;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
 .meta .ar{color:var(--muted);font-size:11.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .ar .yr{color:var(--dim)}
 .meta .st{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.02em}
 .st.own{background:rgba(106,160,232,.16);color:#9cc0f0;border:1px solid rgba(106,160,232,.3)}
 .st.open{background:rgba(242,164,68,.16);color:#f2bf7a;border:1px solid rgba(242,164,68,.3)}
@@ -352,6 +353,27 @@ h1 .em{color:var(--accent)}
 .like-it .li-heart{position:absolute;top:6px;right:6px;color:#e85c6a;line-height:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
 .like-it .li-heart .heart-ic{width:15px;height:15px}
 .like-it .ci-nm{font-size:10.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+/* 달력 하루 앨범 목록 */
+.daylist{display:flex;flex-direction:column;gap:9px;padding-bottom:10px}
+.dl-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:background .15s}
+.dl-item:active{background:var(--card2)}
+.dl-thumb{flex:0 0 auto;width:48px;height:48px;border-radius:8px;overflow:hidden;background:var(--card2)}
+.dl-thumb img{width:100%;height:100%;object-fit:cover}
+.dl-thumb .dl-ph{width:100%;height:100%}
+.dl-info{flex:1;min-width:0}
+.dl-al{font-size:14px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-ar{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-kind{flex:0 0 auto;font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px;background:var(--card2);color:var(--muted)}
+.dl-kind.dl-open{background:rgba(54,163,90,.18);color:#6cc78a}
+.dl-kind.dl-buy{background:rgba(106,160,232,.16);color:#6aa0e8}
+.dl-kind.dl-arrive{background:rgba(232,164,68,.16);color:#e8a444}
+.dl-kind.dl-sold{background:rgba(224,97,122,.16);color:#e0617a}
+.dl-kind.dl-listen{background:rgba(138,111,214,.18);color:#b49bf0}
+.dl-note{font-size:11.5px;color:#b49bf0;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-emptyday{text-align:center;color:var(--dim);font-size:12.5px;padding:18px 10px 8px}
+.dl-addlisten{display:block;width:100%;margin-top:12px;padding:13px;border-radius:12px;border:1px solid rgba(138,111,214,.4);background:rgba(138,111,214,.14);color:#b49bf0;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
+.dl-addlisten:active{transform:scale(.98)}
+.listen-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#b49bf0;box-shadow:0 0 5px rgba(180,155,240,.8);z-index:3}
 /* 내 취향 요약 */
 .taste{display:flex;flex-direction:column;gap:12px;padding:0 2px 26px}
 .t-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
@@ -499,6 +521,8 @@ h1 .em{color:var(--accent)}
 .dt-rate{margin-top:10px}
 .dt-act{margin:16px 0 0}
 .act-btn{width:100%;padding:13px;border-radius:13px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.act-btn.danger{color:#e0617a;border-color:rgba(224,97,122,.3)}
+.act-btn.danger:active{background:rgba(224,97,122,.12)}
 .act-btn:active{opacity:.85}
 .act-btn.solid{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;border:none;margin-top:6px}
 .dt-inline{margin-top:12px}
@@ -525,6 +549,53 @@ h1 .em{color:var(--accent)}
 .color-toggle{flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--accent2);font-size:20px;font-weight:300;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .color-toggle:active{opacity:.8}
 .palette.collapsed{display:none}
+/* 정보 수정 시트 별점 */
+.e-rate{display:flex;gap:6px}
+.e-star{background:none;border:none;font-size:30px;line-height:1;color:#3a3640;cursor:pointer;padding:0 2px;transition:transform .1s,color .12s;font-family:inherit}
+.e-star.on{color:var(--accent2)}
+.e-star:active{transform:scale(.85)}
+/* 월별 요약 (달력 아래) */
+.cal-monthstat{padding:8px 14px 26px}
+.ms-head{font-weight:700;color:var(--txt);font-size:14px;margin:6px 2px 12px}
+.mstat-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.mstat-card{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px 10px;text-align:center;position:relative;font-family:inherit;color:inherit;display:block;width:100%}
+.mstat-dot{width:8px;height:8px;border-radius:50%;margin:0 auto 7px}
+.mstat-lab{font-size:12px;color:var(--muted);font-weight:600}
+.mstat-cnt{font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;color:var(--txt);margin-top:3px;line-height:1}
+.mstat-cnt span{font-size:12px;color:var(--muted);font-weight:600;margin-left:2px}
+.mstat-sub{font-size:10.5px;color:var(--muted);margin-top:5px}
+.mstat-empty{text-align:center;color:var(--dim);font-size:12.5px;padding:16px 0 4px}
+/* 청음 기록 */
+.lst-sec{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.lst-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.lst-head span{font-weight:700;color:var(--txt);font-size:14px}
+.lst-add{background:rgba(138,111,214,.16);border:1px solid rgba(138,111,214,.4);color:#b49bf0;font-family:inherit;font-size:12px;font-weight:700;padding:6px 12px;border-radius:100px;cursor:pointer}
+.lst-add:active{transform:scale(.95)}
+.lst-list{display:flex;flex-direction:column;gap:7px}
+.lst-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.lst-date{font-size:12.5px;font-weight:700;color:#b49bf0;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.lst-note{font-size:12.5px;color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lst-del{margin-left:auto;flex:0 0 auto;background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;padding:2px 4px}
+.lst-del:active{color:var(--txt)}
+.lst-empty{font-size:12.5px;color:var(--dim);padding:6px 2px}
+.lf-album{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--txt);font-weight:600;margin-bottom:14px}
+/* 월별 카드 탭 → 앨범 목록 펼침 */
+.mstat-card.tappable{cursor:pointer}
+.mstat-card[disabled]{opacity:.55}
+.mstat-card.on{border-color:var(--accent);background:var(--card)}
+.mstat-more{font-size:10px;color:var(--dim);margin-top:5px}
+.ms-detail{display:none;margin-top:11px}
+.ms-detail.show{display:block;animation:msfade .2s}
+@keyframes msfade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.ms-li{display:flex;align-items:baseline;gap:8px;padding:9px 11px;border-radius:9px;background:var(--card2);border:1px solid var(--line);margin-bottom:6px;cursor:pointer}
+.ms-li:active{background:var(--card)}
+.ms-li-al{font-size:13px;font-weight:600;color:var(--txt);flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%}
+.ms-li-ar{font-size:11.5px;color:var(--muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-li-amt{font-size:11.5px;color:var(--accent2);font-weight:700;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.ms-li-note{font-size:11px;color:#a98fe0;flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40%}
+.lp-search{width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:12px 14px;color:var(--txt);font-family:inherit;font-size:14px;margin-bottom:12px}
+.lp-search:focus{outline:none;border-color:var(--accent)}
+.lp-results{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow-y:auto}
 .dt-rows{margin-top:18px;display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .dt-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:13px 15px;font-size:13.5px}
 .dt-row .k{color:var(--muted)}
@@ -571,7 +642,9 @@ h1 .em{color:var(--accent)}
 .cal-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 14px 4px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 14px;align-content:start}
 .cal-dow{text-align:center;font-size:10.5px;color:var(--dim);font-weight:600;padding:4px 0}
-.cal-cell{position:relative;aspect-ratio:1;border-radius:7px;background:var(--card);overflow:hidden;border:1px solid transparent;cursor:pointer}
+.cal-cell{position:relative;aspect-ratio:1;border-radius:7px;background:var(--card);overflow:hidden;border:1px solid transparent;cursor:default}
+.cal-cell.has{cursor:pointer}
+.cal-cell.has:active{border-color:var(--accent)}
 .cal-cell:active{border-color:var(--accent)}
 .cal-cell.empty{background:transparent}
 .cal-cell .dnum{position:absolute;top:2px;left:4px;font-size:9.5px;color:var(--dim);z-index:3;text-shadow:0 1px 2px rgba(0,0,0,.8)}
@@ -761,6 +834,7 @@ body:not(.state-app) .nav{display:none!important}
   <div class="cal-dows" id="cal-dows"></div>
   <div class="cal-grid" id="cal-grid"></div>
   <div class="cal-empty" id="cal-empty"></div>
+  <div class="cal-monthstat" id="cal-monthstat"></div>
 </div>
 
 <div class="view" id="view-my">
@@ -798,6 +872,19 @@ body:not(.state-app) .nav{display:none!important}
     <div class="settings" id="settings"></div>
   </div>
 </div>
+
+<!-- 달력: 하루 앨범 목록 시트 -->
+<div class="ov" id="ov-daylist"></div>
+<div class="sheet" id="sheet-daylist">
+  <div class="grab"></div>
+  <button class="sheet-x" data-close="daylist" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2 id="daylist-title">앨범 목록</h2>
+    <div class="daylist" id="daylist"></div>
+  </div>
+</div>
+
+<!-- 오디오 셋업 편집 시트 제거됨 -->
 
 </div>
 
@@ -938,10 +1025,78 @@ body:not(.state-app) .nav{display:none!important}
       <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
       <div class="fld" id="f-open-fld"><label>개봉일자 <button type="button" class="open-unknown" id="f-open-unknown">모름</button></label><input id="f-open" type="date" disabled></div>
     </div>
+    <div class="row2">
+      <div class="fld"><label>장르 (선택)</label><input id="f-genre" placeholder="예: 가요, R&B/소울"></div>
+      <div class="fld"><label>발매년도 (선택)</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
+    </div>
     <div class="fld"><label>비고 (선택)</label><input id="f-note" placeholder="메모"></div>
     <div class="btnrow">
       <button class="btn ghost" id="add-cancel">취소</button>
       <button class="btn primary" id="add-save">보관함에 추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 청음 기록 시트 -->
+<div class="ov" id="ov-listen"></div>
+<div class="sheet" id="sheet-listen">
+  <div class="grab"></div>
+  <button class="sheet-x" data-close="listen" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2>🎧 청음 기록</h2>
+    <div class="lf-album" id="lf-album"></div>
+    <div class="fld"><label>들은 날짜</label><input type="date" id="lf-date"></div>
+    <div class="fld"><label>메모 (선택)</label><input id="lf-note" placeholder="그날의 느낌이나 한마디"></div>
+    <div class="btnrow">
+      <button class="btn ghost" data-close="listen">취소</button>
+      <button class="btn primary" id="lf-save">기록 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 정보 수정 전면 시트 -->
+<div class="ov" id="ov-edit"></div>
+<div class="sheet" id="sheet-edit">
+  <div class="grab"></div>
+  <button class="sheet-x" data-close="edit" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2>정보 수정</h2>
+    <div class="row2">
+      <div class="fld"><label>가수</label><input id="e-artist" placeholder="예: Adele"></div>
+      <div class="fld"><label>앨범명</label><input id="e-album" placeholder="예: 30"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>장르</label><input id="e-genre" placeholder="예: 가요, R&B/소울"></div>
+      <div class="fld"><label>발매년도</label><input id="e-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
+    </div>
+    <div class="fld"><label>별점</label><div class="e-rate" id="e-rate"></div></div>
+    <div class="row2">
+      <div class="fld"><label>컬러</label>
+        <div class="colorfield">
+          <span class="color-dot" id="e-colordot"></span>
+          <input id="e-color" placeholder="블랙">
+          <button type="button" class="color-toggle" id="e-coltoggle" title="팔레트 열기">+</button>
+        </div>
+      </div>
+      <div class="fld"><label>상태</label><select id="e-status"></select></div>
+    </div>
+    <div class="palette" id="e-palette"></div>
+    <div class="row2">
+      <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24"></div>
+      <div class="fld"><label>단가 (원)</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>구매일</label><input type="date" id="e-buy"></div>
+      <div class="fld"><label>결제</label><select id="e-pay"></select></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>도착일</label><input type="date" id="e-arrive"></div>
+      <div class="fld"><label>판매/교환가 (원)</label><input id="e-sell" type="number" inputmode="numeric"></div>
+    </div>
+    <div class="fld"><label>비고</label><input id="e-note" placeholder="메모"></div>
+    <div class="btnrow">
+      <button class="btn ghost" data-close="edit">취소</button>
+      <button class="btn primary" id="e-save">변경사항 저장</button>
     </div>
   </div>
 </div>
@@ -1618,7 +1773,7 @@ function fabVinylSVG(wish){
 
 function discStyle(it){
   if(it.discPhoto){
-    return `background-image:url(${it.discPhoto});background-size:cover;background-position:center`;
+    return `background-image:url(${it.discPhoto});background-size:cover;background-position:center;background-repeat:no-repeat`;
   }
   const col = it.discColorCustom || discColor(it.color);
   const op = (it.discOpacity!=null) ? it.discOpacity : 1;
@@ -1674,7 +1829,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, crackleLevel:'low' };
+const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, crackleLevel:'low' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -1843,7 +1998,7 @@ function renderGrid(){
       </div>
       <div class="meta">
         <div class="al">${it.album||'—'}</div>
-        <div class="ar">${it.artist||'—'}</div>
+        <div class="ar">${it.artist||'—'}${(it.year && (typeof SETTINGS==='undefined'||SETTINGS.showYear!==false))?` <span class="yr">· ${it.year}</span>`:''}</div>
         <div class="metabtm">${statusChip(it.status)}${genreTag(it.genre)}</div>
       </div>
       <button class="list-play" data-play="${it.id}" aria-label="미리듣기">
@@ -1998,19 +2153,41 @@ const VinylNoise = (function(){
 })();
 function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
-const _preview = { audio:null, id:null, discEl:null, cache:{} };
+const _preview = { audio:null, id:null, discEl:null, cache:{}, last:{} };
 async function _fetchPreviewUrl(it){
+  // cache[it.id] = previewUrl 배열 (수록곡들)
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
   const term = ((it.artist||'')+' '+(it.album||'')).trim();
-  let url = null;
+  let urls = [];
   if(term){
     try{
-      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=1&term='+encodeURIComponent(term));
+      // 앨범 수록곡을 여러 개 가져온다
+      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=25&term='+encodeURIComponent(term));
       const j = await r.json();
-      if(j.results && j.results[0] && j.results[0].previewUrl) url = j.results[0].previewUrl;
+      if(j.results && j.results.length){
+        // 같은 앨범 곡 우선 필터(앨범명이 비슷한 것), 없으면 전체에서
+        const al=(it.album||'').toLowerCase().trim();
+        let pool=j.results.filter(x=>x.previewUrl);
+        if(al){
+          const same=pool.filter(x=>(x.collectionName||'').toLowerCase().includes(al) || al.includes((x.collectionName||'').toLowerCase()));
+          if(same.length) pool=same;
+        }
+        urls = pool.map(x=>x.previewUrl).filter(Boolean);
+      }
     }catch(e){}
   }
-  _preview.cache[it.id] = url;
+  _preview.cache[it.id] = urls;
+  return urls;
+}
+function _pickPreviewUrl(it, urls){
+  if(!urls || !urls.length) return null;
+  if(urls.length===1) return urls[0];
+  // 직전에 튼 곡은 피해서 랜덤 (판 돌릴 때마다 다른 곡)
+  const last=_preview.last[it.id];
+  let pool=urls;
+  if(last){ const f=urls.filter(u=>u!==last); if(f.length) pool=f; }
+  const url=pool[Math.floor(Math.random()*pool.length)];
+  _preview.last[it.id]=url;
   return url;
 }
 function stopPreview(){
@@ -2024,9 +2201,10 @@ async function playPreview(it, disc){
   if(_preview.id===it.id) return;        // 이미 이 판이 재생 중이면 그대로 둠
   stopPreview();
   _preview.id = it.id;
-  let url = _preview.cache[it.id];
-  if(url===undefined) url = await _fetchPreviewUrl(it);
+  let urls = _preview.cache[it.id];
+  if(urls===undefined) urls = await _fetchPreviewUrl(it);
   if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
+  const url = _pickPreviewUrl(it, urls);
   if(!url){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
   const a = new Audio(url); a.preload='auto';
   _preview.audio=a; _preview.discEl=disc;
@@ -2086,6 +2264,7 @@ function openDetail(id, mode){
   if(it.status==='개봉' && it.openDate) R('개봉일', it.openDate==='모름' ? '모름' : it.openDate);
   if(it.grade && (typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false)) R('상태 등급', `<span class="grade-badge">${it.grade}</span> <span style="color:var(--dim);font-size:11px">${(GRADE_DESC[it.grade]||'').split(' — ')[0]}</span>`);
   R('장르', it.genre);
+  if(it.year && (typeof SETTINGS==='undefined' || SETTINGS.showYear!==false)) R('발매년도', it.year+'년');
   R('구매처', it.store);
   R('단가', won(it.price));
   R('결제', it.pay);
@@ -2103,11 +2282,33 @@ function openDetail(id, mode){
   if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
   else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
   action+=`<button class="act-btn" id="act-edit" style="margin-top:8px">✏️ 정보 수정</button>`;
+  action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
+  // 청음 기록 섹션
+  const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
+  let listenHTML=`<div class="lst-head"><span>🎧 청음 기록${listens.length?` · ${listens.length}회`:''}</span><button class="lst-add" id="lst-add">+ 들었어요</button></div>`;
+  if(listens.length){
+    listenHTML+=`<div class="lst-list">${listens.map((l,i)=>`
+      <div class="lst-item">
+        <div class="lst-date">${l.date||''}</div>
+        ${l.note?`<div class="lst-note">${escapeHtml(l.note)}</div>`:''}
+        <button class="lst-del" data-i="${i}" aria-label="삭제">✕</button>
+      </div>`).join('')}</div>`;
+  } else {
+    listenHTML+=`<div class="lst-empty">아직 청음 기록이 없어요. 판을 들었다면 남겨보세요.</div>`;
+  }
   $('#dt-body').innerHTML=`<div class="dt-titlerow"><h2>${it.album||'—'}</h2><button class="like-btn ${it.liked?'on':''}" id="dt-like" aria-label="좋아요">${heartSVG(it.liked)}</button></div><div class="dar">${it.artist||'—'}</div>`
     +`<div class="dt-rate">${starsEdit(it)}</div>`
     +`<div class="dt-rows">${rows.join('')}</div>`
+    +`<div class="lst-sec">${listenHTML}</div>`
     +(action?`<div class="dt-act">${action}</div>`:'')
     +`<div class="dt-inline" id="dt-inline"></div>`;
+  { const la=$('#lst-add'); if(la) la.onclick=()=>openListenForm(it); }
+  $('#dt-body').querySelectorAll('.lst-del').forEach(b=>b.onclick=()=>{
+    const arr=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
+    const target=arr[+b.dataset.i];
+    it.listens=(it.listens||[]).filter(x=>!(x.date===target.date && x.note===target.note));
+    persistFull(it); openDetail(it.id); renderCal&&renderCal();
+  });
   $('#dt-change').onclick=()=>openCoverPicker(it);
   const lk=$('#dt-like'); if(lk) lk.onclick=()=>{
     it.liked=!it.liked;
@@ -2132,6 +2333,9 @@ function openDetail(id, mode){
   const ab=$('#act-arrive'); if(ab) ab.onclick=()=>showArriveForm(it);
   const bb=$('#act-buy'); if(bb) bb.onclick=()=>showBuyForm(it);
   const eb=$('#act-edit'); if(eb) eb.onclick=()=>showEditForm(it);
+  const db=$('#act-delete'); if(db) db.onclick=()=>{
+    if(confirm(`'${it.album||'이 앨범'}'을(를) 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) deleteRecord(it.id);
+  };
   show('detail');
   // open the right panel based on what was tapped
   if(mode==='cover') setTimeout(()=>openCoverPicker(it), 50);
@@ -2139,48 +2343,68 @@ function openDetail(id, mode){
 }
 
 // 정보 수정: edit all fields of an existing record
+/* 청음 기록 입력 (상세·달력 공용). presetDate 있으면 그 날짜로 */
+let _listenTarget=null;
+function openListenForm(it, presetDate){
+  _listenTarget=it;
+  $('#lf-album').textContent=`${it.album||'—'} · ${it.artist||''}`;
+  const today=new Date().toISOString().slice(0,10);
+  $('#lf-date').value=presetDate || today;
+  $('#lf-note').value='';
+  show('listen');
+}
+{ const b=document.getElementById('lf-save'); if(b) b.onclick=()=>{
+    const it=_listenTarget; if(!it) return;
+    const date=$('#lf-date').value || new Date().toISOString().slice(0,10);
+    const note=$('#lf-note').value.trim();
+    if(!Array.isArray(it.listens)) it.listens=[];
+    it.listens.push({date, note});
+    persistFull(it);
+    hide('listen');
+    if($('#sheet-detail').classList.contains('show')) openDetail(it.id);
+    renderCal && renderCal();
+}; }
+
 function showEditForm(it){
   const wish=it.status==='위시';
   const opt=(v,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${v}</option>`;
   const statuses=['미개봉','개봉','배송전','판매','교환','선물','위시'];
   const pays=['카드','현금','복지포인트','선물'];
-  $('#dt-inline').innerHTML=`
-    <div class="inl-title">정보 수정</div>
-    <div class="row2">
-      <div class="fld"><label>가수</label><input id="e-artist" value="${(it.artist||'').replace(/"/g,'&quot;')}"></div>
-      <div class="fld"><label>앨범명</label><input id="e-album" value="${(it.album||'').replace(/"/g,'&quot;')}"></div>
-    </div>
-    <div class="row2">
-      <div class="fld"><label>컬러</label>
-        <div class="colorfield">
-          <span class="color-dot" id="e-colordot"></span>
-          <input id="e-color" value="${(it.color||'').replace(/"/g,'&quot;')}">
-          <button type="button" class="color-toggle" id="e-coltoggle" title="팔레트 열기">+</button>
-        </div>
-      </div>
-      <div class="fld"><label>상태</label><select id="e-status">${statuses.map(s=>opt(s,it.status)).join('')}</select></div>
-    </div>
-    <div class="palette collapsed" id="e-palette"></div>
-    <div class="row2">
-      <div class="fld"><label>구매처</label><input id="e-store" value="${(it.store||'').replace(/"/g,'&quot;')}"></div>
-      <div class="fld"><label>단가 (원)</label><input id="e-price" type="number" inputmode="numeric" value="${it.price!=null?it.price:''}"></div>
-    </div>
-    <div class="row2">
-      <div class="fld"><label>구매일</label><input type="date" id="e-buy" value="${it.buy||''}"></div>
-      <div class="fld"><label>결제</label><select id="e-pay"><option value=""></option>${pays.map(s=>opt(s,it.pay)).join('')}</select></div>
-    </div>
-    <div class="row2">
-      <div class="fld"><label>도착일</label><input type="date" id="e-arrive" value="${it.arrive||''}"></div>
-      <div class="fld"><label>판매/교환가 (원)</label><input id="e-sell" type="number" inputmode="numeric" value="${it.sellPrice!=null?it.sellPrice:''}"></div>
-    </div>
-    <div class="fld"><label>장르</label><input id="e-genre" value="${(it.genre||'').replace(/"/g,'&quot;')}" placeholder="예: 가요, R&B/소울"></div>
-    <div class="fld"><label>비고</label><input id="e-note" value="${(it.note||'').replace(/"/g,'&quot;')}"></div>
-    <button class="act-btn solid" id="e-save">저장</button>`;
+  // 기본값 채우기
+  $('#e-artist').value=it.artist||'';
+  $('#e-album').value=it.album||'';
+  $('#e-genre').value=it.genre||'';
+  $('#e-year').value=(it.year!=null?it.year:'');
+  $('#e-color').value=it.color||'';
+  $('#e-status').innerHTML=statuses.map(s=>opt(s,it.status)).join('');
+  $('#e-pay').innerHTML=`<option value=""></option>`+pays.map(s=>opt(s,it.pay)).join('');
+  $('#e-store').value=it.store||'';
+  $('#e-price').value=(it.price!=null?it.price:'');
+  $('#e-buy').value=it.buy||'';
+  $('#e-arrive').value=it.arrive||'';
+  $('#e-sell').value=(it.sellPrice!=null?it.sellPrice:'');
+  $('#e-note').value=it.note||'';
+  // 별점
+  let editRating=it.rating||0;
+  function paintRate(){
+    const box=$('#e-rate'); if(!box) return;
+    let h='';
+    for(let r=1;r<=5;r++){ h+=`<button type="button" class="e-star${r<=editRating?' on':''}" data-r="${r}">★</button>`; }
+    box.innerHTML=h;
+    box.querySelectorAll('.e-star').forEach(b=>b.onclick=()=>{ const r=+b.dataset.r; editRating=(editRating===r)?0:r; paintRate(); });
+  }
+  paintRate();
+  // 팔레트
   setupColorField('e');
+  renderPalette('e-palette','e-color',()=>{});
+  $('#e-palette').classList.remove('collapsed');
+  show('edit');
   $('#e-save').onclick=()=>{
     const oldKey=artKey(it.artist,it.album);
     it.artist=$('#e-artist').value.trim();
     it.album=$('#e-album').value.trim();
+    it.genre=$('#e-genre').value.trim();
+    it.year=Number($('#e-year').value)||null;
     it.color=$('#e-color').value.trim();
     it.status=$('#e-status').value;
     it.store=$('#e-store').value.trim();
@@ -2191,12 +2415,11 @@ function showEditForm(it){
     it.sellPrice=Number($('#e-sell').value)||null;
     if(it.sellPrice!=null && it.price!=null) it.profit=it.sellPrice-it.price;
     it.note=$('#e-note').value.trim();
-    it.genre=$('#e-genre').value.trim();
-    // if title/artist changed, migrate any chosen cover
+    it.rating=editRating;
     const newKey=artKey(it.artist,it.album);
     if(oldKey!==newKey && pickedArt[oldKey]){ pickedArt[newKey]=pickedArt[oldKey]; artCache[newKey]=pickedArt[oldKey]; }
     persistFull(it);
-    hide('detail');
+    hide('edit'); hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();refreshGenreChips();
   };
 }
@@ -2585,7 +2808,7 @@ document.querySelectorAll('.sheet-x').forEach(b=>b.onclick=()=>hide(b.dataset.cl
 // 일반 버튼(.btn)에 붙은 data-close 처리 (취소/완료 등)
 document.querySelectorAll('.btn[data-close]').forEach(b=>b.onclick=()=>hide(b.dataset.close));
 // 컬렉션 시트 오버레이 클릭으로 닫기
-['collnew','colldetail','collpick','settings'].forEach(n=>{ const ov=$('#ov-'+n); if(ov) ov.onclick=()=>hide(n); });
+['collnew','colldetail','collpick','settings','daylist','edit','listen'].forEach(n=>{ const ov=$('#ov-'+n); if(ov) ov.onclick=()=>hide(n); });
 // 환경설정: 톱니 아이콘 → 시트 열기
 { const g=$('#my-gear'); if(g) g.onclick=()=>{ renderSettings(); show('settings'); }; }
 { const ov=$('#ov-settings'); if(ov) ov.onclick=()=>hide('settings'); }
@@ -2775,8 +2998,8 @@ function applyDiscogsResult(r){
   else { album=(r.title||'').trim(); }
   if(artist) $('#f-artist').value=artist;
   if(album) $('#f-album').value=album;
-  // 발매연도
-  if(r.year){ const yb=$('#f-buy'); }
+  // 발매연도 (Discogs year)
+  if(r.year){ const yf=$('#f-year'); if(yf && !yf.value){ const y=parseInt(String(r.year).slice(0,4),10); if(y) yf.value=y; } }
   // 커버
   const cover=r.cover_image||r.thumb;
   if(cover && !/spacer\.gif/.test(cover)){ setPrevImg(cover,'Discogs 커버로 저장돼요 ✓'); }
@@ -2900,7 +3123,7 @@ function setGrade(g){
 let selectedGrade='';
 let openUnknown=false;
 function openAdd(initStatus, presetDate){
-  ['f-artist','f-album','f-color','f-store','f-price','f-note','f-urlin'].forEach(i=>$('#'+i).value='');
+  ['f-artist','f-album','f-color','f-store','f-price','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   $('#f-file').value='';
   $('#f-status').value=initStatus||'미개봉';
   const wish=(initStatus==='위시');
@@ -3044,7 +3267,9 @@ $('#add-save').onclick=()=>{
     openDate: ($('#f-status').value==='개봉') ? (openUnknown ? '모름' : (($('#f-open')&&$('#f-open').value)||null)) : null,
     status:$('#f-status').value, sellDate:null, sellPrice:null, profit:null,
     grade: ($('#f-status').value==='개봉') ? (selectedGrade||'') : '',
-    rating:0, note:$('#f-note').value.trim(), _art:url
+    rating:0, note:$('#f-note').value.trim(), _art:url,
+    genre: ($('#f-genre')&&$('#f-genre').value.trim())||'',
+    year: ($('#f-year')&&Number($('#f-year').value))||null
   };
   if(url){artCache[artKey(ar,al)]=url; pickedArt[artKey(ar,al)]=url; it.cover=url;}
   DATA.unshift(it);
@@ -3072,6 +3297,19 @@ function saveGenre(it){ cloudSaveItem(it); }
 function saveLocal(){ /* 클라우드 모드: 항목별 저장(cloudSaveItem)이 영속성을 담당 */ }
 // 변경된 LP 한 장을 Firebase에 저장 (로그인 모듈이 window.LPCloud를 제공)
 function cloudSaveItem(it){ if(window.LPCloud && window.LPCloud.saveItem) window.LPCloud.saveItem(it); }
+function cloudDeleteItem(id){ if(window.LPCloud && window.LPCloud.deleteItem) window.LPCloud.deleteItem(id); }
+function deleteRecord(id){
+  const idx=DATA.findIndex(x=>String(x.id)===String(id));
+  if(idx<0) return;
+  DATA.splice(idx,1);
+  cloudDeleteItem(id);
+  saveLocal();
+  hide('detail');
+  renderGrid(); renderChips(); buildCoverFlow();
+  if(typeof renderStats==='function') renderStats();
+  if(typeof renderCal==='function') renderCal();
+  if($('#view-my') && $('#view-my').classList.contains('on')){ if(typeof renderLikes==='function') renderLikes(); if(typeof renderTaste==='function') renderTaste(); if(typeof renderCollections==='function') renderCollections(); }
+}
 function loadLocal(){
   try{
     const picks=JSON.parse(localStorage.getItem('lp_picks')||'{}');
@@ -3118,6 +3356,10 @@ function calEvents(){
       const od=(it.openDate && it.openDate!=='모름') ? it.openDate : (it.arrive||it.buy);
       if(od) ev.push({date:od, kind:'open', it});
     }
+    // 청음 기록 → 보라 점
+    if(Array.isArray(it.listens)){
+      it.listens.forEach(l=>{ if(l && l.date) ev.push({date:l.date, kind:'listen', it, note:l.note}); });
+    }
   });
   return ev;
 }
@@ -3159,15 +3401,97 @@ function renderCal(){
       }
       if(items.length>1) inner+=`<span class="multi">+${items.length-1}</span>`;
     }
-    html+=`<div class="cal-cell ${isToday?'today':''}" data-date="${dateStr}" ${d===1?`style="grid-column-start:${startDow+1}"`:''}>${inner}<span class="dnum">${d}</span></div>`;
+    const hasListen = (byDay[d]||[]).some(e=>e.kind==='listen');
+    if(hasListen) inner+=`<span class="listen-dot"></span>`;
+    html+=`<div class="cal-cell ${isToday?'today':''} ${inner?'has':''}" data-date="${dateStr}" ${d===1?`style="grid-column-start:${startDow+1}"`:''}>${inner}<span class="dnum">${d}</span></div>`;
   }
   $('#cal-grid').innerHTML=html;
   $('#cal-empty').textContent = ev.length ? '' : '이 달엔 기록이 없어요';
-  // 이벤트 있는 날 → 상세보기 / 빈 날 → 그 날짜로 LP 등록
+  // 날짜 클릭 → 그날 항목 보기 + 청음 추가
   $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
     const items=byDay[+cell.dataset.date.slice(-2)]||[];
-    cell.onclick=()=>{ if(items.length) openDetail(items[0].it.id); else openAdd(undefined, cell.dataset.date); };
+    cell.onclick=()=> openDayList(cell.dataset.date, items);
   });
+  // 모든 셀을 누를 수 있게 (청음 추가 가능)
+  $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(c=>c.classList.add('has'));
+  // 달력의 현재 달에 맞춰 월별 주문/거래 요약 갱신
+  const mKey=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+  if(typeof renderMonthStat==='function') renderMonthStat(mKey);
+}
+
+/* 달력: 하루에 여러 앨범이 있을 때 목록 팝업 */
+const KIND_LABEL={open:'개봉',sold:'판매',arrive:'도착',buy:'구매',listen:'청음'};
+function openDayList(dateStr, items){
+  const wrap=$('#daylist'); if(!wrap) return;
+  const d=new Date(dateStr+'T00:00:00');
+  const title=`${d.getMonth()+1}월 ${d.getDate()}일`;
+  $('#daylist-title').textContent=items.length?`${title} · ${items.length}건`:title;
+  let html='';
+  if(items.length){
+    html+=items.map(ev=>{
+      const it=ev.it;
+      const art=artFor(it);
+      const thumb = art
+        ? `<img src="${art}" alt="">`
+        : `<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
+      const kind=KIND_LABEL[ev.kind]||'';
+      const sub = ev.kind==='listen' && ev.note ? `<div class="dl-note">🎧 ${escapeHtml(ev.note)}</div>` : '';
+      return `<button type="button" class="dl-item" data-id="${it.id}">
+        <div class="dl-thumb">${thumb}</div>
+        <div class="dl-info">
+          <div class="dl-al">${escapeHtml(it.album||'제목 없음')}</div>
+          <div class="dl-ar">${escapeHtml(it.artist||'')}</div>
+          ${sub}
+        </div>
+        <span class="dl-kind dl-${ev.kind}">${kind}</span>
+      </button>`;
+    }).join('');
+  } else {
+    html+=`<div class="dl-emptyday">이 날엔 기록이 없어요.</div>`;
+  }
+  html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">🎧 이 날 청음 기록 추가</button>`;
+  wrap.innerHTML=html;
+  wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
+  $('#dl-addlisten').onclick=()=>{ hide('daylist'); openListenPicker(dateStr); };
+  show('daylist');
+}
+
+/* 청음 추가: 어떤 앨범을 들었는지 고르는 작은 선택 (그 날짜로 기록) */
+function openListenPicker(dateStr){
+  const owned=DATA.filter(d=>statusGroup(d.status)!=='위시')
+    .sort((a,b)=>(a.album||'').localeCompare(b.album||''));
+  const wrap=$('#daylist'); if(!wrap) return;
+  const d=new Date(dateStr+'T00:00:00');
+  $('#daylist-title').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 · 들은 앨범 선택`;
+  const itemHTML=(it)=>{
+    const art=artFor(it);
+    const thumb=art?`<img src="${art}" alt="">`:`<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
+    return `<button type="button" class="dl-item" data-id="${it.id}">
+      <div class="dl-thumb">${thumb}</div>
+      <div class="dl-info"><div class="dl-al">${escapeHtml(it.album||'제목 없음')}</div><div class="dl-ar">${escapeHtml(it.artist||'')}</div></div>
+      <span class="dl-kind dl-listen">선택</span>
+    </button>`;
+  };
+  wrap.innerHTML=`
+    <input type="text" id="lp-search" class="lp-search" placeholder="🔍 앨범·가수 검색" autocomplete="off">
+    <div class="lp-results" id="lp-results">${owned.map(itemHTML).join('') || `<div class="dl-emptyday">등록된 앨범이 없어요.</div>`}</div>`;
+  const bindItems=()=>{
+    wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{
+      const it=DATA.find(x=>String(x.id)===String(b.dataset.id));
+      hide('daylist');
+      openListenForm(it, dateStr);
+    });
+  };
+  bindItems();
+  const search=$('#lp-search');
+  if(search) search.oninput=()=>{
+    const q=search.value.trim().toLowerCase();
+    const filtered = q ? owned.filter(it=>((it.album||'')+' '+(it.artist||'')).toLowerCase().includes(q)) : owned;
+    $('#lp-results').innerHTML = filtered.length ? filtered.map(itemHTML).join('') : `<div class="dl-emptyday">검색 결과가 없어요.</div>`;
+    bindItems();
+  };
+  show('daylist');
+  setTimeout(()=>{ try{ search && search.focus(); }catch(e){} }, 150);
 }
 
 /* ---------- stats ---------- */
@@ -3229,6 +3553,69 @@ function renderStats(){
     ${bestSell?`<div style="display:flex;justify-content:space-between;margin:6px 0"><span>가장 잘 판 LP</span><b style="color:var(--txt)">${bestSell.album||bestSell.artist||''}</b></div>`:''}`;
 
   $('#bigstats').innerHTML=ratingHTML+valueHTML;
+}
+
+/* ===== 월별 요약 (달력 아래, 달력의 그 달에 연동) ===== */
+function renderMonthStat(m){
+  const body=$('#cal-monthstat'); if(!body) return;
+  const buy   = DATA.filter(d=>d.buy && String(d.buy).slice(0,7)===m && statusGroup(d.status)!=='위시');
+  const soldM = DATA.filter(d=>d.sellDate && String(d.sellDate).slice(0,7)===m && d.status==='판매');
+  const exchM = DATA.filter(d=>d.sellDate && String(d.sellDate).slice(0,7)===m && d.status==='교환');
+  // 청음: 그 달에 들은 기록들 (앨범+날짜+메모를 펼침용으로 보관)
+  const listenEv=[];
+  DATA.forEach(d=>{ if(Array.isArray(d.listens)) d.listens.forEach(l=>{ if(l&&l.date&&String(l.date).slice(0,7)===m) listenEv.push({it:d, date:l.date, note:l.note}); }); });
+  listenEv.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const buyAmt = buy.reduce((s,d)=>s+(d.price||0),0);
+  const sellAmt= soldM.reduce((s,d)=>s+(d.sellPrice||0),0);
+  const cards=[
+    ['구매', buy, won(buyAmt), '#e8643c', 'buy'],
+    ['판매·교환', soldM.concat(exchM), sellAmt?won(sellAmt):'', '#5ec27e', 'deal'],
+    ['청음', listenEv, '', '#8a6fd6', 'listen'],
+  ];
+  const albumLine=(d,kind)=>{
+    let extra='';
+    if(kind==='buy' && d.price!=null) extra=` <span class="ms-li-amt">${won(d.price)}</span>`;
+    else if(kind==='deal' && d.sellPrice!=null) extra=` <span class="ms-li-amt">${won(d.sellPrice)}</span>`;
+    return `<div class="ms-li" data-id="${d.id}"><span class="ms-li-al">${escapeHtml(d.album||'—')}</span><span class="ms-li-ar">${escapeHtml(d.artist||'')}</span>${extra}</div>`;
+  };
+  const listenLine=(ev)=>{
+    const mm=parseInt((ev.date||'').slice(5,7),10);
+    const dd=parseInt((ev.date||'').slice(8,10),10);
+    const dateLabel=(mm&&dd)?`${mm}/${dd}`:'';
+    return `<div class="ms-li" data-id="${ev.it.id}"><span class="ms-li-al">${escapeHtml(ev.it.album||'—')}</span><span class="ms-li-ar">${escapeHtml(ev.it.artist||'')}</span>${ev.note?`<span class="ms-li-note">🎧 ${escapeHtml(ev.note)}</span>`:''}<span class="ms-li-amt">${dateLabel}</span></div>`;
+  };
+  if(!buy.length && !soldM.length && !exchM.length && !listenEv.length){
+    body.innerHTML=`<div class="ms-head">이 달의 기록</div><div class="mstat-empty">이 달에는 구매·판매·교환·청음 기록이 없어요.</div>`;
+    return;
+  }
+  body.innerHTML=`
+    <div class="ms-head">이 달의 기록</div>
+    <div class="mstat-cards">
+      ${cards.map(([lab,arr,sub,c,key])=>`
+        <button type="button" class="mstat-card${arr.length?' tappable':''}" data-key="${key}" ${arr.length?'':'disabled'}>
+          <div class="mstat-dot" style="background:${c}"></div>
+          <div class="mstat-lab">${lab}</div>
+          <div class="mstat-cnt">${arr.length}<span>${key==='listen'?'회':'장'}</span></div>
+          ${sub?`<div class="mstat-sub">${sub}</div>`:''}
+          ${arr.length?`<div class="mstat-more" id="ms-more-${key}">▾</div>`:''}
+        </button>`).join('')}
+    </div>
+    <div class="ms-detail" id="ms-detail"></div>`;
+  const lists={ buy, deal:soldM.concat(exchM), listen:listenEv };
+  let openKey=null;
+  body.querySelectorAll('.mstat-card.tappable').forEach(btn=>btn.onclick=()=>{
+    const key=btn.dataset.key;
+    const det=$('#ms-detail');
+    body.querySelectorAll('.mstat-card').forEach(c=>c.classList.remove('on'));
+    body.querySelectorAll('.mstat-more').forEach(e=>e.textContent='▾');
+    if(openKey===key){ openKey=null; det.innerHTML=''; det.classList.remove('show'); return; }
+    openKey=key;
+    btn.classList.add('on');
+    const more=$('#ms-more-'+key); if(more) more.textContent='▴';
+    det.innerHTML=lists[key].map(d=> key==='listen' ? listenLine(d) : albumLine(d,key)).join('');
+    det.classList.add('show');
+    det.querySelectorAll('.ms-li').forEach(li=>li.onclick=()=>openDetail(li.dataset.id));
+  });
 }
 
 /* ---------- nav ---------- */
@@ -3415,6 +3802,10 @@ function renderSettings(){
           <button type="button" class="${(SETTINGS.crackleLevel==='low'||SETTINGS.crackleLevel==null)?'on':''}" data-crackle="low">약하게</button>
           <button type="button" class="${SETTINGS.crackleLevel==='normal'?'on':''}" data-crackle="normal">기본</button>
         </div>
+      </div>
+      <div class="set-row" data-act="showYear">
+        <div class="set-l"><div class="set-t">발매년도 표기</div><div class="set-d">카드와 상세에 LP 발매년도를 표시해요</div></div>
+        ${tog(SETTINGS.showYear)}
       </div>
       <div class="set-row" data-act="showGrade">
         <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 컨디션 등급(M/NM/VG+/VG/G)을 기록해요</div></div>
