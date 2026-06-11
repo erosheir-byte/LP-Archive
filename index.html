@@ -661,6 +661,8 @@ body:not(.state-app) .nav{display:none!important}
 header{padding-top:54px}
 .cf-mode-toggle{top:98px}
 .acct{top:54px}
+.share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.share-card-btn:active{transform:scale(.98)}
 </style>
 </head>
 <body class="state-boot">
@@ -762,6 +764,7 @@ header{padding-top:54px}
 <div class="view" id="view-stats">
   <div class="stats" id="stats2" style="padding-top:16px"></div>
   <div class="export-note" id="bigstats"></div>
+  <button class="share-card-btn" id="share-card-btn" type="button">📤 컬렉션 카드 공유</button>
 </div>
 
 <div class="view" id="view-cal">
@@ -1010,6 +1013,9 @@ header{padding-top:54px}
    touching underlying data or program logic. User data (artist/album/notes/
    prices/dates) is never translated — only known UI strings in the dictionary. */
 const I18N = {
+  "📤 컬렉션 카드 공유":"📤 Share collection card",
+  "LP 지직거림 사운드":"Vinyl crackle sound",
+  "미리듣기 재생 중 아날로그 잡음을 깔아요":"Adds warm analog noise while previewing",
   /* --- Auth / boot --- */
   "내 바이닐 컬렉션을 어디서나":"Your vinyl collection, anywhere",
   "로그인":"Sign in",
@@ -1682,7 +1688,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true };
+const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, vinylCrackle:true };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -1931,6 +1937,57 @@ function renderGrid(){
 }
 
 /* ---------- 30초 미리듣기 (iTunes previewUrl) ---------- */
+/* ===== LP 지직거림(크래클) — Web Audio 절차적 생성 (외부 음원 불필요) ===== */
+const VinylNoise = (function(){
+  let ctx=null, master=null, hissSrc=null, popTimer=null, running=false;
+  function ensure(){
+    if(ctx) return ctx;
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
+    try{ ctx=new AC(); }catch(e){ return null; }
+    master=ctx.createGain(); master.gain.value=0; master.connect(ctx.destination);
+    return ctx;
+  }
+  function noiseBuf(sec){
+    const n=Math.max(1,Math.floor(ctx.sampleRate*sec)), b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+    return b;
+  }
+  function start(){
+    if(running || !ensure()) return;
+    if(ctx.state==='suspended') ctx.resume().catch(()=>{});
+    running=true;
+    // 지속적인 표면 잡음(히스): 대역 필터 + 작은 게인
+    hissSrc=ctx.createBufferSource(); hissSrc.buffer=noiseBuf(2); hissSrc.loop=true;
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2600;
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=700;
+    const hg=ctx.createGain(); hg.gain.value=0.05;
+    hissSrc.connect(hp); hp.connect(lp); lp.connect(hg); hg.connect(master);
+    try{ hissSrc.start(); }catch(e){}
+    // 무작위 팝/클릭("지직")
+    const pop=()=>{
+      if(!running) return;
+      const dur=0.003+Math.random()*0.012;
+      const src=ctx.createBufferSource(); src.buffer=noiseBuf(dur);
+      const g=ctx.createGain(); const t=ctx.currentTime; const peak=0.12+Math.random()*0.4;
+      g.gain.setValueAtTime(peak,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur+0.012);
+      const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200+Math.random()*3500; bp.Q.value=0.7;
+      src.connect(bp); bp.connect(g); g.connect(master); try{src.start();}catch(e){}
+      popTimer=setTimeout(pop, 50+Math.random()*330);
+    };
+    pop();
+    const t=ctx.currentTime; master.gain.cancelScheduledValues(t);
+    master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0.35,t+0.4);
+  }
+  function stop(){
+    if(!running) return; running=false;
+    if(popTimer){ clearTimeout(popTimer); popTimer=null; }
+    if(ctx&&master){ const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+0.25); }
+    setTimeout(()=>{ try{ if(hissSrc){ hissSrc.stop(); hissSrc.disconnect(); } }catch(e){} hissSrc=null; },320);
+  }
+  return { start, stop };
+})();
+function crackleOn(){ return !(typeof SETTINGS!=='undefined' && SETTINGS.vinylCrackle===false); }
+
 const _preview = { audio:null, id:null, discEl:null, cache:{} };
 async function _fetchPreviewUrl(it){
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
@@ -1947,6 +2004,7 @@ async function _fetchPreviewUrl(it){
   return url;
 }
 function stopPreview(){
+  try{ VinylNoise.stop(); }catch(e){}
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} _preview.audio=null; }
   if(_preview.discEl){ _preview.discEl.classList.remove('playing'); _preview.discEl.style.animationDelay=''; _preview.discEl=null; }
   _preview.id=null;
@@ -1965,7 +2023,8 @@ async function playPreview(it, disc){
   a.onended=()=>stopPreview();
   a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
   // 손가락으로 돌리는 중(spinning)이 아니면 음악에 맞춰 자동 회전 시작
-  a.play().then(()=>{ if(_preview.discEl===disc && !disc.classList.contains('spinning')){
+  a.play().then(()=>{ if(crackleOn()) try{ VinylNoise.start(); }catch(e){}
+            if(_preview.discEl===disc && !disc.classList.contains('spinning')){
             const cur=parseFloat(getComputedStyle(disc).getPropertyValue('--spin'))||0;
             const norm=((cur%360)+360)%360;
             disc.style.removeProperty('--spin');
@@ -2720,6 +2779,73 @@ function applyDiscogsResult(r){
 // 추가 시트 닫힐 때 카메라 정리
 { const x=document.querySelector('#sheet-add .sheet-x'); if(x){ const orig=x.onclick; x.addEventListener('click',()=>{ stopBarcodeScan(); const bx=$('#bc-box'); if(bx) bx.style.display='none'; }); } }
 
+/* ===== 컬렉션 요약 공유 카드 (이미지 생성 → 공유/다운로드) ===== */
+function _collStatsForCard(){
+  const real=DATA.filter(d=>statusGroup(d.status)!=='위시');
+  const owned=DATA.filter(d=>statusGroup(d.status)==='보유중');
+  const liked=DATA.filter(d=>d.liked).length;
+  const buy=real.reduce((s,d)=>s+(d.price||0),0);
+  const gc={}, ac={};
+  real.forEach(d=>{ if(d.genre) gc[d.genre]=(gc[d.genre]||0)+1; if(d.artist && d.artist!=='-') ac[d.artist]=(ac[d.artist]||0)+1; });
+  const top=o=>Object.keys(o).sort((a,b)=>o[b]-o[a])[0]||'';
+  return { total:real.length, owned:owned.length, liked, buy, genre:top(gc), artist:top(ac) };
+}
+function buildShareCardCanvas(){
+  const s=_collStatsForCard(), en=isEN();
+  const W=1080,H=1350, c=document.createElement('canvas'); c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  const accent=(typeof SETTINGS!=='undefined'&&SETTINGS.accent)||'#e8643c';
+  const bg=x.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#16121a'); bg.addColorStop(1,'#0b0a0e');
+  x.fillStyle=bg; x.fillRect(0,0,W,H);
+  const gl=x.createRadialGradient(W/2,360,40,W/2,360,540); gl.addColorStop(0,accent+'55'); gl.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=gl; x.fillRect(0,0,W,760);
+  const cx=W/2, cy=360, R=240;
+  x.beginPath(); x.arc(cx,cy,R,0,7); x.fillStyle='#0c0c0e'; x.fill();
+  x.strokeStyle='rgba(255,255,255,.06)'; x.lineWidth=2;
+  for(let r=72;r<R;r+=14){ x.beginPath(); x.arc(cx,cy,r,0,7); x.stroke(); }
+  x.strokeStyle='rgba(255,255,255,.22)'; x.lineWidth=10; x.beginPath(); x.arc(cx,cy,R-12,-2.5,-1.7); x.stroke();
+  const lab=x.createLinearGradient(cx-60,cy-60,cx+60,cy+60); lab.addColorStop(0,accent); lab.addColorStop(1,'#b8472a');
+  x.beginPath(); x.arc(cx,cy,66,0,7); x.fillStyle=lab; x.fill();
+  x.beginPath(); x.arc(cx,cy,9,0,7); x.fillStyle='#0c0c0e'; x.fill();
+  x.textAlign='center'; x.fillStyle='#fff'; x.font='800 64px "Bricolage Grotesque",sans-serif';
+  x.fillText('My Vinyl', cx, 778);
+  x.fillStyle=accent; x.font='700 28px sans-serif';
+  x.fillText(en?'MY VINYL COLLECTION':'내 바이닐 컬렉션', cx, 820);
+  x.fillStyle='#fff'; x.font='800 116px sans-serif';
+  x.fillText(String(s.total), cx-210, 985); x.fillText(String(s.owned), cx+210, 985);
+  x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
+  x.fillText(en?'TOTAL':'총 보유', cx-210, 1028); x.fillText(en?'IN COLLECTION':'소장 중', cx+210, 1028);
+  let ry=1120; const lx=150, rx=W-150;
+  const row=(k,v)=>{ x.textAlign='left'; x.fillStyle='rgba(255,255,255,.5)'; x.font='600 28px sans-serif'; x.fillText(k,lx,ry);
+    x.textAlign='right'; x.fillStyle='#fff'; x.font='700 30px sans-serif'; x.fillText(v||'–',rx,ry); ry+=56; };
+  row(en?'Liked':'좋아요', String(s.liked));
+  if(s.genre) row(en?'Top genre':'최다 장르', s.genre);
+  if(s.artist) row(en?'Top artist':'최애 아티스트', s.artist);
+  if(!(typeof SETTINGS!=='undefined'&&SETTINGS.hideMoney) && s.buy) row(en?'Spent':'총 구매가', '₩'+Number(s.buy).toLocaleString('ko-KR'));
+  x.textAlign='center'; x.fillStyle='rgba(255,255,255,.4)'; x.font='600 26px sans-serif';
+  x.fillText('lp-archive.web.app', cx, H-72);
+  return c;
+}
+async function shareCollectionCard(){
+  try{
+    const canvas=buildShareCardCanvas();
+    canvas.toBlob(async (blob)=>{
+      if(!blob) return;
+      const file=new File([blob],'my-vinyl.png',{type:'image/png'});
+      try{
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:'My Vinyl', text:isEN()?'My vinyl collection 🎵':'내 바이닐 컬렉션 🎵'});
+          return;
+        }
+      }catch(e){ if(e && e.name==='AbortError') return; }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='my-vinyl.png'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    },'image/png');
+  }catch(e){ console.error('share card', e); }
+}
+{ const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
+
 function toggleBuyFields(){
   const status=$('#f-status').value;
   const wish=status==='위시';
@@ -3264,6 +3390,10 @@ function renderSettings(){
       <div class="set-row" data-act="showGenre">
         <div class="set-l"><div class="set-t">장르 표기</div><div class="set-d">카드에 장르 태그를 표시해요</div></div>
         ${tog(SETTINGS.showGenre)}
+      </div>
+      <div class="set-row" data-act="vinylCrackle">
+        <div class="set-l"><div class="set-t">LP 지직거림 사운드</div><div class="set-d">미리듣기 재생 중 아날로그 잡음을 깔아요</div></div>
+        ${tog(SETTINGS.vinylCrackle!==false)}
       </div>
       <div class="set-row" data-act="showGrade">
         <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 컨디션 등급(M/NM/VG+/VG/G)을 기록해요</div></div>
