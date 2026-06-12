@@ -531,6 +531,7 @@ h1 .em{color:var(--accent)}
 .ord-status.load{background:var(--card2);color:var(--muted)}
 .ord-status.ok{background:rgba(94,194,126,.14);color:var(--green)}
 .ord-status.err{background:rgba(232,92,106,.14);color:var(--red)}
+.ord-detail{display:block;margin-top:6px;font-size:10.5px;font-weight:500;color:var(--dim);word-break:break-all;line-height:1.45}
 .ord-pick{display:flex;flex-direction:column;gap:7px;margin-top:9px}
 .ord-pick-item{text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:13px;color:var(--txt);cursor:pointer;font-family:inherit;font-weight:600}
 .ord-pick-item:active{transform:scale(.99)}
@@ -3304,14 +3305,17 @@ $('#ord-file').onchange=async e=>{
     if(!items.length){ _ordStatus('err','읽지 못했어요. 더 선명한 캡쳐로 다시 시도하거나 직접 입력해 주세요.'); return; }
     _ordShowPicker(items);
   }catch(err){
-    console.error(err);
-    const msg=String(err&&err.message||'');
+    console.error('order extract error', err);
+    const parts=[];
+    if(err){ if(err.name) parts.push(err.name); if(err.code!=null) parts.push('code='+err.code); if(err.status!=null) parts.push('status='+err.status); if(err.message) parts.push(err.message); }
+    const msg=parts.join(' | ');
+    const detail=escapeHtml(msg.replace(/\s+/g,' ').slice(0,260));
     if(msg.indexOf('AI-not-configured')>=0){
       _ordStatus('err','⚙️ AI 기능이 아직 켜지지 않았어요. Firebase 콘솔 → AI Logic을 활성화해 주세요. (당분간은 직접 입력)');
-    }else if(/quota|429|resource-exhausted/i.test(msg)){
-      _ordStatus('err','오늘 AI 사용량을 다 썼어요. 잠시 후 다시 시도하거나 직접 입력해 주세요.');
+    }else if(/quota|429|resource.?exhausted/i.test(msg)){
+      _ordStatus('err','사용량/할당량 제한(429)에 걸렸어요. 무료 한도는 매일(한국시간 오후 4~5시경) 리셋되고, 계속 쓰려면 Firebase를 Blaze로 올리면 돼요.<br><span class="ord-detail">자세히: '+detail+'</span>');
     }else{
-      _ordStatus('err','읽는 중 오류가 났어요. 더 선명한 캡쳐로 다시 시도하거나 직접 입력해 주세요.');
+      _ordStatus('err','읽는 중 오류가 났어요. 더 선명한 캡쳐로 다시 시도하거나 직접 입력해 주세요.<br><span class="ord-detail">자세히: '+detail+'</span>');
     }
   }finally{ e.target.value=''; }
 };
