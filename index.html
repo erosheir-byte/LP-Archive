@@ -525,6 +525,17 @@ h1 .em{color:var(--accent)}
 .dt-art .pk-manual{margin-top:14px}
 .pk-up{display:block;text-align:center;background:var(--card2);border:1px dashed var(--line);border-radius:11px;padding:12px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer}
 .pk-up:active{opacity:.8}
+/* 주문내역 캡쳐 채우기 — 강조 */
+.ord-up{background:linear-gradient(150deg,rgba(232,164,68,.16),rgba(232,100,60,.16));border-color:var(--accent2);color:var(--txt)}
+.ord-status{font-size:12.5px;font-weight:600;border-radius:11px;padding:10px 12px;line-height:1.5}
+.ord-status.load{background:var(--card2);color:var(--muted)}
+.ord-status.ok{background:rgba(94,194,126,.14);color:var(--green)}
+.ord-status.err{background:rgba(232,92,106,.14);color:var(--red)}
+.ord-pick{display:flex;flex-direction:column;gap:7px;margin-top:9px}
+.ord-pick-item{text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:13px;color:var(--txt);cursor:pointer;font-family:inherit;font-weight:600}
+.ord-pick-item:active{transform:scale(.99)}
+.ord-pick-item b{color:var(--accent2)}
+.ord-pick-item small{display:block;color:var(--muted);font-weight:500;margin-top:3px;font-size:11.5px}
 /* 상태 등급 선택 */
 #f-grade-fld .grade-help{color:var(--dim);font-size:11px;cursor:help}
 .grade-seg{display:flex;gap:6px;margin-top:2px}
@@ -1009,6 +1020,10 @@ body:not(.state-app) .nav{display:none!important}
       <div class="pt" id="pt-prev">가수·앨범 입력 후 미리보기</div>
     </div>
     <div class="pk-manual" style="margin-bottom:13px">
+      <label class="pk-up ord-up" id="ord-up">📋 주문내역 캡쳐로 채우기
+        <input type="file" accept="image/*" id="ord-file" hidden>
+      </label>
+      <div class="ord-status" id="ord-status" style="display:none"></div>
       <label class="pk-up">📷 사진에서 직접 올리기
         <input type="file" accept="image/*" id="f-file" hidden>
       </label>
@@ -2082,22 +2097,32 @@ function renderGrid(){
     };
     if(disc){
       const it = DATA.find(d=>d.id===el.dataset.id);
-      let spin=0, dragging=false, moved=false, lastAng=0, cx=0, cy=0;
+      let spin=0, dragging=false, moved=false, lastAng=0, cx=0, cy=0, spinAtPlay=0, playing=false;
       const angle=(x,y)=>Math.atan2(y-cy, x-cx)*180/Math.PI;
       const down=(x,y)=>{
         if(!el.classList.contains('pulled')) return;   // only spin when raised
         const r=disc.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2;
         dragging=true; moved=false; lastAng=angle(x,y);
         disc.classList.add('spinning');
+        // 이미 이 판이 재생 중이면 곡 전환 기준점을 현재 각도로 다시 잡음
+        if(it && _preview.id===it.id){ playing=true; spinAtPlay=spin; }
         if(it) _fetchPreviewUrl(it);   // 회전 시작에 대비해 미리듣기 URL 미리 받아두기
       };
       const move=(x,y)=>{
         if(!dragging) return;
         let a=angle(x,y), d=a-lastAng;
         if(d>180) d-=360; if(d<-180) d+=360;   // wrap
-        if(Math.abs(d)>1.5 && !moved){ moved=true; if(it) playPreview(it, disc); }   // 드래그로 회전 시작 → 미리듣기 재생
+        if(Math.abs(d)>1.5 && !moved){            // 드래그로 회전 시작 → 미리듣기 재생
+          moved=true;
+          if(it){ playPreview(it, disc); playing=true; spinAtPlay=spin; }
+        }
         spin+=d; lastAng=a;
         disc.style.setProperty('--spin', spin+'deg');
+        // 재생 중: 시작 각도 대비 한 바퀴(±360°) 돌 때마다 다음/이전 곡
+        if(playing && _preview.id===(it&&it.id)){
+          while(spin-spinAtPlay>=360){ spinAtPlay+=360; previewStep(+1, disc); }   // 시계방향 → 다음곡
+          while(spin-spinAtPlay<=-360){ spinAtPlay-=360; previewStep(-1, disc); }  // 반시계방향 → 이전곡
+        }
       };
       const up=()=>{ if(!dragging)return; dragging=false; disc.classList.remove('spinning');
         if(_preview.audio && _preview.discEl===disc){
@@ -2118,7 +2143,7 @@ function renderGrid(){
         if(moved){ moved=false; return; }   // was a spin, not a tap
         const willPull = !el.classList.contains('pulled');
         el.classList.toggle('pulled');       // tap to raise / slide back
-        if(!willPull) stopPreview();         // 판을 내리면 미리듣기 정지
+        if(!willPull){ stopPreview(); playing=false; }         // 판을 내리면 미리듣기 정지
       };
     }
     const editBtn=el.querySelector('.disc-edit');
@@ -2206,7 +2231,7 @@ const VinylNoise = (function(){
 })();
 function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
-const _preview = { audio:null, id:null, discEl:null, cache:{}, last:{} };
+const _preview = { audio:null, id:null, discEl:null, cache:{}, last:{}, urls:[], idx:0 };
 async function _fetchPreviewUrl(it){
   // cache[it.id] = previewUrl 배열 (수록곡들)
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
@@ -2247,23 +2272,19 @@ function stopPreview(){
   try{ VinylNoise.stop(); }catch(e){}
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} _preview.audio=null; }
   if(_preview.discEl){ _preview.discEl.classList.remove('playing'); _preview.discEl.style.animationDelay=''; _preview.discEl=null; }
-  _preview.id=null;
+  _preview.id=null; _preview.urls=[]; _preview.idx=0;
 }
-async function playPreview(it, disc){
-  if(!it) return;
-  if(_preview.id===it.id) return;        // 이미 이 판이 재생 중이면 그대로 둠
-  stopPreview();
-  _preview.id = it.id;
-  let urls = _preview.cache[it.id];
-  if(urls===undefined) urls = await _fetchPreviewUrl(it);
-  if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
-  const url = _pickPreviewUrl(it, urls);
-  if(!url){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
-  const a = new Audio(url); a.preload='auto';
+// 현재 _preview.urls[idx] 곡을 재생 (오디오 엘리먼트만 교체, 회전은 유지)
+function _playPreviewIdx(disc){
+  const urls=_preview.urls;
+  if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); return; }
+  _preview.idx=((_preview.idx%urls.length)+urls.length)%urls.length;
+  const url=urls[_preview.idx];
+  if(_preview.audio){ try{_preview.audio.pause();}catch(e){} }
+  const a=new Audio(url); a.preload='auto';
   _preview.audio=a; _preview.discEl=disc;
   a.onended=()=>stopPreview();
   a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
-  // 손가락으로 돌리는 중(spinning)이 아니면 음악에 맞춰 자동 회전 시작
   a.play().then(()=>{ const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
             if(_preview.discEl===disc && !disc.classList.contains('spinning')){
             const cur=parseFloat(getComputedStyle(disc).getPropertyValue('--spin'))||0;
@@ -2273,6 +2294,27 @@ async function playPreview(it, disc){
             disc.classList.add('playing');
           } })
           .catch(()=>{});
+  if(urls.length>1) previewToast('♪ '+(_preview.idx+1)+' / '+urls.length);
+}
+// 재생 중 한 바퀴 돌렸을 때 다음/이전 곡으로 전환
+function previewStep(dir, disc){   // dir: +1 다음곡, -1 이전곡
+  if(!_preview.urls || _preview.urls.length<2) return;
+  _preview.idx += (dir>0?1:-1);
+  _playPreviewIdx(disc);
+}
+async function playPreview(it, disc){
+  if(!it) return;
+  if(_preview.id===it.id) return;        // 이미 이 판이 재생 중이면 그대로 둠
+  stopPreview();
+  _preview.id = it.id;
+  let urls = _preview.cache[it.id];
+  if(urls===undefined) urls = await _fetchPreviewUrl(it);
+  if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
+  if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
+  _preview.urls = urls;
+  _preview.idx = Math.floor(Math.random()*urls.length);   // 첫 곡은 랜덤 시작
+  _preview.last[it.id]=urls[_preview.idx];
+  _playPreviewIdx(disc);
 }
 function previewToast(msg){
   let t=document.getElementById('preview-toast');
@@ -3180,6 +3222,7 @@ let openUnknown=false;
 function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   $('#f-file').value='';
+  { const os=$('#ord-status'); if(os){ os.style.display='none'; os.innerHTML=''; os.className='ord-status'; } const of=$('#ord-file'); if(of) of.value=''; }
   $('#f-status').value=initStatus||'미개봉';
   const wish=(initStatus==='위시');
   $('#sheet-add .form h2').textContent=wish?'위시 추가':'LP 추가';
@@ -3207,6 +3250,78 @@ $('#fab').onclick=()=>{
   if(filter.chip==='판매·교환') return openSellExchange();
   openAdd();
 };
+
+/* ===== 주문내역 캡쳐로 폼 자동 채우기 ===== */
+// 파일 → base64 (data: 프리픽스 제거)
+function _fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(String(r.result).split(',')[1]);
+    r.onerror=()=>rej(new Error('read-fail'));
+    r.readAsDataURL(file);
+  });
+}
+// 추출 결과 한 건을 추가 폼에 채움
+function fillAddFormFromOrder(o){
+  if(!o) return;
+  if(o.artist!=null) $('#f-artist').value=o.artist;
+  if(o.album!=null)  $('#f-album').value=o.album;
+  if(o.store!=null)  $('#f-store').value=o.store;
+  if(o.price!=null && !isNaN(o.price)) $('#f-price').value=o.price;
+  if(o.buyDate)      $('#f-buy').value=o.buyDate;
+  if(o.genre!=null && $('#f-genre')) $('#f-genre').value=o.genre;
+  if(o.color!=null && $('#f-color')) $('#f-color').value=o.color;
+  // 아티스트·앨범이 채워졌으면 앨범아트 미리보기 검색 트리거
+  try{ if(typeof schedulePreview==='function') schedulePreview(); }catch(e){}
+}
+function _ordStatus(cls,html){
+  const os=$('#ord-status'); if(!os) return;
+  os.style.display=''; os.className='ord-status '+(cls||''); os.innerHTML=html;
+}
+// 여러 건이면 사용자가 고르게 표시
+function _ordShowPicker(items){
+  if(items.length===1){ fillAddFormFromOrder(items[0]); _ordStatus('ok','✅ 자동으로 채웠어요. 내용을 확인하고 저장하세요.'); return; }
+  let html='✅ '+items.length+'개를 찾았어요. 등록할 항목을 선택하세요.<div class="ord-pick">';
+  items.forEach((o,i)=>{
+    const price=(o.price!=null&&!isNaN(o.price))?Number(o.price).toLocaleString()+'원':'';
+    html+='<button type="button" class="ord-pick-item" data-i="'+i+'"><b>'+escapeHtml(o.album||o.artist||'제목 미상')+'</b>'
+        +'<small>'+escapeHtml(o.artist||'')+(o.store?' · '+escapeHtml(o.store):'')+(price?' · '+price:'')+'</small></button>';
+  });
+  html+='</div>';
+  _ordStatus('ok',html);
+  document.querySelectorAll('#ord-status .ord-pick-item').forEach(b=>{
+    b.onclick=()=>{ fillAddFormFromOrder(items[+b.dataset.i]); _ordStatus('ok','✅ 선택한 항목을 채웠어요. 확인 후 저장하세요.'); };
+  });
+}
+$('#ord-file').onchange=async e=>{
+  const file=e.target.files&&e.target.files[0];
+  if(!file) return;
+  _ordStatus('load','🔎 주문내역을 읽는 중…');
+  try{
+    const _extract = window.extractOrderFromImage || extractOrderFromImage;
+    const result=await _extract(file);
+    const items=(result&&result.items||[]).filter(o=>o&&(o.artist||o.album));
+    if(!items.length){ _ordStatus('err','읽지 못했어요. 더 선명한 캡쳐로 다시 시도하거나 직접 입력해 주세요.'); return; }
+    _ordShowPicker(items);
+  }catch(err){
+    console.error(err);
+    const msg=String(err&&err.message||'');
+    if(msg.indexOf('AI-not-configured')>=0){
+      _ordStatus('err','⚙️ AI 기능이 아직 켜지지 않았어요. Firebase 콘솔 → AI Logic을 활성화해 주세요. (당분간은 직접 입력)');
+    }else if(/quota|429|resource-exhausted/i.test(msg)){
+      _ordStatus('err','오늘 AI 사용량을 다 썼어요. 잠시 후 다시 시도하거나 직접 입력해 주세요.');
+    }else{
+      _ordStatus('err','읽는 중 오류가 났어요. 더 선명한 캡쳐로 다시 시도하거나 직접 입력해 주세요.');
+    }
+  }finally{ e.target.value=''; }
+};
+
+/* 주문내역 캡쳐 → 항목 추출 (폴백).
+   실제 추출은 모듈 스크립트의 window.extractOrderFromImage (Firebase AI Logic/Gemini)가 담당.
+   AI Logic 미설정 시 여기로 와서 안내 표시. */
+async function extractOrderFromImage(file){
+  throw new Error('AI-not-configured');
+}
 
 /* ===== 판매 / 교환 등록 ===== */
 let _sxMode='판매', _sxPickId=null;
@@ -4331,6 +4446,8 @@ import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js';
+import { getAI, getGenerativeModel, GoogleAIBackend }
+  from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-ai.js';
 
 /* ===== ① 여기에 본인 Firebase 설정을 붙여넣으세요 (프로젝트: lp-archive) =====
    Firebase 콘솔 → 프로젝트 설정(톱니) → 일반 → 내 앱 → "SDK 설정 및 구성"에서
@@ -4366,6 +4483,59 @@ function start(){
   const storage=getStorage(app);
   let currentUser=null;
   const saveTimers={};
+
+  // ===== AI Logic (Gemini) — 주문내역 캡쳐 추출 =====
+  // 콘솔에서 AI Logic을 활성화해야 동작합니다. (Build → AI Logic → Gemini Developer API)
+  let _aiModel=null;
+  try{
+    const ai=getAI(app,{ backend: new GoogleAIBackend() });
+    _aiModel=getGenerativeModel(ai,{ model:'gemini-2.5-flash' });
+  }catch(e){ console.warn('AI Logic init failed', e); }
+
+  // 파일 → base64 (data: 프리픽스 제거)
+  function _fileToB64(file){
+    return new Promise((res,rej)=>{ const r=new FileReader();
+      r.onload=()=>res(String(r.result).split(',')[1]);
+      r.onerror=()=>rej(new Error('read-fail')); r.readAsDataURL(file); });
+  }
+  const _ORDER_PROMPT = [
+    '너는 한국 음반(LP/바이닐) 주문내역 캡쳐를 읽는 도우미야.',
+    '이 이미지는 yes24, 알라딘, 공식몰, 또는 해외직구 쇼핑몰의 주문/결제 내역 화면이야.',
+    '화면에서 "LP·바이닐 음반"으로 보이는 항목만 추출해. 보호비닐·이너슬리브·거치대·청소용품 같은 부속/액세서리는 제외해.',
+    '각 음반 항목에 대해 가능한 한 많이 채워서 JSON으로만 응답해. 설명·마크다운·코드펜스 없이 순수 JSON 객체만.',
+    '형식: {"items":[{"artist":string,"album":string,"store":string,"price":number,"qty":number,"buyDate":string,"genre":string,"color":string}]}',
+    '규칙:',
+    '- artist: 가수/아티스트명. 상품명에 "[LP] 아티스트 - 앨범" 형태면 분리해. 모르면 "".',
+    '- album: 앨범명만. [LP],[수입],[45rpm],디스크장수,에디션표기 등 대괄호 수식어는 제거해 깔끔하게.',
+    '- store: 쇼핑몰 이름(예: yes24, 알라딘). 화면 로고/헤더로 추정. 모르면 "".',
+    '- price: 해당 상품의 "단가"(숫자만, 원 단위). 수량이 여러 개여도 1개 가격. 총액만 보이고 수량>1이면 총액/수량으로 계산.',
+    '- qty: 수량(정수). 없으면 1.',
+    '- buyDate: 주문일자를 YYYY-MM-DD로. 화면에 날짜가 없으면 "".',
+    '- genre: 한국어 장르로 추정(예: 가요, 팝, 록, R&B·소울, 힙합, OST, 재즈, 클래식, 인디). 모르면 "".',
+    '- color: 컬러 바이닐 색상이 상품명에 있으면(예: GREEN, 투명, 레드) 한국어로. 없으면 "".',
+    '음반 항목이 하나도 없으면 {"items":[]} 를 반환해.'
+  ].join('\n');
+
+  function _stripFences(t){ return String(t||'').replace(/```json/gi,'').replace(/```/g,'').trim(); }
+
+  // 전역으로 노출 → 앱(classic) 코드의 onchange 핸들러가 호출
+  window.extractOrderFromImage = async function(file){
+    if(!_aiModel) throw new Error('AI-not-configured');
+    const b64=await _fileToB64(file);
+    const r=await _aiModel.generateContent([
+      { text:_ORDER_PROMPT },
+      { inlineData:{ mimeType:file.type||'image/jpeg', data:b64 } }
+    ]);
+    const txt=_stripFences(r.response.text());
+    let parsed;
+    try{ parsed=JSON.parse(txt); }
+    catch(e){ const m=txt.match(/\{[\s\S]*\}/); if(m) parsed=JSON.parse(m[0]); else throw new Error('parse-fail'); }
+    const items=Array.isArray(parsed&&parsed.items)?parsed.items:[];
+    // 숫자 정규화
+    items.forEach(o=>{ if(o.price!=null){ const n=Number(String(o.price).replace(/[^\d.]/g,'')); o.price=isNaN(n)?null:n; }
+                       if(o.qty!=null){ const q=parseInt(o.qty,10); o.qty=isNaN(q)?1:q; } });
+    return { items };
+  };
 
   // LP 한 장을 Firestore 문서로 직렬화 (커버는 cover 필드로 저장)
   const FIELDS=['no','artist','album','color','store','orig','price','pay','buy','arrive',
