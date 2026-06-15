@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">🎯 FocusTube</string>
+    <string name="settings_title">FocusTube 설정</string>
+    <string name="sw_enabled">홈 피드 교체 사용</string>
+    <string name="section_preset">피드 주제</string>
+    <string name="section_focus">집중 옵션</string>
+    <string name="custom_hint">검색 키워드를 한 줄에 하나씩 입력하세요\n예) 공부 자극 영상\n예) study with me</string>
+    <string name="sw_hide_shorts">Shorts 숨기기</string>
+    <string name="sw_hide_related">시청 중 추천 영상 숨기기</string>
+    <string name="sw_hide_comments">댓글 숨기기</string>
+    <string name="reset_guide">알고리즘 초기화: 유튜브에 로그인한 뒤 라이브러리 → 기록 → 「모든 시청 기록 지우기」를 실행하고, 교체된 피드의 영상을 시청해 알고리즘을 새 주제로 학습시키세요. 설정 변경은 유튜브 화면으로 돌아가면 즉시 반영됩니다.</string>
+</resources>
