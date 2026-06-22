@@ -14,7 +14,10 @@
       "package-lock.json",
       "android-debug.keystore",
       "**/.github/**",
-      "android/**"
+      "android/**",
+      "ios/**",
+      "www/**",
+      "scripts/**"
     ],
     "rewrites": [
       { "source": "**", "destination": "/index.html" }

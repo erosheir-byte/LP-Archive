@@ -58,47 +58,37 @@ firebase deploy --only firestore:rules,storage:rules
 
 ---
 
-## 4. APK 다운로드 / 만들기
+## 4. 모바일 앱(안드로이드/iOS) 빌드
 
-### ✅ 가장 빠른 방법 — 빌드된 APK 바로 받기 (권장)
+앱은 웹 셸을 `www/` 로 **기기에 내장(번들)** 해 실행합니다(원격 웹 로드 아님).
+데이터는 그대로 Firebase 로 동기화됩니다.
 
-매 빌드마다 갱신되는 **고정 다운로드 링크**가 있습니다:
+### ✅ 가장 빠른 방법 — 빌드된 디버그 APK 바로 받기
+
+매 빌드마다 갱신되는 **고정 다운로드 링크**:
 
 ➡️ **<https://github.com/erosheir-byte/LP-Archive/releases/download/apk-latest/LP-Archive.apk>**
 
 - 폰 브라우저로 위 링크를 열면 바로 받아집니다.
 - 설치하려면 *설정 → "출처를 알 수 없는 앱 / 이 출처 허용"* 을 켜야 합니다.
-- 앱은 `https://lp-archive.web.app` 를 로드하므로 웹을 배포하면 앱도 즉시 최신 화면으로 갱신됩니다.
 - 앱 안에서도 **환경설정 → 📱 안드로이드 앱 다운로드(APK)** 로 같은 링크에 접근할 수 있습니다.
+- GitHub Actions(`Build Android APK`)가 자동 빌드해 [`apk-latest` 릴리스](https://github.com/erosheir-byte/LP-Archive/releases/tag/apk-latest)에 올립니다.
 
-> 이 APK 는 GitHub Actions(`Build Android APK` 워크플로)가 자동으로 빌드해
-> [`apk-latest` 릴리스](https://github.com/erosheir-byte/LP-Archive/releases/tag/apk-latest)에 올립니다.
-> 직접 새로 빌드하려면 **Actions 탭 → Build Android APK → Run workflow** 를 누르세요.
+> ⚠️ 이 APK 는 디버그 서명본이라 **스토어 업로드용은 아닙니다.**
 
-### 직접 빌드하기
-
-APK는 컴파일에 Android SDK가 필요하므로 두 가지 방법 중 택1 하세요.
-
-### 방법 A — PWABuilder (도구 설치 없이 가장 간단, 권장)
-1. 위 3번으로 Hosting 배포 (`https://lp-archive.web.app`)
-2. <https://www.pwabuilder.com> 접속 → 그 주소 입력
-3. **Android → Generate Package** → APK/AAB 다운로드
-4. 다운로드한 zip 안의 안내대로 서명하면 설치/업로드 가능
-
-### 방법 B — Capacitor (내 PC에 Android Studio 필요, 더 네이티브)
-사전 준비: Node.js, Android Studio(+SDK), JDK 17
-
+### 로컬에서 빌드 (Android Studio / Xcode 필요)
 ```bash
-npm init -y
-npm i @capacitor/core @capacitor/cli @capacitor/android
-npx cap init "LP 보관함" "app.lparchive.vinyl" --web-dir .
-npx cap add android
-npx cap sync
-npx cap open android        # Android Studio가 열리면 Build > Build APK
+npm install --legacy-peer-deps
+npm run android     # www 번들 + cap sync + Android Studio 열기
+npm run ios         # www 번들 + cap sync + Xcode 열기 (macOS)
 ```
 
-> `capacitor.config.json` 은 이미 포함되어 있습니다.
-> Capacitor로 빌드할 경우 Firebase **승인된 도메인**에 `localhost` 가 있으면 됩니다(앱 내 WebView는 https 스킴 사용).
+### 🚀 스토어 정식 출시 (구글 플레이 / 애플 앱스토어)
+서명된 AAB 빌드 워크플로와 단계별 절차는 **[RELEASE.md](RELEASE.md)** 를 참고하세요.
+- 안드로이드 서명 AAB: Actions → **"Release Android (signed AAB)"**
+- iOS 컴파일 검증: Actions → **"Build iOS (validate)"** (제출은 Xcode)
+
+> 앱 셸(웹 코드)을 수정하면 재빌드·재업로드가 필요합니다(로컬 번들이므로).
 
 ---
 
@@ -112,7 +102,10 @@ npx cap open android        # Android Studio가 열리면 Build > Build APK
 | `icons/` | 앱 아이콘 (192/512/maskable/apple) |
 | `firebase.json`, `.firebaserc` | Hosting/규칙 배포 설정 (프로젝트: lp-archive) |
 | `firestore.rules`, `storage.rules` | 보안 규칙 (본인 데이터만 접근) |
-| `capacitor.config.json` | APK(방법 B)용 설정 |
+| `privacy.html` | 개인정보처리방침 (스토어 필수) |
+| `capacitor.config.json` | Capacitor(안드로이드/iOS) 설정 — 로컬 번들 |
+| `scripts/prepare-www.mjs` | 웹 자산을 `www/`(앱 내장용)로 모으는 빌드 스크립트 |
+| `RELEASE.md` | 구글 플레이 / 애플 앱스토어 출시 단계별 가이드 |
 
 ---
 

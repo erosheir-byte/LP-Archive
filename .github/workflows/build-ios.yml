@@ -1,0 +1,54 @@
+name: Build iOS (validate)
+
+# iOS 프로젝트가 정상적으로 생성·컴파일되는지 macOS 러너에서 검증합니다.
+# (서명 없이 빌드만 확인 — App Store 제출용 서명 IPA 는 Apple 인증서가 필요하므로
+#  Xcode 또는 fastlane 으로 진행합니다. RELEASE.md 의 iOS 섹션 참고.)
+#
+# 실행: Actions 탭 → "Build iOS (validate)" → Run workflow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Prepare web bundle (www/ 로컬 번들)
+        run: node scripts/prepare-www.mjs
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Capacitor sync
+        run: npx cap sync ios
+
+      - name: CocoaPods install
+        working-directory: ios/App
+        run: pod install
+
+      - name: Build (no code signing)
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build | tail -40
