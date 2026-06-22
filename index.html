@@ -4433,6 +4433,57 @@ function handleAppBack(){
   }
   if(!reg()){ let n=0; const t=setInterval(()=>{ if(reg()||++n>20) clearInterval(t); },300); }
 })();
+
+/* ===== 왼쪽 가장자리 → 오른쪽 스와이프로 뒤로가기(열린 시트 닫기) ===== */
+(function setupEdgeSwipeBack(){
+  const EDGE=40;        // 왼쪽 가장자리에서 이 픽셀 안쪽에서 시작해야 인식
+  const TRIGGER=0.32;   // 화면 너비의 이 비율 이상 밀면 닫힘
+  const W=()=>window.innerWidth||document.documentElement.clientWidth;
+  let active=false, x0=0, y0=0, dx=0, dy=0, axis=null, sheet=null;
+  function topSheet(){ const s=document.querySelectorAll('.sheet.show'); return s.length?s[s.length-1]:null; }
+  window.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1) return;
+    if(document.getElementById('exit-confirm')) return;
+    const t=e.touches[0];
+    if(t.clientX>EDGE) return;            // 왼쪽 가장자리에서 시작한 제스처만
+    active=true; x0=t.clientX; y0=t.clientY; dx=0; dy=0; axis=null;
+    sheet=topSheet();                     // 닫을 시트가 없으면 시각 피드백 없이 무시
+  },{passive:true});
+  window.addEventListener('touchmove',e=>{
+    if(!active) return;
+    const t=e.touches[0]; dx=t.clientX-x0; dy=t.clientY-y0;
+    if(axis===null){
+      if(Math.abs(dx)<8 && Math.abs(dy)<8) return;
+      axis = Math.abs(dx)>Math.abs(dy) ? 'x' : 'y';
+      if(axis!=='x'){ active=false; return; }   // 세로 제스처면 기존 핸들러에 양보
+      if(sheet) sheet.style.transition='none';
+    }
+    if(dx<0) dx=0;
+    e.preventDefault();                   // 가로 스와이프 중 페이지 흔들림 방지
+    if(sheet){
+      sheet.style.transform=`translateX(calc(-50% + ${dx}px))`;
+      sheet.style.opacity=String(Math.max(.4, 1-dx/W()));
+    }
+  },{passive:false});
+  function settle(){
+    if(!active) return; active=false;
+    const s=sheet; sheet=null;
+    if(axis!=='x' || !s){ return; }
+    s.style.transition='';
+    if(dx > W()*TRIGGER){
+      const name=s.id.replace('sheet-','');
+      try{ if(typeof stopBarcodeScan==='function') stopBarcodeScan(); }catch(e){}
+      s.style.transform=`translateX(calc(-50% + 100vw))`;
+      s.style.opacity='0';
+      setTimeout(()=>{ try{ hide(name); }catch(e){ s.classList.remove('show'); }
+        s.style.transform=''; s.style.opacity=''; }, 230);
+    } else {
+      s.style.transform=''; s.style.opacity='';   // 임계값 미달 → 원위치
+    }
+  }
+  window.addEventListener('touchend',settle);
+  window.addEventListener('touchcancel',settle);
+})();
 </script>
 <script>
 /* PWA: 서비스워커 등록 (오프라인 앱 셸 + 설치 가능) */
