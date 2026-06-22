@@ -3021,13 +3021,33 @@ function onBarcodeFound(num){
 async function startBarcodeScan(){
   const box=$('#bc-box'), vid=$('#bc-video');
   box.style.display='block';
-  // 1) 카메라 열기 (권한 필요)
+  // 1) 카메라 열기 (권한 필요) — 실패 원인별로 안내를 다르게
   try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw Object.assign(new Error('no mediaDevices'), {name:'InsecureContext'});
+    }
     _bcStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
   }catch(err){
     vid.style.display='none';
-    bcStatus(bcT('Cannot open the camera (permission needed). Enter the number below.',
-                 '카메라를 열 수 없어요(권한 필요). 아래에 번호를 직접 입력하세요.'));
+    const name = err && err.name;
+    let msg;
+    if(name==='NotAllowedError' || name==='SecurityError'){
+      msg = bcT('Camera permission was denied. Turn it on in Settings → Apps → My Vinyl → Permissions → Camera, then retry — or enter the number below.',
+                '카메라 권한이 거부됐어요. 폰 설정 → 앱 → My Vinyl → 권한 → 카메라 를 켠 뒤 다시 시도하거나, 아래에 번호를 직접 입력하세요.');
+    }else if(name==='NotFoundError' || name==='OverconstrainedError'){
+      msg = bcT('No camera was found on this device. Enter the number below.',
+                '이 기기에서 카메라를 찾지 못했어요. 아래에 번호를 직접 입력하세요.');
+    }else if(name==='NotReadableError' || name==='AbortError'){
+      msg = bcT('The camera is being used by another app. Close it and retry, or enter the number below.',
+                '다른 앱이 카메라를 쓰고 있어요. 닫고 다시 시도하거나, 아래에 번호를 직접 입력하세요.');
+    }else if(name==='InsecureContext' || !window.isSecureContext){
+      msg = bcT('Camera needs a secure (https) connection. Enter the number below.',
+                '카메라는 보안(https) 연결에서만 열려요. 아래에 번호를 직접 입력하세요.');
+    }else{
+      msg = bcT('Cannot open the camera. Enter the number below.',
+                '카메라를 열 수 없어요. 아래에 번호를 직접 입력하세요.');
+    }
+    bcStatus(msg);
     return;
   }
   vid.srcObject=_bcStream; vid.setAttribute('playsinline',''); vid.style.display='block';

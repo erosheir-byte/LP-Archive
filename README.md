@@ -80,6 +80,19 @@ npx cap sync
 npx cap open android        # Android Studio가 열리면 Build > Build APK
 ```
 
+> ⚠️ **바코드 스캔(카메라) 권한 — 꼭 추가하세요.**
+> `npx cap add android`로 만든 기본 프로젝트에는 카메라 권한이 없어서, 그대로 빌드하면
+> "바코드로 찾기"에서 카메라가 열리지 않습니다(`카메라를 열 수 없어요(권한 필요)`).
+> `android/app/src/main/AndroidManifest.xml` 의 `<manifest …>` 안쪽에 아래 두 줄을 추가하세요:
+>
+> ```xml
+> <uses-permission android:name="android.permission.CAMERA" />
+> <uses-feature android:name="android.hardware.camera" android:required="false" />
+> ```
+>
+> 추가 후 `npx cap sync` → 다시 빌드하면, 스캔을 누를 때 안드로이드가 카메라 권한 팝업을 띄웁니다.
+> (한 번 "거부"했다면 폰 설정 → 앱 → My Vinyl → 권한 → 카메라 를 켜야 합니다.)
+
 > `capacitor.config.json` 은 이미 포함되어 있습니다.
 > Capacitor로 빌드할 경우 Firebase **승인된 도메인**에 `localhost` 가 있으면 됩니다(앱 내 WebView는 https 스킴 사용).
 
