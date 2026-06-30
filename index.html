@@ -294,6 +294,21 @@ h1 .em{color:var(--accent)}
 .like-btn .heart-ic{width:24px;height:24px}
 .lp .card-like{position:absolute;top:7px;right:7px;z-index:5;color:#e85c6a;line-height:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));pointer-events:none}
 .lp .card-like .heart-ic{width:17px;height:17px}
+/* 재생 중 곡 제목 — 인스타 사진 태그풍 작은 라벨(앨범아트 좌하단) */
+.now-tag{position:absolute;left:8px;bottom:9px;max-width:calc(100% - 52px);z-index:6;
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;
+  border-radius:999px;background:rgba(255,255,255,.93);color:#1b1620;
+  border:1px solid rgba(255,255,255,.65);box-shadow:0 3px 12px rgba(0,0,0,.34);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  font-size:11px;font-weight:700;letter-spacing:.1px;line-height:1.3;
+  opacity:0;transform:translateY(6px) scale(.96);transform-origin:left bottom;pointer-events:none;
+  transition:opacity .26s ease, transform .26s cubic-bezier(.2,.9,.25,1.25)}
+.now-tag.show{opacity:1;transform:translateY(0) scale(1)}
+.now-tag .nt-dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 3px rgba(232,100,60,.22);animation:ntpulse 1.15s ease-in-out infinite}
+.now-tag .nt-txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes ntpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.62)}}
+.grid.list .now-tag{display:none}   /* 리스트형의 작은 썸네일에는 태그 숨김 */
 /* Pro lock card */
 .pro-lock{text-align:center;padding:20px 16px;background:linear-gradient(160deg,rgba(242,164,68,.12),rgba(232,100,60,.08));border:1px solid rgba(242,164,68,.3);border-radius:16px}
 .pro-badge{display:inline-block;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-weight:800;font-size:11px;letter-spacing:.08em;padding:3px 9px;border-radius:6px;margin-bottom:10px}
@@ -2253,7 +2268,7 @@ async function _itunesSongs(term){
     if(!r.ok) return [];
     const j=await r.json();
     _preview.reached=true;   // 응답을 받았다 = iTunes 접속 정상
-    return (j.results||[]).filter(x=>x.previewUrl).map(x=>({url:x.previewUrl, collection:x.collectionName||''}));
+    return (j.results||[]).filter(x=>x.previewUrl).map(x=>({url:x.previewUrl, title:x.trackName||'', artist:x.artistName||'', collection:x.collectionName||''}));
   }catch(e){ return []; }
 }
 // Deezer 검색 → [{url, collection}]. JSONP라 CORS 영향 없음(앨범아트와 동일 방식).
@@ -2268,7 +2283,7 @@ function _deezerSongs(term){
     window[cb]=data=>{
       _preview.reached=true;
       let out=[];
-      try{ out=(data.data||[]).filter(x=>x.preview).map(x=>({url:x.preview, collection:(x.album&&x.album.title)||''})); }catch(e){}
+      try{ out=(data.data||[]).filter(x=>x.preview).map(x=>({url:x.preview, title:x.title||x.title_short||'', artist:(x.artist&&x.artist.name)||'', collection:(x.album&&x.album.title)||''})); }catch(e){}
       cleanup(); res(out);
     };
     s.onerror=()=>{ cleanup(); res([]); };
@@ -2288,7 +2303,7 @@ async function _fetchPreviewUrl(it){
                 cAlbum, album, (cArtist||artist) ]
     .filter((v,i,a)=>v && a.indexOf(v)===i);
   const sources=[_itunesSongs, _deezerSongs];   // iTunes 우선, 막히면 Deezer(JSONP) 폴백
-  let urls=[];
+  let tracks=[];   // [{url, title, artist}] — url뿐 아니라 곡 제목도 함께 보관(재생 중 표시용)
   outer:
   for(const term of terms){
     for(const src of sources){
@@ -2300,12 +2315,12 @@ async function _fetchPreviewUrl(it){
         const same=pool.filter(x=>(x.collection||'').toLowerCase().includes(al) || al.includes((x.collection||'').toLowerCase()));
         if(same.length) chosen=same;
       }
-      urls=chosen.map(x=>x.url).filter(Boolean);
-      if(urls.length) break outer;
+      tracks=chosen.filter(x=>x.url);
+      if(tracks.length) break outer;
     }
   }
-  if(urls.length) _preview.cache[it.id]=urls;   // 성공한 경우에만 캐시(일시 오류는 재시도 허용)
-  return urls;
+  if(tracks.length) _preview.cache[it.id]=tracks;   // 성공한 경우에만 캐시(일시 오류는 재시도 허용)
+  return tracks;
 }
 function _pickPreviewUrl(it, urls){
   if(!urls || !urls.length) return null;
@@ -2321,6 +2336,8 @@ function _pickPreviewUrl(it, urls){
 function stopPreview(){
   try{ VinylNoise.stop(); }catch(e){}
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} _preview.audio=null; }
+  // 재생 중 떠 있던 곡 제목 태그 모두 제거(부드럽게 사라지게 한 뒤 정리)
+  document.querySelectorAll('.now-tag').forEach(t=>{ t.classList.remove('show'); setTimeout(()=>{ try{t.remove();}catch(e){} },260); });
   if(_preview.discEl){ _preview.discEl.classList.remove('playing'); _preview.discEl.style.animationDelay=''; _preview.discEl=null; }
   _preview.id=null; _preview.urls=[]; _preview.idx=0;
 }
@@ -2329,10 +2346,12 @@ function _playPreviewIdx(disc){
   const urls=_preview.urls;
   if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); return; }
   _preview.idx=((_preview.idx%urls.length)+urls.length)%urls.length;
-  const url=urls[_preview.idx];
+  const track=urls[_preview.idx];
+  const url=(track&&track.url)||'';
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} }
   const a=new Audio(url); a.preload='auto';
   _preview.audio=a; _preview.discEl=disc;
+  _showNowTag(track);   // 앨범아트 위에 현재 곡 제목 태그 표시
   a.onended=()=>stopPreview();
   a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
   a.play().then(()=>{ const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
@@ -2367,8 +2386,25 @@ async function playPreview(it, disc){
   }
   _preview.urls = urls;
   _preview.idx = Math.floor(Math.random()*urls.length);   // 첫 곡은 랜덤 시작
-  _preview.last[it.id]=urls[_preview.idx];
+  _preview.last[it.id]=(urls[_preview.idx]||{}).url;
   _playPreviewIdx(disc);
+}
+// 재생 중인 곡 제목을 해당 카드 앨범아트 위에 인스타 태그처럼 표시
+function _showNowTag(track){
+  try{
+    if(!_preview.discEl || !_preview.discEl.closest) return;
+    const card=_preview.discEl.closest('.lp'); if(!card) return;
+    const wrap=card.querySelector('.artwrap'); if(!wrap) return;
+    let tag=wrap.querySelector('.now-tag');
+    if(!tag){ tag=document.createElement('div'); tag.className='now-tag';
+      tag.innerHTML='<span class="nt-dot"></span><span class="nt-txt"></span>';
+      wrap.appendChild(tag);
+    }
+    const title=(track&&track.title)? track.title : '미리듣기';
+    tag.querySelector('.nt-txt').textContent=title;   // textContent → 제목에 든 특수문자 안전
+    // 곡이 바뀔 때마다 팝 애니메이션 다시 트리거
+    tag.classList.remove('show'); void tag.offsetWidth; tag.classList.add('show');
+  }catch(e){}
 }
 function previewToast(msg){
   let t=document.getElementById('preview-toast');
