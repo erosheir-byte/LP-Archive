@@ -2243,7 +2243,7 @@ function _cleanTerm(s){
     .replace(/\b(deluxe|remaster(ed)?|edition|expanded|anniversary|reissue|mono|stereo|disc\s*\d+|vol\.?\s*\d+|lp|ep)\b/ig,' ')
     .replace(/\s+/g,' ').trim();
 }
-// iTunes Search 한 번 호출 → previewUrl 있는 곡 결과 배열 (실패/0건이면 [])
+// iTunes Search → [{url, collection}] (실패/0건이면 []). fetch라 CORS 막히면 throw→[]
 async function _itunesSongs(term){
   if(!term) return [];
   let url='https://itunes.apple.com/search?media=music&entity=song&limit=25&term='+encodeURIComponent(term);
@@ -2252,9 +2252,29 @@ async function _itunesSongs(term){
     const r=await fetch(url);
     if(!r.ok) return [];
     const j=await r.json();
-    _preview.reached=true;   // 응답을 받았다 = iTunes 접속 자체는 정상
-    return (j.results||[]).filter(x=>x.previewUrl);
+    _preview.reached=true;   // 응답을 받았다 = iTunes 접속 정상
+    return (j.results||[]).filter(x=>x.previewUrl).map(x=>({url:x.previewUrl, collection:x.collectionName||''}));
   }catch(e){ return []; }
+}
+// Deezer 검색 → [{url, collection}]. JSONP라 CORS 영향 없음(앨범아트와 동일 방식).
+// track.preview = 30초 MP3 미리듣기 URL. iTunes가 CORS로 막혀도 이쪽으로 재생됨.
+function _deezerSongs(term){
+  return new Promise(res=>{
+    if(!term){ res([]); return; }
+    const cb='dzp_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    const to=setTimeout(()=>{ cleanup(); res([]); }, 6000);
+    function cleanup(){ clearTimeout(to); try{ delete window[cb]; }catch(e){} try{ s.remove(); }catch(e){} }
+    window[cb]=data=>{
+      _preview.reached=true;
+      let out=[];
+      try{ out=(data.data||[]).filter(x=>x.preview).map(x=>({url:x.preview, collection:(x.album&&x.album.title)||''})); }catch(e){}
+      cleanup(); res(out);
+    };
+    s.onerror=()=>{ cleanup(); res([]); };
+    s.src='https://api.deezer.com/search?limit=25&q='+encodeURIComponent(term)+'&output=jsonp&callback='+cb;
+    document.body.appendChild(s);
+  });
 }
 async function _fetchPreviewUrl(it){
   // cache[it.id] = previewUrl 배열 (수록곡들). 빈 결과는 캐시하지 않아 다음 시도에 재조회됨.
@@ -2267,18 +2287,22 @@ async function _fetchPreviewUrl(it){
   const terms=[ (artist+' '+album).trim(), (cArtist+' '+cAlbum).trim(),
                 cAlbum, album, (cArtist||artist) ]
     .filter((v,i,a)=>v && a.indexOf(v)===i);
+  const sources=[_itunesSongs, _deezerSongs];   // iTunes 우선, 막히면 Deezer(JSONP) 폴백
   let urls=[];
+  outer:
   for(const term of terms){
-    const pool=await _itunesSongs(term);
-    if(!pool.length) continue;
-    // 같은 앨범 곡 우선(앨범명이 비슷한 것), 없으면 결과 전체에서
-    let chosen=pool;
-    if(al){
-      const same=pool.filter(x=>(x.collectionName||'').toLowerCase().includes(al) || al.includes((x.collectionName||'').toLowerCase()));
-      if(same.length) chosen=same;
+    for(const src of sources){
+      const pool=await src(term);
+      if(!pool.length) continue;
+      // 같은 앨범 곡 우선(앨범명이 비슷한 것), 없으면 결과 전체에서
+      let chosen=pool;
+      if(al){
+        const same=pool.filter(x=>(x.collection||'').toLowerCase().includes(al) || al.includes((x.collection||'').toLowerCase()));
+        if(same.length) chosen=same;
+      }
+      urls=chosen.map(x=>x.url).filter(Boolean);
+      if(urls.length) break outer;
     }
-    urls=chosen.map(x=>x.previewUrl).filter(Boolean);
-    if(urls.length) break;
   }
   if(urls.length) _preview.cache[it.id]=urls;   // 성공한 경우에만 캐시(일시 오류는 재시도 허용)
   return urls;
