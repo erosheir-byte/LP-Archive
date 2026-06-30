@@ -58,7 +58,24 @@ firebase deploy --only firestore:rules,storage:rules
 
 ---
 
-## 4. APK 만들기
+## 4. APK 다운로드 / 만들기
+
+### ✅ 가장 빠른 방법 — 빌드된 APK 바로 받기 (권장)
+
+매 빌드마다 갱신되는 **고정 다운로드 링크**가 있습니다:
+
+➡️ **<https://github.com/erosheir-byte/LP-Archive/releases/download/apk-latest/LP-Archive.apk>**
+
+- 폰 브라우저로 위 링크를 열면 바로 받아집니다.
+- 설치하려면 *설정 → "출처를 알 수 없는 앱 / 이 출처 허용"* 을 켜야 합니다.
+- 앱은 `https://lp-archive.web.app` 를 로드하므로 웹을 배포하면 앱도 즉시 최신 화면으로 갱신됩니다.
+- 앱 안에서도 **환경설정 → 📱 안드로이드 앱 다운로드(APK)** 로 같은 링크에 접근할 수 있습니다.
+
+> 이 APK 는 GitHub Actions(`Build Android APK` 워크플로)가 자동으로 빌드해
+> [`apk-latest` 릴리스](https://github.com/erosheir-byte/LP-Archive/releases/tag/apk-latest)에 올립니다.
+> 직접 새로 빌드하려면 **Actions 탭 → Build Android APK → Run workflow** 를 누르세요.
+
+### 직접 빌드하기
 
 APK는 컴파일에 Android SDK가 필요하므로 두 가지 방법 중 택1 하세요.
 

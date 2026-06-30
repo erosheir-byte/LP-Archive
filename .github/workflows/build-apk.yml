@@ -8,7 +8,9 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
       - claude/busy-meitner-JQZ1E
+      - claude/apk-download-setup-rnj2or
     paths-ignore:
       - "**.md"
       - "LPArchive-preview.html"
