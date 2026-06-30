@@ -1463,6 +1463,7 @@ const I18N = {
   "복지포인트":"Welfare points",
   /* --- preview toast --- */
   "🔇 미리듣기를 찾지 못했어요":"🔇 Couldn't find a preview",
+  "📶 미리듣기 연결에 실패했어요 (네트워크 확인)":"📶 Couldn't reach the preview service (check your network)",
   "재생할 수 없어요":"Can't play this",
   "미리듣기":"Preview",
   /* --- common color names --- */
@@ -2233,29 +2234,53 @@ const VinylNoise = (function(){
 function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
 const _preview = { audio:null, id:null, discEl:null, cache:{}, last:{}, urls:[], idx:0 };
+// 한국어 환경이면 KR 스토어(국내 발매반 + 해외 카탈로그 모두 포함)를 우선 조회
+const _ituCountry = (typeof navigator!=='undefined' && (navigator.language||'').toLowerCase().startsWith('ko')) ? 'KR' : '';
+// 검색어 정리: 괄호/대괄호 부가표기, 리마스터·디럭스 등 잡음 단어 제거
+function _cleanTerm(s){
+  return (s||'')
+    .replace(/\([^)]*\)/g,' ').replace(/\[[^\]]*\]/g,' ')
+    .replace(/\b(deluxe|remaster(ed)?|edition|expanded|anniversary|reissue|mono|stereo|disc\s*\d+|vol\.?\s*\d+|lp|ep)\b/ig,' ')
+    .replace(/\s+/g,' ').trim();
+}
+// iTunes Search 한 번 호출 → previewUrl 있는 곡 결과 배열 (실패/0건이면 [])
+async function _itunesSongs(term){
+  if(!term) return [];
+  let url='https://itunes.apple.com/search?media=music&entity=song&limit=25&term='+encodeURIComponent(term);
+  if(_ituCountry) url+='&country='+_ituCountry;
+  try{
+    const r=await fetch(url);
+    if(!r.ok) return [];
+    const j=await r.json();
+    _preview.reached=true;   // 응답을 받았다 = iTunes 접속 자체는 정상
+    return (j.results||[]).filter(x=>x.previewUrl);
+  }catch(e){ return []; }
+}
 async function _fetchPreviewUrl(it){
-  // cache[it.id] = previewUrl 배열 (수록곡들)
+  // cache[it.id] = previewUrl 배열 (수록곡들). 빈 결과는 캐시하지 않아 다음 시도에 재조회됨.
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
-  const term = ((it.artist||'')+' '+(it.album||'')).trim();
-  let urls = [];
-  if(term){
-    try{
-      // 앨범 수록곡을 여러 개 가져온다
-      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=25&term='+encodeURIComponent(term));
-      const j = await r.json();
-      if(j.results && j.results.length){
-        // 같은 앨범 곡 우선 필터(앨범명이 비슷한 것), 없으면 전체에서
-        const al=(it.album||'').toLowerCase().trim();
-        let pool=j.results.filter(x=>x.previewUrl);
-        if(al){
-          const same=pool.filter(x=>(x.collectionName||'').toLowerCase().includes(al) || al.includes((x.collectionName||'').toLowerCase()));
-          if(same.length) pool=same;
-        }
-        urls = pool.map(x=>x.previewUrl).filter(Boolean);
-      }
-    }catch(e){}
+  _preview.reached=false;
+  const artist=(it.artist||'').trim(), album=(it.album||'').trim();
+  const cArtist=_cleanTerm(artist), cAlbum=_cleanTerm(album);
+  const al=album.toLowerCase().trim();
+  // 정확한 조합부터 점점 느슨하게 — 첫 결과가 나오면 채택
+  const terms=[ (artist+' '+album).trim(), (cArtist+' '+cAlbum).trim(),
+                cAlbum, album, (cArtist||artist) ]
+    .filter((v,i,a)=>v && a.indexOf(v)===i);
+  let urls=[];
+  for(const term of terms){
+    const pool=await _itunesSongs(term);
+    if(!pool.length) continue;
+    // 같은 앨범 곡 우선(앨범명이 비슷한 것), 없으면 결과 전체에서
+    let chosen=pool;
+    if(al){
+      const same=pool.filter(x=>(x.collectionName||'').toLowerCase().includes(al) || al.includes((x.collectionName||'').toLowerCase()));
+      if(same.length) chosen=same;
+    }
+    urls=chosen.map(x=>x.previewUrl).filter(Boolean);
+    if(urls.length) break;
   }
-  _preview.cache[it.id] = urls;
+  if(urls.length) _preview.cache[it.id]=urls;   // 성공한 경우에만 캐시(일시 오류는 재시도 허용)
   return urls;
 }
 function _pickPreviewUrl(it, urls){
@@ -2311,7 +2336,11 @@ async function playPreview(it, disc){
   let urls = _preview.cache[it.id];
   if(urls===undefined) urls = await _fetchPreviewUrl(it);
   if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
-  if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
+  if(!urls || !urls.length){
+    // iTunes 응답은 받았는데 곡이 없으면 '없음', 응답 자체를 못 받았으면 '연결 문제'
+    previewToast(_preview.reached ? '🔇 미리듣기를 찾지 못했어요' : '📶 미리듣기 연결에 실패했어요 (네트워크 확인)');
+    _preview.id=null; return;
+  }
   _preview.urls = urls;
   _preview.idx = Math.floor(Math.random()*urls.length);   // 첫 곡은 랜덤 시작
   _preview.last[it.id]=urls[_preview.idx];
@@ -2320,7 +2349,7 @@ async function playPreview(it, disc){
 function previewToast(msg){
   let t=document.getElementById('preview-toast');
   if(!t){ t=document.createElement('div'); t.id='preview-toast'; document.body.appendChild(t); }
-  t.textContent=msg; t.classList.add('show');
+  t.textContent=(typeof tr==='function'?tr(msg):msg); t.classList.add('show');
   clearTimeout(previewToast._t); previewToast._t=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
