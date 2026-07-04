@@ -348,10 +348,17 @@ h1 .em{color:var(--accent)}
 .ov.show{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:40px}
 .sheet.show{transform:translateX(-50%) translateY(0)}
-/* 풀스크린 레이어: 시트 위에 시트가 얹히는 뎁스 대신 화면 전체를 부드럽게 덮는다 */
+/* 풀스크린 레이어: 시트 위에 시트가 얹히는 뎁스 대신 화면 전체를 부드럽게 덮는다.
+   바텀시트식 슬라이드업 대신 제자리 페이드+살짝 상승으로 '덮는' 느낌을 준다. */
 .sheet.fs{top:0;height:100%;max-height:none;border-radius:0;border-top:none;z-index:60;
-  padding-top:calc(10px + env(safe-area-inset-top,0px))}
+  padding-top:calc(10px + env(safe-area-inset-top,0px));
+  opacity:0;pointer-events:none;transform:translateX(-50%) translateY(16px);
+  transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .24s ease}
+.sheet.fs.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
 .sheet.fs .sheet-x{top:calc(14px + env(safe-area-inset-top,0px))}
+/* 풀스크린이 열려 있는 동안 뒤의 바텀시트·오버레이를 숨겨 단일 레이어로 유지 */
+body.fs-open .sheet:not(.fs){visibility:hidden}
+body.fs-open .ov{opacity:0!important;pointer-events:none}
 .grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:11px auto 4px;cursor:grab}
 /* ===== My Page / Collections ===== */
 .my-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 4px 18px}
@@ -2953,9 +2960,11 @@ async function openCoverPicker(it){
 
 /* ---------- sheets ---------- */
 function show(name){$('#ov-'+name).classList.add('show');$('#sheet-'+name).classList.add('show');
-  const s=$('#sheet-'+name); s.style.transition='';s.style.transform='';}
+  const s=$('#sheet-'+name); s.style.transition='';s.style.transform='';
+  if(s.classList.contains('fs')) document.body.classList.add('fs-open');}   // 풀스크린이면 뒤 레이어 숨김
 function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
-  const s=$('#sheet-'+name); s.style.transform='';}
+  const s=$('#sheet-'+name); s.style.transform='';
+  if(s.classList.contains('fs')) document.body.classList.remove('fs-open');}
 $('#ov-detail').onclick=()=>hide('detail');
 $('#ov-add').onclick=()=>hide('add');
 // close (X) buttons
