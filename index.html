@@ -177,7 +177,6 @@ h1 .em{color:var(--accent)}
 /* 그리드 'LP판 보기' 모드: 자켓을 숨기고 꾸민 디스크를 카드에 꽉 차게 표시 */
 .grid:not(.list).disc-on .lp .art{opacity:0;pointer-events:none}
 .grid:not(.list).disc-on .lp .disc{bottom:auto;top:50%;left:50%;width:100%;height:auto;aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;box-shadow:0 6px 16px rgba(0,0,0,.4),inset 0 0 14px rgba(0,0,0,.45)}
-.grid:not(.list).disc-on .lp .disc-edit{opacity:1;pointer-events:auto;transform:scale(1)}
 .sortsel{background:var(--card);border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:7px 10px;border-radius:10px;outline:none;cursor:pointer}
 .sortsel:focus{border-color:var(--accent)}
 .count b{color:var(--muted)}
@@ -246,14 +245,7 @@ h1 .em{color:var(--accent)}
   box-shadow:0 6px 20px rgba(0,0,0,.4)}
 #preview-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .lp.pulled .art{filter:brightness(.7)}
-/* edit button appears only while the disc is raised */
-/* small pencil button at bottom-right, appears only while the disc is raised */
-.disc-edit{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(20,18,26,.85);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--txt);
-  cursor:pointer;z-index:7;opacity:0;pointer-events:none;transform:scale(.7);transition:opacity .3s,transform .3s}
-.lp.pulled .disc-edit{opacity:1;pointer-events:auto;transform:scale(1)}
-.disc-edit:active{transform:scale(.85)}
+/* (구) 판 슬라이드 업 시에만 보이던 .disc-edit 버튼 제거 — 수정 진입은 상세 시트 우측 상단 '수정' 버튼으로 일원화 */
 .disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:25%;height:25%;border-radius:50%;
   background:var(--disc,#1a1a1a);filter:brightness(.65);
   box-shadow:0 0 0 1px rgba(0,0,0,.4), inset 0 0 6px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.1)}
@@ -356,6 +348,10 @@ h1 .em{color:var(--accent)}
 .ov.show{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:40px}
 .sheet.show{transform:translateX(-50%) translateY(0)}
+/* 풀스크린 레이어: 시트 위에 시트가 얹히는 뎁스 대신 화면 전체를 부드럽게 덮는다 */
+.sheet.fs{top:0;height:100%;max-height:none;border-radius:0;border-top:none;z-index:60;
+  padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.sheet.fs .sheet-x{top:calc(14px + env(safe-area-inset-top,0px))}
 .grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:11px auto 4px;cursor:grab}
 /* ===== My Page / Collections ===== */
 .my-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 4px 18px}
@@ -497,6 +493,11 @@ h1 .em{color:var(--accent)}
 .collpick-row.in .pr-chk{background:var(--accent);border-color:var(--accent)}
 .sheet-x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;line-height:1;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
 .sheet-x:active{opacity:.7}
+/* 상세 시트 우측 상단 '수정' 버튼 — 항상 노출되는 수정 진입점 */
+.dt-editfab{position:absolute;top:12px;right:56px;height:34px;padding:0 13px;border-radius:17px;
+  display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card2);
+  color:var(--txt);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;z-index:10}
+.dt-editfab:active{opacity:.7}
 
 /* Detail */
 .dt-art{margin:8px 20px 0;border-radius:20px;overflow:hidden;aspect-ratio:1;background:#1a1822;position:relative}
@@ -1004,6 +1005,7 @@ body:not(.state-app) .nav{display:none!important}
 <div class="sheet" id="sheet-detail">
   <div class="grab" id="grab-detail"></div>
   <button class="sheet-x" data-close="detail" aria-label="닫기">✕</button>
+  <button class="dt-editfab" id="dt-edit" aria-label="정보 수정"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>수정</button>
   <div class="dt-art" id="dt-art"></div>
   <div class="dt-body" id="dt-body"></div>
 </div>
@@ -1113,8 +1115,7 @@ body:not(.state-app) .nav{display:none!important}
 
 <!-- 정보 수정 전면 시트 -->
 <div class="ov" id="ov-edit"></div>
-<div class="sheet" id="sheet-edit">
-  <div class="grab"></div>
+<div class="sheet fs" id="sheet-edit">
   <button class="sheet-x" data-close="edit" aria-label="닫기">✕</button>
   <div class="form">
     <h2>정보 수정</h2>
@@ -2063,7 +2064,6 @@ function renderGrid(){
           <img data-art="${it.id}" alt="">
         </div>
         ${it.liked?'<span class="card-like">'+heartSVG(true)+'</span>':''}
-        <button class="disc-edit" data-edit="${it.id}" aria-label="바이닐 꾸미기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       </div>
       <div class="meta">
         <div class="al">${it.album||'—'}</div>
@@ -2147,8 +2147,6 @@ function renderGrid(){
         if(!willPull){ stopPreview(); playing=false; }         // 판을 내리면 미리듣기 정지
       };
     }
-    const editBtn=el.querySelector('.disc-edit');
-    if(editBtn) editBtn.onclick=(e)=>{ e.stopPropagation(); openDetail(el.dataset.id,'vinyl'); };
   });
   // lazy-load covers as cards scroll into view (prevents request flooding that left lower cards blank)
   if(window._artObs) window._artObs.disconnect();
@@ -2377,7 +2375,6 @@ function openDetail(id, mode){
   let action='';
   if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
   else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
-  action+=`<button class="act-btn" id="act-edit" style="margin-top:8px">✏️ 정보 수정</button>`;
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
@@ -2428,7 +2425,8 @@ function openDetail(id, mode){
   bindStarHits();
   const ab=$('#act-arrive'); if(ab) ab.onclick=()=>showArriveForm(it);
   const bb=$('#act-buy'); if(bb) bb.onclick=()=>showBuyForm(it);
-  const eb=$('#act-edit'); if(eb) eb.onclick=()=>showEditForm(it);
+  // 우측 상단 '수정' 버튼 — 상세를 연 순간부터 항상 보이는 수정 진입점
+  { const eb=$('#dt-edit'); if(eb) eb.onclick=()=>showEditForm(it); }
   const db=$('#act-delete'); if(db) db.onclick=()=>{
     if(confirm(`'${it.album||'이 앨범'}'을(를) 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) deleteRecord(it.id);
   };
