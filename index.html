@@ -195,12 +195,13 @@ h1 .em{color:var(--accent)}
 .grid.list .lp::before{display:none}   /* 리스트형에서는 흰 그라데이션 조명 제거 */
 /* 리스트형 우측 재생 버튼 */
 .grid.list .lp{position:relative}
-.list-play{display:none}
-.grid.list .list-play{display:flex;flex:0 0 auto;width:40px;height:40px;border-radius:50%;align-items:center;justify-content:center;
-  background:var(--card2);border:1px solid var(--line);color:var(--accent2);cursor:pointer;transition:transform .12s,background .15s;margin-left:auto}
-.grid.list .list-play:active{transform:scale(.88)}
-.grid.list .list-play.playing{background:var(--accent);border-color:var(--accent);color:#1a0d06}
-.grid.list .list-play svg{width:18px;height:18px}
+.list-like{display:none}
+.grid.list .list-like{display:flex;flex:0 0 auto;width:40px;height:40px;border-radius:50%;align-items:center;justify-content:center;
+  background:var(--card2);border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:transform .12s,background .15s,color .15s,border-color .15s;margin-left:auto}
+.grid.list .list-like:active{transform:scale(.85)}
+.grid.list .list-like.on{background:rgba(232,92,106,.12);border-color:rgba(232,92,106,.5);color:#e85c6a}
+.grid.list .list-like .heart-ic{width:20px;height:20px}
+.grid.list .card-like{display:none}   /* 목록형에선 오른쪽 하트 버튼으로 대체 */
 .lp{position:relative;background:rgba(40,37,50,.45);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,background .18s;animation:rise .5s both;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 8px 22px rgba(0,0,0,.28)}
 .lp:active{transform:scale(.97);background:rgba(48,44,60,.55)}
 /* single continuous glow spanning the disc area down through the title, so the whole card reads as one piece */
@@ -854,11 +855,13 @@ body:not(.state-app) .nav{display:none!important}
       <select id="genre" class="sortsel"><option value="">전체 장르</option></select>
       <select id="sort" class="sortsel">
         <option value="default">기본순</option>
+        <option value="added">등록일순</option>
+        <option value="purchase">구매순</option>
         <option value="album">앨범명 순</option>
         <option value="artist">가수 순</option>
         <option value="rating">별점 순</option>
-        <option value="priceHigh">가격 높은순</option>
-        <option value="priceLow">가격 낮은순</option>
+        <option value="priceHigh">높은 가격순</option>
+        <option value="priceLow">낮은 가격순</option>
       </select>
       <div class="viewtoggle">
         <button id="view-grid-btn" class="vt on" title="앨범형" aria-label="앨범형">
@@ -1310,11 +1313,13 @@ const I18N = {
   "가수, 앨범, 컬러 검색…":"Search artist, album, color…",
   "전체 장르":"All genres",
   "기본순":"Default",
+  "등록일순":"By date added",
+  "구매순":"By purchase date",
   "앨범명 순":"By album",
   "가수 순":"By artist",
   "별점 순":"By rating",
-  "가격 높은순":"Price: high→low",
-  "가격 낮은순":"Price: low→high",
+  "높은 가격순":"Price: high→low",
+  "낮은 가격순":"Price: low→high",
   "앨범형":"Grid",
   "리스트형":"List",
   "전체":"All",
@@ -2081,7 +2086,10 @@ function renderGrid(){
   $('#grid').classList.toggle('list', filter.view==='list');
   $('#grid').classList.toggle('disc-on', gridDisc);
   let list=DATA.filter(passes);
+  const regTime=it=>{ const id=String(it.id||''); const n=Number(id.slice(1)); return (id[0]==='u'||id[0]==='s')&&!isNaN(n)?n:0; };
   const cmp={
+    added:(a,b)=>regTime(b)-regTime(a),                                   // 최근 등록 먼저
+    purchase:(a,b)=>(b.buy||'').localeCompare(a.buy||''),                 // 최근 구매 먼저
     album:(a,b)=>(a.album||'').localeCompare(b.album||'','ko'),
     artist:(a,b)=>(a.artist||'').localeCompare(b.artist||'','ko'),
     rating:(a,b)=>(b.rating||0)-(a.rating||0),
@@ -2114,21 +2122,22 @@ function renderGrid(){
         <div class="ar">${it.artist||'—'}${(it.year && (typeof SETTINGS==='undefined'||SETTINGS.showYear!==false))?` <span class="yr">· ${it.year}</span>`:''}</div>
         <div class="metabtm">${statusChip(it.status)}${genreTag(it.genre)}</div>
       </div>
-      <button class="list-play" data-play="${it.id}" aria-label="미리듣기">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      </button>
+      <button class="list-like ${it.liked?'on':''}" data-like="${it.id}" aria-label="좋아요">${heartSVG(it.liked)}</button>
     </div>`).join('');
   document.querySelectorAll('.lp[data-id]').forEach(el=>{
     const art=el.querySelector('.art');
     const disc=el.querySelector('.disc');
-    const playBtn=el.querySelector('.list-play');
-    if(playBtn){
-      playBtn.onclick=(e)=>{
+    const likeBtn=el.querySelector('.list-like');
+    if(likeBtn){
+      likeBtn.onclick=(e)=>{
         e.stopPropagation();
         const it = DATA.find(d=>d.id===el.dataset.id);
         if(!it) return;
-        if(_preview.id===it.id){ stopPreview(); return; }   // 이미 재생 중이면 정지
-        playPreview(it, playBtn);   // 버튼에 재생 상태 표시
+        it.liked=!it.liked;
+        likeBtn.classList.toggle('on', it.liked);
+        likeBtn.innerHTML=heartSVG(it.liked);
+        saveLiked(it);
+        if(typeof renderLikes==='function' && $('#view-my') && $('#view-my').classList.contains('on')) renderLikes();
       };
     }
     el.onclick=()=>{
@@ -3023,12 +3032,17 @@ function schedulePreview(){
     const guessGenre=c=>(c&&c.genre)||(cands.find(x=>x.genre)||{}).genre||'';
     const autofillGenre=c=>{ const gf=$('#f-genre'); if(!gf) return;
       const g=guessGenre(c); if(g && (!gf.value.trim() || gf.dataset.auto==='1')){ gf.value=g; gf.dataset.auto='1'; } };
+    // 발매년도도 후보 데이터에서 자동 채움(iTunes/MusicBrainz는 연도 제공)
+    const guessYear=c=>(c&&c.year)||(cands.find(x=>x.year)||{}).year||'';
+    const autofillYear=c=>{ const yf=$('#f-year'); if(!yf) return;
+      const y=parseInt(String(guessYear(c)).slice(0,4),10);
+      if(y && (!yf.value.trim() || yf.dataset.auto==='1')){ yf.value=y; yf.dataset.auto='1'; } };
     if(cands.length){
       // default-select the first candidate
       $('#pa-prev').innerHTML=`<img src="${cands[0].img}">`;
       $('#pa-prev').dataset.url=cands[0].img;
       $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 걸 선택하세요`:'앨범아트를 찾았어요 ✓';
-      autofillGenre(cands[0]);
+      autofillGenre(cands[0]); autofillYear(cands[0]);
       box.classList.add('show');
       box.innerHTML=cands.map((c,i)=>`<div class="pk-item ${i===0?'sel':''}" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('');
       box.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
@@ -3041,7 +3055,7 @@ function schedulePreview(){
         // 선택한 후보의 앨범명/가수가 있으면 입력칸 자동 채움
         if(c.album) $('#f-album').value=c.album;
         if(c.artist && !$('#f-artist').value.trim()) $('#f-artist').value=c.artist;
-        autofillGenre(c);
+        autofillGenre(c); autofillYear(c);
       });
     }else{
       $('#pa-prev').textContent='art';$('#pa-prev').dataset.url='';
@@ -3054,6 +3068,7 @@ $('#f-artist').oninput=schedulePreview;
 $('#f-album').oninput=schedulePreview;
 // 장르를 직접 입력하면 자동 채움이 덮어쓰지 않도록 표시 해제
 { const gf=$('#f-genre'); if(gf) gf.oninput=()=>{ gf.dataset.auto=''; }; }
+{ const yf=$('#f-year'); if(yf) yf.oninput=()=>{ yf.dataset.auto=''; }; }
 
 function setPrevImg(url, msg){
   $('#pa-prev').innerHTML=`<img src="${url}">`;
@@ -3301,6 +3316,7 @@ function toggleBuyFields(){
     gradeFld.style.display = showGrade ? '' : 'none';
   }
 }
+// 음반(레코드 재생면) 등급 설명
 const GRADE_DESC={
   'M':'Mint — 완벽한 새 상품, 흠 없음',
   'NM':'Near Mint — 거의 완벽, 미세한 흠도 거의 없음',
@@ -3311,14 +3327,26 @@ const GRADE_DESC={
   'F':'Fair — 상태 나쁨, 재생에 문제 있을 수 있음',
   'P':'Poor — 매우 나쁨, 소장·장식용'
 };
+// 슬리브(자켓/커버) 등급 설명 — 재생이 아닌 커버 상태 기준
+const GRADE_DESC_SLEEVE={
+  'M':'Mint — 새것과 동일, 흠 없음',
+  'NM':'Near Mint — 거의 완벽, 미세한 자국만',
+  'VG+':'Very Good Plus — 약간의 사용감(가벼운 링웨어)',
+  'VG':'Very Good — 뚜렷한 사용감(링웨어·접힘·스티커 자국)',
+  'G+':'Good Plus — 사용감 많으나 온전함',
+  'G':'Good — 찢김·테이핑 있으나 형태 유지',
+  'F':'Fair — 심한 손상(모서리 뭉개짐·찢김)',
+  'P':'Poor — 매우 나쁨, 훼손 심함'
+};
 function gradeShort(g){ return (GRADE_DESC[g]||'').split(' — ')[1]||''; }
+function sleeveShort(g){ return (GRADE_DESC_SLEEVE[g]||'').split(' — ')[1]||''; }
 // prefix: 'f'(추가) | 'e'(수정) — 슬리브/음반 select 선택에 따라 설명줄 갱신
 function paintGradeDesc(prefix){
   const s=$('#'+prefix+'-sleeve'), m=$('#'+prefix+'-media'), d=$('#'+prefix+'-grade-desc');
   if(!d) return;
   const lines=[];
   if(m&&m.value) lines.push('💿 음반 '+m.value+' — '+gradeShort(m.value));
-  if(s&&s.value) lines.push('✉️ 슬리브 '+s.value+' — '+gradeShort(s.value));
+  if(s&&s.value) lines.push('✉️ 슬리브 '+s.value+' — '+sleeveShort(s.value));
   d.innerHTML=lines.join('<br>');
 }
 let openUnknown=false;
