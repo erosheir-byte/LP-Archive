@@ -1749,7 +1749,9 @@ function artKey(artist,album){return (artist+'|'+album).toLowerCase();}
 
 // 1) iTunes (Apple) — no key, CORS-friendly
 async function searchItunes(term, limit){
-  const url='https://itunes.apple.com/search?media=music&entity=album&limit='+limit+'&term='+encodeURIComponent(term);
+  // 한국어 UI면 한국 스토어(country=KR)로 조회 → 한국 앨범은 한국어 제목으로 반환
+  const country = (typeof isEN==='function' && isEN()) ? 'US' : 'KR';
+  const url='https://itunes.apple.com/search?media=music&entity=album&country='+country+'&limit='+limit+'&term='+encodeURIComponent(term);
   try{const r=await fetch(url);const j=await r.json();
     return (j.results||[]).filter(x=>x.artworkUrl100).map(x=>({
       img:x.artworkUrl100.replace('100x100','600x600'),
@@ -2313,8 +2315,9 @@ async function _fetchPreviewUrl(it){
   let urls = [];
   if(term){
     try{
-      // 앨범 수록곡을 여러 개 가져온다
-      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=25&term='+encodeURIComponent(term));
+      // 앨범 수록곡을 여러 개 가져온다 (한국어 UI면 한국 스토어 → 한국어 곡 제목)
+      const country = (typeof isEN==='function' && isEN()) ? 'US' : 'KR';
+      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+country+'&limit=25&term='+encodeURIComponent(term));
       const j = await r.json();
       if(j.results && j.results.length){
         // 같은 앨범 곡 우선 필터(앨범명이 비슷한 것), 없으면 전체에서
