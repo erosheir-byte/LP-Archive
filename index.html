@@ -2250,7 +2250,7 @@ async function _fetchPreviewUrl(it){
           const same=pool.filter(x=>(x.collectionName||'').toLowerCase().includes(al) || al.includes((x.collectionName||'').toLowerCase()));
           if(same.length) pool=same;
         }
-        urls = pool.map(x=>x.previewUrl).filter(Boolean);
+        urls = pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url);
       }
     }catch(e){}
   }
@@ -2279,7 +2279,8 @@ function _playPreviewIdx(disc){
   const urls=_preview.urls;
   if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); return; }
   _preview.idx=((_preview.idx%urls.length)+urls.length)%urls.length;
-  const url=urls[_preview.idx];
+  const track=urls[_preview.idx];
+  const url=track.url;
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} }
   const a=new Audio(url); a.preload='auto';
   _preview.audio=a; _preview.discEl=disc;
@@ -2294,7 +2295,8 @@ function _playPreviewIdx(disc){
             disc.classList.add('playing');
           } })
           .catch(()=>{});
-  if(urls.length>1) previewToast('♪ '+(_preview.idx+1)+' / '+urls.length);
+  if(track.title) previewToast('♪ '+track.title);
+  else if(urls.length>1) previewToast('♪ '+(_preview.idx+1)+' / '+urls.length);
 }
 // 재생 중 한 바퀴 돌렸을 때 다음/이전 곡으로 전환
 function previewStep(dir, disc){   // dir: +1 다음곡, -1 이전곡
@@ -2313,7 +2315,7 @@ async function playPreview(it, disc){
   if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
   _preview.urls = urls;
   _preview.idx = Math.floor(Math.random()*urls.length);   // 첫 곡은 랜덤 시작
-  _preview.last[it.id]=urls[_preview.idx];
+  _preview.last[it.id]=urls[_preview.idx].url;
   _playPreviewIdx(disc);
 }
 function previewToast(msg){
