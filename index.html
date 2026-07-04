@@ -493,10 +493,10 @@ h1 .em{color:var(--accent)}
 .collpick-row.in .pr-chk{background:var(--accent);border-color:var(--accent)}
 .sheet-x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;line-height:1;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
 .sheet-x:active{opacity:.7}
-/* 상세 시트 우측 상단 '수정' 버튼 — 항상 노출되는 수정 진입점 */
-.dt-editfab{position:absolute;top:12px;right:56px;height:34px;padding:0 13px;border-radius:17px;
+/* 상세 별점 줄 우측 '수정' 버튼 — 항상 노출되는 수정 진입점 */
+.dt-editfab{flex:none;height:34px;padding:0 13px;border-radius:17px;
   display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card2);
-  color:var(--txt);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;z-index:10}
+  color:var(--txt);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .dt-editfab:active{opacity:.7}
 
 /* Detail */
@@ -569,7 +569,9 @@ h1 .em{color:var(--accent)}
 .dt-body{padding:18px 22px 0}
 .dt-body h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;line-height:1.1;letter-spacing:-.01em}
 .dt-body .dar{color:var(--accent2);font-size:14px;font-weight:600;margin-top:5px}
+.dt-raterow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
 .dt-rate{margin-top:10px}
+.dt-raterow .dt-rate{margin-top:0}
 .dt-act{margin:16px 0 0}
 .act-btn{width:100%;padding:13px;border-radius:13px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .act-btn.danger{color:#e0617a;border-color:rgba(224,97,122,.3)}
@@ -1005,7 +1007,6 @@ body:not(.state-app) .nav{display:none!important}
 <div class="sheet" id="sheet-detail">
   <div class="grab" id="grab-detail"></div>
   <button class="sheet-x" data-close="detail" aria-label="닫기">✕</button>
-  <button class="dt-editfab" id="dt-edit" aria-label="정보 수정"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>수정</button>
   <div class="dt-art" id="dt-art"></div>
   <div class="dt-body" id="dt-body"></div>
 </div>
@@ -2390,7 +2391,7 @@ function openDetail(id, mode){
     listenHTML+=`<div class="lst-empty">아직 청음 기록이 없어요. 판을 들었다면 남겨보세요.</div>`;
   }
   $('#dt-body').innerHTML=`<div class="dt-titlerow"><h2>${it.album||'—'}</h2><button class="like-btn ${it.liked?'on':''}" id="dt-like" aria-label="좋아요">${heartSVG(it.liked)}</button></div><div class="dar">${it.artist||'—'}</div>`
-    +`<div class="dt-rate">${starsEdit(it)}</div>`
+    +`<div class="dt-raterow"><div class="dt-rate">${starsEdit(it)}</div><button class="dt-editfab" id="dt-edit" aria-label="정보 수정"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>수정</button></div>`
     +`<div class="dt-rows">${rows.join('')}</div>`
     +`<div class="lst-sec">${listenHTML}</div>`
     +(action?`<div class="dt-act">${action}</div>`:'')
