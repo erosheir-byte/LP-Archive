@@ -526,12 +526,12 @@ h1 .em{color:var(--accent)}
 .dt-art .pk-manual{margin-top:14px}
 .pk-up{display:block;text-align:center;background:var(--card2);border:1px dashed var(--line);border-radius:11px;padding:12px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer}
 .pk-up:active{opacity:.8}
-/* 상태 등급 선택 */
-#f-grade-fld .grade-help{color:var(--dim);font-size:11px;cursor:help}
-.grade-seg{display:flex;gap:6px;margin-top:2px}
-.grade-seg button{flex:1;padding:10px 0;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;transition:.12s}
-.grade-seg button.on{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;border-color:transparent}
-.grade-desc{font-size:11.5px;color:var(--muted);margin-top:7px;min-height:15px}
+/* 상태 등급 선택 (슬리브/음반, Discogs 기준) */
+.gradewrap{margin-bottom:2px}
+.gradewrap .grade-help{color:var(--dim);font-size:11px;cursor:help}
+.gradesel{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:inherit;font-size:13px;font-weight:700;padding:10px 10px;outline:none;cursor:pointer}
+.gradesel:focus{border-color:var(--accent)}
+.grade-desc{font-size:11.5px;color:var(--muted);margin-top:7px;min-height:15px;line-height:1.5}
 /* 개봉일자 모름 버튼 */
 .open-unknown{margin-left:8px;padding:2px 9px;border-radius:7px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle}
 .open-unknown.on{background:var(--accent);border-color:var(--accent);color:#160d09}
@@ -1046,25 +1046,41 @@ body:not(.state-app) .nav{display:none!important}
         </select>
       </div>
     </div>
-    <div class="fld" id="f-grade-fld" style="display:none">
-      <label>상태 등급 <span class="grade-help" id="f-grade-help" title="레코드 컨디션 등급(Goldmine 기준)">ⓘ</span></label>
-      <div class="grade-seg" id="f-grade">
-        <button type="button" data-g="M">M</button>
-        <button type="button" data-g="NM">NM</button>
-        <button type="button" data-g="VG+">VG+</button>
-        <button type="button" data-g="VG">VG</button>
-        <button type="button" data-g="G">G</button>
+    <div id="f-grade-fld" class="buyonly gradewrap" style="display:none">
+      <div class="row2">
+        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션 (Discogs 기준)">ⓘ</span></label>
+          <select id="f-sleeve" class="gradesel">
+            <option value="">선택 안 함</option>
+            <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
+            <option value="VG+">VG+ (Very Good Plus)</option><option value="VG">VG (Very Good)</option>
+            <option value="G+">G+ (Good Plus)</option><option value="G">G (Good)</option>
+            <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
+          </select>
+        </div>
+        <div class="fld"><label>음반 상태 <span class="grade-help" title="LP판 컨디션 (Discogs 기준)">ⓘ</span></label>
+          <select id="f-media" class="gradesel">
+            <option value="">선택 안 함</option>
+            <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
+            <option value="VG+">VG+ (Very Good Plus)</option><option value="VG">VG (Very Good)</option>
+            <option value="G+">G+ (Good Plus)</option><option value="G">G (Good)</option>
+            <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
+          </select>
+        </div>
       </div>
       <div class="grade-desc" id="f-grade-desc"></div>
     </div>
     <div class="palette collapsed" id="f-palette"></div>
     <div class="row2 buyonly">
-      <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
-      <div class="fld"><label>단가 (원)</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>구매가 (원)</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>정가 (원, 선택)</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2 buyonly">
+      <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
       <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
+    </div>
+    <div class="row2 buyonly">
       <div class="fld" id="f-open-fld"><label>개봉일자 <button type="button" class="open-unknown" id="f-open-unknown">모름</button></label><input id="f-open" type="date" disabled></div>
+      <div class="fld"></div>
     </div>
     <div class="row2">
       <div class="fld"><label>장르 (선택)</label><input id="f-genre" placeholder="예: 가요, R&B/소울"></div>
@@ -1121,17 +1137,44 @@ body:not(.state-app) .nav{display:none!important}
       <div class="fld"><label>상태</label><select id="e-status"></select></div>
     </div>
     <div class="palette" id="e-palette"></div>
-    <div class="row2">
-      <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24"></div>
-      <div class="fld"><label>단가 (원)</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
+    <div id="e-grade-fld" class="gradewrap" style="display:none">
+      <div class="row2">
+        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션 (Discogs 기준)">ⓘ</span></label>
+          <select id="e-sleeve" class="gradesel">
+            <option value="">선택 안 함</option>
+            <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
+            <option value="VG+">VG+ (Very Good Plus)</option><option value="VG">VG (Very Good)</option>
+            <option value="G+">G+ (Good Plus)</option><option value="G">G (Good)</option>
+            <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
+          </select>
+        </div>
+        <div class="fld"><label>음반 상태 <span class="grade-help" title="LP판 컨디션 (Discogs 기준)">ⓘ</span></label>
+          <select id="e-media" class="gradesel">
+            <option value="">선택 안 함</option>
+            <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
+            <option value="VG+">VG+ (Very Good Plus)</option><option value="VG">VG (Very Good)</option>
+            <option value="G+">G+ (Good Plus)</option><option value="G">G (Good)</option>
+            <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grade-desc" id="e-grade-desc"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>구매일</label><input type="date" id="e-buy"></div>
+      <div class="fld"><label>구매가 (원)</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>정가 (원, 선택)</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24"></div>
       <div class="fld"><label>결제</label><select id="e-pay"></select></div>
     </div>
     <div class="row2">
+      <div class="fld"><label>구매일</label><input type="date" id="e-buy"></div>
       <div class="fld"><label>도착일</label><input type="date" id="e-arrive"></div>
+    </div>
+    <div class="row2">
       <div class="fld"><label>판매/교환가 (원)</label><input id="e-sell" type="number" inputmode="numeric"></div>
+      <div class="fld"></div>
     </div>
     <div class="fld"><label>비고</label><input id="e-note" placeholder="메모"></div>
     <div class="btnrow">
@@ -1307,7 +1350,11 @@ const I18N = {
   "상태":"Status",
   "팔레트 열기":"Open palette",
   "구매처":"Store",
-  "단가 (원)":"Unit price (KRW)",
+  "구매가 (원)":"Purchase price (KRW)",
+  "정가 (원, 선택)":"List price (KRW, optional)",
+  "슬리브 상태":"Sleeve grade",
+  "음반 상태":"Media grade",
+  "선택 안 함":"None",
   "구매일자":"Purchase date",
   "개봉일자":"Opened date",
   "비고 (선택)":"Notes (optional)",
@@ -1325,7 +1372,8 @@ const I18N = {
   "가수 또는 앨범명을 입력해주세요":"Please enter an artist or album name",
   /* --- detail rows / actions --- */
   "장르":"Genre",
-  "단가":"Unit price",
+  "구매가":"Purchase price",
+  "정가":"List price",
   "결제":"Payment",
   "구매일":"Purchase date",
   "도착일":"Arrival date",
@@ -1462,7 +1510,7 @@ const I18N = {
   "장르 표기":"Show genre",
   "카드에 장르 태그를 표시해요":"Show a genre tag on each card",
   "상태 등급 선택":"Condition grading",
-  "개봉 LP에 컨디션 등급(M/NM/VG+/VG/G)을 기록해요":"Record a condition grade (M/NM/VG+/VG/G) on opened records",
+  "개봉 LP에 슬리브·음반 컨디션 등급(Discogs 기준)을 기록해요":"Record sleeve & media condition grades (Discogs standard) on opened records",
   "기본 보기 모드":"Default view",
   "보관함을 열 때 기본 레이아웃":"Default layout when opening the Library",
   "테마 색상":"Accent color",
@@ -2340,11 +2388,17 @@ function openDetail(id, mode){
   R('컬러', it.color?`${it.color} <span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-left:4px;background:${swatch(it.color)}"></span>`:'');
   R('상태', it.status);
   if(it.status==='개봉' && it.openDate) R('개봉일', it.openDate==='모름' ? '모름' : it.openDate);
-  if(it.grade && (typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false)) R('상태 등급', `<span class="grade-badge">${it.grade}</span> <span style="color:var(--dim);font-size:11px">${(GRADE_DESC[it.grade]||'').split(' — ')[0]}</span>`);
+  if(typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false){
+    const gradeCell=g=>`<span class="grade-badge">${g}</span> <span style="color:var(--dim);font-size:11px">${(GRADE_DESC[g]||'').split(' — ')[0]}</span>`;
+    if(it.sleeveGrade) R('슬리브 상태', gradeCell(it.sleeveGrade));
+    if(it.mediaGrade) R('음반 상태', gradeCell(it.mediaGrade));
+    if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('음반 상태', gradeCell(it.grade));  // 구 데이터 폴백
+  }
   R('장르', it.genre);
   if(it.year && (typeof SETTINGS==='undefined' || SETTINGS.showYear!==false)) R('발매년도', it.year+'년');
   R('구매처', it.store);
-  R('단가', won(it.price));
+  R('구매가', won(it.price));
+  if(it.listPrice!=null && it.listPrice!=='') R('정가', won(it.listPrice));
   R('결제', it.pay);
   R('구매일', it.buy);
   R('도착일', it.arrive);
@@ -2458,10 +2512,19 @@ function showEditForm(it){
   $('#e-pay').innerHTML=`<option value=""></option>`+pays.map(s=>opt(s,it.pay)).join('');
   $('#e-store').value=it.store||'';
   $('#e-price').value=(it.price!=null?it.price:'');
+  $('#e-list').value=(it.listPrice!=null?it.listPrice:'');
   $('#e-buy').value=it.buy||'';
   $('#e-arrive').value=it.arrive||'';
   $('#e-sell').value=(it.sellPrice!=null?it.sellPrice:'');
   $('#e-note').value=it.note||'';
+  // 상태 등급(슬리브/음반) — 구 grade는 음반 등급으로 이관해 표시
+  { const s=$('#e-sleeve'), m=$('#e-media');
+    if(s) s.value=it.sleeveGrade||'';
+    if(m) m.value=it.mediaGrade||it.grade||'';
+    paintGradeDesc('e'); }
+  const _egf=$('#e-grade-fld'); if(_egf) _egf.style.display = (it.status==='개봉') ? '' : 'none';
+  { const es=$('#e-status'); if(es) es.onchange=()=>{ const g=$('#e-grade-fld'); if(g) g.style.display=(es.value==='개봉')?'':'none'; }; }
+  { const s=$('#e-sleeve'), m=$('#e-media'); if(s) s.onchange=()=>paintGradeDesc('e'); if(m) m.onchange=()=>paintGradeDesc('e'); }
   // 별점
   let editRating=it.rating||0;
   function paintRate(){
@@ -2487,6 +2550,7 @@ function showEditForm(it){
     it.status=$('#e-status').value;
     it.store=$('#e-store').value.trim();
     it.price=Number($('#e-price').value)||null;
+    it.listPrice=Number($('#e-list').value)||null;
     it.buy=$('#e-buy').value||null;
     it.pay=$('#e-pay').value;
     it.arrive=$('#e-arrive').value||null;
@@ -2494,6 +2558,10 @@ function showEditForm(it){
     if(it.sellPrice!=null && it.price!=null) it.profit=it.sellPrice-it.price;
     it.note=$('#e-note').value.trim();
     it.rating=editRating;
+    // 개봉이면 슬리브/음반 등급 저장, 아니면 비움. 구 grade 필드는 정리.
+    if(it.status==='개봉'){ it.sleeveGrade=($('#e-sleeve')&&$('#e-sleeve').value)||''; it.mediaGrade=($('#e-media')&&$('#e-media').value)||''; }
+    else { it.sleeveGrade=''; it.mediaGrade=''; }
+    it.grade='';
     const newKey=artKey(it.artist,it.album);
     if(oldKey!==newKey && pickedArt[oldKey]){ pickedArt[newKey]=pickedArt[oldKey]; artCache[newKey]=pickedArt[oldKey]; }
     persistFull(it);
@@ -2772,18 +2840,18 @@ function showBuyForm(it){
   $('#dt-inline').innerHTML=`
     <div class="inl-title">구매완료 처리</div>
     <div class="row2">
-      <div class="fld"><label>구매처</label><input id="inl-store" placeholder="yes24"></div>
-      <div class="fld"><label>단가 (원)</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>구매가 (원)</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>정가 (원, 선택)</label><input id="inl-list" type="number" inputmode="numeric" placeholder="59000"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>구매일</label><input type="date" id="inl-buy" value="${today}"></div>
       <div class="fld"><label>결제</label><select id="inl-pay"><option value="카드">카드</option><option value="현금">현금</option><option value="복지포인트">복지포인트</option><option value="선물">선물</option></select></div>
+      <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option></select></div>
     </div>
-    <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option></select></div>
     <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
   $('#inl-save').onclick=()=>{
     it.store=$('#inl-store').value.trim();
     it.price=Number($('#inl-price').value)||null;
+    const _lp=Number($('#inl-list').value)||null; if(_lp!=null) it.listPrice=_lp;
     if(it.orig==null) it.orig=it.price;
     it.buy=$('#inl-buy').value||today;
     it.pay=$('#inl-pay').value;
@@ -3218,22 +3286,30 @@ function toggleBuyFields(){
   }
 }
 const GRADE_DESC={
-  'M':'Mint — 완벽한 새 상품. 흠 없음',
+  'M':'Mint — 완벽한 새 상품, 흠 없음',
   'NM':'Near Mint — 거의 완벽, 미세한 흠도 거의 없음',
   'VG+':'Very Good Plus — 가벼운 사용감, 잡음 거의 없음',
   'VG':'Very Good — 사용감 뚜렷, 재생엔 무리 없음',
-  'G':'Good — 흠집·잡음 많지만 재생은 됨'
+  'G+':'Good Plus — 흠집 있으나 재생 가능',
+  'G':'Good — 흠집·잡음 많지만 재생은 됨',
+  'F':'Fair — 상태 나쁨, 재생에 문제 있을 수 있음',
+  'P':'Poor — 매우 나쁨, 소장·장식용'
 };
-function setGrade(g){
-  selectedGrade=g||'';
-  document.querySelectorAll('#f-grade button').forEach(b=>b.classList.toggle('on', b.dataset.g===g));
-  const d=$('#f-grade-desc'); if(d) d.textContent = g ? (GRADE_DESC[g]||'') : '';
+function gradeShort(g){ return (GRADE_DESC[g]||'').split(' — ')[1]||''; }
+// prefix: 'f'(추가) | 'e'(수정) — 슬리브/음반 select 선택에 따라 설명줄 갱신
+function paintGradeDesc(prefix){
+  const s=$('#'+prefix+'-sleeve'), m=$('#'+prefix+'-media'), d=$('#'+prefix+'-grade-desc');
+  if(!d) return;
+  const lines=[];
+  if(m&&m.value) lines.push('💿 음반 '+m.value+' — '+gradeShort(m.value));
+  if(s&&s.value) lines.push('✉️ 슬리브 '+s.value+' — '+gradeShort(s.value));
+  d.innerHTML=lines.join('<br>');
 }
-let selectedGrade='';
 let openUnknown=false;
 function openAdd(initStatus, presetDate){
-  ['f-artist','f-album','f-color','f-store','f-price','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
+  ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   $('#f-file').value='';
+  { const s=$('#f-sleeve'); if(s) s.value=''; const m=$('#f-media'); if(m) m.value=''; paintGradeDesc('f'); }
   $('#f-status').value=initStatus||'미개봉';
   const wish=(initStatus==='위시');
   $('#sheet-add .form h2').textContent=wish?'위시 추가':'LP 추가';
@@ -3241,7 +3317,6 @@ function openAdd(initStatus, presetDate){
   $('#f-buy').value=presetDate||new Date().toISOString().slice(0,10);
   $('#pa-prev').innerHTML='art';$('#pa-prev').dataset.url='';$('#pt-prev').textContent='가수·앨범 입력 후 미리보기';
   $('#f-cands').classList.remove('show');$('#f-cands').innerHTML='';
-  setGrade('');
   openUnknown=false; { const ub=$('#f-open-unknown'); if(ub) ub.classList.remove('on'); }
   setupColorField('f');
   toggleBuyFields();
@@ -3255,7 +3330,7 @@ $('#f-status').onchange=toggleBuyFields;
     if(openUnknown){ of.value=''; of.disabled=true; }
     else { of.disabled=false; if(!of.value) of.value=new Date().toISOString().slice(0,10); }
 }; }
-document.querySelectorAll('#f-grade button').forEach(b=>b.onclick=()=>setGrade(b.dataset.g===selectedGrade?'':b.dataset.g));
+{ const s=$('#f-sleeve'), m=$('#f-media'); if(s) s.onchange=()=>paintGradeDesc('f'); if(m) m.onchange=()=>paintGradeDesc('f'); }
 $('#fab').onclick=()=>{
   if(filter.chip==='위시') return openAdd('위시');
   if(filter.chip==='판매·교환') return openSellExchange();
@@ -3372,11 +3447,13 @@ $('#add-save').onclick=()=>{
     store:wish?'':$('#f-store').value.trim(),
     price:wish?null:(Number($('#f-price').value)||null),
     orig:wish?null:(Number($('#f-price').value)||null),
+    listPrice:wish?null:(Number($('#f-list').value)||null),
     pay:'',
     buy:wish?null:$('#f-buy').value, arrive:null,
     openDate: ($('#f-status').value==='개봉') ? (openUnknown ? '모름' : (($('#f-open')&&$('#f-open').value)||null)) : null,
     status:$('#f-status').value, sellDate:null, sellPrice:null, profit:null,
-    grade: ($('#f-status').value==='개봉') ? (selectedGrade||'') : '',
+    sleeveGrade: ($('#f-status').value==='개봉') ? (($('#f-sleeve')&&$('#f-sleeve').value)||'') : '',
+    mediaGrade: ($('#f-status').value==='개봉') ? (($('#f-media')&&$('#f-media').value)||'') : '',
     rating:0, note:$('#f-note').value.trim(), _art:url,
     genre: ($('#f-genre')&&$('#f-genre').value.trim())||'',
     year: ($('#f-year')&&Number($('#f-year').value))||null
@@ -3925,7 +4002,7 @@ function renderSettings(){
         ${tog(SETTINGS.showYear)}
       </div>
       <div class="set-row" data-act="showGrade">
-        <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 컨디션 등급(M/NM/VG+/VG/G)을 기록해요</div></div>
+        <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 슬리브·음반 컨디션 등급(Discogs 기준)을 기록해요</div></div>
         ${tog(SETTINGS.showGrade)}
       </div>
       <div class="set-row col">
