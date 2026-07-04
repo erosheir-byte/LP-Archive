@@ -195,13 +195,17 @@ h1 .em{color:var(--accent)}
 .grid.list .lp::before{display:none}   /* 리스트형에서는 흰 그라데이션 조명 제거 */
 /* 리스트형 우측 재생 버튼 */
 .grid.list .lp{position:relative}
-.list-like{display:none}
-.grid.list .list-like{display:flex;flex:0 0 auto;width:40px;height:40px;border-radius:50%;align-items:center;justify-content:center;
-  background:var(--card2);border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:transform .12s,background .15s,color .15s,border-color .15s;margin-left:auto}
-.grid.list .list-like:active{transform:scale(.85)}
-.grid.list .list-like.on{background:rgba(232,92,106,.12);border-color:rgba(232,92,106,.5);color:#e85c6a}
-.grid.list .list-like .heart-ic{width:20px;height:20px}
-.grid.list .card-like{display:none}   /* 목록형에선 오른쪽 하트 버튼으로 대체 */
+.list-player{display:none}
+.grid.list .list-player{display:flex;align-items:center;gap:1px;flex:0 0 auto;margin-left:auto}
+.grid.list .lp-ctrl{width:30px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--muted);cursor:pointer;transition:transform .1s,color .15s;padding:0}
+.grid.list .lp-ctrl:active{transform:scale(.82)}
+.grid.list .lp-play{width:40px;height:40px;border-radius:50%;background:var(--card2);border:1px solid var(--line);color:var(--accent2);margin:0 2px}
+.grid.list .lp-play.playing{background:var(--accent);border-color:var(--accent);color:#1a0d06}
+.grid.list .lp-ctrl svg{width:18px;height:18px}
+.grid.list .lp-play .ic-pause{display:none}
+.grid.list .lp-play.playing .ic-play{display:none}
+.grid.list .lp-play.playing .ic-pause{display:block}
+.grid.list .card-like{display:none}   /* 목록형에선 오른쪽 플레이어로 대체 */
 .lp{position:relative;background:rgba(40,37,50,.45);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,background .18s;animation:rise .5s both;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 8px 22px rgba(0,0,0,.28)}
 .lp:active{transform:scale(.97);background:rgba(48,44,60,.55)}
 /* single continuous glow spanning the disc area down through the title, so the whole card reads as one piece */
@@ -1057,11 +1061,19 @@ body:not(.state-app) .nav{display:none!important}
           <button type="button" class="color-toggle" id="f-coltoggle" title="팔레트 열기">+</button>
         </div>
       </div>
-      <div class="fld" id="f-status-fld"><label>상태</label>
-        <select id="f-status">
-          <option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option><option value="위시">위시</option>
+      <div class="fld" id="f-status-fld"><label>구분</label>
+        <select id="f-cat">
+          <option value="보유중">보유중</option>
+          <option value="배송전">배송전</option>
+          <option value="위시">위시</option>
         </select>
       </div>
+    </div>
+    <div class="fld" id="f-open-sub"><label>개봉 여부</label>
+      <select id="f-status">
+        <option value="미개봉">미개봉</option>
+        <option value="개봉">개봉</option>
+      </select>
     </div>
     <div id="f-grade-fld" class="buyonly gradewrap" style="display:none">
       <div class="row2">
@@ -1367,6 +1379,8 @@ const I18N = {
   "앨범아트 검색 중…":"Searching for cover art…",
   "컬러":"Color",
   "상태":"Status",
+  "구분":"Type",
+  "개봉 여부":"Opened?",
   "팔레트 열기":"Open palette",
   "구매처":"Store",
   "구매가 (원)":"Purchase price (KRW)",
@@ -2122,23 +2136,31 @@ function renderGrid(){
         <div class="ar">${it.artist||'—'}${(it.year && (typeof SETTINGS==='undefined'||SETTINGS.showYear!==false))?` <span class="yr">· ${it.year}</span>`:''}</div>
         <div class="metabtm">${statusChip(it.status)}${genreTag(it.genre)}</div>
       </div>
-      <button class="list-like ${it.liked?'on':''}" data-like="${it.id}" aria-label="좋아요">${heartSVG(it.liked)}</button>
+      <div class="list-player">
+        <button class="lp-ctrl lp-prev" data-prev="${it.id}" aria-label="이전 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.2v12H6zM20 6v12l-9-6z"/></svg></button>
+        <button class="lp-ctrl lp-play" data-play="${it.id}" aria-label="재생/일시정지"><svg class="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg></button>
+        <button class="lp-ctrl lp-next" data-next="${it.id}" aria-label="다음 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.8 6H18v12h-2.2zM4 6l9 6-9 6z"/></svg></button>
+      </div>
     </div>`).join('');
   document.querySelectorAll('.lp[data-id]').forEach(el=>{
     const art=el.querySelector('.art');
     const disc=el.querySelector('.disc');
-    const likeBtn=el.querySelector('.list-like');
-    if(likeBtn){
-      likeBtn.onclick=(e)=>{
-        e.stopPropagation();
-        const it = DATA.find(d=>d.id===el.dataset.id);
-        if(!it) return;
-        it.liked=!it.liked;
-        likeBtn.classList.toggle('on', it.liked);
-        likeBtn.innerHTML=heartSVG(it.liked);
-        saveLiked(it);
-        if(typeof renderLikes==='function' && $('#view-my') && $('#view-my').classList.contains('on')) renderLikes();
-      };
+    const playBtn=el.querySelector('.lp-play');
+    const prevBtn=el.querySelector('.lp-prev');
+    const nextBtn=el.querySelector('.lp-next');
+    const getIt=()=>DATA.find(d=>d.id===el.dataset.id);
+    if(playBtn){
+      playBtn.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(!it) return;
+        if(_preview.id===it.id && _preview.audio){ stopPreview(); }   // 재생 중이면 일시정지
+        else { playPreview(it, playBtn); } };
+    }
+    if(prevBtn){
+      prevBtn.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(!it) return;
+        if(_preview.id===it.id) previewStep(-1, playBtn); else playPreview(it, playBtn); };
+    }
+    if(nextBtn){
+      nextBtn.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(!it) return;
+        if(_preview.id===it.id) previewStep(1, playBtn); else playPreview(it, playBtn); };
     }
     el.onclick=()=>{
       if(el.classList.contains('pulled')){ el.classList.remove('pulled'); stopPreview(); return; }  // tap elsewhere: slide disc back
@@ -3287,12 +3309,19 @@ async function shareCollectionCard(){
 }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
 
+// 추가 폼의 실제 상태값: 구분이 '보유중'이면 미개봉/개봉 하위선택, 아니면 구분 그대로
+function addStatus(){
+  const cat=($('#f-cat')&&$('#f-cat').value)||'보유중';
+  if(cat==='보유중') return ($('#f-status')&&$('#f-status').value)||'미개봉';
+  return cat;   // 배송전 | 위시
+}
 function toggleBuyFields(){
-  const status=$('#f-status').value;
-  const wish=status==='위시';
+  const cat=($('#f-cat')&&$('#f-cat').value)||'보유중';
+  const status=addStatus();
+  const wish=cat==='위시';
   document.querySelectorAll('#sheet-add .buyonly').forEach(el=>el.style.display=wish?'none':'');
-  // in wish mode, the status field is fixed to 위시 and hidden (no need to choose)
-  const sf=$('#f-status-fld'); if(sf) sf.style.display=wish?'none':'';
+  // 개봉 여부(미개봉/개봉) 선택은 '보유중'일 때만 노출
+  const sub=$('#f-open-sub'); if(sub) sub.style.display = (cat==='보유중') ? '' : 'none';
   // 개봉일자: 상태가 '개봉'일 때만 활성화
   const openFld=$('#f-open'), openWrap=$('#f-open-fld');
   if(openFld){
@@ -3354,8 +3383,13 @@ function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   $('#f-file').value='';
   { const s=$('#f-sleeve'); if(s) s.value=''; const m=$('#f-media'); if(m) m.value=''; paintGradeDesc('f'); }
-  $('#f-status').value=initStatus||'미개봉';
-  const wish=(initStatus==='위시');
+  // initStatus(구분/레거시 상태) → 구분 + 개봉여부로 매핑
+  let _cat='보유중', _sub='미개봉';
+  if(initStatus==='배송전'||initStatus==='위시') _cat=initStatus;
+  else if(initStatus==='개봉'){ _cat='보유중'; _sub='개봉'; }
+  if($('#f-cat')) $('#f-cat').value=_cat;
+  if($('#f-status')) $('#f-status').value=_sub;
+  const wish=(_cat==='위시');
   $('#sheet-add .form h2').textContent=wish?'위시 추가':'LP 추가';
   $('#sheet-add .fhint').style.display=wish?'none':'';
   $('#f-buy').value=presetDate||new Date().toISOString().slice(0,10);
@@ -3367,6 +3401,7 @@ function openAdd(initStatus, presetDate){
   show('add');
 }
 $('#f-status').onchange=toggleBuyFields;
+{ const fc=$('#f-cat'); if(fc) fc.onchange=toggleBuyFields; }
 { const ub=$('#f-open-unknown'); if(ub) ub.onclick=()=>{
     openUnknown=!openUnknown;
     ub.classList.toggle('on', openUnknown);
@@ -3377,6 +3412,8 @@ $('#f-status').onchange=toggleBuyFields;
 { const s=$('#f-sleeve'), m=$('#f-media'); if(s) s.onchange=()=>paintGradeDesc('f'); if(m) m.onchange=()=>paintGradeDesc('f'); }
 $('#fab').onclick=()=>{
   if(filter.chip==='위시') return openAdd('위시');
+  if(filter.chip==='배송전') return openAdd('배송전');
+  if(filter.chip==='보유중') return openAdd('보유중');
   if(filter.chip==='판매·교환') return openSellExchange();
   openAdd();
 };
@@ -3483,7 +3520,8 @@ $('#add-save').onclick=()=>{
   const ar=$('#f-artist').value.trim(), al=$('#f-album').value.trim();
   if(!ar&&!al){alert('가수 또는 앨범명을 입력해주세요');return;}
   const url=$('#pa-prev').dataset.url||'';
-  const wish=$('#f-status').value==='위시';
+  const status=addStatus();
+  const wish=status==='위시';
   const it={
     id:'u'+Date.now(), no:DATA.length+1,
     artist:ar, album:al,
@@ -3494,10 +3532,10 @@ $('#add-save').onclick=()=>{
     listPrice:wish?null:(Number($('#f-list').value)||null),
     pay:'',
     buy:wish?null:$('#f-buy').value, arrive:null,
-    openDate: ($('#f-status').value==='개봉') ? (openUnknown ? '모름' : (($('#f-open')&&$('#f-open').value)||null)) : null,
-    status:$('#f-status').value, sellDate:null, sellPrice:null, profit:null,
-    sleeveGrade: ($('#f-status').value==='개봉') ? (($('#f-sleeve')&&$('#f-sleeve').value)||'') : '',
-    mediaGrade: ($('#f-status').value==='개봉') ? (($('#f-media')&&$('#f-media').value)||'') : '',
+    openDate: (status==='개봉') ? (openUnknown ? '모름' : (($('#f-open')&&$('#f-open').value)||null)) : null,
+    status:status, sellDate:null, sellPrice:null, profit:null,
+    sleeveGrade: (status==='개봉') ? (($('#f-sleeve')&&$('#f-sleeve').value)||'') : '',
+    mediaGrade: (status==='개봉') ? (($('#f-media')&&$('#f-media').value)||'') : '',
     rating:0, note:$('#f-note').value.trim(), _art:url,
     genre: ($('#f-genre')&&$('#f-genre').value.trim())||'',
     year: ($('#f-year')&&Number($('#f-year').value))||null
