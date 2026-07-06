@@ -2470,7 +2470,8 @@ function _pickPreviewUrl(it, urls){
 }
 function stopPreview(){
   try{ VinylNoise.stop(); }catch(e){}
-  if(_preview.audio){ try{_preview.audio.pause();}catch(e){} _preview.audio=null; }
+  _preview.gen=(_preview.gen||0)+1;   // 남아있는 ended/error 콜백 무효화
+  if(_preview.audio){ try{_preview.audio.pause();}catch(e){} try{ _preview.audio.removeAttribute('src'); _preview.audio.load(); }catch(e){} _preview.audio=null; }
   if(_preview.discEl){ _preview.discEl.classList.remove('playing'); _preview.discEl.style.animationDelay=''; _preview.discEl=null; }
   _preview.id=null; _preview.it=null; _preview.urls=[]; _preview.idx=0; _preview.paused=false;
   _clearMediaSession();
@@ -2506,6 +2507,11 @@ function _updateMediaSession(track, it){
       artwork: art,
     });
     navigator.mediaSession.playbackState='playing';
+    // 진행 위치를 알려주면 일부 안드로이드 기기에서 알림이 더 잘 표시된다
+    const a=_preview.audio, dur=a&&isFinite(a.duration)?a.duration:30;
+    if(navigator.mediaSession.setPositionState){
+      try{ navigator.mediaSession.setPositionState({duration:dur, playbackRate:1, position:Math.min((a&&a.currentTime)||0,dur)}); }catch(e){}
+    }
   }catch(e){}
 }
 function _clearMediaSession(){
@@ -2529,22 +2535,36 @@ function _resumePreview(){
     if('mediaSession' in navigator){ try{ navigator.mediaSession.playbackState='playing'; }catch(e){} }
   }).catch(()=>{});
 }
-// 현재 _preview.urls[idx] 곡을 재생 (오디오 엘리먼트만 교체, 회전은 유지)
+// 하나의 지속 <audio> 엘리먼트를 재사용해야 안드로이드(잠금화면/상태바) 미디어 알림이 안정적으로 뜬다
+function _getAudioEl(){
+  let el=document.getElementById('lp-audio');
+  if(!el){
+    el=document.createElement('audio');
+    el.id='lp-audio'; el.preload='auto';
+    el.setAttribute('playsinline',''); el.setAttribute('webkit-playsinline','');
+    el.style.display='none';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+// 현재 _preview.urls[idx] 곡을 재생 (지속 엘리먼트의 src만 교체, 회전은 유지)
 function _playPreviewIdx(disc){
   const urls=_preview.urls;
   if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); return; }
   _preview.idx=((_preview.idx%urls.length)+urls.length)%urls.length;
   const track=urls[_preview.idx];
   const url=track.url;
-  if(_preview.audio){ try{_preview.audio.pause();}catch(e){} }
-  const a=new Audio(url); a.preload='auto';
+  const a=_getAudioEl();
   _preview.audio=a; _preview.discEl=disc; _preview.paused=false;
+  const gen=(_preview.gen=(_preview.gen||0)+1);   // 오래된 이벤트 무시용 세대 번호
   a.onended=()=>{   // 곡이 끝나면 자동으로 다음 곡으로
-    if(_preview.audio!==a) return;            // 이미 다른 곡으로 넘어갔으면 무시
+    if(_preview.gen!==gen) return;            // 이미 다른 곡으로 넘어갔으면 무시
     if(_preview.urls && _preview.urls.length>1){ _preview.idx+=1; _playPreviewIdx(disc); }
     else stopPreview();                        // 한 곡뿐이면 종료
   };
-  a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
+  a.onerror=()=>{ if(_preview.gen!==gen) return; if(!a.error) return; previewToast('재생할 수 없어요'); stopPreview(); };
+  try{ a.pause(); }catch(e){}
+  a.src=url; try{ a.currentTime=0; }catch(e){}
   a.play().then(()=>{ const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
             if(_preview.discEl===disc && !disc.classList.contains('spinning')){
             const cur=parseFloat(getComputedStyle(disc).getPropertyValue('--spin'))||0;
