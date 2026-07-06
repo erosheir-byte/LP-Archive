@@ -2327,28 +2327,44 @@ function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackl
 
 const _preview = { audio:null, id:null, discEl:null, cache:{}, last:{}, urls:[], idx:0 };
 async function _fetchPreviewUrl(it){
-  // cache[it.id] = previewUrl 배열 (수록곡들)
+  // cache[it.id] = 수록곡 [{url,title}] 배열
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
-  const term = ((it.artist||'')+' '+(it.album||'')).trim();
+  const artist=(it.artist||'').trim(), album=(it.album||'').trim();
+  const term=(artist+' '+album).trim();
+  const country = (typeof isEN==='function' && isEN()) ? 'US' : 'KR';
+  const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();  // (), [] 수식어 제거
   let urls = [];
-  if(term){
-    try{
-      // 앨범 수록곡을 여러 개 가져온다 (한국어 UI면 한국 스토어 → 한국어 곡 제목)
-      const country = (typeof isEN==='function' && isEN()) ? 'US' : 'KR';
-      const r = await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+country+'&limit=25&term='+encodeURIComponent(term));
-      const j = await r.json();
-      if(j.results && j.results.length){
-        // 같은 앨범 곡 우선 필터(앨범명이 비슷한 것), 없으면 전체에서
-        const al=(it.album||'').toLowerCase().trim();
-        let pool=j.results.filter(x=>x.previewUrl);
-        if(al){
-          const same=pool.filter(x=>(x.collectionName||'').toLowerCase().includes(al) || al.includes((x.collectionName||'').toLowerCase()));
-          if(same.length) pool=same;
-        }
-        urls = pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url);
+  try{
+    // 1) 먼저 '앨범'을 찾아 정확한 collectionId를 얻는다 → 그 앨범 수록곡만 재생(다른 앨범 곡 섞임 방지)
+    if(album){
+      const ar=await fetch('https://itunes.apple.com/search?media=music&entity=album&country='+country+'&limit=8&term='+encodeURIComponent(term));
+      const aj=await ar.json();
+      const cands=(aj.results||[]);
+      const wantAl=norm(album), wantAr=norm(artist);
+      const cand = cands.find(x=>norm(x.collectionName)===wantAl && (!wantAr || norm(x.artistName)===wantAr))
+                || cands.find(x=>norm(x.collectionName)===wantAl)
+                || cands.find(x=>{ const c=norm(x.collectionName); return c && (c.includes(wantAl)||wantAl.includes(c)); })
+                || cands[0];
+      if(cand && cand.collectionId){
+        // 2) collectionId로 정확한 수록곡 조회 (lookup)
+        const lr=await fetch('https://itunes.apple.com/lookup?id='+cand.collectionId+'&entity=song&country='+country+'&limit=80');
+        const lj=await lr.json();
+        urls=(lj.results||[])
+          .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
+          .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()}))
+          .filter(t=>t.url);
       }
-    }catch(e){}
-  }
+    }
+    // 3) 앨범을 못 찾았을 때만 폴백: 곡 검색 후 앨범명이 일치하는 것만 (없으면 빈 목록)
+    if(!urls.length && term){
+      const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+country+'&limit=25&term='+encodeURIComponent(term));
+      const j=await r.json();
+      const al=norm(album);
+      let pool=(j.results||[]).filter(x=>x.previewUrl);
+      if(al){ const same=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al) || al.includes(c)); }); pool = same; }  // 앨범 일치하는 곡만
+      urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url);
+    }
+  }catch(e){}
   _preview.cache[it.id] = urls;
   return urls;
 }
