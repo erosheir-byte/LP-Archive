@@ -1864,7 +1864,14 @@ async function fetchArt(artist, album){
   if(pickedArt[key]!==undefined) return pickedArt[key];
   if(artCache[key]!==undefined) return artCache[key];
   const cands=await fetchCandidates(artist,album);
-  const img=cands.length?cands[0].img:null;
+  // 앨범명·가수명이 일치하는 후보를 우선 선택(첫 결과가 다른 앨범인 경우 방지)
+  const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();
+  const wantAl=norm(album), wantAr=norm(artist);
+  const best = (wantAl && cands.find(c=>norm(c.album)===wantAl && (!wantAr||norm(c.artist)===wantAr)))
+            || (wantAl && cands.find(c=>norm(c.album)===wantAl))
+            || (wantAl && cands.find(c=>{ const a=norm(c.album); return a && (a.includes(wantAl)||wantAl.includes(a)); }))
+            || cands[0];
+  const img = best ? best.img : null;
   artCache[key]=img;
   const g=cands.find(c=>c.genre)||{}; if(g.genre) genreCache[key]=g.genre;
   return img;
@@ -2441,11 +2448,15 @@ async function loadArt(it){
   if(!img||img.dataset.done) return;
   img.dataset.done='1';
   const key=artKey(it.artist,it.album);
-  const url = it._art || pickedArt[key] || await fetchArt(it.artist,it.album);
+  let url = it._art || pickedArt[key];
+  let fetched=false;
+  if(!url){ url = await fetchArt(it.artist,it.album); fetched=true; }
   // auto-fill genre if we learned it during the search
   if(!it.genre && genreCache[key]){ it.genre=genreCache[key]; saveGenre(it); refreshGenreChips(); }
   if(!url){ img.dataset.done=''; return; }   // no art found; keep placeholder, allow later retry
   it._art=url;
+  // 자동으로 찾은 커버는 한 번 정해지면 계정에 고정 저장 → 이후 스스로 바뀌지 않음
+  if(fetched && !it.cover){ it.cover=url; try{ if(typeof cloudSaveItem==='function') cloudSaveItem(it); }catch(e){} }
   const ph=img.parentElement.querySelector('.ph');
   const reveal=()=>{ img.classList.add('ld'); if(ph) ph.style.display='none'; img.dataset.shown='1'; };
   img.onload=reveal;
