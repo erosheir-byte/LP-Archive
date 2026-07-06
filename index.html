@@ -1845,16 +1845,28 @@ async function fetchCandidates(artist, album){
   const ar=(artist||'').replace(/[-]/g,'').trim();
   const al=cleanAlbum(album);
   const terms=[];
-  if(ar&&al) terms.push((ar+' '+al).trim());
+  if(ar&&al) terms.push((ar+' '+al).trim());   // 가수+앨범 (가장 정확) 우선
   if(al) terms.push(al);
+  if(ar) terms.push(ar);                        // 가수 앨범들도 후보로
   if(ar&&!al) terms.push(ar);
   let all=[];
   for(const t of terms){
     all=all.concat(await searchTerm(t,8));
-    if(all.length>=4) break;   // enough good candidates, stop early
+    if(all.length>=8) break;
   }
   const seen={}; all=all.filter(c=>{if(seen[c.img])return false;seen[c.img]=1;return true;});
-  return all;
+  // 관련도 점수: 앨범명·가수명이 일치할수록 상위. 무관한 결과는 아래로.
+  const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();
+  const wAl=norm(album), wAr=norm(ar);
+  const score=c=>{ const a=norm(c.album), a2=norm(c.artist); let s=0;
+    if(wAl&&a){ if(a===wAl)s+=4; else if(a.includes(wAl)||wAl.includes(a))s+=2; }
+    if(wAr&&a2){ if(a2===wAr)s+=3; else if(a2.includes(wAr)||wAr.includes(a2))s+=1.5; }
+    return s; };
+  all.forEach((c,i)=>{ c._score=score(c); c._ord=i; });
+  all.sort((x,y)=> (y._score-x._score) || (x._ord-y._ord));   // 점수 높은 순, 동점이면 원래 순서
+  // 관련 있는 후보(점수>0)가 하나라도 있으면 완전 무관(0점)한 결과는 제거
+  const relevant=all.filter(c=>c._score>0);
+  return relevant.length ? relevant : all;
 }
 
 // best single guess (used for first auto-load); respects a prior user pick
