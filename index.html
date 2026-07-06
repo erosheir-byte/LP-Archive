@@ -693,12 +693,13 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .dt-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:13px 15px;font-size:13.5px}
 .dt-row .k{color:var(--muted)}
 .dt-row .v{font-weight:600;text-align:right;max-width:62%}
-/* 미리듣기 음원 연결 행 */
-.dt-pv-v{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+/* 음원 연결 행 (행 전체를 탭해서 수정) */
+.dt-row-tap{cursor:pointer}
+.dt-row-tap:active{background:var(--card2)}
+.dt-pv-v{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
 .dt-pv-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .dt-pv-name.dim{color:var(--dim);font-weight:500}
-.dt-pv-edit{flex:0 0 auto;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--accent2);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.dt-pv-edit:active{transform:scale(.9)}
+.dt-pv-chev{flex:0 0 auto;color:var(--accent2);font-size:20px;line-height:1;font-weight:700}
 .profit-pos{color:var(--green)}.profit-neg{color:var(--red)}
 
 /* Form */
@@ -1373,6 +1374,8 @@ const I18N = {
   "낮은 가격순":"Price: low→high",
   "앨범형":"Grid",
   "리스트형":"List",
+  "음원 연결":"Audio source",
+  "연결된 앨범 없음":"No album linked",
   "전체":"All",
   "배송전":"Pre-arrival",
   "보유중":"Owned",
@@ -2394,7 +2397,7 @@ async function _fetchPreviewUrl(it){
           const u=(lj.results||[])
             .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
             .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url);
-          if(u.length){ _preview.cache[it.id]=u; return u; }
+          if(u.length){ it._pvName = it.previewAlbumName || '지정 앨범'; _preview.cache[it.id]=u; return u; }
         }catch(e){}
       }
     }
@@ -2420,6 +2423,7 @@ async function _fetchPreviewUrl(it){
           .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
           .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()}))
           .filter(t=>t.url);
+        if(urls.length) it._pvName = cand.collectionName || '';   // 자동으로 매칭된 앨범명 기록
       }
     }
     // 3) 앨범을 못 찾았을 때만 폴백: 곡 검색(양 스토어) 후 앨범명이 일치하는 곡만 (없으면 빈 목록)
@@ -2430,10 +2434,11 @@ async function _fetchPreviewUrl(it){
         const j=await r.json();
         let pool=(j.results||[]).filter(x=>x.previewUrl);
         if(al){ pool=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al) || al.includes(c)); }); }
-        if(pool.length){ urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url); if(urls.length) break; }
+        if(pool.length){ urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url); if(urls.length){ it._pvName=(pool[0].collectionName||''); break; } }
       }
     }
   }catch(e){}
+  if(it._pvName===undefined) it._pvName='';   // 조회했으나 못 찾음 표시
   _preview.cache[it.id] = urls;
   return urls;
 }
@@ -2530,6 +2535,16 @@ async function loadArt(it){
 
 /* ---------- detail ---------- */
 let detailId=null;
+// 음원 연결 행 표시값: 수동 지정 > 자동 매칭 > 없음
+function pvDisplay(it){
+  if(it.previewAlbumId || it.previewAlbumName) return { text: it.previewAlbumName || '연결됨', dim:false };
+  if(it._pvName) return { text: it._pvName + ' · 자동', dim:false };
+  return { text: '연결된 앨범 없음', dim:true };
+}
+function refreshPvRow(it){
+  const el=$('#dt-body .dt-pv-name'); if(!el) return;
+  const pv=pvDisplay(it); el.textContent=pv.text; el.classList.toggle('dim', pv.dim);
+}
 function openDetail(id, mode){
   const it=DATA.find(x=>x.id===id);if(!it)return;
   stopPreview();   // 상세로 들어가면 미리듣기 정지
@@ -2564,11 +2579,9 @@ function openDetail(id, mode){
     R('차익', `<span class="${pc}">${it.profit>0?'+':''}${won(it.profit)}</span>`);
   }
   R('비고', it.note);
-  // 미리듣기 음원 연결: 연결됐으면 앨범명, 아니면 '연결된 앨범 없음' + 연필로 수정
-  const pvName = it.previewAlbumId
-    ? `<span class="dt-pv-name">${escapeHtml(it.previewAlbumName||'연결됨')}</span>`
-    : `<span class="dt-pv-name dim">연결된 앨범 없음</span>`;
-  rows.push(`<div class="dt-row"><span class="k">미리듣기 음원 연결</span><span class="v dt-pv-v">${pvName}<button class="dt-pv-edit" id="pv-edit" aria-label="미리듣기 음원 연결 수정"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span></div>`);
+  // 음원 연결: 수동 지정 앨범 > 자동 매칭 앨범 > 없음. 행을 탭하면 그 화면에서 수정
+  const pv=pvDisplay(it);
+  rows.push(`<div class="dt-row dt-row-tap" id="pv-row"><span class="k">음원 연결</span><span class="v dt-pv-v"><span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span><span class="dt-pv-chev">›</span></span></div>`);
   const g=statusGroup(it.status);
   let action='';
   if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
@@ -2628,7 +2641,11 @@ function openDetail(id, mode){
   const db=$('#act-delete'); if(db) db.onclick=()=>{
     if(confirm(`'${it.album||'이 앨범'}'을(를) 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) deleteRecord(it.id);
   };
-  { const pv=$('#pv-edit'); if(pv) pv.onclick=()=>openPreviewPicker(it); }
+  { const pv=$('#pv-row'); if(pv) pv.onclick=()=>openPreviewPicker(it); }
+  // 수동 연결이 없고 자동 매칭도 아직 조회 전이면, 백그라운드로 조회해 행을 갱신
+  if(!it.previewAlbumId && !it.previewAlbumName && it._pvName===undefined){
+    _fetchPreviewUrl(it).then(()=>{ if(detailId===it.id) refreshPvRow(it); }).catch(()=>{});
+  }
   show('detail');
   // open the right panel based on what was tapped
   if(mode==='cover') setTimeout(()=>openCoverPicker(it), 50);
@@ -3153,17 +3170,19 @@ async function openPreviewPicker(it){
       it.previewAlbumId=c.collectionId;
       it.previewAlbumName=c.album||'';
       persistFull(it);
-      delete _preview.cache[it.id]; stopPreview();     // 새 앨범으로 다시 받도록 캐시 비움
+      delete _preview.cache[it.id]; it._pvName=it.previewAlbumName||'지정 앨범'; stopPreview();     // 새 앨범으로 다시 받도록 캐시 비움
       previewToast('🎵 이 앨범 음원으로 재생돼요');
       res.querySelectorAll('.pk-item').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
-      const nm=$('#dt-body .dt-pv-name'); if(nm){ nm.textContent=it.previewAlbumName||'연결됨'; nm.classList.remove('dim'); }
+      refreshPvRow(it);
     });
   }
   { const b=$('#pv-btn'); if(b) b.onclick=()=>run(($('#pv-artist').value||'').trim(), ($('#pv-album').value||'').trim()); }
   ['pv-artist','pv-album'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); const b=$('#pv-btn'); if(b) b.click(); } }); });
-  { const rs=$('#pv-reset'); if(rs) rs.onclick=()=>{ delete it.previewAlbumId; delete it.previewAlbumName; persistFull(it); delete _preview.cache[it.id]; stopPreview();
+  { const rs=$('#pv-reset'); if(rs) rs.onclick=()=>{ delete it.previewAlbumId; delete it.previewAlbumName; persistFull(it);
+      delete _preview.cache[it.id]; delete it._pvName; stopPreview();
       previewToast('↩︎ 자동 선택으로 되돌렸어요');
-      const nm=$('#dt-body .dt-pv-name'); if(nm){ nm.textContent='연결된 앨범 없음'; nm.classList.add('dim'); }
+      refreshPvRow(it);
+      _fetchPreviewUrl(it).then(()=>{ if(detailId===it.id) refreshPvRow(it); }).catch(()=>{});   // 자동 매칭 앨범 다시 표시
       openPreviewPicker(it); }; }
   run(it.artist, it.album);
   box.scrollIntoView({behavior:'smooth', block:'nearest'});
