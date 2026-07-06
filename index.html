@@ -3943,7 +3943,16 @@ let _collEditId=null, _collOpenId=null, _collPickColor=COLL_COLORS[0];
 function loadCollections(){
   try{ COLLECTIONS=JSON.parse(localStorage.getItem('lp_collections')||'[]'); }catch(e){ COLLECTIONS=[]; }
   if(window.LPCloud && window.LPCloud.loadCollections){
-    try{ window.LPCloud.loadCollections().then(cs=>{ if(Array.isArray(cs)){ COLLECTIONS=cs; renderCollections(); } }); }catch(e){}
+    try{ window.LPCloud.loadCollections().then(cs=>{
+      if(!Array.isArray(cs)) return;                          // 미지원/미로그인 → 로컬 유지
+      if(cs.length){                                          // 클라우드에 있으면 그걸 사용
+        COLLECTIONS=cs;
+        try{ localStorage.setItem('lp_collections', JSON.stringify(cs)); }catch(e){}
+        renderCollections();
+      } else if(COLLECTIONS.length && window.LPCloud.saveCollections){
+        window.LPCloud.saveCollections(COLLECTIONS);          // 클라우드 비었고 로컬에 있으면 1회 이전
+      }
+    }).catch(()=>{}); }catch(e){}
   }
 }
 function saveCollections(){
@@ -4637,7 +4646,7 @@ import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, signOut, GoogleAuthProvider,
          signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js';
@@ -4773,6 +4782,25 @@ function start(){
     async deleteItem(id){
       if(!currentUser) return;
       try{ await deleteDoc(doc(db,'users',currentUser.uid,'lps',String(id))); }catch(e){}
+    },
+    // 컬렉션(플레이리스트)은 한 문서에 배열로 저장 → 재시작/기기 이동에도 유지
+    saveCollections(list){
+      if(!currentUser) return;
+      clearTimeout(saveTimers.__colls);
+      // JSON 왕복으로 undefined 필드 제거(Firestore는 undefined 저장 불가)
+      let safe=[]; try{ safe=JSON.parse(JSON.stringify(Array.isArray(list)?list:[])); }catch(e){ safe=[]; }
+      saveTimers.__colls=setTimeout(async()=>{
+        try{ await setDoc(doc(db,'users',currentUser.uid,'meta','collections'), { list: safe }); }
+        catch(e){ console.error('컬렉션 저장 실패',e); }
+      },400);
+    },
+    async loadCollections(){
+      if(!currentUser) return null;   // 미로그인 → 로컬 유지
+      try{
+        const snap=await getDoc(doc(db,'users',currentUser.uid,'meta','collections'));
+        if(snap.exists()){ const d=snap.data(); return Array.isArray(d.list)?d.list:[]; }
+        return [];
+      }catch(e){ console.error('컬렉션 로드 실패',e); return null; }
     },
     async uploadImage(blob,ext){
       if(!currentUser) throw new Error('not-signed-in');
