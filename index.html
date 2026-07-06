@@ -2392,7 +2392,7 @@ const VinylNoise = (function(){
 })();
 function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
-const _preview = { audio:null, id:null, discEl:null, cache:{}, last:{}, urls:[], idx:0 };
+const _preview = { audio:null, id:null, it:null, discEl:null, cache:{}, last:{}, urls:[], idx:0, paused:false };
 async function _fetchPreviewUrl(it){
   // cache[it.id] = 수록곡 [{url,title}] 배열
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
@@ -2472,7 +2472,62 @@ function stopPreview(){
   try{ VinylNoise.stop(); }catch(e){}
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} _preview.audio=null; }
   if(_preview.discEl){ _preview.discEl.classList.remove('playing'); _preview.discEl.style.animationDelay=''; _preview.discEl=null; }
-  _preview.id=null; _preview.urls=[]; _preview.idx=0;
+  _preview.id=null; _preview.it=null; _preview.urls=[]; _preview.idx=0; _preview.paused=false;
+  _clearMediaSession();
+}
+/* ===== OS 미디어 세션(잠금화면·상태바) 연동 ===== */
+let _mediaSessionReady=false;
+function _setupMediaSession(){
+  if(_mediaSessionReady || !('mediaSession' in navigator)) return;
+  _mediaSessionReady=true;
+  const ms=navigator.mediaSession;
+  try{
+    ms.setActionHandler('play', ()=>_resumePreview());
+    ms.setActionHandler('pause', ()=>_pausePreview());
+    ms.setActionHandler('stop', ()=>stopPreview());
+    ms.setActionHandler('previoustrack', ()=>{ if(_preview.discEl) previewStep(-1, _preview.discEl); });
+    ms.setActionHandler('nexttrack', ()=>{ if(_preview.discEl) previewStep(1, _preview.discEl); });
+  }catch(e){}
+}
+function _updateMediaSession(track, it){
+  if(!('mediaSession' in navigator)) return;
+  _setupMediaSession();
+  try{
+    const cover=(typeof artFor==='function' ? artFor(it) : (it&&it.cover)) || '';
+    const art = cover ? [
+      {src:cover, sizes:'512x512', type:'image/jpeg'},
+      {src:cover, sizes:'256x256', type:'image/jpeg'},
+      {src:cover, sizes:'96x96',   type:'image/jpeg'},
+    ] : [];
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: (track&&track.title) || (it&&it.album) || '미리듣기',
+      artist: (it&&it.artist) || '',
+      album: (it&&it.album) || '',
+      artwork: art,
+    });
+    navigator.mediaSession.playbackState='playing';
+  }catch(e){}
+}
+function _clearMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  try{ navigator.mediaSession.playbackState='none'; navigator.mediaSession.metadata=null; }catch(e){}
+}
+function _pausePreview(){
+  if(!_preview.audio) return;
+  try{ _preview.audio.pause(); }catch(e){}
+  try{ VinylNoise.stop(); }catch(e){}
+  _preview.paused=true;
+  if(_preview.discEl) _preview.discEl.classList.remove('playing');
+  if('mediaSession' in navigator){ try{ navigator.mediaSession.playbackState='paused'; }catch(e){} }
+}
+function _resumePreview(){
+  if(!_preview.audio){ if(_preview.discEl) _playPreviewIdx(_preview.discEl); return; }
+  _preview.paused=false;
+  _preview.audio.play().then(()=>{
+    const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
+    if(_preview.discEl) _preview.discEl.classList.add('playing');
+    if('mediaSession' in navigator){ try{ navigator.mediaSession.playbackState='playing'; }catch(e){} }
+  }).catch(()=>{});
 }
 // 현재 _preview.urls[idx] 곡을 재생 (오디오 엘리먼트만 교체, 회전은 유지)
 function _playPreviewIdx(disc){
@@ -2483,8 +2538,12 @@ function _playPreviewIdx(disc){
   const url=track.url;
   if(_preview.audio){ try{_preview.audio.pause();}catch(e){} }
   const a=new Audio(url); a.preload='auto';
-  _preview.audio=a; _preview.discEl=disc;
-  a.onended=()=>stopPreview();
+  _preview.audio=a; _preview.discEl=disc; _preview.paused=false;
+  a.onended=()=>{   // 곡이 끝나면 자동으로 다음 곡으로
+    if(_preview.audio!==a) return;            // 이미 다른 곡으로 넘어갔으면 무시
+    if(_preview.urls && _preview.urls.length>1){ _preview.idx+=1; _playPreviewIdx(disc); }
+    else stopPreview();                        // 한 곡뿐이면 종료
+  };
   a.onerror=()=>{ previewToast('재생할 수 없어요'); stopPreview(); };
   a.play().then(()=>{ const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
             if(_preview.discEl===disc && !disc.classList.contains('spinning')){
@@ -2495,6 +2554,7 @@ function _playPreviewIdx(disc){
             disc.classList.add('playing');
           } })
           .catch(()=>{});
+  _updateMediaSession(track, _preview.it);
   if(track.title) previewToast('♪ '+track.title);
   else if(urls.length>1) previewToast('♪ '+(_preview.idx+1)+' / '+urls.length);
 }
@@ -2509,6 +2569,7 @@ async function playPreview(it, disc){
   if(_preview.id===it.id) return;        // 이미 이 판이 재생 중이면 그대로 둠
   stopPreview();
   _preview.id = it.id;
+  _preview.it = it;
   let urls = _preview.cache[it.id];
   if(urls===undefined) urls = await _fetchPreviewUrl(it);
   if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
