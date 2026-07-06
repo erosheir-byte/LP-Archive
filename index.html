@@ -3639,15 +3639,16 @@ $('#fab').onclick=()=>{
 
 /* ===== 판매 / 교환 등록 ===== */
 let _sxMode='판매', _sxPickId=null;
-function openSellExchange(){
+function openSellExchange(presetDate){
   _sxMode='판매'; _sxPickId=null;
   document.querySelectorAll('#sx-seg .sx-segbtn').forEach(b=>b.classList.toggle('on', b.dataset.mode==='판매'));
   $('#sx-sale').style.display=''; $('#sx-exch').style.display='none';
   $('#sx-title').textContent='판매 / 교환';
   const today=new Date().toISOString().slice(0,10);
+  const useDate=presetDate||today;
   $('#sx-q').value=''; $('#sx-sellprice').value=''; $('#sx-note').value='';
-  $('#sx-selldate').value=today;
-  $('#sx-e-artist').value=''; $('#sx-e-album').value=''; $('#sx-e-color').value=''; $('#sx-e-status').value='미개봉'; $('#sx-e-date').value=today;
+  $('#sx-selldate').value=useDate;
+  $('#sx-e-artist').value=''; $('#sx-e-album').value=''; $('#sx-e-color').value=''; $('#sx-e-status').value='미개봉'; $('#sx-e-date').value=useDate;
   renderSxPick('');
   show('sx');
 }
@@ -3954,7 +3955,9 @@ function openDayList(dateStr, items){
   } else {
     html+=`<div class="dl-emptyday">이 날엔 기록이 없어요.</div>`;
   }
-  html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">🎧 이 날 청음 기록 추가</button>`;
+  html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">🎧 청음 기록 추가</button>`;
+  html+=`<button type="button" class="dl-addlisten" id="dl-addbuy">🛒 구매내역 추가</button>`;
+  html+=`<button type="button" class="dl-addlisten" id="dl-addsx">🔁 판매·교환 내역 추가</button>`;
   wrap.innerHTML=html;
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   wrap.querySelectorAll('.dl-pin').forEach(b=>b.onclick=(e)=>{
@@ -3966,6 +3969,8 @@ function openDayList(dateStr, items){
     openDayList(dateStr, items);   // 팝업 다시 그려 선택 상태 갱신
   });
   $('#dl-addlisten').onclick=()=>{ hide('daylist'); openListenPicker(dateStr); };
+  $('#dl-addbuy').onclick=()=>{ hide('daylist'); openAdd(undefined, dateStr); };
+  $('#dl-addsx').onclick=()=>{ hide('daylist'); openSellExchange(dateStr); };
   show('daylist');
 }
 
@@ -4539,6 +4544,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#view-'+v).classList.add('on');
   const mtg=$('#cf-mode-toggle'); if(mtg) mtg.style.display = (v==='coll') ? 'flex' : 'none';
+  const fabEl=$('#fab'); if(fabEl) fabEl.style.display = (v==='cal') ? 'none' : '';
   if(v==='stats') renderStats();   // refresh stats (ratings may have changed)
   if(v==='cal') renderCal();
   if(v==='my'){ renderCollections(); renderLikes(); renderTaste(); renderSettings(); }
