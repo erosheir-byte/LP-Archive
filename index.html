@@ -591,6 +591,12 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .pk-url input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
 .pk-url input:focus{border-color:var(--accent)}
 .pk-url button{flex:none;background:var(--accent);border:none;color:#160d09;font-family:inherit;font-weight:700;font-size:13px;padding:0 16px;border-radius:11px;cursor:pointer}
+/* 커버 재검색: 가수·앨범 입력 */
+.pk-search{display:flex;gap:7px;margin-bottom:12px}
+.pk-search input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
+.pk-search input:focus{border-color:var(--accent)}
+.pk-search button{flex:none;background:var(--accent);border:none;color:#160d09;font-family:inherit;font-weight:800;font-size:13px;padding:0 15px;border-radius:11px;cursor:pointer}
+.pk-search button:active{transform:scale(.96)}
 .dt-body{padding:18px 22px 0}
 .dt-body h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;line-height:1.1;letter-spacing:-.01em}
 .dt-body .dar{color:var(--accent2);font-size:14px;font-weight:600;margin-top:5px}
@@ -3006,10 +3012,16 @@ function fileToDataURL(file, max=600){
   });
 }
 
-// show candidate grid inside detail; also offer upload + url
+// show candidate grid inside detail; also offer 재검색 + upload + url
 async function openCoverPicker(it){
   const box=$('#dt-picker');
   box.classList.add('show');
+  const search=`
+    <div class="pk-search">
+      <input id="pk-q-artist" placeholder="가수" value="${escapeHtml(it.artist||'')}">
+      <input id="pk-q-album" placeholder="앨범명" value="${escapeHtml(it.album||'')}">
+      <button id="pk-q-btn" type="button">검색</button>
+    </div>`;
   const manual=`
     <div class="pk-manual">
       <label class="pk-up">📷 사진에서 직접 올리기
@@ -3021,18 +3033,29 @@ async function openCoverPicker(it){
       </div>
       <button class="pk-decorate" id="pk-decorate">🎨 LP판 꾸미기 (색·사진)</button>
     </div>`;
-  box.innerHTML='<div class="pk-title">앨범아트 검색 중…</div>'+manual;
-  const cands=await fetchCandidates(it.artist,it.album);
-  const head = cands.length ? '<div class="pk-title">맞는 커버를 선택하거나, 직접 올리세요</div>'
-                            : '<div class="pk-title">검색 결과가 없어요 — 직접 올려보세요</div>';
-  const grid = cands.length ? '<div class="pk-grid">'+
-    cands.map((c,i)=>`<div class="pk-item" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('')+'</div>' : '';
-  box.innerHTML=head+grid+manual;
+  box.innerHTML=search+'<div class="pk-title" id="pk-status">앨범아트 검색 중…</div><div id="pk-results"></div>'+manual;
 
-  box.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
-    applyCover(it, cands[+el.dataset.i].img);
-    box.classList.remove('show'); box.innerHTML='';
-  });
+  // 검색어(가수·앨범)로 후보를 다시 불러와 그리드 갱신
+  async function runSearch(artist, album){
+    const status=$('#pk-status'), res=$('#pk-results');
+    if(status) status.textContent='앨범아트 검색 중…';
+    if(res) res.innerHTML='';
+    const cands=await fetchCandidates(artist, album);
+    if(status) status.textContent = cands.length ? '맞는 커버를 선택하거나, 직접 올리세요'
+                                                  : '검색 결과가 없어요 — 검색어를 바꾸거나 직접 올려보세요';
+    if(res){
+      res.innerHTML = cands.length ? '<div class="pk-grid">'+
+        cands.map((c,i)=>`<div class="pk-item" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('')+'</div>' : '';
+      res.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
+        applyCover(it, cands[+el.dataset.i].img);
+        box.classList.remove('show'); box.innerHTML='';
+      });
+    }
+  }
+  const doSearch=()=>runSearch(($('#pk-q-artist').value||'').trim(), ($('#pk-q-album').value||'').trim());
+  { const bt=$('#pk-q-btn'); if(bt) bt.onclick=doSearch; }
+  ['pk-q-artist','pk-q-album'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } }); });
+
   $('#pk-file').onchange=async e=>{
     const f=e.target.files[0]; if(!f)return;
     try{
@@ -3047,6 +3070,9 @@ async function openCoverPicker(it){
     applyCover(it,u); box.classList.remove('show'); box.innerHTML='';
   };
   { const dbtn=$('#pk-decorate'); if(dbtn) dbtn.onclick=()=>{ box.classList.remove('show'); box.innerHTML=''; openVinylDecorate(it); }; }
+
+  // 최초 로드: 저장된 가수·앨범으로 검색
+  runSearch(it.artist, it.album);
 }
 
 /* ---------- sheets ---------- */
