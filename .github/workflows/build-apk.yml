@@ -116,7 +116,7 @@ jobs:
           if 'LPMediaPlugin$LPMediaReceiver' not in m:
               recv = ('        <receiver android:name="app.lparchive.vinyl.LPMediaPlugin$LPMediaReceiver" '
                       'android:exported="false" />\n')
-              m = re.sub(r'(</application>)', recv + r'\1', m, count=1)
+              m = re.sub(r'(</application>)', lambda mm: recv + mm.group(1), m, count=1)
           open(mf, 'w').write(m)
           print('----- AndroidManifest.xml -----'); print(open(mf).read())
 
@@ -124,7 +124,7 @@ jobs:
           bg = 'android/app/build.gradle'
           g = open(bg).read()
           if 'androidx.media:media' not in g:
-              g = re.sub(r'(dependencies\s*\{)', r"\1\n    implementation \"androidx.media:media:1.7.0\"", g, count=1)
+              g = re.sub(r'(dependencies\s*\{)', lambda mm: mm.group(1) + '\n    implementation "androidx.media:media:1.7.0"', g, count=1)
               open(bg, 'w').write(g)
               print('added androidx.media dependency')
           PY
