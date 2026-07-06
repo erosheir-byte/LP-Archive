@@ -2513,11 +2513,81 @@ function _updateMediaSession(track, it){
       try{ navigator.mediaSession.setPositionState({duration:dur, playbackRate:1, position:Math.min((a&&a.currentTime)||0,dur)}); }catch(e){}
     }
   }catch(e){}
+  _lpNativeSync(true);   // APK 네이티브 알림 갱신
 }
 function _clearMediaSession(){
   if(!('mediaSession' in navigator)) return;
   try{ navigator.mediaSession.playbackState='none'; navigator.mediaSession.metadata=null; }catch(e){}
+  _lpNativeStop();
 }
+/* ===== APK(Capacitor 웹뷰) 네이티브 미디어 세션 연동 =====
+   안드로이드 웹뷰는 JS MediaSession 을 시스템 알림으로 안 띄워주므로,
+   APK 안의 LPMedia 네이티브 플러그인에 재생 정보를 넘겨 잠금화면/상태바 알림을 띄운다.
+   (브라우저/PWA 에는 Capacitor 가 없어 전부 no-op) */
+function _lpPlugin(){   // Capacitor 프록시(있으면) — addListener 용
+  try{
+    const C=window.Capacitor;
+    if(!C) return null;
+    if(C.__lpMedia!==undefined) return C.__lpMedia;
+    let plugin=null;
+    if(C.Plugins && C.Plugins.LPMedia && typeof C.Plugins.LPMedia.update==='function') plugin=C.Plugins.LPMedia;
+    else if(typeof C.registerPlugin==='function') plugin=C.registerPlugin('LPMedia');
+    C.__lpMedia=plugin||null;
+    return C.__lpMedia;
+  }catch(e){ return null; }
+}
+function _lpAvailable(){
+  try{
+    const C=window.Capacitor;
+    if(!C) return false;
+    if(C.isNativePlatform && !C.isNativePlatform()) return false;
+    return !!(_lpPlugin() || typeof C.nativePromise==='function' || typeof C.nativeCallback==='function');
+  }catch(e){ return false; }
+}
+function _lpCall(method, data){   // 여러 Capacitor 버전 호환 호출 경로
+  try{
+    const C=window.Capacitor; if(!C) return;
+    const p=_lpPlugin();
+    if(p && typeof p[method]==='function'){ p[method](data||{}); return; }
+    if(typeof C.nativePromise==='function'){ C.nativePromise('LPMedia', method, data||{}); return; }
+    if(typeof C.nativeCallback==='function'){ C.nativeCallback('LPMedia', method, data||{}, function(){}); return; }
+  }catch(e){}
+}
+let _lpNativeListenerReady=false;
+function _lpSetupNativeListener(){
+  if(_lpNativeListenerReady) return; _lpNativeListenerReady=true;
+  const handle=(action)=>{
+    if(action==='play') _resumePreview();
+    else if(action==='pause') _pausePreview();
+    else if(action==='next'){ if(_preview.discEl) previewStep(1,_preview.discEl); }
+    else if(action==='prev'){ if(_preview.discEl) previewStep(-1,_preview.discEl); }
+    else if(action==='stop') stopPreview();
+  };
+  window.addEventListener('lpMediaAction', (e)=>{
+    let a=e&&e.detail; if(a&&typeof a==='object') a=a.action;
+    if(typeof a==='string'){ try{ const o=JSON.parse(a); a=o.action||a; }catch(_){} handle(a); }
+  });
+  try{ const p=_lpPlugin(); if(p&&p.addListener) p.addListener('action',(d)=>{ if(d&&d.action) handle(d.action); }); }catch(e){}
+}
+function _lpCurrentTrack(){ const u=_preview.urls; return (u&&u.length)?u[((_preview.idx%u.length)+u.length)%u.length]:null; }
+function _lpNativeSync(playing){
+  if(!_lpAvailable()) return;
+  _lpSetupNativeListener();
+  const it=_preview.it, track=_lpCurrentTrack();
+  if(!it && !track) return;
+  const cover=(typeof artFor==='function'&&it)?(artFor(it)||''):((it&&it.cover)||'');
+  const a=_preview.audio, dur=a&&isFinite(a.duration)?a.duration:30;
+  _lpCall('update', {
+    title:(track&&track.title)||(it&&it.album)||'미리듣기',
+    artist:(it&&it.artist)||'',
+    album:(it&&it.album)||'',
+    cover:cover||'',
+    playing:!!playing,
+    position:(a&&a.currentTime)||0,
+    duration:dur,
+  });
+}
+function _lpNativeStop(){ if(_lpAvailable()) _lpCall('stop', {}); }
 function _pausePreview(){
   if(!_preview.audio) return;
   try{ _preview.audio.pause(); }catch(e){}
@@ -2525,6 +2595,7 @@ function _pausePreview(){
   _preview.paused=true;
   if(_preview.discEl) _preview.discEl.classList.remove('playing');
   if('mediaSession' in navigator){ try{ navigator.mediaSession.playbackState='paused'; }catch(e){} }
+  _lpNativeSync(false);
 }
 function _resumePreview(){
   if(!_preview.audio){ if(_preview.discEl) _playPreviewIdx(_preview.discEl); return; }
@@ -2533,6 +2604,7 @@ function _resumePreview(){
     const _cl=crackleLevel(); if(_cl) try{ VinylNoise.start(_cl); }catch(e){}
     if(_preview.discEl) _preview.discEl.classList.add('playing');
     if('mediaSession' in navigator){ try{ navigator.mediaSession.playbackState='playing'; }catch(e){} }
+    _lpNativeSync(true);
   }).catch(()=>{});
 }
 // 하나의 지속 <audio> 엘리먼트를 재사용해야 안드로이드(잠금화면/상태바) 미디어 알림이 안정적으로 뜬다
