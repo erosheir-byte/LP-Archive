@@ -76,9 +76,21 @@ public class LPMediaPlugin extends Plugin {
   }
 
   void fire(final String action) {
-    try {
-      getBridge().triggerWindowJSEvent("lpMediaAction", "{\"action\":\"" + action + "\"}");
-    } catch (Exception e) {}
+    final Activity act = getActivity();
+    Runnable r = new Runnable() {
+      @Override public void run() {
+        // 확실한 경로: WebView 에 직접 JS 실행
+        try {
+          WebView wv = getBridge().getWebView();
+          if (wv != null) {
+            wv.evaluateJavascript("window.__lpMediaAction && window.__lpMediaAction('" + action + "')", null);
+          }
+        } catch (Exception e) {}
+        // 폴백: window 이벤트
+        try { getBridge().triggerWindowJSEvent("lpMediaAction", "{\"action\":\"" + action + "\"}"); } catch (Exception e) {}
+      }
+    };
+    if (act != null) act.runOnUiThread(r); else r.run();
   }
 
   private void reportDebug(final String msg) {

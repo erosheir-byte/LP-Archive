@@ -2578,12 +2578,14 @@ let _lpNativeListenerReady=false;
 function _lpSetupNativeListener(){
   if(_lpNativeListenerReady) return; _lpNativeListenerReady=true;
   const handle=(action)=>{
+    const disc=_preview.discEl||document.querySelector('.disc.playing, .disc-play.playing')||null;
     if(action==='play') _resumePreview();
     else if(action==='pause') _pausePreview();
-    else if(action==='next'){ if(_preview.discEl) previewStep(1,_preview.discEl); }
-    else if(action==='prev'){ if(_preview.discEl) previewStep(-1,_preview.discEl); }
+    else if(action==='next'){ if(_preview.urls&&_preview.urls.length>1){ _preview.idx+=1; _playPreviewIdx(disc||_preview.discEl); } }
+    else if(action==='prev'){ if(_preview.urls&&_preview.urls.length>1){ _preview.idx-=1; _playPreviewIdx(disc||_preview.discEl); } }
     else if(action==='stop') stopPreview();
   };
+  window.__lpMediaAction=handle;   // 네이티브가 직접 호출하는 확실한 경로
   window.addEventListener('lpMediaAction', (e)=>{
     let a=e&&e.detail; if(a&&typeof a==='object') a=a.action;
     if(typeof a==='string'){ try{ const o=JSON.parse(a); a=o.action||a; }catch(_){} handle(a); }
