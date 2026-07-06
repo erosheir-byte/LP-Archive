@@ -16,6 +16,8 @@ import android.os.Build;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -27,6 +29,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import org.json.JSONObject;
+
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -36,6 +40,10 @@ import java.net.URL;
  * 안드로이드 시스템 미디어 세션 + 잠금화면/상태바 알림으로 표시한다.
  * 실제 오디오는 웹뷰의 <audio> 가 재생하고, 이 플러그인은 "표시 + 원격 컨트롤" 역할.
  * 버튼(재생/일시정지/이전/다음/정지)은 window 이벤트로 웹에 다시 전달한다.
+ *
+ * 호출 경로는 두 가지: Capacitor 플러그인 메서드(update/stop) 와
+ * WebView JavascriptInterface(window.LPMediaNative.update/stop) — 원격 로드 앱에서
+ * Capacitor 프록시가 안 잡히는 경우를 대비해 후자를 확실한 경로로 함께 제공.
  */
 @CapacitorPlugin(name = "LPMedia")
 public class LPMediaPlugin extends Plugin {
@@ -55,12 +63,103 @@ public class LPMediaPlugin extends Plugin {
   @Override
   public void load() {
     INSTANCE = new WeakReference<>(this);
+    try {
+      final WebView wv = getBridge().getWebView();
+      if (wv != null) {
+        wv.post(new Runnable() {
+          @Override public void run() {
+            try { wv.addJavascriptInterface(new JsApi(), "LPMediaNative"); } catch (Exception e) {}
+          }
+        });
+      }
+    } catch (Exception e) {}
   }
 
   void fire(final String action) {
     try {
       getBridge().triggerWindowJSEvent("lpMediaAction", "{\"action\":\"" + action + "\"}");
     } catch (Exception e) {}
+  }
+
+  // ---- 공개 호출 경로 1: Capacitor 플러그인 메서드 ----
+  @PluginMethod
+  public void update(final PluginCall call) {
+    String title = call.getString("title", "");
+    String artist = call.getString("artist", "");
+    String album = call.getString("album", "");
+    String cover = call.getString("cover", "");
+    Boolean pb = call.getBoolean("playing", Boolean.TRUE);
+    Double dd = call.getDouble("duration");
+    Double pp = call.getDouble("position");
+    long durMs = (long) ((dd == null ? 0.0 : dd) * 1000);
+    long posMs = (long) ((pp == null ? 0.0 : pp) * 1000);
+    applyUpdate(title, artist, album, cover, pb != null && pb, durMs, posMs);
+    call.resolve();
+  }
+
+  @PluginMethod
+  public void stop(final PluginCall call) {
+    stopInternal();
+    call.resolve();
+  }
+
+  // ---- 공개 호출 경로 2: WebView JavascriptInterface ----
+  public class JsApi {
+    @JavascriptInterface
+    public void update(String json) {
+      try {
+        JSONObject o = new JSONObject(json);
+        applyUpdate(
+            o.optString("title", ""),
+            o.optString("artist", ""),
+            o.optString("album", ""),
+            o.optString("cover", ""),
+            o.optBoolean("playing", true),
+            (long) (o.optDouble("duration", 0.0) * 1000),
+            (long) (o.optDouble("position", 0.0) * 1000));
+      } catch (Exception e) {}
+    }
+
+    @JavascriptInterface
+    public void stop() { stopInternal(); }
+  }
+
+  // ---- 공통 로직 ----
+  private void applyUpdate(final String title, final String artist, final String album,
+                           final String cover, final boolean playing, final long durMs, final long posMs) {
+    final Activity act = getActivity();
+    if (act == null) return;
+    act.runOnUiThread(new Runnable() {
+      @Override public void run() {
+        try {
+          tTitle = title; tArtist = artist; tAlbum = album; tPlaying = playing;
+          requestNotifPermission();
+          ensureChannel();
+          ensureSession();
+          applyMetadata(durMs);
+          applyState(posMs);
+          session.setActive(true);
+          showNotification();
+          if (cover != null && cover.length() > 0 && !cover.equals(artUrl)) {
+            artUrl = cover;
+            loadArt(cover, durMs);
+          }
+        } catch (Exception e) {}
+      }
+    });
+  }
+
+  private void stopInternal() {
+    final Activity act = getActivity();
+    if (act == null) return;
+    act.runOnUiThread(new Runnable() {
+      @Override public void run() {
+        try {
+          if (session != null) session.setActive(false);
+          NotificationManagerCompat.from(getContext()).cancel(NOTIF_ID);
+        } catch (Exception e) {}
+      }
+    });
   }
 
   private void ensureChannel() {
@@ -95,56 +194,6 @@ public class LPMediaPlugin extends Plugin {
         try { ActivityCompat.requestPermissions(act, new String[]{ Manifest.permission.POST_NOTIFICATIONS }, 9911); } catch (Exception e) {}
       }
     }
-  }
-
-  @PluginMethod
-  public void update(final PluginCall call) {
-    tTitle = call.getString("title", "");
-    tArtist = call.getString("artist", "");
-    tAlbum = call.getString("album", "");
-    Boolean pb = call.getBoolean("playing", Boolean.TRUE);
-    tPlaying = pb != null && pb;
-    final String cover = call.getString("cover", "");
-    Double dd = call.getDouble("duration");
-    Double pp = call.getDouble("position");
-    final long duration = (long) ((dd == null ? 0.0 : dd) * 1000);
-    final long position = (long) ((pp == null ? 0.0 : pp) * 1000);
-    final Activity act = getActivity();
-    if (act == null) { call.resolve(); return; }
-    act.runOnUiThread(new Runnable() {
-      @Override public void run() {
-        try {
-          requestNotifPermission();
-          ensureChannel();
-          ensureSession();
-          applyMetadata(duration);
-          applyState(position);
-          session.setActive(true);
-          showNotification();
-          if (cover != null && cover.length() > 0 && !cover.equals(artUrl)) {
-            artUrl = cover;
-            loadArt(cover, duration);
-          }
-        } catch (Exception e) {}
-      }
-    });
-    call.resolve();
-  }
-
-  @PluginMethod
-  public void stop(final PluginCall call) {
-    final Activity act = getActivity();
-    if (act != null) {
-      act.runOnUiThread(new Runnable() {
-        @Override public void run() {
-          try {
-            if (session != null) session.setActive(false);
-            NotificationManagerCompat.from(getContext()).cancel(NOTIF_ID);
-          } catch (Exception e) {}
-        }
-      });
-    }
-    call.resolve();
   }
 
   private void applyMetadata(long duration) {

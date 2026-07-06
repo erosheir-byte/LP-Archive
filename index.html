@@ -2538,20 +2538,39 @@ function _lpPlugin(){   // Capacitor 프록시(있으면) — addListener 용
 }
 function _lpAvailable(){
   try{
+    if(window.LPMediaNative && typeof window.LPMediaNative.update==='function') return true;
     const C=window.Capacitor;
     if(!C) return false;
     if(C.isNativePlatform && !C.isNativePlatform()) return false;
     return !!(_lpPlugin() || typeof C.nativePromise==='function' || typeof C.nativeCallback==='function');
   }catch(e){ return false; }
 }
-function _lpCall(method, data){   // 여러 Capacitor 버전 호환 호출 경로
+function _lpCall(method, data){   // 가장 확실한 경로부터 시도
   try{
+    // 1) WebView JavascriptInterface (원격 로드 앱에서 가장 확실)
+    const J=window.LPMediaNative;
+    if(J && typeof J[method]==='function'){ J[method](JSON.stringify(data||{})); return; }
     const C=window.Capacitor; if(!C) return;
+    // 2) Capacitor 플러그인 프록시
     const p=_lpPlugin();
     if(p && typeof p[method]==='function'){ p[method](data||{}); return; }
+    // 3) 저수준 브리지
     if(typeof C.nativePromise==='function'){ C.nativePromise('LPMedia', method, data||{}); return; }
     if(typeof C.nativeCallback==='function'){ C.nativeCallback('LPMedia', method, data||{}, function(){}); return; }
   }catch(e){}
+}
+function _lpDiag(){   // 어떤 네이티브 브리지가 잡히는지 진단 문자열
+  try{
+    const C=window.Capacitor;
+    const out=[];
+    out.push('jsi='+(window.LPMediaNative?'y':'n'));
+    out.push('cap='+(C?'y':'n'));
+    try{ out.push('plat='+(C&&C.getPlatform?C.getPlatform():'-')); }catch(_){ out.push('plat=?'); }
+    out.push('plug='+(_lpPlugin()?'y':'n'));
+    out.push('np='+(C&&typeof C.nativePromise==='function'?'y':'n'));
+    out.push('nc='+(C&&typeof C.nativeCallback==='function'?'y':'n'));
+    return out.join(' ');
+  }catch(e){ return 'diag err'; }
 }
 let _lpNativeListenerReady=false;
 function _lpSetupNativeListener(){
@@ -4522,7 +4541,7 @@ function renderSettings(){
       <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
     </div>
     <div class="set-card">
-      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">My Vinyl Archive · v1.0</div></div></div>
+      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">My Vinyl Archive · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px">미디어 브리지: ${_lpDiag()}</div></div></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
     </div>`;
 
