@@ -266,7 +266,8 @@ public class LPMediaPlugin extends Plugin {
         .setSubText(tAlbum)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         .setOnlyAlertOnce(true)
-        .setOngoing(tPlaying);
+        .setOngoing(false)                       // 스와이프로 지울 수 있게(고정 해제)
+        .setDeleteIntent(actPI("stop", 5));      // 스와이프로 지우면 재생 정지
     if (contentPI != null) b.setContentIntent(contentPI);
     if (art != null) b.setLargeIcon(art);
 

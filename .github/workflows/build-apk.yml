@@ -101,6 +101,8 @@ jobs:
                      '  public void onCreate(Bundle savedInstanceState) {\n'
                      '    registerPlugin(LPMediaPlugin.class);\n'
                      '    super.onCreate(savedInstanceState);\n'
+                     '    // 30초 뒤 자동 다음곡 등 제스처 밖 재생을 허용(웹뷰 기본은 차단)\n'
+                     '    try { getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception e) {}\n'
                      '  }\n'
                      '}\n')
               open(ma, 'w').write(src)
