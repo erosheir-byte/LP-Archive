@@ -591,11 +591,13 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .pk-url input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
 .pk-url input:focus{border-color:var(--accent)}
 .pk-url button{flex:none;background:var(--accent);border:none;color:#160d09;font-family:inherit;font-weight:700;font-size:13px;padding:0 16px;border-radius:11px;cursor:pointer}
-/* 커버 재검색: 가수·앨범 입력 */
-.pk-search{display:flex;gap:7px;margin-bottom:12px}
-.pk-search input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
-.pk-search input:focus{border-color:var(--accent)}
-.pk-search button{flex:none;background:var(--accent);border:none;color:#160d09;font-family:inherit;font-weight:800;font-size:13px;padding:0 15px;border-radius:11px;cursor:pointer}
+/* 커버 재검색: 가수·앨범 입력 (라벨로 어느 칸인지 표시) */
+.pk-search{display:flex;gap:7px;align-items:flex-end;margin-bottom:12px}
+.pk-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.pk-field label{font-size:10.5px;font-weight:700;color:var(--muted);padding-left:3px}
+.pk-field input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
+.pk-field input:focus{border-color:var(--accent)}
+.pk-search button{flex:none;background:var(--accent);border:none;color:#160d09;font-family:inherit;font-weight:800;font-size:13px;padding:11px 15px;border-radius:11px;cursor:pointer}
 .pk-search button:active{transform:scale(.96)}
 .dt-body{padding:18px 22px 0}
 .dt-body h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:24px;line-height:1.1;letter-spacing:-.01em}
@@ -3018,8 +3020,8 @@ async function openCoverPicker(it){
   box.classList.add('show');
   const search=`
     <div class="pk-search">
-      <input id="pk-q-artist" placeholder="가수" value="${escapeHtml(it.artist||'')}">
-      <input id="pk-q-album" placeholder="앨범명" value="${escapeHtml(it.album||'')}">
+      <div class="pk-field"><label>가수</label><input id="pk-q-artist" placeholder="가수명" value="${escapeHtml(it.artist||'')}"></div>
+      <div class="pk-field"><label>앨범명</label><input id="pk-q-album" placeholder="앨범명" value="${escapeHtml(it.album||'')}"></div>
       <button id="pk-q-btn" type="button">검색</button>
     </div>`;
   const manual=`
