@@ -81,6 +81,13 @@ public class LPMediaPlugin extends Plugin {
     } catch (Exception e) {}
   }
 
+  private void reportDebug(final String msg) {
+    try {
+      String safe = msg == null ? "" : msg.replace("\\", " ").replace("\"", "'").replace("\n", " ");
+      getBridge().triggerWindowJSEvent("lpMediaDebug", "{\"msg\":\"" + safe + "\"}");
+    } catch (Exception e) {}
+  }
+
   // ---- 공개 호출 경로 1: Capacitor 플러그인 메서드 ----
   @PluginMethod
   public void update(final PluginCall call) {
@@ -144,7 +151,13 @@ public class LPMediaPlugin extends Plugin {
             artUrl = cover;
             loadArt(cover, durMs);
           }
-        } catch (Exception e) {}
+          boolean enabled = true;
+          try { enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled(); } catch (Exception e) {}
+          reportDebug("upd ok sdk=" + Build.VERSION.SDK_INT + " notif=" + (enabled ? "on" : "off")
+              + " active=" + (session != null && session.isActive()));
+        } catch (Throwable t) {
+          reportDebug("upd ERR " + t.getClass().getSimpleName() + ": " + t.getMessage());
+        }
       }
     });
   }
