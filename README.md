@@ -90,6 +90,18 @@ npm run ios         # www 번들 + cap sync + Xcode 열기 (macOS)
 
 > 앱 셸(웹 코드)을 수정하면 재빌드·재업로드가 필요합니다(로컬 번들이므로).
 
+> ⚠️ **로컬(Android Studio)에서 직접 빌드할 때 — 카메라 권한 확인.**
+> GitHub Actions 빌드는 카메라 권한을 자동 주입하지만, 로컬에서 `npx cap add android`로 만든
+> 기본 프로젝트에는 권한이 없어 "바코드로 찾기"에서 카메라가 안 열릴 수 있습니다.
+> `android/app/src/main/AndroidManifest.xml` 의 `<manifest …>` 안에 아래 두 줄을 추가하세요:
+>
+> ```xml
+> <uses-permission android:name="android.permission.CAMERA" />
+> <uses-feature android:name="android.hardware.camera" android:required="false" />
+> ```
+> 추가 후 `npx cap sync` → 다시 빌드하면 스캔을 누를 때 카메라 권한 팝업이 뜹니다.
+> (한 번 "거부"했다면 폰 설정 → 앱 → My Vinyl → 권한 → 카메라 를 켜야 합니다.)
+
 ---
 
 ## 5. 파일 구성

@@ -12,6 +12,7 @@ on:
       - claude/busy-meitner-JQZ1E
       - claude/apk-download-setup-rnj2or
       - claude/github-program-analysis-rr1tm4
+      - claude/lp-app-fixes-vq2vrj
     paths-ignore:
       - "**.md"
       - "LPArchive-preview.html"
@@ -70,6 +71,59 @@ jobs:
           fi
           echo "----- AndroidManifest.xml -----"
           cat "$MANIFEST"
+
+      - name: Inject native media session plugin (잠금화면/상태바 컨트롤)
+        run: |
+          python3 - <<'PY'
+          import os, re, shutil
+          pkgdir = 'android/app/src/main/java/app/lparchive/vinyl'
+          os.makedirs(pkgdir, exist_ok=True)
+
+          # 1) 플러그인 소스 복사
+          shutil.copy('native/LPMediaPlugin.java', os.path.join(pkgdir, 'LPMediaPlugin.java'))
+          print('copied LPMediaPlugin.java')
+
+          # 2) MainActivity.java 에 registerPlugin 주입
+          ma = os.path.join(pkgdir, 'MainActivity.java')
+          src = open(ma).read()
+          if 'registerPlugin(LPMediaPlugin.class)' not in src:
+              src = ('package app.lparchive.vinyl;\n\n'
+                     'import android.os.Bundle;\n'
+                     'import com.getcapacitor.BridgeActivity;\n\n'
+                     'public class MainActivity extends BridgeActivity {\n'
+                     '  @Override\n'
+                     '  public void onCreate(Bundle savedInstanceState) {\n'
+                     '    registerPlugin(LPMediaPlugin.class);\n'
+                     '    super.onCreate(savedInstanceState);\n'
+                     '    // 30초 뒤 자동 다음곡 등 제스처 밖 재생을 허용(웹뷰 기본은 차단)\n'
+                     '    try { getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception e) {}\n'
+                     '  }\n'
+                     '}\n')
+              open(ma, 'w').write(src)
+              print('patched MainActivity.java')
+          print('----- MainActivity.java -----'); print(open(ma).read())
+
+          # 3) AndroidManifest: POST_NOTIFICATIONS 권한 + 미디어 버튼 리시버
+          mf = 'android/app/src/main/AndroidManifest.xml'
+          m = open(mf).read()
+          if 'POST_NOTIFICATIONS' not in m:
+              m = m.replace('<application',
+                  '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application', 1)
+          if 'LPMediaPlugin$LPMediaReceiver' not in m:
+              recv = ('        <receiver android:name="app.lparchive.vinyl.LPMediaPlugin$LPMediaReceiver" '
+                      'android:exported="false" />\n')
+              m = re.sub(r'(</application>)', lambda mm: recv + mm.group(1), m, count=1)
+          open(mf, 'w').write(m)
+          print('----- AndroidManifest.xml -----'); print(open(mf).read())
+
+          # 4) app/build.gradle: androidx.media 의존성 추가
+          bg = 'android/app/build.gradle'
+          g = open(bg).read()
+          if 'androidx.media:media' not in g:
+              g = re.sub(r'(dependencies\s*\{)', lambda mm: mm.group(1) + '\n    implementation "androidx.media:media:1.7.0"', g, count=1)
+              open(bg, 'w').write(g)
+              print('added androidx.media dependency')
+          PY
 
       - name: Capacitor sync
         run: npx cap sync android
