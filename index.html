@@ -3405,6 +3405,10 @@ document.querySelectorAll('.sheet-x').forEach(b=>b.onclick=()=>hide(b.dataset.cl
 document.querySelectorAll('.btn[data-close]').forEach(b=>b.onclick=()=>hide(b.dataset.close));
 // 컬렉션 시트 오버레이 클릭으로 닫기
 ['collnew','colldetail','collpick','settings','daylist','edit','listen'].forEach(n=>{ const ov=$('#ov-'+n); if(ov) ov.onclick=()=>hide(n); });
+// collnew(컬렉션 만들기/수정) 닫기: 수정 중이었으면 갱신된 상세 시트로 되돌아간다 (X·취소·오버레이 공통)
+function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCollDetail(_collOpenId); } }
+{ const s=$('#sheet-collnew'); if(s) s.querySelectorAll('[data-close="collnew"]').forEach(b=>b.onclick=closeCollNew); }
+{ const ov=$('#ov-collnew'); if(ov) ov.onclick=closeCollNew; }
 // 환경설정: 톱니 아이콘 → 시트 열기
 { const g=$('#my-gear'); if(g) g.onclick=()=>{ renderSettings(); show('settings'); }; }
 { const ov=$('#ov-settings'); if(ov) ov.onclick=()=>hide('settings'); }
@@ -4653,7 +4657,9 @@ function saveCollFromForm(){
     COLLECTIONS.unshift({ id:'c'+Date.now(), name, desc, color:_collPickColor, ids:[] });
   }
   saveCollections(); renderCollections(); hide('collnew');
-  if(_collOpenId) renderCollItems();
+  // ✎ 수정 시트를 열 때 상세 시트를 닫았으므로, 편집이었다면 갱신된 상세로 되돌아간다
+  if(_collEditId && _collOpenId){ openCollDetail(_collOpenId); }
+  else if(_collOpenId){ renderCollItems(); }
 }
 
 // 컬렉션 상세
@@ -4671,7 +4677,7 @@ function openCollDetail(id){
     <button class="sheet-x" id="coll-edit" style="position:static" title="수정">✎</button>`;
   renderCollItems();
   show('colldetail');
-  const eb=$('#coll-edit'); if(eb) eb.onclick=()=>openCollNew(id);
+  const eb=$('#coll-edit'); if(eb) eb.onclick=()=>{ hide('colldetail'); openCollNew(id); };
 }
 function renderCollItems(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
