@@ -4320,6 +4320,7 @@ function renderSettings(){
     ${apkCard}
     <div class="set-card">
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">My Vinyl Archive · v1.0</div></div></div>
+      <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
     </div>`;
 
@@ -4361,6 +4362,21 @@ function renderSettings(){
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
   // Discogs 토큰 저장
   { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
+  // 계정 비우기 (이 계정의 모든 LP 삭제)
+  { const cl=$('#set-clear'); if(cl) cl.onclick=async()=>{
+      if(!(window.LPCloud && window.LPCloud.clearAll)){ alert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
+      const n=(typeof DATA!=='undefined'&&DATA)?DATA.length:0;
+      if(!confirm(`이 계정의 LP ${n}장을 모두 삭제할까요?\n되돌릴 수 없어요.`)) return;
+      if(!confirm('정말 전부 삭제합니다. 계속할까요?')) return;
+      cl.style.pointerEvents='none';
+      const t=cl.querySelector('.set-t'); const old=t?t.textContent:''; if(t) t.textContent='삭제 중…';
+      try{
+        await window.LPCloud.clearAll();
+        if(window.bootApp) window.bootApp([]);
+        alert('이 계정을 비웠어요.');
+      }catch(e){ console.error(e); alert('삭제 중 오류가 났어요. 잠시 후 다시 시도해 주세요.'); }
+      finally{ cl.style.pointerEvents=''; if(t) t.textContent=old; }
+  }; }
   // 로그아웃
   { const lo=$('#set-logout'); if(lo) lo.onclick=()=>{
       if(window.LPCloud && window.LPCloud.logout){ if(confirm('로그아웃 할까요?')) window.LPCloud.logout(); }
@@ -4655,14 +4671,12 @@ function dataURLToBlob(dataURL){
   for(let i=0;i<len;i++) arr[i]=bin.charCodeAt(i);
   return new Blob([arr],{type:mime});
 }
-// 최초 로그인 시: 기존 SEED + (이 기기의) 로컬 데이터를 모아 반환 → 계정으로 이전
+// 새(빈) 계정에 처음 한 번 넣어줄 샘플 LP 1장. (기존 90장 시드는 더 이상 자동 주입하지 않음)
+const SAMPLE_LP={ no:1, artist:"Tom Misch", album:"Geography", color:"그레이", store:"", orig:null, price:null, pay:"", buy:null, arrive:null, status:"개봉", sellDate:null, sellPrice:null, profit:null, note:"샘플 LP예요 🎵 눌러서 수정하거나 삭제하고, 나만의 컬렉션을 채워보세요.", genre:"R&B·소울" };
+// 최초 로그인 시 계정에 넣을 초기 데이터 — 신규 계정은 샘플 1장만 받는다.
+// (joyoy 등 이미 데이터가 있는 계정은 이 함수가 호출되지 않고 클라우드 데이터를 그대로 사용)
 window.buildInitialData=function(){
-  if(localStorage.getItem('lp_migrated')==='1'){
-    return SEED.map((x,i)=>({...x, id:'s'+i}));   // 이후 새 계정은 기본 시드만
-  }
-  loadLocal();                                    // 최초 1회만 기존 로컬 기록까지 이전
-  try{ localStorage.setItem('lp_migrated','1'); }catch(e){}
-  return DATA;
+  return [{ ...SAMPLE_LP, id:'sample' }];
 };
 // 헤더 계정칩에 이메일 표시
 window.setAccount=function(email){ const e=$('#acct-email'); if(e) e.textContent=email||'계정'; };
@@ -4749,7 +4763,7 @@ import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, signOut, GoogleAuthProvider,
          signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch }
+import { getFirestore, collection, getDocs, getDoc, doc, setDoc, deleteDoc, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js';
@@ -4886,6 +4900,19 @@ function start(){
       if(!currentUser) return;
       try{ await deleteDoc(doc(db,'users',currentUser.uid,'lps',String(id))); }catch(e){}
     },
+    // 이 계정의 모든 LP 삭제 (계정 비우기). 초기화 표식은 남겨 재로그인 시 샘플이 다시 생기지 않게 한다.
+    async clearAll(){
+      if(!currentUser) throw new Error('not-signed-in');
+      const snap=await getDocs(collection(db,'users',currentUser.uid,'lps'));
+      const ids=[]; snap.forEach(s=>ids.push(s.id));
+      for(let i=0;i<ids.length;i+=400){
+        const b=writeBatch(db);
+        ids.slice(i,i+400).forEach(id=>b.delete(doc(db,'users',currentUser.uid,'lps',String(id))));
+        await b.commit();
+      }
+      try{ await setDoc(doc(db,'users',currentUser.uid,'meta','state'),{initialized:true},{merge:true}); }catch(e){}
+      return ids.length;
+    },
     async uploadImage(blob,ext){
       if(!currentUser) throw new Error('not-signed-in');
       const name=Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+(ext||'jpg');
@@ -4903,11 +4930,17 @@ function start(){
     setState('boot');
     try{
       let items=await loadItems(user.uid);
-      if(items.length===0){
+      // 계정을 '딱 한 번'만 초기화(샘플 1장)한다. 이미 초기화된 계정은 비어 있어도 다시 시드하지 않음
+      // → '계정 비우기'로 비운 계정이 재로그인할 때 샘플이 되살아나지 않게 하기 위함.
+      let inited=false;
+      try{ const ms=await getDoc(doc(db,'users',user.uid,'meta','state')); inited = ms.exists() && ms.data().initialized===true; }catch(e){}
+      if(items.length===0 && !inited){
         const seed=window.buildInitialData?window.buildInitialData():[];
-        await migrate(user.uid, seed);
+        if(seed.length) await migrate(user.uid, seed);
         items=seed;
       }
+      // 초기화 표식 남기기 (기존 데이터가 있는 계정도 표식만 남기고 lps 는 건드리지 않음)
+      try{ await setDoc(doc(db,'users',user.uid,'meta','state'),{initialized:true},{merge:true}); }catch(e){}
       if(window.setAccount) window.setAccount(user.email||user.displayName||'계정');
       if(window.bootApp) window.bootApp(items);
       setState('app');
