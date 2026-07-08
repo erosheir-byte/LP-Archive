@@ -1,10 +1,13 @@
 {
   "appId": "app.lparchive.vinyl",
   "appName": "My Vinyl",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
-    "url": "https://lp-archive.web.app",
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "iosScheme": "https"
+  },
+  "ios": {
+    "contentInset": "always"
   },
   "plugins": {
     "GoogleAuth": {

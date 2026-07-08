@@ -2,14 +2,19 @@
   "name": "lp-archive",
   "version": "1.0.0",
   "private": true,
-  "description": "LP 보관함 — APK 빌드용 Capacitor 설정 (웹 본체는 index.html / 원격 lp-archive.web.app 로드)",
+  "description": "LP 보관함 (My Vinyl) — Capacitor 로 안드로이드/iOS 패키징. 웹 본체(index.html)를 www/ 로 번들해 앱에 내장한다.",
   "scripts": {
-    "cap": "cap"
+    "cap": "cap",
+    "prepare:www": "node scripts/prepare-www.mjs",
+    "sync": "node scripts/prepare-www.mjs && cap sync",
+    "android": "node scripts/prepare-www.mjs && cap sync android && cap open android",
+    "ios": "node scripts/prepare-www.mjs && cap sync ios && cap open ios"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
     "@capacitor/app": "^6.0.2",
     "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
     "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4"
   },
   "devDependencies": {

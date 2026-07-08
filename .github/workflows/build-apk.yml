@@ -11,6 +11,7 @@ on:
       - main
       - claude/busy-meitner-JQZ1E
       - claude/apk-download-setup-rnj2or
+      - claude/github-program-analysis-rr1tm4
     paths-ignore:
       - "**.md"
       - "LPArchive-preview.html"
@@ -42,17 +43,8 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Prepare web dir (webDir=., 자기복사 방지용 전용 폴더)
-        run: |
-          # capacitor webDir 가 저장소 루트(".")라 android/ 까지 자기 자신으로 복사하려다
-          # 실패하므로, 웹 자산만 담은 www/ 를 만들어 빌드 시 webDir 로 사용한다.
-          # (APK 는 server.url=lp-archive.web.app 원격 로드 → www 는 오프라인 폴백 셸)
-          mkdir -p www/icons
-          cp index.html www/ 2>/dev/null || true
-          cp manifest.webmanifest www/ 2>/dev/null || true
-          cp sw.js www/ 2>/dev/null || true
-          cp -r icons/. www/icons/ 2>/dev/null || true
-          node -e "const f='capacitor.config.json';const c=require('./'+f);c.webDir='www';require('fs').writeFileSync(f,JSON.stringify(c,null,2));console.log('webDir ->',c.webDir);"
+      - name: Prepare web bundle (www/ 로컬 번들)
+        run: node scripts/prepare-www.mjs
 
       - name: Add Android platform
         run: npx cap add android
@@ -166,9 +158,12 @@ jobs:
           tag_name: apk-latest
           name: LP 보관함 APK (최신 디버그 빌드)
           body: |
-            LP 보관함 안드로이드 디버그 APK 입니다. 매 빌드마다 이 릴리스가 갱신됩니다.
+            LP 보관함 안드로이드 디버그 APK (테스트용) 입니다. 매 빌드마다 이 릴리스가 갱신됩니다.
 
             **설치:** 폰에서 아래 `LP-Archive.apk` 를 받아 설치 (설정 → "출처를 알 수 없는 앱/이 출처 허용" 필요).
-            앱은 https://lp-archive.web.app 를 로드합니다.
+            웹 앱 셸을 기기에 내장(번들)해 실행하며, 데이터는 Firebase 로 동기화됩니다.
+
+            > ⚠️ 이 APK 는 디버그 서명본으로 **스토어 업로드용이 아닙니다.**
+            > 구글 플레이 업로드용 서명 AAB 는 "Release Android (signed AAB)" 워크플로를 사용하세요.
           files: dist/LP-Archive.apk
           make_latest: "true"
