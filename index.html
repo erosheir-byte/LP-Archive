@@ -531,6 +531,7 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .collpick-row.in .pr-chk{background:var(--accent);border-color:var(--accent)}
 .sheet-x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;line-height:1;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
 .sheet-x:active{opacity:.7}
+.sheet-x.sx-edit{right:56px;font-size:14px}
 /* 상세 별점 줄 우측 '수정' 버튼 — 항상 노출되는 수정 진입점 */
 .dt-editfab{flex:none;height:34px;padding:0 13px;border-radius:17px;
   display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card2);
@@ -1024,6 +1025,7 @@ body:not(.state-app) .nav{display:none!important}
 <div class="sheet" id="sheet-colldetail">
   <div class="grab"></div>
   <button class="sheet-x" data-close="colldetail" aria-label="닫기">✕</button>
+  <button class="sheet-x sx-edit" id="coll-edit" type="button" aria-label="컬렉션 수정" title="수정">✎</button>
   <div class="form">
     <div class="cd-head" id="cd-collhead"></div>
     <div class="btnrow" style="margin-top:4px">
@@ -3418,7 +3420,7 @@ function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).cl
 $('#ov-detail').onclick=()=>hide('detail');
 $('#ov-add').onclick=()=>hide('add');
 // close (X) buttons
-document.querySelectorAll('.sheet-x').forEach(b=>b.onclick=()=>hide(b.dataset.close));
+document.querySelectorAll('.sheet-x').forEach(b=>{ if(b.dataset.close) b.onclick=()=>hide(b.dataset.close); });
 // 일반 버튼(.btn)에 붙은 data-close 처리 (취소/완료 등)
 document.querySelectorAll('.btn[data-close]').forEach(b=>b.onclick=()=>hide(b.dataset.close));
 // 컬렉션 시트 오버레이 클릭으로 닫기
@@ -4691,8 +4693,7 @@ function openCollDetail(id){
     <div style="flex:1;min-width:0">
       <div class="nm">${escapeHtml(c.name)}</div>
       ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
-    </div>
-    <button class="sheet-x" id="coll-edit" style="position:static" title="수정">✎</button>`;
+    </div>`;
   renderCollItems();
   show('colldetail');
   const eb=$('#coll-edit'); if(eb) eb.onclick=()=>{ hide('colldetail'); openCollNew(id); };
