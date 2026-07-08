@@ -909,11 +909,8 @@ body:not(.state-app) .nav{display:none!important}
         <option value="purchase">구매순</option>
         <option value="album">앨범명 순</option>
         <option value="artist">가수 순</option>
-        <option value="korName">ㄱㄴㄷ순</option>
-        <option value="abcName">abc순</option>
         <option value="rating">별점 순</option>
-        <option value="priceHigh">높은 가격순</option>
-        <option value="priceLow">낮은 가격순</option>
+        <option value="price">가격순</option>
       </select>
       <select id="sortdir" class="sortsel">
         <option value="asc">오름차순</option>
@@ -1389,11 +1386,8 @@ const I18N = {
   "구매순":"By purchase date",
   "앨범명 순":"By album",
   "가수 순":"By artist",
-  "ㄱㄴㄷ순":"Korean A–Z",
-  "abc순":"Latin A–Z",
   "별점 순":"By rating",
-  "높은 가격순":"Price: high→low",
-  "낮은 가격순":"Price: low→high",
+  "가격순":"By price",
   "오름차순":"Ascending",
   "내림차순":"Descending",
   "앨범형":"Grid",
@@ -2196,27 +2190,13 @@ function renderGrid(){
   $('#grid').classList.toggle('disc-on', gridDisc);
   let list=DATA.filter(passes);
   const regTime=it=>{ const id=String(it.id||''); const n=Number(id.slice(1)); return (id[0]==='u'||id[0]==='s')&&!isNaN(n)?n:0; };
-  const firstCh=s=>((s||'').trim()[0]||'');
-  const isHangul=c=>/[가-힣ㄱ-ㅎ]/.test(c);
-  const isLatin=c=>/[A-Za-z]/.test(c);
   const cmp={
     added:(a,b)=>regTime(b)-regTime(a),                                   // 최근 등록 먼저
     purchase:(a,b)=>(b.buy||'').localeCompare(a.buy||''),                 // 최근 구매 먼저
     album:(a,b)=>(a.album||'').localeCompare(b.album||'','ko'),
     artist:(a,b)=>(a.artist||'').localeCompare(b.artist||'','ko'),
-    korName:(a,b)=>{                                                      // 한글 제목 먼저, 가나다순
-      const ka=a.album||'', kb=b.album||'';
-      const ga=isHangul(firstCh(ka))?0:1, gb=isHangul(firstCh(kb))?0:1;
-      return ga!==gb ? ga-gb : ka.localeCompare(kb,'ko');
-    },
-    abcName:(a,b)=>{                                                      // 영문 제목 먼저, abc순
-      const ka=a.album||'', kb=b.album||'';
-      const ga=isLatin(firstCh(ka))?0:1, gb=isLatin(firstCh(kb))?0:1;
-      return ga!==gb ? ga-gb : ka.localeCompare(kb,'en');
-    },
     rating:(a,b)=>(b.rating||0)-(a.rating||0),
-    priceHigh:(a,b)=>(b.price||0)-(a.price||0),
-    priceLow:(a,b)=>(a.price||0)-(b.price||0),
+    price:(a,b)=>(a.price||0)-(b.price||0),                               // 오름차순=낮은→높은
   }[filter.sort];
   if(cmp) list=[...list].sort(cmp);
   if(filter.sortDir==='desc') list=(cmp?list:[...list]).reverse();       // 내림차순이면 뒤집기
