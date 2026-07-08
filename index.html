@@ -903,16 +903,21 @@ body:not(.state-app) .nav{display:none!important}
   <div class="countrow">
     <div class="count" id="count"></div>
     <div class="ctrls">
-      <select id="genre" class="sortsel"><option value="">전체 장르</option></select>
       <select id="sort" class="sortsel">
         <option value="default">기본순</option>
         <option value="added">등록일순</option>
         <option value="purchase">구매순</option>
         <option value="album">앨범명 순</option>
         <option value="artist">가수 순</option>
+        <option value="korName">ㄱㄴㄷ순</option>
+        <option value="abcName">abc순</option>
         <option value="rating">별점 순</option>
         <option value="priceHigh">높은 가격순</option>
         <option value="priceLow">낮은 가격순</option>
+      </select>
+      <select id="sortdir" class="sortsel">
+        <option value="asc">오름차순</option>
+        <option value="desc">내림차순</option>
       </select>
       <div class="viewtoggle">
         <button id="view-grid-btn" class="vt on" title="앨범형" aria-label="앨범형">
@@ -1384,9 +1389,13 @@ const I18N = {
   "구매순":"By purchase date",
   "앨범명 순":"By album",
   "가수 순":"By artist",
+  "ㄱㄴㄷ순":"Korean A–Z",
+  "abc순":"Latin A–Z",
   "별점 순":"By rating",
   "높은 가격순":"Price: high→low",
   "낮은 가격순":"Price: low→high",
+  "오름차순":"Ascending",
+  "내림차순":"Descending",
   "앨범형":"Grid",
   "리스트형":"List",
   "음원 연결":"Audio source",
@@ -2135,7 +2144,7 @@ function statusChip(s){
 }
 
 /* ---------- render grid ---------- */
-let filter={q:'',chip:'전체',sub:'',sort:'default',genre:'',view:'grid'};   // view: 'grid'|'list'
+let filter={q:'',chip:'전체',sub:'',sort:'default',sortDir:'asc',genre:'',view:'grid'};   // view: 'grid'|'list'
 let gridDisc = (()=>{ try{ return localStorage.getItem('lp_griddisc')==='1'; }catch(e){ return false; } })();   // 그리드 LP판 보기
 
 // classify a record's status into a top-level group
@@ -2151,7 +2160,6 @@ const SUBCHIPS=['개봉','미개봉'];
 function passes(it){
   const q=filter.q.toLowerCase();
   if(q && !(it.artist.toLowerCase().includes(q)||it.album.toLowerCase().includes(q)||(it.color||'').toLowerCase().includes(q))) return false;
-  if(filter.genre && (it.genre||'')!==filter.genre) return false;
   const g=statusGroup(it.status);
   const c=filter.chip;
   if(c==='전체') return g!=='위시';        // 전체에서 위시 제외
@@ -2188,16 +2196,30 @@ function renderGrid(){
   $('#grid').classList.toggle('disc-on', gridDisc);
   let list=DATA.filter(passes);
   const regTime=it=>{ const id=String(it.id||''); const n=Number(id.slice(1)); return (id[0]==='u'||id[0]==='s')&&!isNaN(n)?n:0; };
+  const firstCh=s=>((s||'').trim()[0]||'');
+  const isHangul=c=>/[가-힣ㄱ-ㅎ]/.test(c);
+  const isLatin=c=>/[A-Za-z]/.test(c);
   const cmp={
     added:(a,b)=>regTime(b)-regTime(a),                                   // 최근 등록 먼저
     purchase:(a,b)=>(b.buy||'').localeCompare(a.buy||''),                 // 최근 구매 먼저
     album:(a,b)=>(a.album||'').localeCompare(b.album||'','ko'),
     artist:(a,b)=>(a.artist||'').localeCompare(b.artist||'','ko'),
+    korName:(a,b)=>{                                                      // 한글 제목 먼저, 가나다순
+      const ka=a.album||'', kb=b.album||'';
+      const ga=isHangul(firstCh(ka))?0:1, gb=isHangul(firstCh(kb))?0:1;
+      return ga!==gb ? ga-gb : ka.localeCompare(kb,'ko');
+    },
+    abcName:(a,b)=>{                                                      // 영문 제목 먼저, abc순
+      const ka=a.album||'', kb=b.album||'';
+      const ga=isLatin(firstCh(ka))?0:1, gb=isLatin(firstCh(kb))?0:1;
+      return ga!==gb ? ga-gb : ka.localeCompare(kb,'en');
+    },
     rating:(a,b)=>(b.rating||0)-(a.rating||0),
     priceHigh:(a,b)=>(b.price||0)-(a.price||0),
     priceLow:(a,b)=>(a.price||0)-(b.price||0),
   }[filter.sort];
   if(cmp) list=[...list].sort(cmp);
+  if(filter.sortDir==='desc') list=(cmp?list:[...list]).reverse();       // 내림차순이면 뒤집기
   $('#count').innerHTML=`<b>${list.length}</b>장 표시 중`;
   const isWish=filter.chip==='위시';
   // FAB reflects context: wish vs normal add
@@ -4734,7 +4756,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
 
 $('#q').oninput=e=>{filter.q=e.target.value;renderGrid();};
 $('#sort').onchange=e=>{filter.sort=e.target.value;renderGrid();};
-$('#genre').onchange=e=>{filter.genre=e.target.value;renderGrid();};
+{ const sd=$('#sortdir'); if(sd) sd.onchange=e=>{filter.sortDir=e.target.value;renderGrid();}; }
 $('#view-grid-btn').onclick=()=>{filter.view='grid';$('#view-grid-btn').classList.add('on');$('#view-list-btn').classList.remove('on');renderGrid();};
 $('#view-list-btn').onclick=()=>{filter.view='list';$('#view-list-btn').classList.add('on');$('#view-grid-btn').classList.remove('on');renderGrid();};
 $('#cal-prev').onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); };
@@ -4902,7 +4924,7 @@ window.bootApp=function(items){
   // 이전 사용자 흔적 제거 후, 저장된 커버를 캐시에 반영
   Object.keys(pickedArt).forEach(k=>delete pickedArt[k]);
   DATA.forEach(it=>{ if(it._art){ const k=artKey(it.artist,it.album); pickedArt[k]=it._art; artCache[k]=it._art; } });
-  filter={q:'',chip:'전체',sub:'',sort:'default',genre:'',view:'grid'};
+  filter={q:'',chip:'전체',sub:'',sort:'default',sortDir:'asc',genre:'',view:'grid'};
   calYear=null; cfIndex=0;
   if($('#q')) $('#q').value='';
   renderChips();renderStats();renderGrid();buildCoverFlow();refreshGenreChips();
