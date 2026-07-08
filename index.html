@@ -4927,6 +4927,10 @@ window.bootApp=function(items){
   filter={q:'',chip:'전체',sub:'',sort:'default',sortDir:'asc',genre:'',view:'grid'};
   calYear=null; cfIndex=0;
   if($('#q')) $('#q').value='';
+  // 로그인 후 저장된 환경설정·컬렉션을 로드한다.
+  // (예전에는 loadLocal()이 담당했지만 더는 호출되지 않아, 여기서 직접 부른다)
+  try{ loadSettings(); }catch(e){}
+  try{ loadCollections(); }catch(e){}
   renderChips();renderStats();renderGrid();buildCoverFlow();refreshGenreChips();
 };
 
