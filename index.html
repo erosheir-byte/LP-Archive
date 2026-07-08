@@ -3464,6 +3464,20 @@ function enableSwipeClose(name){
 enableSwipeClose('detail');
 enableSwipeClose('add');
 
+// 컬렉션 시트: 가로가 우세한 드래그를 막아 좌우 흔들림 제거(세로 스크롤만 허용).
+// touch-action:pan-y 로 안 잡히는 브라우저(특히 iOS 러버밴드)까지 확실히 차단한다.
+['colldetail','collnew','collpick'].forEach(n=>{
+  const el=document.getElementById('sheet-'+n); if(!el) return;
+  let sx=0, sy=0, ax=null;
+  el.addEventListener('touchstart',e=>{ if(e.touches.length===1){ const t=e.touches[0]; sx=t.clientX; sy=t.clientY; ax=null; } },{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(e.touches.length!==1) return;
+    const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+    if(ax===null){ if(Math.abs(dx)<6 && Math.abs(dy)<6) return; ax = Math.abs(dx)>Math.abs(dy) ? 'x' : 'y'; }
+    if(ax==='x' && e.cancelable) e.preventDefault();   // 가로 제스처 차단(세로는 통과 → 스크롤 정상)
+  },{passive:false});
+});
+
 /* ---------- add form ---------- */
 let prevTimer;
 function schedulePreview(){
