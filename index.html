@@ -372,6 +372,7 @@ h1 .em{color:var(--accent)}
 .sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:40px}
 .sheet.show{transform:translateX(-50%) translateY(0)}
 body.scroll-lock{position:fixed;left:0;right:0;width:100%;overflow:hidden}
+#sheet-colldetail,#sheet-collnew,#sheet-collpick{touch-action:pan-y}
 /* 풀스크린 레이어: 시트 위에 시트가 얹히는 뎁스 대신 화면 전체를 부드럽게 덮는다.
    바텀시트식 슬라이드업 대신 제자리 페이드+살짝 상승으로 '덮는' 느낌을 준다. */
 .sheet.fs{top:0;height:100%;max-height:none;border-radius:0;border-top:none;z-index:60;
@@ -5026,6 +5027,8 @@ function handleAppBack(){
     if(t.clientX>EDGE) return;            // 왼쪽 가장자리에서 시작한 제스처만
     active=true; x0=t.clientX; y0=t.clientY; dx=0; dy=0; axis=null;
     sheet=topSheet();                     // 닫을 시트가 없으면 시각 피드백 없이 무시
+    // 컬렉션 시트는 좌우 스와이프로 닫지 않는다(위아래 드래그만) — 가로 제스처 무시
+    if(sheet && /^sheet-(colldetail|collnew|collpick)$/.test(sheet.id)){ active=false; sheet=null; return; }
   },{passive:true});
   window.addEventListener('touchmove',e=>{
     if(!active) return;
