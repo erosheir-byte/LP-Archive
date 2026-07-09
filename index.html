@@ -520,6 +520,11 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .coll-it .ci-nm{font-size:10.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
 .coll-it .ci-rm{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#e0617a;color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
 .coll-items-empty{grid-column:1/-1;text-align:center;color:var(--dim);font-size:12.5px;padding:24px 10px}
+/* 컬렉션 상세: 편집 모드에서만 빼기(-) 버튼·담기/삭제/완료 표시 */
+#sheet-colldetail .cd-edit{display:none}
+#sheet-colldetail.editing .cd-normal{display:none}
+#sheet-colldetail.editing .cd-edit{display:inline-block}
+#sheet-colldetail:not(.editing) .ci-rm{display:none}
 .collpick-search{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:12px 14px;color:var(--txt);font-family:inherit;font-size:14px;margin-bottom:12px;box-sizing:border-box}
 /* 판매/교환 세그먼트 토글 */
 .sx-seg{display:flex;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-top:6px}
@@ -1059,9 +1064,11 @@ body.state-shared #shared-view{display:block}
   <div class="form">
     <div class="cd-head" id="cd-collhead"></div>
     <div class="btnrow" style="margin-top:4px">
-      <button class="btn ghost" id="coll-addlp">+ LP 담기</button>
-      <button class="btn ghost" id="coll-share">📤 공유</button>
-      <button class="btn ghost danger" id="coll-del">삭제</button>
+      <button class="btn ghost cd-normal" id="coll-share">📤 공유</button>
+      <button class="btn ghost cd-normal" id="coll-editmode">✏️ 편집</button>
+      <button class="btn ghost cd-edit" id="coll-addlp">+ LP 담기</button>
+      <button class="btn ghost danger cd-edit" id="coll-del">삭제</button>
+      <button class="btn primary cd-edit" id="coll-editdone">완료</button>
     </div>
     <div class="coll-items" id="coll-items"></div>
   </div>
@@ -3469,6 +3476,8 @@ function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCo
 { const b=$('#coll-addlp'); if(b) b.onclick=openCollPick; }
 { const b=$('#coll-del'); if(b) b.onclick=deleteColl; }
 { const b=$('#coll-share'); if(b) b.onclick=shareCurrentCollection; }
+{ const b=$('#coll-editmode'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.add('editing'); }; }
+{ const b=$('#coll-editdone'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }; }
 { const q=$('#collpick-q'); if(q) q.oninput=e=>renderCollPick(e.target.value); }
 // swipe-down to dismiss (drag from the grab handle / top area)
 function enableSwipeClose(name){
@@ -4741,6 +4750,7 @@ function openCollDetail(id){
       ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
     </div>`;
   renderCollItems();
+  { const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }   // 항상 일반 보기로 시작
   show('colldetail');
   const eb=$('#coll-edit'); if(eb) eb.onclick=()=>{ hide('colldetail'); openCollNew(id); };
 }
