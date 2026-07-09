@@ -4803,6 +4803,14 @@ function shareCurrentCollection(){
   for(const id of (c.ids||[])){ const it=DATA.find(x=>x.id===id); const cov=it&&(typeof artFor==='function'?artFor(it):(it._art||it.cover)); if(cov && /^https?:/.test(cov)){ img=cov; break; } }
   // 공유 문서 발행 — 백그라운드(제스처 유지). 링크와 동일 shareId 사용.
   try{ Promise.resolve(window.LPCloud.shareCollection(c, shareId)).catch(e=>console.error('share write', e)); }catch(e){ console.error(e); }
+  const _text=`'${c.name||'컬렉션'}' 컬렉션을 공유했어요 🎵`;
+  // 0) 앱(네이티브): 카카오 JS SDK는 앱 도메인(https://localhost)과 안 맞으므로 OS 공유시트로 공유.
+  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+    const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+    if(Sh && Sh.share){ try{ Sh.share({ title:(c.name||'내 바이닐 컬렉션'), text:_text, url, dialogTitle:'컬렉션 공유' }); }catch(e){ if(navigator.share) navigator.share({title:(c.name||'내 바이닐 컬렉션'),text:_text,url}).catch(()=>_copyShareUrl(url)); else _copyShareUrl(url); } return; }
+    if(navigator.share){ navigator.share({ title:(c.name||'내 바이닐 컬렉션'), text:_text, url }).catch(e=>{ if(e&&e.name!=='AbortError') _copyShareUrl(url); }); return; }
+    _copyShareUrl(url); return;
+  }
   // 1) 카카오톡 예쁜 카드 (Web 도메인 등록 완료 시) — 제스처 안에서 즉시
   if(window.Kakao && window.Kakao.Share && window.Kakao.isInitialized && window.Kakao.isInitialized()){
     try{
