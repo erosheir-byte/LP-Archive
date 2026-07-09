@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>My Vinyl</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="My Vinyl — 내 바이닐 컬렉션">
+<meta property="og:description" content="내 바이닐(LP) 컬렉션을 기록하고 친구와 공유해요 🎵">
+<meta property="og:image" content="https://lp-archive.web.app/icons/icon-512.png">
+<meta property="og:url" content="https://lp-archive.web.app">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0e0d11">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -4797,7 +4803,9 @@ function shareCurrentCollection(){
   for(const id of (c.ids||[])){ const it=DATA.find(x=>x.id===id); const cov=it&&(typeof artFor==='function'?artFor(it):(it._art||it.cover)); if(cov && /^https?:/.test(cov)){ img=cov; break; } }
   // 공유 문서 발행 — 백그라운드(제스처 유지). 링크와 동일 shareId 사용.
   try{ Promise.resolve(window.LPCloud.shareCollection(c, shareId)).catch(e=>console.error('share write', e)); }catch(e){ console.error(e); }
-  // 1) 카카오톡 예쁜 카드 (SDK 준비 + 키/도메인 설정 시) — 제스처 안에서 즉시
+  // 1) 공유시트(모바일) — 가장 확실. 카톡 등 앱을 골라 링크 전송(링크 미리보기는 OG 태그로 표시).
+  if(navigator.share){ navigator.share({ title:(c.name||'내 바이닐 컬렉션'), text:`'${c.name||'컬렉션'}' 컬렉션을 공유했어요 🎵`, url }).catch(e=>{ if(e&&e.name!=='AbortError') _copyShareUrl(url); }); return; }
+  // 2) 카카오톡 카드 (공유시트가 없는 환경, 예: PC) — JS 키/도메인 설정 시에만 동작
   if(window.Kakao && window.Kakao.Share && window.Kakao.isInitialized && window.Kakao.isInitialized()){
     try{
       window.Kakao.Share.sendDefault({ objectType:'feed',
@@ -4806,8 +4814,7 @@ function shareCurrentCollection(){
       return;
     }catch(e){ console.warn('kakao share fail → fallback', e); }
   }
-  // 2) 공유시트(모바일) — 제스처 안에서 즉시, 실패 시 3) 링크 복사
-  if(navigator.share){ navigator.share({ title:(c.name||'내 바이닐 컬렉션'), text:`'${c.name||'컬렉션'}' 컬렉션을 공유했어요 🎵`, url }).catch(e=>{ if(e&&e.name!=='AbortError') _copyShareUrl(url); }); return; }
+  // 3) 링크 복사
   _copyShareUrl(url);
 }
 
