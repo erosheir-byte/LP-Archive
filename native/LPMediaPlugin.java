@@ -176,7 +176,7 @@ public class LPMediaPlugin extends Plugin {
 
   private void stopInternal() {
     final Activity act = getActivity();
-    if (act == null) return;
+    if (act == null) { releaseSession(); return; }
     act.runOnUiThread(new Runnable() {
       @Override public void run() {
         try {
@@ -185,6 +185,25 @@ public class LPMediaPlugin extends Plugin {
         } catch (Exception e) {}
       }
     });
+  }
+
+  /** 세션을 완전히 해제 — 앱을 끄면 미디어 출력/잠금화면에서 사라진다 */
+  private void releaseSession() {
+    try { NotificationManagerCompat.from(getContext()).cancel(NOTIF_ID); } catch (Exception e) {}
+    try {
+      if (session != null) {
+        session.setActive(false);
+        session.release();
+        session = null;
+      }
+    } catch (Exception e) {}
+  }
+
+  /** 앱을 스와이프로 닫거나 액티비티가 파괴될 때: 재생 정지 + 세션 해제 */
+  @Override
+  public void handleOnDestroy() {
+    releaseSession();
+    super.handleOnDestroy();
   }
 
   private void ensureChannel() {

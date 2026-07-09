@@ -2924,6 +2924,25 @@ function previewToast(msg){
   clearTimeout(previewToast._t); previewToast._t=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
+/* 앱을 백그라운드로 보내거나 끄면 미리듣기를 멈춘다.
+   (안 그러면 잠금화면/미디어 출력에 재생 알림이 계속 살아있음) */
+(function _setupPreviewLifecycle(){
+  const stopIfPlaying=()=>{ try{ if(_preview.id||_preview.audio) stopPreview(); }catch(e){} };
+  // 웹/PWA/웹뷰 공통: 화면이 가려지면(다른 앱 전환·홈·잠금·앱 종료) 정지
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopIfPlaying(); });
+  window.addEventListener('pagehide', stopIfPlaying);
+  window.addEventListener('freeze', stopIfPlaying);   // Page Lifecycle: 백그라운드 동결
+  // Capacitor(APK): 앱 상태 변화 — 비활성화 시 정지
+  try{
+    const C=window.Capacitor;
+    const App=C && C.Plugins && C.Plugins.App;
+    if(App && App.addListener){
+      App.addListener('appStateChange', (s)=>{ if(s && s.isActive===false) stopIfPlaying(); });
+      App.addListener('pause', stopIfPlaying);
+    }
+  }catch(e){}
+})();
+
 async function loadArt(it){
   const img=document.querySelector(`img[data-art="${it.id}"]`);
   if(!img||img.dataset.done) return;
