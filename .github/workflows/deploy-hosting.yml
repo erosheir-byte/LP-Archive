@@ -22,6 +22,7 @@ on:
       - "manifest.webmanifest"
       - "icons/**"
       - "firebase.json"
+      - "firestore.rules"
       - ".firebaserc"
 
 permissions:
@@ -50,4 +51,4 @@ jobs:
             echo "::error::FIREBASE_TOKEN 시크릿이 없습니다. README/워크플로 주석의 안내대로 추가하세요."
             exit 1
           fi
-          firebase deploy --only hosting --project lp-archive --non-interactive --token "$FIREBASE_TOKEN"
+          firebase deploy --only hosting,firestore:rules --project lp-archive --non-interactive --token "$FIREBASE_TOKEN"

@@ -5,5 +5,11 @@ service cloud.firestore {
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+    // 공유 컬렉션: 링크(문서 ID)를 아는 누구나 읽기 가능, 소유자만 생성·수정·삭제
+    match /shared/{shareId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+    }
   }
 }
