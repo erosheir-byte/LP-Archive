@@ -4650,8 +4650,10 @@ function renderTaste(){
   const colorTop=Object.entries(colorMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const colorTotal=Object.values(colorMap).reduce((s,n)=>s+n,0)||1;
 
-  // 4) 자주 간 구매처 TOP3
+  // 4) 자주 간 구매처 TOP3 (+ 구매처별 총 지출)
   const storeTop=top(tally('store'),3).filter(([k])=>k!=='선물'&&k!=='교환');
+  const storeSpend={};
+  owned.forEach(d=>{ const s=(d.store||'').trim(); if(!s)return; storeSpend[s]=(storeSpend[s]||0)+(d.price||0); });
 
   // 4.5) 가장 많이 들은 앨범 TOP5 (청음 기록 횟수)
   const listenRank=DATA
@@ -4690,7 +4692,7 @@ function renderTaste(){
   // 단골 구매처
   cards.push(`<div class="t-card">
     <div class="t-head">자주 간 구매처</div>
-    ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+    ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}${storeSpend[s[0]]?` · ${won(storeSpend[s[0]])}`:''}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
   // 가장 많이 들은 앨범 (청음 횟수)
@@ -4726,7 +4728,7 @@ function renderTaste(){
   // 자주 간 구매처 → 그 구매처에서 산 앨범들
   wrap.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
     const s=storeTop[+el.dataset.ts]; if(!s) return;
-    openTasteList(`${s[0]} · ${s[1]}장`, owned.filter(d=>(d.store||'').trim()===s[0])
+    openTasteList(`${s[0]} · ${s[1]}장${storeSpend[s[0]]?` · ${won(storeSpend[s[0]])}`:''}`, owned.filter(d=>(d.store||'').trim()===s[0])
       .sort((a,b)=>String(b.buy||'').localeCompare(String(a.buy||'')))
       .map(it=>({it, tag: dShort(it.buy)})));
   });
@@ -4762,7 +4764,8 @@ function openYearList(year){
   const wrap=$('#daylist'); if(!wrap) return;
   const list=DATA.filter(d=>d.buy && String(d.buy).slice(0,4)===String(year) && statusGroup(d.status)!=='위시')
                  .sort((a,b)=>String(a.buy).localeCompare(String(b.buy)));
-  $('#daylist-title').textContent=`${year}년 구매 · ${list.length}장`;
+  const yearSpend=list.reduce((s,d)=>s+(d.price||0),0);
+  $('#daylist-title').textContent=`${year}년 구매 · ${list.length}장${yearSpend?` · ${won(yearSpend)}`:''}`;
   if(!list.length){
     wrap.innerHTML=`<div class="dl-emptyday">이 해에 구매한 앨범이 없어요.</div>`;
   }else{
