@@ -348,9 +348,9 @@ h1 .em{color:var(--accent)}
 .mini-disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26%;height:26%;border-radius:50%;background:var(--disc,#1a1a1a);filter:brightness(.65);box-shadow:0 0 0 1px rgba(0,0,0,.4),inset 0 0 5px rgba(0,0,0,.5)}
 .mini-disc.has-photo{background:var(--photo) center/cover no-repeat}
 .mini-disc.has-photo::after{display:none}
-/* 컬러 옆 카메라(판 사진) 원형 버튼 */
-.color-toggle.cam{border-radius:50%}
-.color-toggle.cam.on{background:var(--accent);border-color:var(--accent);color:#160d09}
+/* 팔레트 안 '판에 사진 넣기' 칩 */
+.palette .sw-photo{display:flex;align-items:center;justify-content:center;color:var(--muted);border:2px dashed rgba(255,255,255,.35);background:var(--card2);background-size:cover;background-position:center}
+.palette .sw-photo.has{border-style:solid;border-color:#fff;color:transparent}
 /* disc with a custom photo: hide the synthetic gradient so the photo shows */
 .disc.has-photo{background-blend-mode:normal;box-shadow:inset 0 0 16px rgba(0,0,0,.5),0 4px 9px rgba(0,0,0,.5)}
 /* 사진으로 바꾼 LP는 가운데 라벨/핀홀을 완전히 숨김 */
@@ -1306,7 +1306,6 @@ body.state-shared #shared-view{display:block}
           <span class="color-dot" id="e-colordot"></span>
           <input id="e-color" placeholder="블랙">
           <button type="button" class="color-toggle" id="e-coltoggle" title="팔레트 열기">+</button>
-          <button type="button" class="color-toggle cam" id="e-camtoggle" title="판에 사진 넣기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
         </div>
       </div>
       <div class="fld"><label>상태</label><select id="e-status"></select></div>
@@ -2168,12 +2167,19 @@ function renderPalette(containerId, inputId, onChange){
   const isCustom = !!(inp&&inp.dataset.hex) && !inPalette;
   const customBg = isCustom ? inp.dataset.hex : 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
   html+=`<button type="button" class="sw sw-custom${isCustom?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
+  // 판에 사진 넣기 칩 (수정 화면에서만: dataset.camswatch)
+  if(inp && inp.dataset.camswatch==='1'){
+    const photo=inp.dataset.photo||'';
+    const photoSVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
+    html+=`<button type="button" class="sw sw-photo${photo?' has on':''}" title="판에 사진 넣기" ${photo?`style="background-image:url(${photo})"`:''}>${photo?'':photoSVG}</button>`;
+  }
   box.innerHTML=html;
-  box.querySelectorAll('.sw:not(.sw-custom)').forEach(el=>el.onclick=()=>{
+  box.querySelectorAll('.sw:not(.sw-custom):not(.sw-photo)').forEach(el=>el.onclick=()=>{
     if(inp){ inp.value=el.dataset.label; inp.dataset.hex=el.dataset.hex; }   // 이름+색(hex) 함께 지정 → 이름 지워도 색 유지
     renderPalette(containerId, inputId, onChange);   // re-render so the ✓ lands on the picked swatch
     if(onChange) onChange();
   });
+  { const ph=box.querySelector('.sw-photo'); if(ph) ph.onclick=()=>{ if(window.__openDiscPhoto) window.__openDiscPhoto(); }; }
   const custom=box.querySelector('.sw-custom');
   if(custom) custom.onclick=()=>{
     let pick=document.getElementById('color-custom-pick');
@@ -3120,13 +3126,14 @@ function showEditForm(it){
   paintRate();
   // 팔레트
   { const ec=$('#e-color'); if(ec){ const hx=it.colorHex||it.discColorCustom||(it.color?discColor(it.color):''); if(hx&&hx[0]==='#') ec.dataset.hex=hx; else delete ec.dataset.hex;
-      if(it.discPhoto) ec.dataset.photo=it.discPhoto; else delete ec.dataset.photo; } }
+      if(it.discPhoto) ec.dataset.photo=it.discPhoto; else delete ec.dataset.photo;
+      ec.dataset.camswatch='1';   // 팔레트에 '판에 사진 넣기' 칩 노출
+      window.__openDiscPhoto=()=>openDiscPhoto(it); } }
   { const op=$('#e-op'); if(op){ op.value=Math.round((it.discOpacity!=null?it.discOpacity:1)*100); } }
   setupColorField('e');
   $('#e-palette').classList.remove('collapsed');
   { const ex=$('#e-vinyl-extra'); if(ex) ex.classList.remove('collapsed'); }
   { const pv=$('#e-discprev'); if(pv) pv.classList.remove('collapsed'); }
-  { const cb=$('#e-camtoggle'); if(cb){ cb.classList.toggle('on', !!it.discPhoto); cb.onclick=()=>openDiscPhoto(it); } }
   show('edit');
   $('#e-save').onclick=()=>{
     const oldKey=artKey(it.artist,it.album);
@@ -3271,8 +3278,7 @@ function openDiscPhoto(it){   // 판에 사진 넣기 (색·투명도는 컬러 
     const ec=$('#e-color');
     if(ec && $('#sheet-edit').classList.contains('show')){
       if(it.discPhoto) ec.dataset.photo=it.discPhoto; else delete ec.dataset.photo;
-      if(ec.oninput) ec.oninput();
-      const cb=$('#e-camtoggle'); if(cb) cb.classList.toggle('on', !!it.discPhoto);
+      if(ec.oninput) ec.oninput();   // 팔레트(사진 칩 상태)·미리보기 판 다시 그림
     }
   };
   $('#vd-photo-save').onclick=async ()=>{
