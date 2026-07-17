@@ -4216,16 +4216,14 @@ function artFor(it){ return it._art || pickedArt[artKey(it.artist,it.album)] || 
 function calEvents(){
   const ev=[];
   DATA.forEach(it=>{
-    if(statusGroup(it.status)==='위시') return;
     const g=statusGroup(it.status);
+    if(g==='위시') return;
     // 판매일 → 흑백
     if(it.status==='판매' && it.sellDate) ev.push({date:it.sellDate, kind:'sold', it});
-    // 도착일 → 원본 (도착했으면 구매일은 생략, 도착이 대표)
-    if(it.arrive) ev.push({date:it.arrive, kind:'arrive', it});
-    // 구매일: 도착 전(배송중)이면 투명 60%, 도착일이 없을 때만 구매일로 표기
-    if(it.buy && !it.arrive){
-      ev.push({date:it.buy, kind: g==='배송전' ? 'buy' : 'arrive', it});
-    }
+    // 도착 → 실제로 도착한(=배송전이 아닌) 항목에 도착일이 있을 때만. 배송전의 arrive는 '배송 예정일'이라 도착으로 보지 않음
+    if(g!=='배송전' && it.arrive) ev.push({date:it.arrive, kind:'arrive', it});
+    // 구매일 → 항상 '구매'로 표기(배송전 포함). 단 같은 날 도착이 이미 있으면 중복 방지로 생략
+    if(it.buy && !(g!=='배송전' && it.arrive===it.buy)) ev.push({date:it.buy, kind:'buy', it});
     // 개봉 → CD판 (개봉일자가 있으면 그 날짜, 없으면 도착일/구매일 기준)
     if(it.status==='개봉'){
       const od=(it.openDate && it.openDate!=='모름') ? it.openDate : (it.arrive||it.buy);
