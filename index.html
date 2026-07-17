@@ -56,7 +56,6 @@ html[data-theme="light"] body::before{opacity:.55}
 html[data-theme="light"] .set-acc.on,
 html[data-theme="light"] .coll-colors .cc.on,
 html[data-theme="light"] .palette .sw.on,
-html[data-theme="light"] .vd-quickpal .vd-sw.on{border-color:#1d1a23}
 /* ===== 라이트 모드: 다크 전용 반투명·어두운 값들을 밝은 톤으로 보정 ===== */
 /* 카드: 유리질 다크 배경 → 밝은 카드 + 부드러운 그림자 */
 html[data-theme="light"] .lp{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none;border-color:var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.07)}
@@ -284,11 +283,6 @@ h1 .em{color:var(--accent)}
 /* album jacket: 1:1 square pinned to the top; disc peeks out below */
 .art{position:absolute;left:0;top:0;width:100%;aspect-ratio:1;background:#26222e;overflow:hidden;z-index:2;border-radius:3px;box-shadow:0 4px 10px rgba(0,0,0,.4);transition:filter .35s}
 .lp.pulled .artwrap{overflow:visible}
-/* 뽑힌 LP판 위의 꾸미기 연필 버튼 */
-.lp .disc-deco{position:absolute;top:6px;right:6px;z-index:7;width:34px;height:34px;border-radius:50%;border:none;background:rgba(14,13,17,.78);backdrop-filter:blur(6px);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.45)}
-.lp.pulled .disc-deco{display:flex}
-.lp .disc-deco:active{transform:scale(.9)}
-.grid.list .disc-deco{display:none!important}
 .art img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s;background:#26222e;position:relative;z-index:1}
 .art img.ld{opacity:1}
 .art .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#9a948c;background:linear-gradient(135deg,#efeae3,#e3ddd4);z-index:0}
@@ -331,34 +325,18 @@ h1 .em{color:var(--accent)}
 .pro-title{font-weight:700;font-size:15px;margin-bottom:6px}
 .pro-desc{color:var(--muted);font-size:12.5px;line-height:1.6;margin-bottom:14px}
 .pro-demo{display:block;width:100%;margin-top:8px;background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;font-family:inherit}
-/* vinyl decorate */
-.vd-preview{display:flex;justify-content:center;padding:14px 0 18px}
-/* 색상 탭: 좌측 팔레트 + 우측 디스크 미리보기 */
-.vd-preview-row{display:flex;align-items:center;gap:14px;padding:10px 0 16px}
-.vd-quickpal{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:center;max-height:150px;overflow-y:auto;padding:2px}
-.vd-quickpal .vd-sw{width:100%;aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.12);background:var(--sw);background-size:cover;cursor:pointer;padding:0;position:relative;transition:transform .12s,border-color .12s;box-shadow:inset 0 1px 2px rgba(255,255,255,.2),0 1px 3px rgba(0,0,0,.45)}
-.vd-quickpal .vd-sw:active{transform:scale(.9)}
-.vd-quickpal .vd-sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent);transform:scale(1.08)}
-.vd-preview-row .vd-preview{flex:0 0 auto;padding:0}
-.vd-preview .disc{position:relative;width:120px;height:120px;border-radius:50%;
-  background:
-    conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.08) 0deg,rgba(255,255,255,0) 30deg,rgba(0,0,0,.2) 70deg,rgba(255,255,255,0) 110deg,rgba(255,255,255,.1) 150deg,rgba(255,255,255,0) 190deg,rgba(0,0,0,.2) 250deg,rgba(255,255,255,0) 290deg,rgba(255,255,255,.08) 330deg,rgba(255,255,255,.08) 360deg),
-    repeating-radial-gradient(circle at center,rgba(0,0,0,.04) 0 1px,rgba(255,255,255,.01) 1px 2px),
-    radial-gradient(circle at 40% 35%,rgba(255,255,255,.1) 0%,rgba(255,255,255,0) 40%,rgba(0,0,0,.25) 100%),
-    var(--disc,#1a1a1a);
-  background-blend-mode:screen,multiply,normal,normal;
-  box-shadow:inset 0 0 16px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.15),0 4px 12px rgba(0,0,0,.5)}
-.vd-preview .disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:25%;height:25%;border-radius:50%;background:var(--disc,#1a1a1a);filter:brightness(.65);box-shadow:0 0 0 1px rgba(0,0,0,.4),inset 0 0 6px rgba(0,0,0,.5)}
-.vd-preview .disc::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6%;height:6%;border-radius:50%;background:radial-gradient(circle at 40% 38%,#e6e1d8,#c8c2b6)}
+/* vinyl decorate (사진 전용) */
 .vd-range{width:100%;accent-color:var(--accent)}
+/* 컬러 팔레트 아래 판 꾸미기(투명도·사진) 영역 — 팔레트와 함께 접힘 */
+.vinyl-extra{margin:-4px 0 15px;padding:0 2px}
+.vinyl-extra.collapsed{display:none}
+.vinyl-extra .op-lab{color:var(--accent2)}
+.vinyl-extra .pk-up{margin-top:2px}
 /* disc with a custom photo: hide the synthetic gradient so the photo shows */
 .disc.has-photo{background-blend-mode:normal;box-shadow:inset 0 0 16px rgba(0,0,0,.5),0 4px 9px rgba(0,0,0,.5)}
 /* 사진으로 바꾼 LP는 가운데 라벨/핀홀을 완전히 숨김 */
 .disc.has-photo::after,.disc.has-photo::before{display:none!important;content:none!important}
 /* vinyl decorate tabs */
-.vd-tabs{display:flex;gap:8px;margin:4px 0 12px}
-.vd-tab{flex:1;padding:9px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
-.vd-tab.on{background:var(--accent);border-color:var(--accent);color:#160d09}
 .vd-photodesc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px}
 /* photo stage with circular vinyl guide */
 .vd-stage{position:relative;width:230px;height:230px;margin:0 auto;border-radius:50%;overflow:hidden;background:#0c0b0f;touch-action:none;cursor:grab}
@@ -576,8 +554,6 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
   background:rgba(14,13,17,.82);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--txt);
   display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s}
 .dt-edit-btn:active{transform:scale(.88)}
-.pk-decorate{margin-top:2px;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:11px;font-size:13px;font-weight:700;color:var(--accent2);cursor:pointer;font-family:inherit}
-.pk-decorate:active{transform:scale(.97)}
 .cover-btn:active{opacity:.8}
 .picker{display:none;margin-top:10px}
 .picker.show{display:block}
@@ -1197,6 +1173,9 @@ body.state-shared #shared-view{display:block}
       </div>
     </div>
     <div class="palette collapsed" id="f-palette"></div>
+    <div class="vinyl-extra collapsed" id="f-vinyl-extra">
+      <div class="fld"><label>판 투명도 <span class="op-lab" id="f-oplab">100%</span></label><input type="range" id="f-op" min="20" max="100" value="100" class="vd-range"></div>
+    </div>
     <div class="row2" id="f-spec-row">
       <div class="fld"><label>회전수 (RPM)</label>
         <select id="f-rpm"><option value="33">33 RPM</option><option value="45">45 RPM</option></select>
@@ -1305,6 +1284,10 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>상태</label><select id="e-status"></select></div>
     </div>
     <div class="palette" id="e-palette"></div>
+    <div class="vinyl-extra" id="e-vinyl-extra">
+      <div class="fld"><label>판 투명도 <span class="op-lab" id="e-oplab">100%</span></label><input type="range" id="e-op" min="20" max="100" value="100" class="vd-range"></div>
+      <button type="button" class="pk-up" id="e-discphoto">📷 판에 사진 넣기</button>
+    </div>
     <div class="row2" id="e-spec-row">
       <div class="fld"><label>회전수 (RPM)</label>
         <select id="e-rpm"><option value="33">33 RPM</option><option value="45">45 RPM</option></select>
@@ -1596,7 +1579,6 @@ const I18N = {
   /* --- cover picker --- */
   "맞는 커버를 선택하거나, 직접 올리세요":"Pick a matching cover, or upload your own",
   "검색 결과가 없어요 — 직접 올려보세요":"No results — try uploading your own",
-  "🎨 LP판 꾸미기 (색·사진)":"🎨 Decorate disc (color/photo)",
   /* --- vinyl decorate (Pro) --- */
   "바이닐 꾸미기는 Pro 전용 기능이에요":"Vinyl decoration is a Pro-only feature",
   "바이닐 판의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.":"Fine-tune the color and opacity of each disc to make your collection truly your own.",
@@ -2124,7 +2106,7 @@ function discStyle(it){
   if(it.discPhoto){
     return `background-image:url(${it.discPhoto});background-size:cover;background-position:center;background-repeat:no-repeat`;
   }
-  const col = it.discColorCustom || it.colorHex || discColor(it.color);
+  const col = it.colorHex || it.discColorCustom || discColor(it.color);
   const op = (it.discOpacity!=null) ? it.discOpacity : 1;
   return `--disc:${col};opacity:${op}`;
 }
@@ -2182,17 +2164,24 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
   const dot=document.getElementById(prefix+'-colordot');
   const pal=document.getElementById(prefix+'-palette');
   const tog=document.getElementById(prefix+'-coltoggle');
+  const extra=document.getElementById(prefix+'-vinyl-extra');   // 판 투명도(·사진) — 팔레트와 함께 접힘
+  const op=document.getElementById(prefix+'-op');
+  const opLab=document.getElementById(prefix+'-oplab');
   if(!inp||!dot||!pal||!tog) return;
   const refresh=()=>{
     dot.style.background = inp.dataset.hex || discColor(inp.value);   // 직접 선택한 색이 있으면 그 색으로
+    if(op) dot.style.opacity = op.value/100;                          // 투명도도 미리보기 점에 반영
+    if(opLab && op) opLab.textContent = op.value+'%';
     renderPalette(prefix+'-palette', prefix+'-color', refresh);
   };
   // open palette automatically if no color yet; otherwise keep it collapsed
   pal.classList.toggle('collapsed', !!inp.value.trim());
+  if(extra) extra.classList.toggle('collapsed', pal.classList.contains('collapsed'));
   const paintTog=()=>{ tog.textContent = pal.classList.contains('collapsed') ? '+' : '−'; };
   paintTog();
-  tog.onclick=()=>{ pal.classList.toggle('collapsed'); paintTog(); };
+  tog.onclick=()=>{ pal.classList.toggle('collapsed'); if(extra) extra.classList.toggle('collapsed', pal.classList.contains('collapsed')); paintTog(); };
   inp.oninput=refresh;
+  if(op) op.oninput=refresh;
   refresh();
 }
 
@@ -2372,7 +2361,6 @@ function renderGrid(){
         </div>
         ${it.liked?'<span class="card-like">'+heartSVG(true)+'</span>':''}
         ${(statusGroup(it.status)==='배송전' && it.arrive && shipDday(it.arrive)) ? (dd=>`<span class="card-dday ${dd==='D-DAY'?'today':(dd[1]==='+'?'late':'')}">${dd}</span>`)(shipDday(it.arrive)) : ''}
-        <button type="button" class="disc-deco" aria-label="바이닐 꾸미기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       </div>
       <div class="meta">
         <div class="al">${it.album||'—'}</div>
@@ -2392,8 +2380,6 @@ function renderGrid(){
     const prevBtn=el.querySelector('.lp-prev');
     const nextBtn=el.querySelector('.lp-next');
     const getIt=()=>DATA.find(d=>d.id===el.dataset.id);
-    { const deco=el.querySelector('.disc-deco');
-      if(deco) deco.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(it) openVinylDecorate(it); }; }
     if(playBtn){
       playBtn.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(!it) return;
         if(_preview.id===it.id && _preview.audio){ stopPreview(); }   // 재생 중이면 일시정지
@@ -3010,7 +2996,7 @@ function openDetail(id, mode){
   show('detail');
   // open the right panel based on what was tapped
   if(mode==='cover') setTimeout(()=>openCoverPicker(it), 50);
-  else if(mode==='vinyl') setTimeout(()=>openVinylDecorate(it), 50);
+  else if(mode==='vinyl') setTimeout(()=>openDiscPhoto(it), 50);
 }
 
 // 정보 수정: edit all fields of an existing record
@@ -3090,9 +3076,12 @@ function showEditForm(it){
   }
   paintRate();
   // 팔레트
-  { const ec=$('#e-color'); if(ec){ const hx=it.colorHex||(it.color?discColor(it.color):''); if(hx) ec.dataset.hex=hx; else delete ec.dataset.hex; } }
+  { const ec=$('#e-color'); if(ec){ const hx=it.colorHex||it.discColorCustom||(it.color?discColor(it.color):''); if(hx&&hx[0]==='#') ec.dataset.hex=hx; else delete ec.dataset.hex; } }
+  { const op=$('#e-op'); if(op){ op.value=Math.round((it.discOpacity!=null?it.discOpacity:1)*100); } }
   setupColorField('e');
   $('#e-palette').classList.remove('collapsed');
+  { const ex=$('#e-vinyl-extra'); if(ex) ex.classList.remove('collapsed'); }
+  { const pb=$('#e-discphoto'); if(pb){ pb.textContent = it.discPhoto ? '📷 판 사진 변경 · 제거' : '📷 판에 사진 넣기'; pb.onclick=()=>openDiscPhoto(it); } }
   show('edit');
   $('#e-save').onclick=()=>{
     const oldKey=artKey(it.artist,it.album);
@@ -3102,6 +3091,8 @@ function showEditForm(it){
     it.year=Number($('#e-year').value)||null;
     it.color=$('#e-color').value.trim();
     it.colorHex=colorHexOf($('#e-color'));
+    it.discColorCustom=null;   // 판 색은 컬러 선택(팔레트/직접선택)으로 통일
+    { const op=$('#e-op'); if(op){ const v=Number(op.value); it.discOpacity = v<100 ? v/100 : null; } }
     it.status=$('#e-status').value;
     it.store=$('#e-store').value.trim();
     it.price=Number($('#e-price').value)||null;
@@ -3128,34 +3119,11 @@ function showEditForm(it){
 }
 
 // 바이닐 꾸미기 (Pro 전용): 판 색상 + 투명도 세부 조정, 저장 즉시 반영
-function openVinylDecorate(it){
+function openDiscPhoto(it){   // 판에 사진 넣기 (색·투명도는 컬러 선택으로 통일)
   const box=$('#vinyl-box');   // 별도 팝업 시트에 렌더
-  const curCol = it.discColorCustom || it.colorHex || discColor(it.color);
-  const curOp = (it.discOpacity!=null) ? it.discOpacity : 1;
   box.innerHTML=`
-    <div class="inl-title">🎨 바이닐 꾸미기</div>
-    <div class="vd-tabs">
-      <button class="vd-tab on" data-tab="color">색상</button>
-      <button class="vd-tab" data-tab="photo">사진</button>
-    </div>
-    <div class="vd-pane" id="vd-pane-color">
-      <div class="vd-preview-row">
-        <div class="vd-quickpal" id="vd-quickpal"></div>
-        <div class="vd-preview"><div class="disc" id="vd-disc" style="--disc:${curCol};opacity:${curOp}"></div></div>
-      </div>
-      <div class="fld"><label>판 색상</label>
-        <div class="colorfield">
-          <span class="color-dot" id="vd-dot" style="background:${curCol}"></span>
-          <input type="color" id="vd-color" value="${toHex(curCol)}" style="flex:1;height:42px;padding:3px;cursor:pointer">
-        </div>
-      </div>
-      <div class="fld"><label>투명도 <span id="vd-oplab" style="color:var(--accent2)">${Math.round(curOp*100)}%</span></label>
-        <input type="range" id="vd-op" min="20" max="100" value="${Math.round(curOp*100)}" class="vd-range">
-      </div>
-      <button class="act-btn solid" id="vd-save">저장</button>
-      <button class="act-btn" id="vd-reset" style="margin-top:8px">기본값으로 되돌리기</button>
-    </div>
-    <div class="vd-pane" id="vd-pane-photo" style="display:none">
+    <div class="inl-title">📷 판에 사진 넣기</div>
+    <div class="vd-pane" id="vd-pane-photo">
       <div class="vd-photodesc">레코드판 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.</div>
       <div class="vd-stage" id="vd-stage">
         <div class="vd-imgwrap" id="vd-imgwrap"></div>
@@ -3175,52 +3143,7 @@ function openVinylDecorate(it){
       <button class="act-btn" id="vd-photo-reset" style="margin-top:8px">사진 제거</button>
     </div>`;
 
-  // ---- tabs ----
-  box.querySelectorAll('.vd-tab').forEach(t=>t.onclick=()=>{
-    box.querySelectorAll('.vd-tab').forEach(x=>x.classList.toggle('on',x===t));
-    $('#vd-pane-color').style.display = t.dataset.tab==='color'?'':'none';
-    $('#vd-pane-photo').style.display = t.dataset.tab==='photo'?'':'none';
-  });
-
-  // ---- color tab ----
-  const disc=$('#vd-disc');
-  const apply=()=>{
-    const c=$('#vd-color').value; const o=$('#vd-op').value/100;
-    disc.style.setProperty('--disc',c); disc.style.opacity=o;
-    $('#vd-dot').style.background=c; $('#vd-oplab').textContent=Math.round(o*100)+'%';
-  };
-  // 좌측 빈 공간을 채우는 빠른 색상 팔레트
-  const qp=$('#vd-quickpal');
-  if(qp){
-    qp.innerHTML=PALETTE.map(([label,bg])=>`<button type="button" class="vd-sw" data-bg="${bg.replace(/"/g,'&quot;')}" title="${label}" style="--sw:${bg}"></button>`).join('');
-    qp.querySelectorAll('.vd-sw').forEach(sw=>sw.onclick=()=>{
-      const bg=sw.dataset.bg;
-      const hex = bg[0]==='#' ? toHex(bg) : null;   // 그라데이션/멀티는 컬러input엔 못 넣으니 디스크에만 적용
-      if(hex){ $('#vd-color').value=hex; }
-      disc.style.setProperty('--disc',bg);
-      $('#vd-dot').style.background=bg;
-      qp.querySelectorAll('.vd-sw').forEach(x=>x.classList.remove('on')); sw.classList.add('on');
-    });
-  }
-  $('#vd-color').oninput=apply;
-  $('#vd-op').oninput=apply;
-  $('#vd-save').onclick=()=>{
-    // 팔레트로 그라데이션을 고른 경우 디스크의 실제 --disc 값을 저장
-    it.discColorCustom=disc.style.getPropertyValue('--disc')||$('#vd-color').value;
-    it.discOpacity=$('#vd-op').value/100;
-    it.discPhoto=null;   // color overrides photo
-    persistFull(it);
-    hide('vinyl'); hide('detail');
-    renderGrid();buildCoverFlow();
-  };
-  $('#vd-reset').onclick=()=>{
-    it.discColorCustom=null; it.discOpacity=null; it.discPhoto=null;
-    persistFull(it);
-    hide('vinyl'); hide('detail');
-    renderGrid();buildCoverFlow();
-  };
-
-  // ---- photo tab: drag to move, pinch to scale/tilt, sliders for size/tilt/opacity ----
+  // ---- photo: drag to move, pinch to scale/tilt, sliders for size/tilt/opacity ----
   const stage=$('#vd-stage'), imgwrap=$('#vd-imgwrap'), zoom=$('#vd-zoom');
   const popac=$('#vd-popacity');
   let vimg=null, vx=0, vy=0, vscale=1, vrot=0, vopacity=1;
@@ -3464,7 +3387,6 @@ async function openCoverPicker(it){
         <input id="pk-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
         <button id="pk-urlbtn">적용</button>
       </div>
-      <button class="pk-decorate" id="pk-decorate">🎨 LP판 꾸미기 (색·사진)</button>
     </div>`;
   box.innerHTML=search+'<div class="pk-title" id="pk-status">앨범아트 검색 중…</div><div id="pk-results"></div>'+manual;
 
@@ -3502,7 +3424,6 @@ async function openCoverPicker(it){
     if(!u){return;}
     applyCover(it,u); box.classList.remove('show'); box.innerHTML='';
   };
-  { const dbtn=$('#pk-decorate'); if(dbtn) dbtn.onclick=()=>{ box.classList.remove('show'); box.innerHTML=''; openVinylDecorate(it); }; }
 
   // 최초 로드: 저장된 가수·앨범으로 검색
   runSearch(it.artist, it.album);
@@ -3987,6 +3908,7 @@ let openUnknown=false;
 function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   { const fc=$('#f-color'); if(fc) delete fc.dataset.hex; }
+  { const op=$('#f-op'); if(op) op.value=100; const l=$('#f-oplab'); if(l) l.textContent='100%'; }
   $('#f-file').value='';
   { const e=$('#f-eta'); if(e) e.value=''; }
   { const r=$('#f-rpm'); if(r) r.value='33'; const nc=$('#f-inch'); if(nc) nc.value='12"'; }
@@ -4142,6 +4064,7 @@ $('#add-save').onclick=()=>{
     artist:ar, album:al,
     color:$('#f-color').value.trim(),
     colorHex: colorHexOf($('#f-color')),
+    discOpacity: ($('#f-op')&&Number($('#f-op').value)<100) ? Number($('#f-op').value)/100 : null,
     store:wish?'':$('#f-store').value.trim(),
     price:wish?null:(Number($('#f-price').value)||null),
     orig:wish?null:(Number($('#f-price').value)||null),
@@ -5099,7 +5022,7 @@ function buildCoverFlow(){
   track.innerHTML=cfItems.map((it,i)=>{
     const dStyle = it.discPhoto
       ? `--photo:url(${it.discPhoto})`
-      : `--disc:${it.discColorCustom||it.colorHex||discColor(it.color)};opacity:${it.discOpacity!=null?it.discOpacity:1}`;
+      : `--disc:${it.colorHex||it.discColorCustom||discColor(it.color)};opacity:${it.discOpacity!=null?it.discOpacity:1}`;
     return `
     <div class="cf-card" data-i="${i}" data-id="${it.id}">
       <div class="cf-art">
