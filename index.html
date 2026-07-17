@@ -577,6 +577,10 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .dt-art .pk-manual{margin-top:14px}
 .pk-up{display:block;text-align:center;background:var(--card2);border:1px dashed var(--line);border-radius:11px;padding:12px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer}
 .pk-up:active{opacity:.8}
+/* 앨범아트 직접 올리기 접이식 토글 */
+.art-manual-toggle{display:block;width:100%;padding:9px;background:none;border:none;color:var(--dim);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;text-decoration:underline;text-underline-offset:3px}
+.art-manual-toggle:active{opacity:.7}
+.art-manual-box{display:flex;flex-direction:column;gap:8px}
 /* 상태 등급 선택 (슬리브/음반, Discogs 기준) */
 .gradewrap{margin-bottom:2px}
 .gradewrap .grade-help{color:var(--dim);font-size:11px;cursor:help}
@@ -1115,18 +1119,17 @@ body.state-shared #shared-view{display:block}
   <div class="form">
     <h2>LP 추가</h2>
     <div class="fhint">가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.</div>
+    <div class="row2">
+      <div class="fld"><label>가수</label><input id="f-artist" placeholder="예: Tom Misch"></div>
+      <div class="fld"><label>앨범명</label><input id="f-album" placeholder="예: Geography"></div>
+    </div>
+    <div class="searching" id="f-searching">앨범아트 검색 중…</div>
+    <div class="picker" id="f-cands"></div>
     <div class="preview">
       <div class="pa" id="pa-prev">art</div>
       <div class="pt" id="pt-prev">가수·앨범 입력 후 미리보기</div>
     </div>
     <div class="pk-manual" style="margin-bottom:13px">
-      <label class="pk-up">📷 사진에서 직접 올리기
-        <input type="file" accept="image/*" id="f-file" hidden>
-      </label>
-      <div class="pk-url">
-        <input id="f-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
-        <button id="f-urlbtn" type="button">적용</button>
-      </div>
       <button class="bc-btn" id="bc-scan" type="button">🔎 바코드로 찾기</button>
       <div class="bc-box" id="bc-box" style="display:none">
         <video id="bc-video" playsinline muted style="display:none"></video>
@@ -1136,13 +1139,17 @@ body.state-shared #shared-view{display:block}
         </div>
         <div class="bc-status" id="bc-status"></div>
       </div>
+      <button class="art-manual-toggle" id="f-art-toggle" type="button">앨범아트가 안 찾아지면 — 직접 올리기</button>
+      <div class="art-manual-box" id="f-art-manual" style="display:none">
+        <label class="pk-up">📷 앨범아트 사진 올리기
+          <input type="file" accept="image/*" id="f-file" hidden>
+        </label>
+        <div class="pk-url">
+          <input id="f-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
+          <button id="f-urlbtn" type="button">적용</button>
+        </div>
+      </div>
     </div>
-    <div class="row2">
-      <div class="fld"><label>가수</label><input id="f-artist" placeholder="예: Tom Misch"></div>
-      <div class="fld"><label>앨범명</label><input id="f-album" placeholder="예: Geography"></div>
-    </div>
-    <div class="searching" id="f-searching">앨범아트 검색 중…</div>
-    <div class="picker" id="f-cands"></div>
     <div class="row2">
       <div class="fld"><label>컬러</label>
         <div class="colorfield">
@@ -1159,6 +1166,7 @@ body.state-shared #shared-view{display:block}
         </select>
       </div>
     </div>
+    <div class="palette collapsed" id="f-palette"></div>
     <div class="fld" id="f-open-sub"><label>개봉 여부</label>
       <select id="f-status">
         <option value="미개봉">미개봉</option>
@@ -1188,10 +1196,9 @@ body.state-shared #shared-view{display:block}
       </div>
       <div class="grade-desc" id="f-grade-desc"></div>
     </div>
-    <div class="palette collapsed" id="f-palette"></div>
     <div class="row2 buyonly">
-      <div class="fld"><label>구매가 (원)</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
-      <div class="fld"><label>정가 (원, 선택)</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>구매가</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>정가</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2 buyonly">
       <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
@@ -1280,8 +1287,8 @@ body.state-shared #shared-view{display:block}
       <div class="grade-desc" id="e-grade-desc"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>구매가 (원)</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
-      <div class="fld"><label>정가 (원, 선택)</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>구매가</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>정가</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2">
       <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24"></div>
@@ -1469,6 +1476,8 @@ const I18N = {
   "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
   "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
   "📷 사진에서 직접 올리기":"📷 Upload from a photo",
+  "앨범아트가 안 찾아지면 — 직접 올리기":"Cover art not found? — Upload manually",
+  "📷 앨범아트 사진 올리기":"📷 Upload cover photo",
   "또는 이미지 주소(URL) 붙여넣기":"Or paste an image address (URL)",
   "적용":"Apply",
   "가수":"Artist",
@@ -1484,8 +1493,6 @@ const I18N = {
   "개봉 여부":"Opened?",
   "팔레트 열기":"Open palette",
   "구매처":"Store",
-  "구매가 (원)":"Purchase price (KRW)",
-  "정가 (원, 선택)":"List price (KRW, optional)",
   "슬리브 상태":"Sleeve grade",
   "음반 상태":"Media grade",
   "선택 안 함":"None",
@@ -1992,6 +1999,8 @@ const COLORHEX=[
   ['에메랄드','#1faa7a'],['다크그린','#23613f'],['클리어그린','#4fb37a'],['그린','#36a35a'],
   ['퍼플','#8a4fd6'],['옐로우','#e6c23a'],['오렌지','#e8843a'],
   ['자주','#8a2b4f'],['핑크','#e08ab0'],
+  ['골드','#c9a227'],['실버','#c8c8cc'],['네이비','#23344d'],
+  ['연보라','#cdbdf0'],['연두','#a8e08a'],['하늘','#9cd0e8'],
   ['투명 마블','#cfcad6'],['투명','#cfd2d8'],['클리어','#cfd2d8'],
   ['마블','#9a9a9a'],
 ];
@@ -2045,10 +2054,7 @@ const PALETTE=[
   ['핑크','#e08ab0'],['골드','#c9a227'],['실버','#c8c8cc'],
   ['투명','#cfd6e0'],['연보라','#cdbdf0'],['연두','#a8e08a'],['하늘','#9cd0e8'],
   ['화이트','#ececec'],['그레이','#8a8a8a'],
-  ['멀티컬러','conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)'],
   ['스플래터','radial-gradient(circle at 35% 35%,#f0c23a,#e8843a 40%,#d63a3a 75%)'],
-  ['브라운','#7a4a28'],
-  ['그라데이션','linear-gradient(135deg,#3a6fd6,#36a35a,#e6c23a)'],
 ];
 // render swatches into a container; onPick(label) fires when a swatch is tapped
 function renderPalette(containerId, inputId, onPick){
@@ -2079,8 +2085,9 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
   };
   // open palette automatically if no color yet; otherwise keep it collapsed
   pal.classList.toggle('collapsed', !!inp.value.trim());
-  tog.textContent = inp.value.trim() ? '+' : '+';
-  tog.onclick=()=>{ pal.classList.toggle('collapsed'); };
+  const paintTog=()=>{ tog.textContent = pal.classList.contains('collapsed') ? '+' : '−'; };
+  paintTog();
+  tog.onclick=()=>{ pal.classList.toggle('collapsed'); paintTog(); };
   inp.oninput=refresh;
   refresh();
 }
@@ -3268,8 +3275,8 @@ function showBuyForm(it){
   $('#dt-inline').innerHTML=`
     <div class="inl-title">구매완료 처리</div>
     <div class="row2">
-      <div class="fld"><label>구매가 (원)</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
-      <div class="fld"><label>정가 (원, 선택)</label><input id="inl-list" type="number" inputmode="numeric" placeholder="59000"></div>
+      <div class="fld"><label>구매가</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>정가</label><input id="inl-list" type="number" inputmode="numeric" placeholder="59000"></div>
     </div>
     <div class="row2">
       <div class="fld"><label>결제</label><select id="inl-pay"><option value="카드">카드</option><option value="현금">현금</option><option value="복지포인트">복지포인트</option><option value="선물">선물</option></select></div>
@@ -3579,6 +3586,8 @@ function setPrevImg(url, msg){
   $('#f-cands').classList.remove('show');
   $('#f-cands').querySelectorAll('.pk-item').forEach(x=>x.classList.remove('sel'));
 }
+{ const t=$('#f-art-toggle'), box=$('#f-art-manual');   // 앨범아트 직접 올리기 접기/펼치기
+  if(t&&box) t.onclick=()=>{ const open=box.style.display!=='none'; box.style.display=open?'none':''; }; }
 $('#f-file').onchange=async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{
@@ -3875,6 +3884,7 @@ function openAdd(initStatus, presetDate){
   $('#f-buy').value=presetDate||new Date().toISOString().slice(0,10);
   $('#pa-prev').innerHTML='art';$('#pa-prev').dataset.url='';$('#pt-prev').textContent='가수·앨범 입력 후 미리보기';
   $('#f-cands').classList.remove('show');$('#f-cands').innerHTML='';
+  { const am=$('#f-art-manual'); if(am) am.style.display='none'; }   // 직접 올리기 접힘으로 초기화
   openUnknown=false; { const ub=$('#f-open-unknown'); if(ub) ub.classList.remove('on'); }
   setupColorField('f');
   toggleBuyFields();
