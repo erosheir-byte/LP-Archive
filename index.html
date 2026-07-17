@@ -379,7 +379,7 @@ h1 .em{color:var(--accent)}
 /* Modal / sheet */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:.25s;touch-action:none;overscroll-behavior:none}
 .ov.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:40px}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 .sheet.show{transform:translateX(-50%) translateY(0)}
 body.scroll-lock{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 #sheet-colldetail,#sheet-collnew,#sheet-collpick{touch-action:pan-y}
