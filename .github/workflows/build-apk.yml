@@ -43,6 +43,13 @@ jobs:
       - name: Prepare web bundle (www/ 로컬 번들)
         run: node scripts/prepare-www.mjs
 
+      - name: Debug APK는 원격 로드 (한 번 설치 후 웹 배포가 자동 반영)
+        run: |
+          # 테스트용 디버그 APK 한정: lp-archive.web.app 을 원격 로드해
+          # main 병합·배포만 하면 앱 재실행으로 최신 반영 (APK 재설치 불필요).
+          # 스토어용 서명 AAB(release-android.yml)는 로컬 번들 그대로 유지.
+          node -e "const f='capacitor.config.json';const c=require('./'+f);c.server=Object.assign({},c.server,{url:'https://lp-archive.web.app'});require('fs').writeFileSync(f,JSON.stringify(c,null,2));console.log('server ->',JSON.stringify(c.server))"
+
       - name: Add Android platform
         run: npx cap add android
 
