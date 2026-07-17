@@ -284,6 +284,11 @@ h1 .em{color:var(--accent)}
 /* album jacket: 1:1 square pinned to the top; disc peeks out below */
 .art{position:absolute;left:0;top:0;width:100%;aspect-ratio:1;background:#26222e;overflow:hidden;z-index:2;border-radius:3px;box-shadow:0 4px 10px rgba(0,0,0,.4);transition:filter .35s}
 .lp.pulled .artwrap{overflow:visible}
+/* 뽑힌 LP판 위의 꾸미기 연필 버튼 */
+.lp .disc-deco{position:absolute;top:6px;right:6px;z-index:7;width:34px;height:34px;border-radius:50%;border:none;background:rgba(14,13,17,.78);backdrop-filter:blur(6px);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.lp.pulled .disc-deco{display:flex}
+.lp .disc-deco:active{transform:scale(.9)}
+.grid.list .disc-deco{display:none!important}
 .art img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s;background:#26222e;position:relative;z-index:1}
 .art img.ld{opacity:1}
 .art .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#9a948c;background:linear-gradient(135deg,#efeae3,#e3ddd4);z-index:0}
@@ -1041,6 +1046,16 @@ body.state-shared #shared-view{display:block}
 </div>
 
 <!-- 달력: 하루 앨범 목록 시트 -->
+<!-- 바이닐 꾸미기 팝업 -->
+<div class="ov" id="ov-vinyl"></div>
+<div class="sheet" id="sheet-vinyl">
+  <div class="grab"></div>
+  <button class="sheet-x" data-close="vinyl" aria-label="닫기">✕</button>
+  <div class="form">
+    <div class="dt-inline" id="vinyl-box"></div>
+  </div>
+</div>
+
 <div class="ov" id="ov-daylist"></div>
 <div class="sheet" id="sheet-daylist">
   <div class="grab"></div>
@@ -2183,7 +2198,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showSpec:true, crackleLevel:'low', theme:'dark' };
+const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showSpec:false, crackleLevel:'low', theme:'dark' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -2357,6 +2372,7 @@ function renderGrid(){
         </div>
         ${it.liked?'<span class="card-like">'+heartSVG(true)+'</span>':''}
         ${(statusGroup(it.status)==='배송전' && it.arrive && shipDday(it.arrive)) ? (dd=>`<span class="card-dday ${dd==='D-DAY'?'today':(dd[1]==='+'?'late':'')}">${dd}</span>`)(shipDday(it.arrive)) : ''}
+        <button type="button" class="disc-deco" aria-label="바이닐 꾸미기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       </div>
       <div class="meta">
         <div class="al">${it.album||'—'}</div>
@@ -2376,6 +2392,8 @@ function renderGrid(){
     const prevBtn=el.querySelector('.lp-prev');
     const nextBtn=el.querySelector('.lp-next');
     const getIt=()=>DATA.find(d=>d.id===el.dataset.id);
+    { const deco=el.querySelector('.disc-deco');
+      if(deco) deco.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(it) openVinylDecorate(it); }; }
     if(playBtn){
       playBtn.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(!it) return;
         if(_preview.id===it.id && _preview.audio){ stopPreview(); }   // 재생 중이면 일시정지
@@ -3111,25 +3129,11 @@ function showEditForm(it){
 
 // 바이닐 꾸미기 (Pro 전용): 판 색상 + 투명도 세부 조정, 저장 즉시 반영
 function openVinylDecorate(it){
-  const box=$('#dt-inline');
-  if(!IS_PRO){
-    box.innerHTML=`
-      <div class="pro-lock">
-        <div class="pro-badge">PRO</div>
-        <div class="pro-title">바이닐 꾸미기는 Pro 전용 기능이에요</div>
-        <div class="pro-desc">바이닐 판의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.</div>
-        <button class="act-btn solid" id="pro-upgrade">Pro 멤버십 알아보기</button>
-        <button class="pro-demo" id="pro-demo">(데모: Pro 켜기)</button>
-      </div>`;
-    $('#pro-upgrade').onclick=()=>alert('결제 연동은 준비 중이에요. 곧 만나요!');
-    $('#pro-demo').onclick=()=>{ IS_PRO=true; try{localStorage.setItem('lp_pro','1');}catch(e){} openVinylDecorate(it); };
-    box.scrollIntoView({behavior:'smooth',block:'nearest'});
-    return;
-  }
+  const box=$('#vinyl-box');   // 별도 팝업 시트에 렌더
   const curCol = it.discColorCustom || it.colorHex || discColor(it.color);
   const curOp = (it.discOpacity!=null) ? it.discOpacity : 1;
   box.innerHTML=`
-    <div class="inl-title">🎨 바이닐 꾸미기 <span class="pro-badge sm">PRO</span></div>
+    <div class="inl-title">🎨 바이닐 꾸미기</div>
     <div class="vd-tabs">
       <button class="vd-tab on" data-tab="color">색상</button>
       <button class="vd-tab" data-tab="photo">사진</button>
@@ -3206,13 +3210,13 @@ function openVinylDecorate(it){
     it.discOpacity=$('#vd-op').value/100;
     it.discPhoto=null;   // color overrides photo
     persistFull(it);
-    hide('detail');
+    hide('vinyl'); hide('detail');
     renderGrid();buildCoverFlow();
   };
   $('#vd-reset').onclick=()=>{
     it.discColorCustom=null; it.discOpacity=null; it.discPhoto=null;
     persistFull(it);
-    hide('detail');
+    hide('vinyl'); hide('detail');
     renderGrid();buildCoverFlow();
   };
 
@@ -3302,14 +3306,15 @@ function openVinylDecorate(it){
     it.discPhoto=url;
     it.discColorCustom=null; it.discOpacity=null;   // photo overrides color
     persistFull(it);
-    hide('detail');
+    hide('vinyl'); hide('detail');
     renderGrid();buildCoverFlow();
   };
   $('#vd-photo-reset').onclick=()=>{
     it.discPhoto=null; persistFull(it);
-    hide('detail'); renderGrid();buildCoverFlow();
+    hide('vinyl'); hide('detail'); renderGrid();buildCoverFlow();
   };
-  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  show('vinyl');
+  $('#sheet-vinyl').scrollTop=0;
 }
 // normalize a CSS color (hex or rgb) to #rrggbb for <input type=color>
 function toHex(c){
@@ -3568,6 +3573,7 @@ function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).cl
   if(!document.querySelector('.sheet.show')) unlockScroll();}   // 열린 시트가 더 없을 때만 잠금 해제
 $('#ov-detail').onclick=()=>hide('detail');
 $('#ov-add').onclick=()=>hide('add');
+{ const ov=$('#ov-vinyl'); if(ov) ov.onclick=()=>hide('vinyl'); }
 // close (X) buttons
 document.querySelectorAll('.sheet-x').forEach(b=>{ if(b.dataset.close) b.onclick=()=>hide(b.dataset.close); });
 // 일반 버튼(.btn)에 붙은 data-close 처리 (취소/완료 등)
@@ -4458,8 +4464,7 @@ function renderStats(){
     <div style="font-weight:700;color:var(--txt);margin-bottom:8px">소장 가치</div>
     <div style="display:flex;justify-content:space-between;margin:6px 0"><span>보유분 구매가 합</span><b style="color:var(--txt)">${won(owned.reduce((s,d)=>s+(d.price||0),0))}</b></div>
     <div style="display:flex;justify-content:space-between;margin:6px 0"><span>전체 구매가 합</span><b style="color:var(--txt)">${won(totalBuy)}</b></div>
-    ${sold.length?`<div style="display:flex;justify-content:space-between;margin:6px 0"><span>판매 차익 누계</span><b style="color:${profit>=0?'#5ec27e':'#e0617a'}">${profit>=0?'+':''}${won(profit)}</b></div>`:''}
-    ${bestSell?`<div style="display:flex;justify-content:space-between;margin:6px 0"><span>가장 잘 판 LP</span><b style="color:var(--txt)">${bestSell.album||bestSell.artist||''}</b></div>`:''}`;
+`;
 
   $('#bigstats').innerHTML=ratingHTML+valueHTML;
 }
