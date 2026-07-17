@@ -3302,7 +3302,10 @@ function openDiscPhoto(it){   // 판에 사진 넣기 (색·투명도는 컬러 
     renderGrid();buildCoverFlow();
   };
   show('vinyl');
-  $('#sheet-vinyl').scrollTop=0;
+  // 웹뷰/스택 문제와 무관하게 항상 최상단에 보이도록 강제 (풀스크린 수정 화면 위)
+  { const sv=document.getElementById('sheet-vinyl'), ovv=document.getElementById('ov-vinyl');
+    if(ovv){ document.body.appendChild(ovv); ovv.style.zIndex='9998'; }
+    if(sv){ document.body.appendChild(sv); sv.style.zIndex='9999'; sv.style.visibility='visible'; sv.scrollTop=0; } }
 }
 // normalize a CSS color (hex or rgb) to #rrggbb for <input type=color>
 function toHex(c){
