@@ -469,6 +469,9 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .t-rank{width:18px;height:18px;flex:0 0 auto;border-radius:50%;background:var(--card2);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .t-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .t-val{flex:0 0 auto;color:var(--muted);font-size:12.5px}
+.t-row .t-sub{display:block;font-size:11px;font-weight:500;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-row.t-tap{cursor:pointer;border-radius:8px;transition:background .12s}
+.t-row.t-tap:active{background:rgba(255,255,255,.05)}
 .t-val.pos{color:#5ec27e}.t-val.neg{color:#e0617a}
 .t-empty{color:var(--dim);font-size:12.5px;padding:4px 0}
 .t-note{color:var(--dim);font-size:11px;margin-top:8px}
@@ -1633,6 +1636,8 @@ const I18N = {
   "바이닐 컬러 분포":"Vinyl color breakdown",
   "자주 간 구매처":"Frequent stores",
   "수집 히스토리":"Collection history",
+  "가장 많이 들은 앨범":"Most played albums",
+  "아직 청음 기록이 없어요":"No listening records yet",
   "이 해에 구매한 앨범이 없어요.":"No albums purchased this year.",
   "소장 가치":"Collection value",
   "데이터 없음":"No data",
@@ -4624,6 +4629,13 @@ function renderTaste(){
   // 4) 자주 간 구매처 TOP3
   const storeTop=top(tally('store'),3).filter(([k])=>k!=='선물'&&k!=='교환');
 
+  // 4.5) 가장 많이 들은 앨범 TOP5 (청음 기록 횟수)
+  const listenRank=DATA
+    .map(d=>({d, cnt:Array.isArray(d.listens)?d.listens.length:0}))
+    .filter(x=>x.cnt>0)
+    .sort((a,b)=>b.cnt-a.cnt)
+    .slice(0,5);
+
   // 5) 수집 연대기 (연도별)
   const byYear={};
   owned.forEach(d=>{ if(!d.buy)return; const y=String(d.buy).slice(0,4); if(!/^\d{4}$/.test(y))return; byYear[y]=(byYear[y]||0)+1; });
@@ -4657,6 +4669,12 @@ function renderTaste(){
     ${storeTop.map((s,i)=>`<div class="t-row"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
+  // 가장 많이 들은 앨범 (청음 횟수)
+  cards.push(`<div class="t-card">
+    <div class="t-head">가장 많이 들은 앨범</div>
+    ${listenRank.map((r,i)=>`<div class="t-row t-tap" data-id="${r.d.id}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.d.album||r.d.artist||'—')}<span class="t-sub">${escapeHtml(r.d.artist||'')}</span></span><span class="t-val">${r.cnt}${isEN()?'':'회'} 🎧</span></div>`).join('')||'<div class="t-empty">아직 청음 기록이 없어요</div>'}
+  </div>`);
+
   // 수집 히스토리
   cards.push(`<div class="t-card">
     <div class="t-head">수집 히스토리</div>
@@ -4665,6 +4683,7 @@ function renderTaste(){
 
   wrap.innerHTML=cards.join('');
   wrap.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
+  wrap.querySelectorAll('.t-row.t-tap[data-id]').forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
 }
 // 특정 연도에 구매한 앨범 목록 팝업 (수집 히스토리 바 클릭)
 function openYearList(year){
