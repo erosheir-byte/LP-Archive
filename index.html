@@ -3171,7 +3171,7 @@ function showEditForm(it){
 }
 
 // 바이닐 꾸미기 (Pro 전용): 판 색상 + 투명도 세부 조정, 저장 즉시 반영
-function openDiscPhoto(it){   // 판에 사진 넣기 (색·투명도는 컬러 선택으로 통일)
+function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,prefix:'f'} 면 추가 폼 임시 보관 모드
   const box=$('#vinyl-box');   // 별도 팝업 시트에 렌더
   box.innerHTML=`
     <div class="inl-title">📷 판에 사진 넣기</div>
@@ -3273,10 +3273,13 @@ function openDiscPhoto(it){   // 판에 사진 넣기 (색·투명도는 컬러 
   // if already has a photo, preload it
   if(it.discPhoto){ vimg=it.discPhoto; enableControls(true); $('#vd-photo-save').disabled=false; $('#vd-guide-label').style.display='none'; renderImg(); }
 
-  // 사진 저장/제거 후, 열려 있는 수정 화면의 미리보기·카메라 버튼도 갱신
-  const syncEditForm=()=>{
-    const ec=$('#e-color');
-    if(ec && $('#sheet-edit').classList.contains('show')){
+  // 사진 저장/제거 후, 열려 있는 폼(추가/수정)의 사진 칩·미리보기 판 갱신
+  const draft=!!(opts&&opts.draft);
+  const prefix=(opts&&opts.prefix)||'e';
+  const syncForm=()=>{
+    const ec=$('#'+prefix+'-color');
+    const formOpen = prefix==='f' ? $('#sheet-add').classList.contains('show') : $('#sheet-edit').classList.contains('show');
+    if(ec && formOpen){
       if(it.discPhoto) ec.dataset.photo=it.discPhoto; else delete ec.dataset.photo;
       if(ec.oninput) ec.oninput();   // 팔레트(사진 칩 상태)·미리보기 판 다시 그림
     }
@@ -3288,18 +3291,23 @@ function openDiscPhoto(it){   // 판에 사진 넣기 (색·투명도는 컬러 
     let url=cropped; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(cropped),'jpg'); }catch(up){}
     it.discPhoto=url;
     it.discColorCustom=null; it.discOpacity=null;   // photo overrides color
-    persistFull(it);
+    if(!draft) persistFull(it);   // 추가 폼 초안은 '보관함에 추가' 시점에 함께 저장
     hide('vinyl');
-    syncEditForm();
-    if(!$('#sheet-edit').classList.contains('show')) hide('detail');
-    renderGrid();buildCoverFlow();
+    syncForm();
+    if(!draft){
+      if(!$('#sheet-edit').classList.contains('show')) hide('detail');
+      renderGrid();buildCoverFlow();
+    }
   };
   $('#vd-photo-reset').onclick=()=>{
-    it.discPhoto=null; persistFull(it);
+    it.discPhoto=null;
+    if(!draft) persistFull(it);
     hide('vinyl');
-    syncEditForm();
-    if(!$('#sheet-edit').classList.contains('show')) hide('detail');
-    renderGrid();buildCoverFlow();
+    syncForm();
+    if(!draft){
+      if(!$('#sheet-edit').classList.contains('show')) hide('detail');
+      renderGrid();buildCoverFlow();
+    }
   };
   show('vinyl');
   // 웹뷰/스택 문제와 무관하게 항상 최상단에 보이도록 강제 (풀스크린 수정 화면 위)
@@ -3975,7 +3983,9 @@ function paintGradeDesc(prefix){
 let openUnknown=false;
 function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
-  { const fc=$('#f-color'); if(fc){ delete fc.dataset.hex; delete fc.dataset.photo; } }
+  { const fc=$('#f-color'); if(fc){ delete fc.dataset.hex; delete fc.dataset.photo; fc.dataset.camswatch='1'; } }
+  window.__addDraft={discPhoto:null};   // 추가 폼의 판 사진 임시 보관 (저장 시 항목에 반영)
+  window.__openDiscPhoto=()=>openDiscPhoto(window.__addDraft, {draft:true, prefix:'f'});
   { const op=$('#f-op'); if(op) op.value=100; const l=$('#f-oplab'); if(l) l.textContent='100%'; }
   $('#f-file').value='';
   { const e=$('#f-eta'); if(e) e.value=''; }
@@ -4132,7 +4142,9 @@ $('#add-save').onclick=()=>{
     artist:ar, album:al,
     color:$('#f-color').value.trim(),
     colorHex: colorHexOf($('#f-color')),
-    discOpacity: ($('#f-op')&&Number($('#f-op').value)<100) ? Number($('#f-op').value)/100 : null,
+    discPhoto: (window.__addDraft&&window.__addDraft.discPhoto)||null,
+    discOpacity: (window.__addDraft&&window.__addDraft.discPhoto) ? null
+      : (($('#f-op')&&Number($('#f-op').value)<100) ? Number($('#f-op').value)/100 : null),
     store:wish?'':$('#f-store').value.trim(),
     price:wish?null:(Number($('#f-price').value)||null),
     orig:wish?null:(Number($('#f-price').value)||null),
