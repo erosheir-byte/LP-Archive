@@ -1172,6 +1172,14 @@ body.state-shared #shared-view{display:block}
       </div>
     </div>
     <div class="palette collapsed" id="f-palette"></div>
+    <div class="row2" id="f-spec-row">
+      <div class="fld"><label>회전수 (RPM)</label>
+        <select id="f-rpm"><option value="33">33 RPM</option><option value="45">45 RPM</option></select>
+      </div>
+      <div class="fld"><label>크기 (인치)</label>
+        <select id="f-inch"><option value='12"'>12"</option><option value='7"'>7"</option><option value='10"'>10"</option></select>
+      </div>
+    </div>
     <div class="fld" id="f-open-sub"><label>개봉 여부</label>
       <select id="f-status">
         <option value="미개봉">미개봉</option>
@@ -1268,6 +1276,14 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>상태</label><select id="e-status"></select></div>
     </div>
     <div class="palette" id="e-palette"></div>
+    <div class="row2" id="e-spec-row">
+      <div class="fld"><label>회전수 (RPM)</label>
+        <select id="e-rpm"><option value="33">33 RPM</option><option value="45">45 RPM</option></select>
+      </div>
+      <div class="fld"><label>크기 (인치)</label>
+        <select id="e-inch"><option value='12"'>12"</option><option value='7"'>7"</option><option value='10"'>10"</option></select>
+      </div>
+    </div>
     <div id="e-grade-fld" class="gradewrap" style="display:none">
       <div class="row2">
         <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션 (Discogs 기준)">ⓘ</span></label>
@@ -1662,6 +1678,11 @@ const I18N = {
   "카드에 장르 태그를 표시해요":"Show a genre tag on each card",
   "상태 등급 선택":"Condition grading",
   "개봉 LP에 슬리브·음반 컨디션 등급(Discogs 기준)을 기록해요":"Record sleeve & media condition grades (Discogs standard) on opened records",
+  "RPM·인치 선택":"RPM & size",
+  "추가·수정 화면에서 회전수(33/45)와 크기(12\"/7\"/10\")를 기록해요":"Record speed (33/45) and size (12\"/7\"/10\") in the add/edit screens",
+  "회전수 (RPM)":"Speed (RPM)",
+  "크기 (인치)":"Size (inch)",
+  "규격":"Format",
   "기본 보기 모드":"Default view",
   "보관함을 열 때 기본 레이아웃":"Default layout when opening the Library",
   "테마 색상":"Accent color",
@@ -2123,7 +2144,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, crackleLevel:'low', theme:'dark' };
+const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showSpec:true, crackleLevel:'low', theme:'dark' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -2839,6 +2860,9 @@ function openDetail(id, mode){
     if(it.mediaGrade) R('음반 상태', gradeCell(it.mediaGrade));
     if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('음반 상태', gradeCell(it.grade));  // 구 데이터 폴백
   }
+  if((typeof SETTINGS==='undefined' || SETTINGS.showSpec!==false) && (it.rpm||it.inch)){
+    R('규격', [it.rpm?it.rpm+' RPM':'', it.inch||''].filter(Boolean).join(' · '));
+  }
   R('장르', it.genre);
   if(it.year && (typeof SETTINGS==='undefined' || SETTINGS.showYear!==false)) R('발매년도', it.year+'년');
   R('구매처', it.store);
@@ -2960,6 +2984,9 @@ function showEditForm(it){
   $('#e-genre').value=it.genre||'';
   $('#e-year').value=(it.year!=null?it.year:'');
   $('#e-color').value=it.color||'';
+  if($('#e-rpm')) $('#e-rpm').value=it.rpm||'33';
+  if($('#e-inch')) $('#e-inch').value=it.inch||'12"';
+  { const sr=$('#e-spec-row'); if(sr) sr.style.display=(typeof SETTINGS==='undefined'||SETTINGS.showSpec!==false)?'':'none'; }
   $('#e-status').innerHTML=statuses.map(s=>opt(s,it.status)).join('');
   $('#e-pay').innerHTML=`<option value=""></option>`+pays.map(s=>opt(s,it.pay)).join('');
   $('#e-store').value=it.store||'';
@@ -3022,6 +3049,8 @@ function showEditForm(it){
     if(it.sellPrice!=null && it.price!=null) it.profit=it.sellPrice-it.price;
     it.note=$('#e-note').value.trim();
     it.rating=editRating;
+    if($('#e-rpm')) it.rpm=$('#e-rpm').value;
+    if($('#e-inch')) it.inch=$('#e-inch').value;
     // 개봉이면 슬리브/음반 등급 저장, 아니면 비움. 구 grade 필드는 정리.
     if(it.status==='개봉'){ it.sleeveGrade=($('#e-sleeve')&&$('#e-sleeve').value)||''; it.mediaGrade=($('#e-media')&&$('#e-media').value)||''; }
     else { it.sleeveGrade=''; it.mediaGrade=''; }
@@ -3862,6 +3891,9 @@ function toggleBuyFields(){
     const showGrade = (status==='개봉') && (typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false);
     gradeFld.style.display = showGrade ? '' : 'none';
   }
+  // RPM·인치: 설정이 켜져 있을 때만 표시
+  const specRow=$('#f-spec-row');
+  if(specRow) specRow.style.display = (typeof SETTINGS==='undefined' || SETTINGS.showSpec!==false) ? '' : 'none';
 }
 // 음반(레코드 재생면) 등급 설명
 const GRADE_DESC={
@@ -3900,6 +3932,7 @@ let openUnknown=false;
 function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   $('#f-file').value='';
+  { const r=$('#f-rpm'); if(r) r.value='33'; const nc=$('#f-inch'); if(nc) nc.value='12"'; }
   { const s=$('#f-sleeve'); if(s) s.value=''; const m=$('#f-media'); if(m) m.value=''; paintGradeDesc('f'); }
   // initStatus(구분/레거시 상태) → 구분 + 개봉여부로 매핑
   let _cat='보유중', _sub='미개봉';
@@ -4063,7 +4096,9 @@ $('#add-save').onclick=()=>{
     mediaGrade: (status==='개봉') ? (($('#f-media')&&$('#f-media').value)||'') : '',
     rating:0, note:$('#f-note').value.trim(), _art:url,
     genre: ($('#f-genre')&&$('#f-genre').value.trim())||'',
-    year: ($('#f-year')&&Number($('#f-year').value))||null
+    year: ($('#f-year')&&Number($('#f-year').value))||null,
+    rpm: ($('#f-rpm')&&$('#f-rpm').value)||'',
+    inch: ($('#f-inch')&&$('#f-inch').value)||''
   };
   if(url){artCache[artKey(ar,al)]=url; pickedArt[artKey(ar,al)]=url; it.cover=url;}
   DATA.unshift(it);
@@ -4677,6 +4712,10 @@ function renderSettings(){
       <div class="set-row" data-act="showGrade">
         <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 슬리브·음반 컨디션 등급(Discogs 기준)을 기록해요</div></div>
         ${tog(SETTINGS.showGrade)}
+      </div>
+      <div class="set-row" data-act="showSpec">
+        <div class="set-l"><div class="set-t">RPM·인치 선택</div><div class="set-d">추가·수정 화면에서 회전수(33/45)와 크기(12"/7"/10")를 기록해요</div></div>
+        ${tog(SETTINGS.showSpec)}
       </div>
       <div class="set-row col">
         <div class="set-l"><div class="set-t">기본 보기 모드</div><div class="set-d">보관함을 열 때 기본 레이아웃</div></div>
@@ -5394,7 +5433,8 @@ function start(){
   const FIELDS=['no','artist','album','color','store','orig','price','pay','buy','arrive',
     'status','sellDate','sellPrice','profit','note','genre','rating','liked',
     'discColorCustom','discOpacity','discPhoto',
-    'listPrice','sleeveGrade','mediaGrade','openDate','listens','previewAlbumId','previewAlbumName'];
+    'listPrice','sleeveGrade','mediaGrade','openDate','listens','previewAlbumId','previewAlbumName',
+    'rpm','inch'];
   function serialize(it){
     const o={};
     FIELDS.forEach(f=>{ o[f]=(it[f]===undefined?null:it[f]); });
