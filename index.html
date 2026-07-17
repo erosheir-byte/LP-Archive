@@ -1199,12 +1199,12 @@ body.state-shared #shared-view{display:block}
       <div class="grade-desc" id="f-grade-desc"></div>
     </div>
     <div class="row2 buyonly">
-      <div class="fld"><label class="req">구매가 (원) <b class="star">*</b></label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>구매가 (원)</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
       <div class="fld"><label>정가 (원)</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2 buyonly">
       <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
-      <div class="fld"><label class="req">구매일자 <b class="star">*</b></label><input id="f-buy" type="date"></div>
+      <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
     </div>
     <div class="row2 buyonly">
       <div class="fld" id="f-open-fld"><label>개봉일자 <button type="button" class="open-unknown" id="f-open-unknown">모름</button></label><input id="f-open" type="date" disabled></div>
@@ -4042,10 +4042,6 @@ $('#add-save').onclick=()=>{
   if(!ar) missing.push('가수');
   if(!al) missing.push('앨범명');
   if(!$('#f-color').value.trim()) missing.push('컬러');
-  if(!wish){
-    if(!$('#f-price').value.trim()) missing.push('구매가');
-    if(!$('#f-buy').value) missing.push('구매일자');
-  }
   if(missing.length){ alert('필수 항목을 입력해주세요: '+missing.join(', ')); return; }
   const it={
     id:'u'+Date.now(), no:DATA.length+1,
