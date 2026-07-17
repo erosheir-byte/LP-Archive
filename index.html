@@ -2094,7 +2094,7 @@ function discStyle(it){
   if(it.discPhoto){
     return `background-image:url(${it.discPhoto});background-size:cover;background-position:center;background-repeat:no-repeat`;
   }
-  const col = it.discColorCustom || discColor(it.color);
+  const col = it.discColorCustom || it.colorHex || discColor(it.color);
   const op = (it.discOpacity!=null) ? it.discOpacity : 1;
   return `--disc:${col};opacity:${op}`;
 }
@@ -2108,35 +2108,37 @@ const PALETTE=[
   ['화이트','#ececec'],['그레이','#8a8a8a'],['브라운','#7a4a28'],
 ];
 // render swatches into a container; onPick(label) fires when a swatch is tapped
-function renderPalette(containerId, inputId, onPick){
+function renderPalette(containerId, inputId, onChange){
   const box=document.getElementById(containerId); if(!box) return;
-  const cur=((document.getElementById(inputId)||{}).value||'').trim();
-  const isHex=/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(cur);
+  const inp=document.getElementById(inputId);
+  const cur=((inp&&inp.value)||'').trim();
+  const customHex=(inp&&inp.dataset.hex)||'';   // 직접 선택한 색(이름과 분리 저장)
   let html=PALETTE.map(([label,bg])=>{
-    const on = cur && cur.replace(/\s+/g,'') === label.replace(/\s+/g,'') ? ' on':'';
+    const on = (!customHex && cur && cur.replace(/\s+/g,'') === label.replace(/\s+/g,'')) ? ' on':'';
     return `<button type="button" class="sw${on}" data-label="${label}" title="${label}" style="--sw:${bg}"></button>`;
   }).join('');
-  // 칩에 없는 색: 무지개 스와치를 눌러 색상 피커로 직접 선택 (hex 가 컬러 값으로 저장됨)
-  const customBg = isHex ? cur : 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
-  html+=`<button type="button" class="sw sw-custom${isHex?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
+  // 칩에 없는 색: 무지개 스와치를 눌러 색상 피커로 직접 선택 (색은 hex로 저장, 이름은 자유롭게 입력)
+  const customBg = customHex || 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
+  html+=`<button type="button" class="sw sw-custom${customHex?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
   box.innerHTML=html;
   box.querySelectorAll('.sw:not(.sw-custom)').forEach(el=>el.onclick=()=>{
-    const label=el.dataset.label;
-    const inp=document.getElementById(inputId);
-    if(inp) inp.value=label;
-    renderPalette(containerId, inputId, onPick);   // re-render so the ✓ lands on the picked swatch
-    if(onPick) onPick(label);
+    if(inp){ inp.value=el.dataset.label; delete inp.dataset.hex; }   // 팔레트 색 선택 → 커스텀 hex 해제
+    renderPalette(containerId, inputId, onChange);   // re-render so the ✓ lands on the picked swatch
+    if(onChange) onChange();
   });
   const custom=box.querySelector('.sw-custom');
   if(custom) custom.onclick=()=>{
     let pick=document.getElementById('color-custom-pick');
     if(!pick){ pick=document.createElement('input'); pick.type='color'; pick.id='color-custom-pick'; pick.style.cssText='position:fixed;left:-9999px;top:0'; document.body.appendChild(pick); }
-    pick.value = isHex ? cur : '#8a4fd6';
+    pick.value = customHex || '#8a4fd6';
     pick.oninput=()=>{
-      const inp=document.getElementById(inputId);
-      if(inp) inp.value=pick.value;
-      renderPalette(containerId, inputId, onPick);
-      if(onPick) onPick(pick.value);
+      if(inp){
+        inp.dataset.hex=pick.value;   // 색은 hex로 보관(이름 입력과 무관하게 유지)
+        const v=(inp.value||'').trim();
+        if(!v || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) inp.value=pick.value;   // 이름이 없거나 hex뿐이면 임시로 hex 표시
+      }
+      renderPalette(containerId, inputId, onChange);
+      if(onChange) onChange();
     };
     pick.click();
   };
@@ -2149,7 +2151,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
   const tog=document.getElementById(prefix+'-coltoggle');
   if(!inp||!dot||!pal||!tog) return;
   const refresh=()=>{
-    dot.style.background=discColor(inp.value);
+    dot.style.background = inp.dataset.hex || discColor(inp.value);   // 직접 선택한 색이 있으면 그 색으로
     renderPalette(prefix+'-palette', prefix+'-color', refresh);
   };
   // open palette automatically if no color yet; otherwise keep it collapsed
@@ -2871,7 +2873,7 @@ function openDetail(id, mode){
     + `<button class="dt-edit-btn" id="dt-change" aria-label="커버 수정"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><div class="picker" id="dt-picker"></div>`;
   const rows=[];
   const R=(k,v)=>{if(v||v===0)rows.push(`<div class="dt-row"><span class="k">${k}</span><span class="v">${v}</span></div>`)};
-  R('컬러', it.color?`${it.color} <span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-left:4px;background:${swatch(it.color)}"></span>`:'');
+  R('컬러', it.color?`${it.color} <span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-left:4px;background:${it.colorHex||swatch(it.color)}"></span>`:'');
   R('상태', it.status);
   if(it.status==='개봉' && it.openDate) R('개봉일', it.openDate==='모름' ? '모름' : it.openDate);
   if(typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false){
@@ -3052,8 +3054,8 @@ function showEditForm(it){
   }
   paintRate();
   // 팔레트
+  { const ec=$('#e-color'); if(ec){ if(it.colorHex) ec.dataset.hex=it.colorHex; else delete ec.dataset.hex; } }
   setupColorField('e');
-  renderPalette('e-palette','e-color',()=>{});
   $('#e-palette').classList.remove('collapsed');
   show('edit');
   $('#e-save').onclick=()=>{
@@ -3063,6 +3065,7 @@ function showEditForm(it){
     it.genre=$('#e-genre').value.trim();
     it.year=Number($('#e-year').value)||null;
     it.color=$('#e-color').value.trim();
+    it.colorHex=($('#e-color').dataset.hex)||null;
     it.status=$('#e-status').value;
     it.store=$('#e-store').value.trim();
     it.price=Number($('#e-price').value)||null;
@@ -3105,7 +3108,7 @@ function openVinylDecorate(it){
     box.scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
   }
-  const curCol = it.discColorCustom || discColor(it.color);
+  const curCol = it.discColorCustom || it.colorHex || discColor(it.color);
   const curOp = (it.discOpacity!=null) ? it.discOpacity : 1;
   box.innerHTML=`
     <div class="inl-title">🎨 바이닐 꾸미기 <span class="pro-badge sm">PRO</span></div>
@@ -3959,6 +3962,7 @@ function paintGradeDesc(prefix){
 let openUnknown=false;
 function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
+  { const fc=$('#f-color'); if(fc) delete fc.dataset.hex; }
   $('#f-file').value='';
   { const e=$('#f-eta'); if(e) e.value=''; }
   { const r=$('#f-rpm'); if(r) r.value='33'; const nc=$('#f-inch'); if(nc) nc.value='12"'; }
@@ -4113,6 +4117,7 @@ $('#add-save').onclick=()=>{
     id:'u'+Date.now(), no:DATA.length+1,
     artist:ar, album:al,
     color:$('#f-color').value.trim(),
+    colorHex: ($('#f-color').dataset.hex)||null,
     store:wish?'':$('#f-store').value.trim(),
     price:wish?null:(Number($('#f-price').value)||null),
     orig:wish?null:(Number($('#f-price').value)||null),
@@ -5059,7 +5064,7 @@ function buildCoverFlow(){
   track.innerHTML=cfItems.map((it,i)=>{
     const dStyle = it.discPhoto
       ? `--photo:url(${it.discPhoto})`
-      : `--disc:${it.discColorCustom||discColor(it.color)};opacity:${it.discOpacity!=null?it.discOpacity:1}`;
+      : `--disc:${it.discColorCustom||it.colorHex||discColor(it.color)};opacity:${it.discOpacity!=null?it.discOpacity:1}`;
     return `
     <div class="cf-card" data-i="${i}" data-id="${it.id}">
       <div class="cf-art">
@@ -5461,7 +5466,7 @@ function start(){
   // LP 한 장을 Firestore 문서로 직렬화 (커버는 cover 필드로 저장)
   const FIELDS=['no','artist','album','color','store','orig','price','pay','buy','arrive',
     'status','sellDate','sellPrice','profit','note','genre','rating','liked',
-    'discColorCustom','discOpacity','discPhoto',
+    'discColorCustom','discOpacity','discPhoto','colorHex',
     'listPrice','sleeveGrade','mediaGrade','openDate','listens','previewAlbumId','previewAlbumName',
     'rpm','inch'];
   function serialize(it){
