@@ -3565,8 +3565,19 @@ function unlockScroll(){
   document.body.style.top='';
   window.scrollTo(0, _scrollLockY);
 }
-function show(name){$('#ov-'+name).classList.add('show');$('#sheet-'+name).classList.add('show');
-  const s=$('#sheet-'+name); s.style.transition='';s.style.transform='';
+function show(name){
+  const ov=$('#ov-'+name), s=$('#sheet-'+name);
+  // 어떤 기기(웹뷰)에서도 항상 최상단에 뜨도록: 열 때마다 body 맨 뒤로 이동 + 증가하는 인라인 z-index
+  try{
+    window.__sheetZ=(window.__sheetZ||200)+2;
+    document.body.appendChild(ov); document.body.appendChild(s);
+    ov.style.zIndex=String(window.__sheetZ-1);
+    s.style.zIndex=String(window.__sheetZ);
+    s.style.visibility='visible';
+    void s.offsetHeight;   // reflow — 이동 후에도 슬라이드 전환이 재생되게
+  }catch(e){}
+  ov.classList.add('show'); s.classList.add('show');
+  s.style.transition='';s.style.transform='';
   if(s.classList.contains('fs')) document.body.classList.add('fs-open');   // 풀스크린이면 뒤 레이어 숨김
   lockScroll();}
 function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
