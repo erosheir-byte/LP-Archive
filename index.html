@@ -1004,11 +1004,6 @@ body.state-shared #shared-view{display:block}
     <button class="coll-new-btn" id="coll-new">+ 새 컬렉션</button>
   </div>
   <div class="coll-list" id="coll-list"></div>
-  <div class="my-sec-head" style="margin-top:18px">
-    <h3>좋아요한 앨범</h3>
-    <span class="like-count" id="like-count"></span>
-  </div>
-  <div class="like-grid" id="like-grid"></div>
 
   <div class="my-sec-head" style="margin-top:22px">
     <h3>내 취향 요약</h3>
@@ -2221,7 +2216,7 @@ function statusGroup(s){
   if(s==='판매'||s==='교환'||s==='선물') return '판매·교환';
   return '보유중';   // 개봉, 미개봉, 확인필요 등
 }
-const CHIPS=['전체','배송전','보유중','판매·교환','위시'];
+const CHIPS=['전체','배송전','보유중','판매·교환','위시','좋아요'];
 const SUBCHIPS=['개봉','미개봉'];
 
 function passes(it){
@@ -2229,6 +2224,7 @@ function passes(it){
   if(q && !(it.artist.toLowerCase().includes(q)||it.album.toLowerCase().includes(q)||(it.color||'').toLowerCase().includes(q))) return false;
   const g=statusGroup(it.status);
   const c=filter.chip;
+  if(c==='좋아요') return !!it.liked;       // 좋아요한 앨범만 (상태 무관)
   if(c==='전체') return g!=='위시';        // 전체에서 위시 제외
   if(c==='보유중'){
     if(g!=='보유중') return false;
@@ -2282,7 +2278,11 @@ function renderGrid(){
     fab.innerHTML = fabVinylSVG(isWish);
     fab.title = isWish ? '위시 추가' : 'LP 추가';
   }
-  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
+  if(!list.length){
+    const emptyMsg = isWish ? '위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요'
+      : (filter.chip==='좋아요' ? '아직 좋아요한 앨범이 없어요 — 앨범 상세에서 ♥를 눌러보세요' : '검색 결과가 없어요');
+    $('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+emptyMsg+'</div>';return;
+  }
   $('#grid').innerHTML=list.map((it,i)=>`
     <div class="lp" data-id="${it.id}" style="animation-delay:${Math.min(i*30,400)}ms">
       <div class="artwrap">
