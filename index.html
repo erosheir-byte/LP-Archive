@@ -733,6 +733,8 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .form .fhint{color:var(--muted);font-size:12.5px;margin-bottom:16px}
 .fld{margin-bottom:13px}
 .fld label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px;letter-spacing:.02em}
+.fld label.req{font-weight:800;color:var(--txt)}
+.fld label .star{color:var(--accent);font-weight:800;font-style:normal}
 .fld input,.fld select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--txt);font-size:15px;font-family:inherit;outline:none}
 .fld input:focus,.fld select:focus{border-color:var(--accent)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
@@ -1120,8 +1122,8 @@ body.state-shared #shared-view{display:block}
     <h2>LP 추가</h2>
     <div class="fhint">가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.</div>
     <div class="row2">
-      <div class="fld"><label>가수</label><input id="f-artist" placeholder="예: Tom Misch"></div>
-      <div class="fld"><label>앨범명</label><input id="f-album" placeholder="예: Geography"></div>
+      <div class="fld"><label class="req">가수 <b class="star">*</b></label><input id="f-artist" placeholder="예: Tom Misch"></div>
+      <div class="fld"><label class="req">앨범명 <b class="star">*</b></label><input id="f-album" placeholder="예: Geography"></div>
     </div>
     <div class="searching" id="f-searching">앨범아트 검색 중…</div>
     <div class="picker" id="f-cands"></div>
@@ -1151,14 +1153,14 @@ body.state-shared #shared-view{display:block}
       </div>
     </div>
     <div class="row2">
-      <div class="fld"><label>컬러</label>
+      <div class="fld"><label class="req">컬러 <b class="star">*</b></label>
         <div class="colorfield">
           <span class="color-dot" id="f-colordot"></span>
           <input id="f-color" placeholder="블랙">
           <button type="button" class="color-toggle" id="f-coltoggle" title="팔레트 열기">+</button>
         </div>
       </div>
-      <div class="fld" id="f-status-fld"><label>구분</label>
+      <div class="fld" id="f-status-fld"><label class="req">구분 <b class="star">*</b></label>
         <select id="f-cat">
           <option value="보유중">보유중</option>
           <option value="배송전">배송전</option>
@@ -1197,22 +1199,22 @@ body.state-shared #shared-view{display:block}
       <div class="grade-desc" id="f-grade-desc"></div>
     </div>
     <div class="row2 buyonly">
-      <div class="fld"><label>구매가</label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
-      <div class="fld"><label>정가</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label class="req">구매가 (원) <b class="star">*</b></label><input id="f-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>정가 (원)</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2 buyonly">
       <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
-      <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
+      <div class="fld"><label class="req">구매일자 <b class="star">*</b></label><input id="f-buy" type="date"></div>
     </div>
     <div class="row2 buyonly">
       <div class="fld" id="f-open-fld"><label>개봉일자 <button type="button" class="open-unknown" id="f-open-unknown">모름</button></label><input id="f-open" type="date" disabled></div>
       <div class="fld"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르 (선택)</label><input id="f-genre" placeholder="예: 가요, R&B/소울"></div>
-      <div class="fld"><label>발매년도 (선택)</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
+      <div class="fld"><label>장르</label><input id="f-genre" placeholder="예: 가요, R&B/소울"></div>
+      <div class="fld"><label>발매년도</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
-    <div class="fld"><label>비고 (선택)</label><input id="f-note" placeholder="메모"></div>
+    <div class="fld"><label>비고</label><input id="f-note" placeholder="메모"></div>
     <div class="btnrow">
       <button class="btn ghost" id="add-cancel">취소</button>
       <button class="btn primary" id="add-save">보관함에 추가</button>
@@ -1287,8 +1289,8 @@ body.state-shared #shared-view{display:block}
       <div class="grade-desc" id="e-grade-desc"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>구매가</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
-      <div class="fld"><label>정가</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>구매가 (원)</label><input id="e-price" type="number" inputmode="numeric" placeholder="41000"></div>
+      <div class="fld"><label>정가 (원)</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2">
       <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24"></div>
@@ -1498,7 +1500,11 @@ const I18N = {
   "선택 안 함":"None",
   "구매일자":"Purchase date",
   "개봉일자":"Opened date",
-  "비고 (선택)":"Notes (optional)",
+  "구매가 (원)":"Purchase price (KRW)",
+  "정가 (원)":"List price (KRW)",
+  "발매년도":"Release year",
+  "직접 선택":"Custom color",
+  "필수 항목을 입력해주세요: ":"Please fill in the required fields: ",
   "메모":"Note",
   "취소":"Cancel",
   "보관함에 추가":"Add to Library",
@@ -2000,13 +2006,15 @@ const COLORHEX=[
   ['퍼플','#8a4fd6'],['옐로우','#e6c23a'],['오렌지','#e8843a'],
   ['자주','#8a2b4f'],['핑크','#e08ab0'],
   ['골드','#c9a227'],['실버','#c8c8cc'],['네이비','#23344d'],
-  ['연보라','#cdbdf0'],['연두','#a8e08a'],['하늘','#9cd0e8'],
+  ['연보라','#cdbdf0'],['연두','#a8e08a'],['하늘','#9cd0e8'],['브라운','#7a4a28'],
   ['투명 마블','#cfcad6'],['투명','#cfd2d8'],['클리어','#cfd2d8'],
   ['마블','#9a9a9a'],
 ];
 function discColor(c){
   if(!c) return '#1a1a1a';
-  for(const [k,v] of COLORHEX){ if(c.includes(k)) return v; }
+  const s=String(c).trim();
+  if(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s)) return s;   // 직접 선택한 hex 색상 그대로
+  for(const [k,v] of COLORHEX){ if(s.includes(k)) return v; }
   return '#1a1a1a';
 }
 function swatch(c){ return discColor(c); }
@@ -2053,24 +2061,41 @@ const PALETTE=[
   ['그린','#36a35a'],['블루','#3a6fd6'],['네이비','#23344d'],['퍼플','#8a4fd6'],
   ['핑크','#e08ab0'],['골드','#c9a227'],['실버','#c8c8cc'],
   ['투명','#cfd6e0'],['연보라','#cdbdf0'],['연두','#a8e08a'],['하늘','#9cd0e8'],
-  ['화이트','#ececec'],['그레이','#8a8a8a'],
-  ['스플래터','radial-gradient(circle at 35% 35%,#f0c23a,#e8843a 40%,#d63a3a 75%)'],
+  ['화이트','#ececec'],['그레이','#8a8a8a'],['브라운','#7a4a28'],
 ];
 // render swatches into a container; onPick(label) fires when a swatch is tapped
 function renderPalette(containerId, inputId, onPick){
   const box=document.getElementById(containerId); if(!box) return;
-  const cur=(document.getElementById(inputId)||{}).value||'';
-  box.innerHTML=PALETTE.map(([label,bg])=>{
+  const cur=((document.getElementById(inputId)||{}).value||'').trim();
+  const isHex=/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(cur);
+  let html=PALETTE.map(([label,bg])=>{
     const on = cur && cur.replace(/\s+/g,'') === label.replace(/\s+/g,'') ? ' on':'';
     return `<button type="button" class="sw${on}" data-label="${label}" title="${label}" style="--sw:${bg}"></button>`;
   }).join('');
-  box.querySelectorAll('.sw').forEach(el=>el.onclick=()=>{
+  // 칩에 없는 색: 무지개 스와치를 눌러 색상 피커로 직접 선택 (hex 가 컬러 값으로 저장됨)
+  const customBg = isHex ? cur : 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
+  html+=`<button type="button" class="sw sw-custom${isHex?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
+  box.innerHTML=html;
+  box.querySelectorAll('.sw:not(.sw-custom)').forEach(el=>el.onclick=()=>{
     const label=el.dataset.label;
     const inp=document.getElementById(inputId);
     if(inp) inp.value=label;
     renderPalette(containerId, inputId, onPick);   // re-render so the ✓ lands on the picked swatch
     if(onPick) onPick(label);
   });
+  const custom=box.querySelector('.sw-custom');
+  if(custom) custom.onclick=()=>{
+    let pick=document.getElementById('color-custom-pick');
+    if(!pick){ pick=document.createElement('input'); pick.type='color'; pick.id='color-custom-pick'; pick.style.cssText='position:fixed;left:-9999px;top:0'; document.body.appendChild(pick); }
+    pick.value = isHex ? cur : '#8a4fd6';
+    pick.oninput=()=>{
+      const inp=document.getElementById(inputId);
+      if(inp) inp.value=pick.value;
+      renderPalette(containerId, inputId, onPick);
+      if(onPick) onPick(pick.value);
+    };
+    pick.click();
+  };
 }
 // wire up a color field: live preview dot + "+" toggle for the palette
 function setupColorField(prefix){   // prefix: 'f' or 'e'
@@ -3275,8 +3300,8 @@ function showBuyForm(it){
   $('#dt-inline').innerHTML=`
     <div class="inl-title">구매완료 처리</div>
     <div class="row2">
-      <div class="fld"><label>구매가</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
-      <div class="fld"><label>정가</label><input id="inl-list" type="number" inputmode="numeric" placeholder="59000"></div>
+      <div class="fld"><label>구매가 (원)</label><input id="inl-price" type="number" inputmode="numeric" placeholder="49000"></div>
+      <div class="fld"><label>정가 (원)</label><input id="inl-list" type="number" inputmode="numeric" placeholder="59000"></div>
     </div>
     <div class="row2">
       <div class="fld"><label>결제</label><select id="inl-pay"><option value="카드">카드</option><option value="현금">현금</option><option value="복지포인트">복지포인트</option><option value="선물">선물</option></select></div>
@@ -4009,10 +4034,19 @@ document.querySelectorAll('#sx-seg .sx-segbtn').forEach(b=>b.onclick=()=>setSxMo
 $('#add-cancel').onclick=()=>hide('add');
 $('#add-save').onclick=()=>{
   const ar=$('#f-artist').value.trim(), al=$('#f-album').value.trim();
-  if(!ar&&!al){alert('가수 또는 앨범명을 입력해주세요');return;}
   const url=$('#pa-prev').dataset.url||'';
   const status=addStatus();
   const wish=status==='위시';
+  // 필수 항목 검증: 가수·앨범명·컬러 (+ 위시가 아니면 구매가·구매일자)
+  const missing=[];
+  if(!ar) missing.push('가수');
+  if(!al) missing.push('앨범명');
+  if(!$('#f-color').value.trim()) missing.push('컬러');
+  if(!wish){
+    if(!$('#f-price').value.trim()) missing.push('구매가');
+    if(!$('#f-buy').value) missing.push('구매일자');
+  }
+  if(missing.length){ alert('필수 항목을 입력해주세요: '+missing.join(', ')); return; }
   const it={
     id:'u'+Date.now(), no:DATA.length+1,
     artist:ar, album:al,
