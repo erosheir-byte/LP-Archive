@@ -480,6 +480,9 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 /* 연대기 */
 .t-years{display:flex;align-items:flex-end;gap:8px;height:78px;padding-top:6px}
 .t-year{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%}
+.t-year[data-year]{cursor:pointer;border-radius:6px;transition:background .12s}
+.t-year[data-year]:hover,.t-year[data-year]:active{background:rgba(255,255,255,.06)}
+.t-year[data-year]:hover .t-ybar,.t-year[data-year]:active .t-ybar{filter:brightness(1.15)}
 .t-ybar{width:60%;max-width:22px;min-height:4px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent2),var(--accent))}
 .t-ynum{font-size:10px;color:var(--muted)}
 .t-ylab{font-size:10px;color:var(--dim)}
@@ -1004,6 +1007,11 @@ body.state-shared #shared-view{display:block}
     <button class="coll-new-btn" id="coll-new">+ 새 컬렉션</button>
   </div>
   <div class="coll-list" id="coll-list"></div>
+  <div class="my-sec-head" style="margin-top:18px">
+    <h3>좋아요한 앨범</h3>
+    <span class="like-count" id="like-count"></span>
+  </div>
+  <div class="like-grid" id="like-grid"></div>
 
   <div class="my-sec-head" style="margin-top:22px">
     <h3>내 취향 요약</h3>
@@ -1595,7 +1603,8 @@ const I18N = {
   "최애 장르":"Top genres",
   "바이닐 컬러 분포":"Vinyl color breakdown",
   "자주 간 구매처":"Frequent stores",
-  "수집 연대기":"Collection timeline",
+  "수집 히스토리":"Collection history",
+  "이 해에 구매한 앨범이 없어요.":"No albums purchased this year.",
   "소장 가치":"Collection value",
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
@@ -2216,7 +2225,7 @@ function statusGroup(s){
   if(s==='판매'||s==='교환'||s==='선물') return '판매·교환';
   return '보유중';   // 개봉, 미개봉, 확인필요 등
 }
-const CHIPS=['전체','배송전','보유중','판매·교환','위시','좋아요'];
+const CHIPS=['전체','배송전','보유중','판매·교환','위시'];
 const SUBCHIPS=['개봉','미개봉'];
 
 function passes(it){
@@ -2224,7 +2233,6 @@ function passes(it){
   if(q && !(it.artist.toLowerCase().includes(q)||it.album.toLowerCase().includes(q)||(it.color||'').toLowerCase().includes(q))) return false;
   const g=statusGroup(it.status);
   const c=filter.chip;
-  if(c==='좋아요') return !!it.liked;       // 좋아요한 앨범만 (상태 무관)
   if(c==='전체') return g!=='위시';        // 전체에서 위시 제외
   if(c==='보유중'){
     if(g!=='보유중') return false;
@@ -2278,11 +2286,7 @@ function renderGrid(){
     fab.innerHTML = fabVinylSVG(isWish);
     fab.title = isWish ? '위시 추가' : 'LP 추가';
   }
-  if(!list.length){
-    const emptyMsg = isWish ? '위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요'
-      : (filter.chip==='좋아요' ? '아직 좋아요한 앨범이 없어요 — 앨범 상세에서 ♥를 눌러보세요' : '검색 결과가 없어요');
-    $('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+emptyMsg+'</div>';return;
-  }
+  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
   $('#grid').innerHTML=list.map((it,i)=>`
     <div class="lp" data-id="${it.id}" style="animation-delay:${Math.min(i*30,400)}ms">
       <div class="artwrap">
@@ -4573,13 +4577,40 @@ function renderTaste(){
     ${storeTop.map((s,i)=>`<div class="t-row"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
-  // 수집 연대기
+  // 수집 히스토리
   cards.push(`<div class="t-card">
-    <div class="t-head">수집 연대기</div>
-    <div class="t-years">${years.map(y=>`<div class="t-year"><span class="t-ybar" style="height:${Math.round(byYear[y]/yearMax*100)}%"></span><span class="t-ynum">${byYear[y]}</span><span class="t-ylab">'${y.slice(2)}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}</div>
+    <div class="t-head">수집 히스토리</div>
+    <div class="t-years">${years.map(y=>`<div class="t-year" data-year="${y}" role="button" tabindex="0" title="${y}년 구매 앨범 보기"><span class="t-ybar" style="height:${Math.round(byYear[y]/yearMax*100)}%"></span><span class="t-ynum">${byYear[y]}</span><span class="t-ylab">'${y.slice(2)}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}</div>
   </div>`);
 
   wrap.innerHTML=cards.join('');
+  wrap.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
+}
+// 특정 연도에 구매한 앨범 목록 팝업 (수집 히스토리 바 클릭)
+function openYearList(year){
+  const wrap=$('#daylist'); if(!wrap) return;
+  const list=DATA.filter(d=>d.buy && String(d.buy).slice(0,4)===String(year) && statusGroup(d.status)!=='위시')
+                 .sort((a,b)=>String(a.buy).localeCompare(String(b.buy)));
+  $('#daylist-title').textContent=`${year}년 구매 · ${list.length}장`;
+  if(!list.length){
+    wrap.innerHTML=`<div class="dl-emptyday">이 해에 구매한 앨범이 없어요.</div>`;
+  }else{
+    wrap.innerHTML=list.map(it=>{
+      const art=artFor(it);
+      const thumb=art?`<img src="${art}" alt="">`:`<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
+      const md=(String(it.buy).slice(5,10)||'').replace('-','.');   // MM.DD
+      return `<button type="button" class="dl-item" data-id="${it.id}">
+        <div class="dl-thumb">${thumb}</div>
+        <div class="dl-info">
+          <div class="dl-al">${escapeHtml(it.album||'제목 없음')}</div>
+          <div class="dl-ar">${escapeHtml(it.artist||'')}</div>
+        </div>
+        <span class="dl-kind">${md}</span>
+      </button>`;
+    }).join('');
+  }
+  wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
+  show('daylist');
 }
 // 컬러명을 대표 그룹으로 정규화
 function normColorName(c){
