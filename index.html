@@ -4879,7 +4879,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#view-'+v).classList.add('on');
   const mtg=$('#cf-mode-toggle'); if(mtg) mtg.style.display = (v==='coll') ? 'flex' : 'none';
-  const fabEl=$('#fab'); if(fabEl) fabEl.style.display = (v==='cal') ? 'none' : '';
+  const fabEl=$('#fab'); if(fabEl) fabEl.style.display = (v==='coll') ? '' : 'none';   // + 추가 버튼은 보관함에서만
   if(v==='stats') renderStats();   // refresh stats (ratings may have changed)
   if(v==='cal') renderCal();
   if(v==='my'){ renderCollections(); renderLikes(); renderTaste(); renderSettings(); }
