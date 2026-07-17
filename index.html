@@ -313,6 +313,10 @@ h1 .em{color:var(--accent)}
 .like-btn:active{transform:scale(.8)}
 .like-btn.on{color:#e85c6a}
 .like-btn .heart-ic{width:24px;height:24px}
+.lp .card-dday{position:absolute;top:7px;left:7px;z-index:5;background:rgba(58,111,214,.94);color:#fff;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:7px;letter-spacing:.02em;backdrop-filter:blur(6px);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.dd-inline{display:inline-block;background:rgba(58,111,214,.9);color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;margin-left:5px}
+.lp .card-dday.late{background:rgba(232,92,106,.94)}
+.lp .card-dday.today{background:rgba(232,164,68,.95);color:#1c1304}
 .lp .card-like{position:absolute;top:7px;right:7px;z-index:5;color:#e85c6a;line-height:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));pointer-events:none}
 .lp .card-like .heart-ic{width:17px;height:17px}
 /* Pro lock card */
@@ -657,7 +661,7 @@ body.fs-open .ov{opacity:0!important;pointer-events:none}
 .inl-check input{width:17px;height:17px;accent-color:var(--accent)}
 /* color palette picker */
 /* vinyl-color palette — wraps into 2-3 rows, fits on screen */
-.palette{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px;padding:12px;background:#14121a;border-radius:14px;border:1px solid var(--line)}
+.palette{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px;margin-bottom:15px;padding:12px;background:#14121a;border-radius:14px;border:1px solid var(--line)}
 .palette .sw{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.12);background:var(--sw);background-size:cover;cursor:pointer;padding:0;position:relative;transition:transform .12s,border-color .12s,box-shadow .12s;box-shadow:inset 0 1px 2px rgba(255,255,255,.2),0 1px 3px rgba(0,0,0,.45)}
 .palette .sw:active{transform:scale(.9)}
 .palette .sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent),0 4px 12px rgba(0,0,0,.5);transform:scale(1.08)}
@@ -1217,6 +1221,10 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
       <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
     </div>
+    <div class="row2" id="f-eta-row" style="display:none">
+      <div class="fld"><label>배송 예정일</label><input id="f-eta" type="date"></div>
+      <div class="fld"></div>
+    </div>
     <div class="row2 buyonly">
       <div class="fld" id="f-open-fld"><label>개봉일자 <button type="button" class="open-unknown" id="f-open-unknown">모름</button></label><input id="f-open" type="date" disabled></div>
       <div class="fld"></div>
@@ -1543,6 +1551,7 @@ const I18N = {
   "결제":"Payment",
   "구매일":"Purchase date",
   "도착일":"Arrival date",
+  "배송 예정일":"Est. delivery",
   "판매일":"Sale date",
   "판매가":"Sale price",
   "차익":"Profit",
@@ -2035,6 +2044,16 @@ const COLORHEX=[
   ['투명 마블','#cfcad6'],['투명','#cfd2d8'],['클리어','#cfd2d8'],
   ['마블','#9a9a9a'],
 ];
+// 배송 예정일까지 남은 일수 → D-표기 (D-3 / D-DAY / D+2 지연)
+function shipDday(dateStr){
+  if(!dateStr) return null;
+  const d=new Date(dateStr+'T00:00:00'); if(isNaN(d)) return null;
+  const now=new Date(); const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const diff=Math.round((d-today)/86400000);
+  if(diff>0) return 'D-'+diff;
+  if(diff===0) return 'D-DAY';
+  return 'D+'+(-diff);
+}
 function discColor(c){
   if(!c) return '#1a1a1a';
   const s=String(c).trim();
@@ -2317,6 +2336,7 @@ function renderGrid(){
           <img data-art="${it.id}" alt="">
         </div>
         ${it.liked?'<span class="card-like">'+heartSVG(true)+'</span>':''}
+        ${(statusGroup(it.status)==='배송전' && it.arrive && shipDday(it.arrive)) ? (dd=>`<span class="card-dday ${dd==='D-DAY'?'today':(dd[1]==='+'?'late':'')}">${dd}</span>`)(shipDday(it.arrive)) : ''}
       </div>
       <div class="meta">
         <div class="al">${it.album||'—'}</div>
@@ -2870,7 +2890,12 @@ function openDetail(id, mode){
   if(it.listPrice!=null && it.listPrice!=='') R('정가', won(it.listPrice));
   R('결제', it.pay);
   R('구매일', it.buy);
-  R('도착일', it.arrive);
+  if(statusGroup(it.status)==='배송전' && it.arrive){
+    const dd=shipDday(it.arrive);
+    R('배송 예정일', it.arrive + (dd?` <span class="dd-inline">${dd}</span>`:''));
+  } else {
+    R('도착일', it.arrive);
+  }
   if(it.status==='판매'){
     R('판매일', it.sellDate);
     R('판매가', won(it.sellPrice));
@@ -3894,6 +3919,9 @@ function toggleBuyFields(){
   // RPM·인치: 설정이 켜져 있을 때만 표시
   const specRow=$('#f-spec-row');
   if(specRow) specRow.style.display = (typeof SETTINGS==='undefined' || SETTINGS.showSpec!==false) ? '' : 'none';
+  // 배송 예정일: 구분이 '배송전'일 때만 표시
+  const etaRow=$('#f-eta-row');
+  if(etaRow) etaRow.style.display = (cat==='배송전') ? '' : 'none';
 }
 // 음반(레코드 재생면) 등급 설명
 const GRADE_DESC={
@@ -3932,6 +3960,7 @@ let openUnknown=false;
 function openAdd(initStatus, presetDate){
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   $('#f-file').value='';
+  { const e=$('#f-eta'); if(e) e.value=''; }
   { const r=$('#f-rpm'); if(r) r.value='33'; const nc=$('#f-inch'); if(nc) nc.value='12"'; }
   { const s=$('#f-sleeve'); if(s) s.value=''; const m=$('#f-media'); if(m) m.value=''; paintGradeDesc('f'); }
   // initStatus(구분/레거시 상태) → 구분 + 개봉여부로 매핑
@@ -4089,7 +4118,7 @@ $('#add-save').onclick=()=>{
     orig:wish?null:(Number($('#f-price').value)||null),
     listPrice:wish?null:(Number($('#f-list').value)||null),
     pay:'',
-    buy:wish?null:$('#f-buy').value, arrive:null,
+    buy:wish?null:$('#f-buy').value, arrive:(status==='배송전' ? (($('#f-eta')&&$('#f-eta').value)||null) : null),
     openDate: (status==='개봉') ? (openUnknown ? '모름' : (($('#f-open')&&$('#f-open').value)||null)) : null,
     status:status, sellDate:null, sellPrice:null, profit:null,
     sleeveGrade: (status==='개봉') ? (($('#f-sleeve')&&$('#f-sleeve').value)||'') : '',
