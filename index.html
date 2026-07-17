@@ -479,6 +479,10 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .t-row .t-sub{display:block;font-size:11px;font-weight:500;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .t-row.t-tap{cursor:pointer;border-radius:8px;transition:background .12s}
 .t-row.t-tap:active{background:rgba(255,255,255,.05)}
+.t-bar-row.t-tap{cursor:pointer;border-radius:8px;transition:background .12s}
+.t-bar-row.t-tap:active{background:rgba(255,255,255,.05)}
+.t-cl[data-tc]{cursor:pointer}
+.t-cl[data-tc]:active{opacity:.7}
 .t-val.pos{color:#5ec27e}.t-val.neg{color:#e0617a}
 .t-empty{color:var(--dim);font-size:12.5px;padding:4px 0}
 .t-note{color:var(--dim);font-size:11px;margin-top:8px}
@@ -1666,6 +1670,7 @@ const I18N = {
   "자주 간 구매처":"Frequent stores",
   "수집 히스토리":"Collection history",
   "가장 많이 들은 앨범":"Most played albums",
+  "해당하는 앨범이 없어요.":"No matching albums.",
   "아직 청음 기록이 없어요":"No listening records yet",
   "이 해에 구매한 앨범이 없어요.":"No albums purchased this year.",
   "소장 가치":"Collection value",
@@ -4655,26 +4660,26 @@ function renderTaste(){
   // 최애 아티스트
   cards.push(`<div class="t-card">
     <div class="t-head">최애 아티스트</div>
-    ${artistRank.map((r,i)=>`<div class="t-row"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.a)}</span><span class="t-val">${r.cnt}${isEN()?'':'<span class="u">장</span>'}${r.avg?` · ★${r.avg.toFixed(1)}`:''}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+    ${artistRank.map((r,i)=>`<div class="t-row t-tap" data-ta="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.a)}</span><span class="t-val">${r.cnt}${isEN()?'':'<span class="u">장</span>'}${r.avg?` · ★${r.avg.toFixed(1)}`:''}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
   // 최애 장르
   cards.push(`<div class="t-card">
     <div class="t-head">최애 장르</div>
-    ${genreTop.map(([g,c])=>`<div class="t-bar-row"><span class="t-bar-lab">${escapeHtml(g)}</span><span class="t-bar-track"><span class="t-bar-fill" style="width:${Math.round(c/genreMax*100)}%"></span></span><span class="t-bar-num">${c}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+    ${genreTop.map(([g,c],i)=>`<div class="t-bar-row t-tap" data-tg="${i}"><span class="t-bar-lab">${escapeHtml(g)}</span><span class="t-bar-track"><span class="t-bar-fill" style="width:${Math.round(c/genreMax*100)}%"></span></span><span class="t-bar-num">${c}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
   // 컬러 분포
   cards.push(`<div class="t-card">
     <div class="t-head">바이닐 컬러 분포</div>
     <div class="t-colorbar">${colorTop.map(([c,n])=>`<span style="flex:${n};background:${colorHexFor(c)}" title="${escapeHtml(c)} ${n}장"></span>`).join('')}</div>
-    <div class="t-colorlegend">${colorTop.map(([c,n])=>`<span class="t-cl"><i style="background:${colorHexFor(c)}"></i>${escapeHtml(c)} ${Math.round(n/colorTotal*100)}%</span>`).join('')}</div>
+    <div class="t-colorlegend">${colorTop.map(([c,n],i)=>`<span class="t-cl" data-tc="${i}" role="button"><i style="background:${colorHexFor(c)}"></i>${escapeHtml(c)} ${Math.round(n/colorTotal*100)}%</span>`).join('')}</div>
   </div>`);
 
   // 단골 구매처
   cards.push(`<div class="t-card">
     <div class="t-head">자주 간 구매처</div>
-    ${storeTop.map((s,i)=>`<div class="t-row"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+    ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
   // 가장 많이 들은 앨범 (청음 횟수)
@@ -4691,7 +4696,55 @@ function renderTaste(){
 
   wrap.innerHTML=cards.join('');
   wrap.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
-  wrap.querySelectorAll('.t-row.t-tap[data-id]').forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
+  const dShort=s=>String(s||'').slice(2,10).replace(/-/g,'.');
+  // 최애 아티스트 → 그 아티스트의 앨범들
+  wrap.querySelectorAll('[data-ta]').forEach(el=>el.onclick=()=>{
+    const r=artistRank[+el.dataset.ta]; if(!r) return;
+    openTasteList(`${r.a} · ${r.cnt}장`, (byArtist[r.a]||[]).map(it=>({it, tag: it.rating?('★'+it.rating):(it.status||'')})));
+  });
+  // 최애 장르 → 그 장르 앨범들
+  wrap.querySelectorAll('[data-tg]').forEach(el=>el.onclick=()=>{
+    const g=genreTop[+el.dataset.tg]; if(!g) return;
+    openTasteList(`${g[0]} · ${g[1]}장`, owned.filter(d=>(d.genre||'').trim()===g[0]).map(it=>({it, tag: it.year?String(it.year):''})));
+  });
+  // 컬러 분포 → 그 컬러 그룹 앨범들
+  wrap.querySelectorAll('[data-tc]').forEach(el=>el.onclick=()=>{
+    const c=colorTop[+el.dataset.tc]; if(!c) return;
+    openTasteList(`${c[0]} · ${c[1]}장`, owned.filter(d=>normColorName(d.color)===c[0]).map(it=>({it, tag: escapeHtml(it.color||'')})));
+  });
+  // 자주 간 구매처 → 그 구매처에서 산 앨범들
+  wrap.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
+    const s=storeTop[+el.dataset.ts]; if(!s) return;
+    openTasteList(`${s[0]} · ${s[1]}장`, owned.filter(d=>(d.store||'').trim()===s[0])
+      .sort((a,b)=>String(b.buy||'').localeCompare(String(a.buy||'')))
+      .map(it=>({it, tag: dShort(it.buy)})));
+  });
+  // 가장 많이 들은 앨범 → 그 앨범의 청음 기록들
+  wrap.querySelectorAll('.t-row.t-tap[data-id]').forEach(el=>el.onclick=()=>{
+    const it=DATA.find(d=>d.id===el.dataset.id); if(!it) return;
+    const rows=(it.listens||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))
+      .map(l=>({it, sub: l.note?('🎧 '+l.note):(it.artist||''), tag: dShort(l.date)}));
+    openTasteList(`${it.album||it.artist} · 청음 ${rows.length}회`, rows);
+  });
+}
+// 취향 요약 순위 클릭 → 해당 앨범 목록 팝업 (daylist 시트 재사용)
+function openTasteList(title, rows){
+  const wrap=$('#daylist'); if(!wrap) return;
+  $('#daylist-title').textContent=title;
+  wrap.innerHTML=(rows&&rows.length)?rows.map(r=>{
+    const it=r.it; const art=artFor(it);
+    const thumb=art?`<img src="${art}" alt="">`:`<div class="dl-ph" style="background:${it.colorHex||discColor(it.color)}"></div>`;
+    return `<button type="button" class="dl-item" data-id="${it.id}">
+      <div class="dl-thumb">${thumb}</div>
+      <div class="dl-info">
+        <div class="dl-al">${escapeHtml(it.album||'제목 없음')}</div>
+        <div class="dl-ar">${r.sub!=null?escapeHtml(r.sub):escapeHtml(it.artist||'')}</div>
+      </div>
+      ${r.tag?`<span class="dl-kind">${r.tag}</span>`:''}
+    </button>`;
+  }).join('') : `<div class="dl-emptyday">해당하는 앨범이 없어요.</div>`;
+  wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
+  show('daylist');
 }
 // 특정 연도에 구매한 앨범 목록 팝업 (수집 히스토리 바 클릭)
 function openYearList(year){
