@@ -9,10 +9,6 @@ on:
   push:
     branches:
       - main
-      - claude/busy-meitner-JQZ1E
-      - claude/apk-download-setup-rnj2or
-      - claude/github-program-analysis-rr1tm4
-      - claude/lp-app-fixes-vq2vrj
     paths-ignore:
       - "**.md"
       - "LPArchive-preview.html"
