@@ -1713,6 +1713,7 @@ const I18N = {
   "복지포인트":"Welfare points",
   /* --- preview toast --- */
   "🔇 미리듣기를 찾지 못했어요":"🔇 Couldn't find a preview",
+  "🔇 미리듣기를 찾지 못했어요 — 상세의 음원 연결로 지정해보세요":"🔇 No preview found — link an album from the detail page",
   "재생할 수 없어요":"Can't play this",
   "미리듣기":"Preview",
   /* --- common color names --- */
@@ -2617,18 +2618,18 @@ async function _fetchPreviewUrl(it){
     // 1) 먼저 '앨범'을 찾아 정확한 collectionId를 얻는다 → 그 앨범 수록곡만 재생(다른 앨범 곡 섞임 방지)
     if(album){
       const wantAl=norm(album), wantAr=norm(artist);
-      let cand=null, candCountry=country, firstAny=null, firstAnyCountry=country;
+      const artistOk=x=>{ if(!wantAr) return true; const a=norm(x.artistName); return a===wantAr || a.includes(wantAr) || wantAr.includes(a); };
+      let cand=null, candCountry=country;
       for(const st of stores){
         const ar=await fetch('https://itunes.apple.com/search?media=music&entity=album&country='+st+'&limit=8&term='+encodeURIComponent(term));
         const aj=await ar.json();
         const cands=(aj.results||[]);
-        if(!firstAny){ const f=cands.find(x=>x.collectionId); if(f){ firstAny=f; firstAnyCountry=st; } }
         const c = cands.find(x=>norm(x.collectionName)===wantAl && (!wantAr || norm(x.artistName)===wantAr))
-               || cands.find(x=>norm(x.collectionName)===wantAl)
-               || cands.find(x=>{ const n=norm(x.collectionName); return n && (n.includes(wantAl)||wantAl.includes(n)); });
+               || cands.find(x=>norm(x.collectionName)===wantAl && artistOk(x))
+               || cands.find(x=>{ const n=norm(x.collectionName); return n && (n.includes(wantAl)||wantAl.includes(n)) && artistOk(x); });
         if(c && c.collectionId){ cand=c; candCountry=st; break; }   // 이름 일치 후보 발견 → 그 스토어 사용
       }
-      if(!cand && firstAny){ cand=firstAny; candCountry=firstAnyCountry; }   // 이름 일치 없으면 결과가 있던 스토어의 첫 앨범
+      // (이름·아티스트가 안 맞으면 재생하지 않음 — 검색 첫 결과를 추측으로 트는 폴백 제거)
       if(cand && cand.collectionId){
         const lr=await fetch('https://itunes.apple.com/lookup?id='+cand.collectionId+'&entity=song&country='+candCountry+'&limit=80');
         const lj=await lr.json();
@@ -2639,14 +2640,15 @@ async function _fetchPreviewUrl(it){
         if(urls.length) it._pvName = cand.collectionName || '';   // 자동으로 매칭된 앨범명 기록
       }
     }
-    // 3) 앨범을 못 찾았을 때만 폴백: 곡 검색(양 스토어) 후 앨범명이 일치하는 곡만 (없으면 빈 목록)
+    // 3) 앨범을 못 찾았을 때만 폴백: 곡 검색(양 스토어) 후 앨범명·아티스트가 모두 맞는 곡만 (없으면 빈 목록)
     if(!urls.length && term){
-      const al=norm(album);
+      const al=norm(album), ar2=norm(artist);
       for(const st of stores){
         const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+st+'&limit=25&term='+encodeURIComponent(term));
         const j=await r.json();
         let pool=(j.results||[]).filter(x=>x.previewUrl);
-        if(al){ pool=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al) || al.includes(c)); }); }
+        if(al){ pool=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al)); }); }
+        if(ar2){ pool=pool.filter(x=>{ const a=norm(x.artistName); return a && (a===ar2 || a.includes(ar2) || ar2.includes(a)); }); }
         if(pool.length){ urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url); if(urls.length){ it._pvName=(pool[0].collectionName||''); break; } }
       }
     }
@@ -2891,7 +2893,7 @@ async function playPreview(it, disc){
   let urls = _preview.cache[it.id];
   if(urls===undefined) urls = await _fetchPreviewUrl(it);
   if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
-  if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요'); _preview.id=null; return; }
+  if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요 — 상세의 음원 연결로 지정해보세요'); _preview.id=null; return; }
   _preview.urls = urls;
   _preview.idx = Math.floor(Math.random()*urls.length);   // 첫 곡은 랜덤 시작
   _preview.last[it.id]=urls[_preview.idx].url;
