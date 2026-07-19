@@ -1730,6 +1730,8 @@ const I18N = {
   "카드에 장르 태그를 표시해요":"Show a genre tag on each card",
   "상태 등급 선택":"Condition grading",
   "개봉 LP에 슬리브·음반 컨디션 등급(Discogs 기준)을 기록해요":"Record sleeve & media condition grades (Discogs standard) on opened records",
+  "모아보기 중복 앨범 한 장만":"One card per album in Cover Flow",
+  "커버플로우에서 같은 앨범이 여러 장이어도 하나만 보여요":"Show duplicates of the same album as a single card",
   "RPM·인치 선택":"RPM & size",
   "추가·수정 화면에서 회전수(33/45)와 크기(12\"/7\"/10\")를 기록해요":"Record speed (33/45) and size (12\"/7\"/10\") in the add/edit screens",
   "회전수 (RPM)":"Speed (RPM)",
@@ -2241,7 +2243,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showSpec:false, crackleLevel:'low', theme:'dark' };
+const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showSpec:false, crackleLevel:'low', theme:'dark' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -4852,6 +4854,10 @@ function renderSettings(){
         <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 슬리브·음반 컨디션 등급(Discogs 기준)을 기록해요</div></div>
         ${tog(SETTINGS.showGrade)}
       </div>
+      <div class="set-row" data-act="dedupeFlow">
+        <div class="set-l"><div class="set-t">모아보기 중복 앨범 한 장만</div><div class="set-d">커버플로우에서 같은 앨범이 여러 장이어도 하나만 보여요</div></div>
+        ${tog(SETTINGS.dedupeFlow!==false)}
+      </div>
       <div class="set-row" data-act="showSpec">
         <div class="set-l"><div class="set-t">RPM·인치 선택</div><div class="set-d">추가·수정 화면에서 회전수(33/45)와 크기(12"/7"/10")를 기록해요</div></div>
         ${tog(SETTINGS.showSpec)}
@@ -4889,7 +4895,7 @@ function renderSettings(){
   wrap.querySelectorAll('.set-row[data-act]').forEach(row=>row.onclick=()=>{
     const k=row.dataset.act; SETTINGS[k]=!SETTINGS[k];
     row.querySelector('.set-toggle').classList.toggle('on', SETTINGS[k]);
-    saveSettings(); applySettings(); renderGrid(); renderStats();
+    saveSettings(); applySettings(); renderGrid(); renderStats(); buildCoverFlow();
   });
   // 보기 모드
   wrap.querySelectorAll('#set-lang button').forEach(b=>b.onclick=()=>{
@@ -5164,6 +5170,10 @@ function applyCfMode(){
 }
 function buildCoverFlow(){
   cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
+  if(typeof SETTINGS==='undefined' || SETTINGS.dedupeFlow!==false){   // 같은 앨범(가수+앨범명)은 한 장만
+    const seen=new Set();
+    cfItems=cfItems.filter(d=>{ const k=((d.artist||'')+'|'+(d.album||'')).toLowerCase().replace(/\s+/g,''); if(seen.has(k)) return false; seen.add(k); return true; });
+  }
   if(!cfItems.length) cfItems=DATA.slice();
   const track=$('#cf-track');
   track.innerHTML=cfItems.map((it,i)=>{
