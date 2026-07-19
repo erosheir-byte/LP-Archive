@@ -63,6 +63,16 @@ html[data-theme="light"] .lp:active{background:var(--card2)}
 html[data-theme="light"] .lp::before{display:none}   /* 흰 조명 글로우 제거 */
 /* 커버플로우 하단 그라데이션: 짙은 검정 → 배경색으로 자연스럽게 */
 html[data-theme="light"] .cf-stage{background:linear-gradient(180deg,transparent,rgba(0,0,0,.05))}
+/* 커버플로우 중앙 반투명 재생 컨트롤 */
+.cf-player{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:14px;align-items:center;z-index:200}
+.cfp-btn{width:42px;height:42px;border-radius:50%;border:none;background:rgba(10,10,14,.55);backdrop-filter:blur(6px);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);padding:0}
+.cfp-main{width:56px;height:56px}
+.cfp-btn:active{transform:scale(.92)}
+.cfp-btn svg{width:18px;height:18px}
+.cfp-main svg{width:24px;height:24px}
+.cf-player .ic-pause{display:none}
+.cf-player.playing .ic-pause{display:block}
+.cf-player.playing .ic-play{display:none}
 html[data-theme="light"] .cf-stage::after{background:linear-gradient(180deg,transparent,var(--bg))}
 /* 상태 칩: 밝은 배경에서 대비 확보 (텍스트를 진한 색으로) */
 html[data-theme="light"] .st.own{color:#2f6bb3;border-color:rgba(106,160,232,.4)}
@@ -953,6 +963,11 @@ body.state-shared #shared-view{display:block}
       <div class="cf-track" id="cf-track"></div>
       <div class="cf-hold cf-hold-l" id="cf-hold-l" aria-label="이전으로"></div>
       <div class="cf-hold cf-hold-r" id="cf-hold-r" aria-label="다음으로"></div>
+      <div class="cf-player" id="cf-player" style="display:none">
+        <button type="button" class="cfp-btn" id="cfp-prev" aria-label="이전 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.2v12H6zM20 6v12l-9-6z"/></svg></button>
+        <button type="button" class="cfp-btn cfp-main" id="cfp-play" aria-label="재생/일시정지"><svg class="ic-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="ic-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg></button>
+        <button type="button" class="cfp-btn" id="cfp-next" aria-label="다음 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.8 6H18v12h-2.2zM4 6l9 6-9 6z"/></svg></button>
+      </div>
     </div>
     <div class="cf-info" id="cf-info"></div>
   </div>
@@ -1706,6 +1721,8 @@ const I18N = {
   "주요 구매처":"Top stores",
   /* --- cover flow info --- */
   "탭하면 상세 정보":"Tap for details",
+  "탭하면 미리듣기":"Tap to preview",
+  "길게 누르면 상세":"Hold for details",
   "후보":"candidates",
   /* --- payment options --- */
   "카드":"Card",
@@ -5225,12 +5242,51 @@ function buildCoverFlow(){
   cfIndex=Math.min(cfIndex,cfItems.length-1);
   layoutCoverFlow();
   applyCfMode();
-  // tap center card -> detail
-  cfCards.forEach(c=>c.addEventListener('click',()=>{
-    const i=+c.dataset.i;
-    if(i===cfIndex) openDetail(c.dataset.id);
-    else { cfIndex=i; layoutCoverFlow(); }
-  }));
+  // tap center card -> 미리듣기 재생/일시정지 (길게 누르면 상세)
+  cfCards.forEach(c=>{
+    let lpTimer=null, lpFired=false, px=0, py=0;
+    const clearLp=()=>{ if(lpTimer){ clearTimeout(lpTimer); lpTimer=null; } };
+    c.addEventListener('pointerdown',e=>{
+      lpFired=false; px=e.clientX; py=e.clientY;
+      if(+c.dataset.i===cfIndex){ lpTimer=setTimeout(()=>{ lpFired=true; openDetail(c.dataset.id); }, 550); }
+    });
+    c.addEventListener('pointermove',e=>{ if(Math.hypot(e.clientX-px,e.clientY-py)>10) clearLp(); });
+    c.addEventListener('pointerup',clearLp);
+    c.addEventListener('pointercancel',clearLp);
+    c.addEventListener('click',()=>{
+      if(lpFired){ lpFired=false; return; }   // 길게 눌러 상세를 연 경우
+      const i=+c.dataset.i;
+      if(i===cfIndex) cfTogglePlay();
+      else { cfIndex=i; layoutCoverFlow(); }
+    });
+  });
+  cfSyncPlayer();
+}
+// 커버플로우 중앙 카드 미리듣기 컨트롤
+function cfCenterDisc(){ const c=cfCards[cfIndex]; return c ? c.querySelector('.cf-disc') : null; }
+function cfSyncPlayer(){
+  const pl=$('#cf-player'); if(!pl) return;
+  const it=cfItems[cfIndex];
+  const mine = it && _preview.id===it.id && _preview.audio;
+  pl.style.display = mine ? 'flex' : 'none';
+  pl.classList.toggle('playing', !!(mine && !_preview.paused));
+}
+function cfTogglePlay(){
+  const it=cfItems[cfIndex]; if(!it) return;
+  if(_preview.id===it.id && _preview.audio){
+    if(_preview.paused) _resumePreview(); else _pausePreview();
+  } else {
+    playPreview(it, cfCenterDisc());
+  }
+  setTimeout(cfSyncPlayer, 250);   // playPreview 는 URL 조회가 비동기라 살짝 늦게 상태 반영
+  setTimeout(cfSyncPlayer, 1200);
+}
+{ const pv=$('#cfp-prev'), nx=$('#cfp-next'), pp=$('#cfp-play');
+  if(pp) pp.onclick=(e)=>{ e.stopPropagation(); cfTogglePlay(); };
+  if(pv) pv.onclick=(e)=>{ e.stopPropagation(); const it=cfItems[cfIndex]; if(!it) return;
+    if(_preview.id===it.id) previewStep(-1, cfCenterDisc()); else cfTogglePlay(); setTimeout(cfSyncPlayer,150); };
+  if(nx) nx.onclick=(e)=>{ e.stopPropagation(); const it=cfItems[cfIndex]; if(!it) return;
+    if(_preview.id===it.id) previewStep(1, cfCenterDisc()); else cfTogglePlay(); setTimeout(cfSyncPlayer,150); };
 }
 function layoutCoverFlow(){
   cfCards.forEach((c,i)=>{
@@ -5247,9 +5303,11 @@ function layoutCoverFlow(){
     c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
   });
   const it=cfItems[cfIndex]; if(!it)return;
-  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap">탭하면 상세 정보 · ${it.genre?it.genre+' · ':''}${it.color||''}</div>`;
+  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap">탭하면 미리듣기 · 길게 누르면 상세 · ${it.genre?it.genre+' · ':''}${it.color||''}</div>`;
 }
-function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow(); }
+function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow();
+  if(_preview.id && (!cfItems[cfIndex] || _preview.id!==cfItems[cfIndex].id)) stopPreview();   // 다른 앨범으로 넘기면 정지
+  if(typeof cfSyncPlayer==='function') cfSyncPlayer(); }
 
 // drag / swipe / wheel
 (function(){
