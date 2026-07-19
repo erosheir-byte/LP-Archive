@@ -1253,7 +1253,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
     </div>
     <div class="row2" id="f-eta-row" style="display:none">
-      <div class="fld"><label>배송 예정일</label><input id="f-eta" type="date"></div>
+      <div class="fld"><label id="f-eta-lab">배송 예정일</label><input id="f-eta" type="date"></div>
       <div class="fld"></div>
     </div>
     <div class="row2 buyonly">
@@ -3962,9 +3962,12 @@ function toggleBuyFields(){
   // RPM·인치: 설정이 켜져 있을 때만 표시
   const specRow=$('#f-spec-row');
   if(specRow) specRow.style.display = (typeof SETTINGS==='undefined' || SETTINGS.showSpec!==false) ? '' : 'none';
-  // 배송 예정일: 구분이 '배송전'일 때만 표시
+  // 도착일/배송 예정일: 위시가 아니면 표시 (배송전이면 '배송 예정일', 보유중이면 '도착일')
   const etaRow=$('#f-eta-row');
-  if(etaRow) etaRow.style.display = (cat==='배송전') ? '' : 'none';
+  if(etaRow){
+    etaRow.style.display = wish ? 'none' : '';
+    const l=$('#f-eta-lab'); if(l) l.textContent = (cat==='배송전') ? '배송 예정일' : '도착일';
+  }
 }
 // 음반(레코드 재생면) 등급 설명
 const GRADE_DESC={
@@ -4169,7 +4172,7 @@ $('#add-save').onclick=()=>{
     orig:wish?null:(Number($('#f-price').value)||null),
     listPrice:wish?null:(Number($('#f-list').value)||null),
     pay:'',
-    buy:wish?null:$('#f-buy').value, arrive:(status==='배송전' ? (($('#f-eta')&&$('#f-eta').value)||null) : null),
+    buy:wish?null:$('#f-buy').value, arrive:wish?null:(($('#f-eta')&&$('#f-eta').value)||null),
     openDate: (status==='개봉') ? (openUnknown ? '모름' : (($('#f-open')&&$('#f-open').value)||null)) : null,
     status:status, sellDate:null, sellPrice:null, profit:null,
     sleeveGrade: (status==='개봉') ? (($('#f-sleeve')&&$('#f-sleeve').value)||'') : '',
