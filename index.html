@@ -4326,7 +4326,7 @@ function renderCal(){
   // 날짜 클릭 → 그날 항목 보기 + 청음 추가
   $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
     const items=byDay[+cell.dataset.date.slice(-2)]||[];
-    cell.onclick=()=> openDayList(cell.dataset.date, items);
+    cell.onclick=()=>{ if(window.__calSwiped) return; openDayList(cell.dataset.date, items); };
   });
   // 모든 셀을 누를 수 있게 (청음 추가 가능)
   $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(c=>c.classList.add('has'));
@@ -5142,6 +5142,23 @@ $('#view-grid-btn').onclick=()=>{filter.view='grid';$('#view-grid-btn').classLis
 $('#view-list-btn').onclick=()=>{filter.view='list';$('#view-list-btn').classList.add('on');$('#view-grid-btn').classList.remove('on');renderGrid();};
 $('#cal-prev').onclick=()=>{ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); };
 $('#cal-next').onclick=()=>{ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); };
+// 달력 좌우 스와이프로 월 이동 (가로 이동이 뚜렷할 때만 — 세로 스크롤과 충돌 방지)
+{ const cg=$('#cal-grid'); if(cg){
+  let sx=0, sy=0, tracking=false;
+  cg.addEventListener('touchstart',e=>{ if(e.touches.length!==1) return; tracking=true; sx=e.touches[0].clientX; sy=e.touches[0].clientY; },{passive:true});
+  cg.addEventListener('touchend',e=>{
+    if(!tracking) return; tracking=false;
+    const t=e.changedTouches[0]; if(!t) return;
+    const dx=t.clientX-sx, dy=t.clientY-sy;
+    if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){
+      window.__calSwiped=true;   // 스와이프 직후 셀 클릭(날짜 팝업) 방지
+      if(dx<0){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} }
+      else { calMonth--; if(calMonth<0){calMonth=11;calYear--;} }
+      renderCal();
+      setTimeout(()=>{ window.__calSwiped=false; }, 350);
+    }
+  },{passive:true});
+} }
 
 // rebuild the genre dropdown from genres present in the collection
 function refreshGenreChips(){
