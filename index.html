@@ -1362,7 +1362,7 @@ body.state-shared #shared-view{display:block}
     </div>
     <div class="row2">
       <div class="fld"><label>구매일</label><input type="date" id="e-buy"></div>
-      <div class="fld"><label>도착일</label><input type="date" id="e-arrive"></div>
+      <div class="fld"><label id="e-arrive-lab">도착일</label><input type="date" id="e-arrive"></div>
     </div>
     <div class="row2">
       <div class="fld"><label>판매/교환가 (원)</label><input id="e-sell" type="number" inputmode="numeric"></div>
@@ -3079,7 +3079,8 @@ function openListenForm(it, presetDate){
 function showEditForm(it){
   const wish=it.status==='위시';
   const opt=(v,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${v}</option>`;
-  const statuses=['미개봉','개봉','배송전','판매','교환','선물','위시'];
+  const statuses=['미개봉','개봉','배송전','판매','교환','위시'];
+  if(it.status==='선물') statuses.splice(5,0,'선물');   // 기존 '선물' 항목만 예외로 표시
   const pays=['카드','현금','복지포인트','선물'];
   // 기본값 채우기
   $('#e-artist').value=it.artist||'';
@@ -3117,7 +3118,9 @@ function showEditForm(it){
     if(m) m.value=it.mediaGrade||it.grade||'';
     paintGradeDesc('e'); }
   const _egf=$('#e-grade-fld'); if(_egf) _egf.style.display = (it.status==='개봉') ? '' : 'none';
-  { const es=$('#e-status'); if(es) es.onchange=()=>{ const g=$('#e-grade-fld'); if(g) g.style.display=(es.value==='개봉')?'':'none'; }; }
+  const paintArriveLab=()=>{ const l=$('#e-arrive-lab'); if(l) l.textContent = ($('#e-status').value==='배송전') ? '배송 예정일' : '도착일'; };
+  paintArriveLab();
+  { const es=$('#e-status'); if(es) es.onchange=()=>{ const g=$('#e-grade-fld'); if(g) g.style.display=(es.value==='개봉')?'':'none'; paintArriveLab(); }; }
   { const s=$('#e-sleeve'), m=$('#e-media'); if(s) s.onchange=()=>paintGradeDesc('e'); if(m) m.onchange=()=>paintGradeDesc('e'); }
   // 별점
   let editRating=it.rating||0;
