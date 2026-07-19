@@ -1366,7 +1366,7 @@ body.state-shared #shared-view{display:block}
     </div>
     <div class="row2">
       <div class="fld"><label>판매/교환가 (원)</label><input id="e-sell" type="number" inputmode="numeric"></div>
-      <div class="fld"></div>
+      <div class="fld" id="e-selldate-fld" style="display:none"><label>판매일</label><input type="date" id="e-selldate"></div>
     </div>
     <div class="fld"><label>비고</label><input id="e-note" placeholder="메모"></div>
     <div class="fld">
@@ -3123,8 +3123,11 @@ function showEditForm(it){
     paintGradeDesc('e'); }
   const _egf=$('#e-grade-fld'); if(_egf) _egf.style.display = (it.status==='개봉') ? '' : 'none';
   const paintArriveLab=()=>{ const l=$('#e-arrive-lab'); if(l) l.textContent = ($('#e-status').value==='배송전') ? '배송 예정일' : '도착일'; };
-  paintArriveLab();
-  { const es=$('#e-status'); if(es) es.onchange=()=>{ const g=$('#e-grade-fld'); if(g) g.style.display=(es.value==='개봉')?'':'none'; paintArriveLab(); }; }
+  const paintSellDate=()=>{ const f=$('#e-selldate-fld'); if(f){ const v=$('#e-status').value; f.style.display=(v==='판매'||v==='교환')?'':'none'; } };
+  { const sd=$('#e-selldate'); if(sd) sd.value=it.sellDate||''; }
+  paintArriveLab(); paintSellDate();
+  { const es=$('#e-status'); if(es) es.onchange=()=>{ const g=$('#e-grade-fld'); if(g) g.style.display=(es.value==='개봉')?'':'none'; paintArriveLab(); paintSellDate();
+      if((es.value==='판매'||es.value==='교환') && $('#e-selldate') && !$('#e-selldate').value) $('#e-selldate').value=new Date().toISOString().slice(0,10); }; }
   { const s=$('#e-sleeve'), m=$('#e-media'); if(s) s.onchange=()=>paintGradeDesc('e'); if(m) m.onchange=()=>paintGradeDesc('e'); }
   // 별점
   let editRating=it.rating||0;
@@ -3165,6 +3168,7 @@ function showEditForm(it){
     it.pay=$('#e-pay').value;
     it.arrive=$('#e-arrive').value||null;
     it.sellPrice=Number($('#e-sell').value)||null;
+    if(it.status==='판매'||it.status==='교환'){ it.sellDate=($('#e-selldate')&&$('#e-selldate').value)||null; }
     if(it.sellPrice!=null && it.price!=null) it.profit=it.sellPrice-it.price;
     it.note=$('#e-note').value.trim();
     it.rating=editRating;
