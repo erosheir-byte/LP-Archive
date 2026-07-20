@@ -605,6 +605,12 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .pk-item:active{transform:scale(.95)}
 .pk-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .pk-cap{font-size:9px;color:var(--muted);padding:3px 4px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 후보 그리드 안의 '직접 올리기' 타일 (앨범아트를 못 찾았을 때 사진 선택) */
+.pk-uptile{border:2px dashed var(--line)}
+.pk-uptile .pk-up-box{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.pk-uptile .pk-up-box svg{width:30px;height:30px}
+.pk-uptile .pk-cap{color:var(--dim);text-align:center}
+.pk-uptile:active{transform:scale(.95)}
 .pk-manual{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .dt-art .pk-manual{margin-top:14px}
 .pk-up{display:block;text-align:center;background:var(--card2);border:1px dashed var(--line);border-radius:11px;padding:12px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer}
@@ -1188,16 +1194,7 @@ body.state-shared #shared-view{display:block}
         </div>
         <div class="bc-status" id="bc-status"></div>
       </div>
-      <button class="art-manual-toggle" id="f-art-toggle" type="button">앨범아트가 안 찾아지면 — 직접 올리기</button>
-      <div class="art-manual-box" id="f-art-manual" style="display:none">
-        <label class="pk-up">📷 앨범아트 사진 올리기
-          <input type="file" accept="image/*" id="f-file" hidden>
-        </label>
-        <div class="pk-url">
-          <input id="f-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
-          <button id="f-urlbtn" type="button">적용</button>
-        </div>
-      </div>
+      <input type="file" accept="image/*" id="f-file" hidden>
     </div>
     <div class="row2">
       <div class="fld"><label class="req">컬러 <b class="star">*</b></label>
@@ -1589,6 +1586,8 @@ const I18N = {
   "보관함에 추가":"Add to Library",
   "앨범아트를 찾았어요 ✓":"Found cover art ✓",
   "앨범아트를 찾지 못했어요":"Couldn't find cover art",
+  "앨범아트를 못 찾았어요 — 직접 올려보세요":"No cover art found — upload your own",
+  "직접 올리기":"Upload",
   "이 커버로 저장돼요 ✓":"This cover will be saved ✓",
   "업로드 중…":"Uploading…",
   "올린 사진으로 저장돼요 ✓":"Your uploaded photo will be saved ✓",
@@ -3677,6 +3676,9 @@ enableSwipeClose('add');
 });
 
 /* ---------- add form ---------- */
+// 후보 그리드에 넣는 '직접 올리기' 타일 — 앨범아트를 못 찾았을 때 사진을 골라 올린다
+const ART_UPLOAD_TILE = '<div class="pk-item pk-uptile" id="f-uptile" title="직접 올리기"><div class="pk-up-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div><div class="pk-cap">직접 올리기</div></div>';
+function wireArtUploadTile(box){ const t=box.querySelector('#f-uptile'); if(t) t.onclick=()=>{ const fi=$('#f-file'); if(fi) fi.click(); }; }
 let prevTimer;
 function schedulePreview(){
   clearTimeout(prevTimer);
@@ -3704,8 +3706,9 @@ function schedulePreview(){
       $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 걸 선택하세요`:'앨범아트를 찾았어요 ✓';
       autofillGenre(cands[0]); autofillYear(cands[0]);
       box.classList.add('show');
-      box.innerHTML=cands.map((c,i)=>`<div class="pk-item ${i===0?'sel':''}" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('');
-      box.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
+      box.innerHTML=cands.map((c,i)=>`<div class="pk-item ${i===0?'sel':''}" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('')+ART_UPLOAD_TILE;
+      wireArtUploadTile(box);
+      box.querySelectorAll('.pk-item:not(.pk-uptile)').forEach(el=>el.onclick=()=>{
         box.querySelectorAll('.pk-item').forEach(x=>x.classList.remove('sel'));
         el.classList.add('sel');
         const c=cands[+el.dataset.i];
@@ -3719,8 +3722,9 @@ function schedulePreview(){
       });
     }else{
       $('#pa-prev').textContent='art';$('#pa-prev').dataset.url='';
-      $('#pt-prev').textContent='앨범아트를 찾지 못했어요';
-      box.classList.remove('show');box.innerHTML='';
+      $('#pt-prev').textContent='앨범아트를 못 찾았어요 — 직접 올려보세요';
+      box.classList.add('show');box.innerHTML=ART_UPLOAD_TILE;
+      wireArtUploadTile(box);
     }
   },550);
 }
@@ -3737,8 +3741,6 @@ function setPrevImg(url, msg){
   $('#f-cands').classList.remove('show');
   $('#f-cands').querySelectorAll('.pk-item').forEach(x=>x.classList.remove('sel'));
 }
-{ const t=$('#f-art-toggle'), box=$('#f-art-manual');   // 앨범아트 직접 올리기 접기/펼치기
-  if(t&&box) t.onclick=()=>{ const open=box.style.display!=='none'; box.style.display=open?'none':''; }; }
 $('#f-file').onchange=async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{
@@ -3747,10 +3749,7 @@ $('#f-file').onchange=async e=>{
     try{ const url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); setPrevImg(url,'올린 사진으로 저장돼요 ✓'); }
     catch(up){ setPrevImg(u,'사진 준비됨 ✓'); }
   }catch(err){alert('이미지를 불러오지 못했어요');}
-};
-$('#f-urlbtn').onclick=()=>{
-  const u=$('#f-urlin').value.trim(); if(!u)return;
-  setPrevImg(u,'입력한 이미지로 저장돼요 ✓');
+  finally{ try{ e.target.value=''; }catch(_){} }   // 같은 파일 다시 선택 가능하도록
 };
 
 /* ===== 바코드 스캔 → Discogs 조회 ===== */
