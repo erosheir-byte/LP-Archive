@@ -176,15 +176,42 @@ public class LPMediaPlugin extends Plugin {
 
   private void stopInternal() {
     final Activity act = getActivity();
-    if (act == null) return;
+    if (act == null) { releaseSession(); return; }
     act.runOnUiThread(new Runnable() {
-      @Override public void run() {
-        try {
-          if (session != null) session.setActive(false);
-          NotificationManagerCompat.from(getContext()).cancel(NOTIF_ID);
-        } catch (Exception e) {}
-      }
+      @Override public void run() { releaseSession(); }
     });
+  }
+
+  /** 세션을 완전히 해제 — 미디어 출력/잠금화면/알림에서 완전히 사라진다.
+   *  setActive(false) 만으로는 일부 기기의 "미디어 재생" 패널에 항목이 남으므로 release 까지 한다. */
+  private void releaseSession() {
+    try { NotificationManagerCompat.from(getContext()).cancel(NOTIF_ID); } catch (Exception e) {}
+    try {
+      if (session != null) {
+        try { session.setPlaybackState(new PlaybackStateCompat.Builder()
+            .setState(PlaybackStateCompat.STATE_STOPPED, 0, 0f).build()); } catch (Exception e) {}
+        session.setActive(false);
+        session.release();
+        session = null;
+      }
+    } catch (Exception e) {}
+    tPlaying = false;
+    artUrl = null;
+  }
+
+  /** 앱이 포그라운드에서 벗어나면(홈·앱전환·잠금·종료) 세션을 해제해
+   *  "미디어 재생" 목록에 음원이 남지 않게 한다. */
+  @Override
+  public void handleOnStop() {
+    releaseSession();
+    super.handleOnStop();
+  }
+
+  /** 앱을 스와이프로 닫거나 액티비티가 파괴될 때: 세션 해제 */
+  @Override
+  public void handleOnDestroy() {
+    releaseSession();
+    super.handleOnDestroy();
   }
 
   private void ensureChannel() {
