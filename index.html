@@ -4932,6 +4932,7 @@ function renderSettings(){
     <div class="set-card">
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">My Vinyl Archive · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px">미디어 브리지: ${_lpDiag()}</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
     </div>`;
 
@@ -4987,6 +4988,35 @@ function renderSettings(){
         alert('이 계정을 비웠어요.');
       }catch(e){ console.error(e); alert('삭제 중 오류가 났어요. 잠시 후 다시 시도해 주세요.'); }
       finally{ cl.style.pointerEvents=''; if(t) t.textContent=old; }
+  }; }
+  // 회원 탈퇴 (계정 + 모든 데이터 영구 삭제)
+  { const dl=$('#set-delete'); if(dl) dl.onclick=async()=>{
+      if(!(window.LPCloud && window.LPCloud.deleteAccount)){ alert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
+      if(!confirm('회원 탈퇴 시 계정과 모든 데이터(LP·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?')) return;
+      if(!confirm('정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.')) return;
+      const t=dl.querySelector('.set-t'); const old=t?t.textContent:'';
+      const run=async(pw)=>{
+        dl.style.pointerEvents='none'; if(t) t.textContent='탈퇴 처리 중…';
+        try{
+          await window.LPCloud.deleteAccount(pw);
+          alert('탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.');
+          return true;
+        }catch(e){
+          if(e && e.code==='need-password'){
+            const p=prompt('보안을 위해 비밀번호를 다시 입력해 주세요.');
+            dl.style.pointerEvents=''; if(t) t.textContent=old;
+            if(p) return run(p);
+            return false;
+          }
+          console.error(e);
+          const msg = (e && e.code==='auth/requires-recent-login')
+            ? '보안을 위해 다시 로그인한 뒤 탈퇴해 주세요. (로그아웃 → 재로그인 → 탈퇴)'
+            : '탈퇴 처리 중 오류가 났어요. 데이터는 삭제됐을 수 있으니, 다시 로그인해 남은 계정을 탈퇴해 주세요.';
+          alert(msg);
+          return false;
+        }finally{ dl.style.pointerEvents=''; if(t) t.textContent=old; }
+      };
+      run();
   }; }
   // 로그아웃
   { const lo=$('#set-logout'); if(lo) lo.onclick=()=>{
@@ -5547,11 +5577,12 @@ if('serviceWorker' in navigator){
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, signOut, GoogleAuthProvider,
-         signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential }
+         signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
+         deleteUser, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
-import { getStorage, ref, uploadBytes, getDownloadURL }
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js';
 import { getAI, getGenerativeModel, GoogleAIBackend }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-ai.js';
@@ -5778,7 +5809,37 @@ function start(){
       await setDoc(doc(db,'shared',String(shareId)), payload);
       return shareId;
     },
-    logout(){ return signOut(auth); }
+    logout(){ return signOut(auth); },
+    // 회원 탈퇴: 이 계정의 모든 데이터(Firestore lps·meta, Storage 이미지) + 인증 계정 자체를 삭제.
+    // deleteUser 는 최근 로그인 상태를 요구 → requires-recent-login 이면 재인증(이메일=비번, 구글=팝업) 후 재시도.
+    async deleteAccount(password){
+      const user=auth.currentUser;
+      if(!user) throw new Error('not-signed-in');
+      const uid=user.uid;
+      // 1) Firestore 데이터 삭제 (lps 전체 + 컬렉션·상태 메타)
+      try{ await this.clearAll(); }catch(e){ console.error('clearAll',e); }
+      try{ await deleteDoc(doc(db,'users',uid,'meta','collections')); }catch(e){}
+      try{ await deleteDoc(doc(db,'users',uid,'meta','state')); }catch(e){}
+      // 2) Storage 업로드 이미지 삭제 (best-effort)
+      try{ const l=await listAll(ref(storage,'users/'+uid)); await Promise.all(l.items.map(i=>deleteObject(i).catch(()=>{}))); }catch(e){}
+      // 3) 인증 계정 삭제 (필요 시 재인증)
+      try{
+        await deleteUser(user);
+      }catch(e){
+        if(e && e.code==='auth/requires-recent-login'){
+          const pid=(user.providerData&&user.providerData[0]&&user.providerData[0].providerId)||'';
+          if(pid==='password'){
+            if(!password){ const err=new Error('need-password'); err.code='need-password'; throw err; }
+            await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+          }else{
+            await reauthenticateWithPopup(user, new GoogleAuthProvider());
+          }
+          await deleteUser(user);
+        }else{
+          throw e;
+        }
+      }
+    }
   };
 
   // ===== 로그인 상태 감지 =====
