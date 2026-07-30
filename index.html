@@ -3627,6 +3627,7 @@ function show(name){
   if(s.classList.contains('fs')) document.body.classList.add('fs-open');   // 풀스크린이면 뒤 레이어 숨김
   lockScroll();}
 function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
+  if(name==='add') clearAddDraft();   // 추가 폼을 직접 닫으면(저장 완료·취소) 임시저장도 함께 지운다
   const s=$('#sheet-'+name); s.style.transform='';
   if(s.classList.contains('fs')) document.body.classList.remove('fs-open');
   if(!document.querySelector('.sheet.show')) unlockScroll();}   // 열린 시트가 더 없을 때만 잠금 해제
@@ -4239,6 +4240,56 @@ $('#add-save').onclick=()=>{
   renderChips();renderGrid();renderStats();buildCoverFlow();
   window.scrollTo(0,0);
 };
+
+/* ===== 추가 폼 임시저장 =====
+   작성 중 다른 앱(카톡 등)으로 갔다가 웹뷰가 재시작돼도 이어서 쓸 수 있게,
+   입력값을 localStorage 에 수시로 저장해 두고 앱이 다시 켜지면 복구한다. */
+const ADD_DRAFT_KEY='lp_add_draft';
+const ADD_DRAFT_FIELDS=['f-artist','f-album','f-color','f-cat','f-status','f-op','f-rpm','f-inch',
+  'f-sleeve','f-media','f-price','f-list','f-store','f-buy','f-eta','f-open','f-genre','f-year','f-note'];
+function saveAddDraft(){
+  const sh=$('#sheet-add');
+  if(!sh || !sh.classList.contains('show')) return;   // 추가 폼이 열려 있을 때만
+  const d={t:Date.now(), v:{}, openUnknown:openUnknown,
+           hex:($('#f-color')&&$('#f-color').dataset.hex)||'',
+           art:($('#pa-prev')&&$('#pa-prev').dataset.url)||'',
+           disc:(window.__addDraft&&window.__addDraft.discPhoto)||null};
+  ADD_DRAFT_FIELDS.forEach(i=>{ const el=$('#'+i); if(el) d.v[i]=el.value; });
+  try{ localStorage.setItem(ADD_DRAFT_KEY, JSON.stringify(d)); }
+  catch(e){ d.disc=null; try{ localStorage.setItem(ADD_DRAFT_KEY, JSON.stringify(d)); }catch(e2){} }   // 용량 초과 시 판 사진만 빼고 저장
+}
+function clearAddDraft(){ try{ localStorage.removeItem(ADD_DRAFT_KEY); }catch(e){} }
+let _addDraftTimer=null;
+function scheduleAddDraft(){ clearTimeout(_addDraftTimer); _addDraftTimer=setTimeout(saveAddDraft, 400); }
+{ const sh=$('#sheet-add');
+  ['input','change','click'].forEach(ev=>sh.addEventListener(ev, scheduleAddDraft)); }
+// 화면이 가려지는 순간(앱 전환·홈·잠금) 즉시 저장 — 이때 웹뷰가 죽어도 내용이 남는다
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden){ clearTimeout(_addDraftTimer); saveAddDraft(); } });
+window.addEventListener('pagehide', ()=>{ clearTimeout(_addDraftTimer); saveAddDraft(); });
+function restoreAddDraft(){
+  let d=null; try{ d=JSON.parse(localStorage.getItem(ADD_DRAFT_KEY)||'null'); }catch(e){}
+  if(!d || !d.v) return false;
+  if(Date.now()-(d.t||0) > 12*60*60*1000){ clearAddDraft(); return false; }   // 12시간 지난 초안은 버림
+  const typed=['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-genre','f-year']
+    .some(i=>String(d.v[i]||'').trim());
+  if(!typed && !d.disc){ clearAddDraft(); return false; }   // 실제 입력이 없었으면 복구할 것도 없음
+  const cat=d.v['f-cat']||'보유중';
+  openAdd(cat==='보유중' ? (d.v['f-status']==='개봉'?'개봉':undefined) : cat);
+  ADD_DRAFT_FIELDS.forEach(i=>{ const el=$('#'+i); if(el && d.v[i]!==undefined) el.value=d.v[i]; });
+  const fc=$('#f-color');
+  if(fc){ if(d.hex) fc.dataset.hex=d.hex; else delete fc.dataset.hex;
+          if(d.disc) fc.dataset.photo=d.disc; else delete fc.dataset.photo; }
+  window.__addDraft={discPhoto:d.disc||null};
+  openUnknown=!!d.openUnknown;
+  { const ub=$('#f-open-unknown'); if(ub) ub.classList.toggle('on', openUnknown); }
+  if(d.art){ const pa=$('#pa-prev'); pa.innerHTML=''; const im=document.createElement('img'); im.src=d.art;
+             pa.appendChild(im); pa.dataset.url=d.art;
+             $('#pt-prev').textContent='이 커버로 저장돼요 ✓'; }
+  setupColorField('f'); toggleBuyFields(); paintGradeDesc('f');
+  const en=(typeof isEN==='function')&&isEN();
+  previewToast(en?'Restored your unfinished entry ✓':'작성 중이던 추가 내용을 복구했어요 ✓');
+  return true;
+}
 
 /* ---------- persist (in-memory + attempt localStorage) ---------- */
 const ratings={};  // key -> 0..5  (for seed items)
@@ -5453,6 +5504,11 @@ window.bootApp=function(items){
   try{ loadSettings(); }catch(e){}
   try{ loadCollections(); }catch(e){}
   renderChips();renderStats();renderGrid();buildCoverFlow();refreshGenreChips();
+  // 앱이 재시작됐다면(다른 앱 갔다가 웹뷰가 죽은 경우) 작성 중이던 추가 폼을 복구
+  if(!window.__addDraftRestored){
+    window.__addDraftRestored=true;
+    setTimeout(()=>{ try{ restoreAddDraft(); }catch(e){} }, 350);
+  }
 };
 
 /* ===== 안드로이드 하드웨어 뒤로가기 ===== */
