@@ -3027,6 +3027,11 @@ function openDetail(id, mode){
   let action='';
   if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
   else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
+  // 같은 앨범이 여러 장이면, 이 장의 커버를 달력·모아보기 '대표 이미지'로 지정할 수 있게
+  const sameAlbum=DATA.filter(x=>artKey(x.artist,x.album)===key);
+  if(sameAlbum.length>1){
+    action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?'📌 대표 이미지 지정됨 — 해제하기':'📌 이 커버를 대표 이미지로'}</button>`;
+  }
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
@@ -3077,6 +3082,16 @@ function openDetail(id, mode){
   bindStarHits();
   const ab=$('#act-arrive'); if(ab) ab.onclick=()=>showArriveForm(it);
   const bb=$('#act-buy'); if(bb) bb.onclick=()=>showBuyForm(it);
+  // 대표 이미지 지정/해제: 같은 앨범의 다른 장에 걸린 지정은 풀고 이 장으로 옮긴다
+  { const rb=$('#act-repcover'); if(rb) rb.onclick=()=>{
+      const on=!it.repCover;
+      DATA.forEach(x=>{ if(x!==it && x.repCover && artKey(x.artist,x.album)===key){ x.repCover=null; cloudSaveItem(x); } });
+      it.repCover=on?true:null; cloudSaveItem(it);
+      if(typeof renderCal==='function') renderCal();
+      if(typeof buildCoverFlow==='function') buildCoverFlow();
+      previewToast(on?'이 커버가 앨범 대표 이미지로 지정됐어요 ✓':'대표 이미지 지정을 해제했어요');
+      openDetail(it.id);
+  }; }
   // 우측 상단 '수정' 버튼 — 상세를 연 순간부터 항상 보이는 수정 진입점
   { const eb=$('#dt-edit'); if(eb) eb.onclick=()=>showEditForm(it); }
   const db=$('#act-delete'); if(db) db.onclick=()=>{
@@ -4346,6 +4361,13 @@ let calYear, calMonth;   // current view (month is 0-based)
 let calPick = (()=>{ try{ return JSON.parse(localStorage.getItem('lp_calpick')||'{}')||{}; }catch(e){ return {}; } })();
 function saveCalPick(){ try{ localStorage.setItem('lp_calpick', JSON.stringify(calPick)); }catch(e){} }
 function artFor(it){ return it._art || pickedArt[artKey(it.artist,it.album)] || artCache[artKey(it.artist,it.album)] || null; }
+// 같은 앨범(가수+앨범명)이 여러 장이고 장마다 커버가 다를 때,
+// 사용자가 '대표 이미지'로 지정한 장(repCover)의 커버를 우선 사용 (달력·모아보기 표시용)
+function repArtFor(it){
+  const k=artKey(it.artist,it.album);
+  const rep=DATA.find(x=>x.repCover && artKey(x.artist,x.album)===k);
+  return (rep && artFor(rep)) || artFor(it);
+}
 // collect date-events: {date:'YYYY-MM-DD', kind:'arrive'|'buy'|'sold'|'open', it}
 function calEvents(){
   const ev=[];
@@ -4401,7 +4423,7 @@ function renderCal(){
       let top, picked=false;
       if(pid){ const c=[...items].filter(e=>e.it.id===pid).sort((a,b)=>rank(a.kind)-rank(b.kind))[0]; if(c){ top=c; picked=true; } }
       if(!top) top=[...items].sort((a,b)=>rank(a.kind)-rank(b.kind))[0];
-      const art=artFor(top.it);
+      const art=repArtFor(top.it);
       const cls = top.kind==='buy'?'ph-buy' : top.kind==='sold'?'ph-sold' : '';
       // 직접 고른 항목은 사진(커버)을 그대로 보여준다. 자동 선택 개봉은 CD판으로.
       if(top.kind==='open' && !(picked && art)){
@@ -4448,7 +4470,7 @@ function openDayList(dateStr, items){
     if(showPins) html+=`<div class="dl-pinhint">${pinSVG} 달력에 대표로 나올 앨범을 골라주세요</div>`;
     html+=items.map(ev=>{
       const it=ev.it;
-      const art=artFor(it);
+      const art=repArtFor(it);
       const thumb = art
         ? `<img src="${art}" alt="">`
         : `<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
@@ -5313,8 +5335,13 @@ function applyCfMode(){
 function buildCoverFlow(){
   cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
   if(typeof SETTINGS==='undefined' || SETTINGS.dedupeFlow!==false){   // 같은 앨범(가수+앨범명)은 한 장만
+    const norm=d=>((d.artist||'')+'|'+(d.album||'')).toLowerCase().replace(/\s+/g,'');
+    const repKeys=new Set(cfItems.filter(d=>d.repCover).map(norm));   // 대표 이미지가 지정된 앨범
     const seen=new Set();
-    cfItems=cfItems.filter(d=>{ const k=((d.artist||'')+'|'+(d.album||'')).toLowerCase().replace(/\s+/g,''); if(seen.has(k)) return false; seen.add(k); return true; });
+    cfItems=cfItems.filter(d=>{ const k=norm(d);
+      if(seen.has(k)) return false;
+      if(repKeys.has(k) && !d.repCover) return false;   // 대표로 지정한 장이 따로 있으면 그 장을 보여준다
+      seen.add(k); return true; });
   }
   if(!cfItems.length) cfItems=DATA.slice();
   const track=$('#cf-track');
@@ -5772,7 +5799,7 @@ function start(){
     'status','sellDate','sellPrice','profit','note','genre','rating','liked',
     'discColorCustom','discOpacity','discPhoto','colorHex',
     'listPrice','sleeveGrade','mediaGrade','openDate','listens','previewAlbumId','previewAlbumName',
-    'rpm','inch'];
+    'rpm','inch','year','repCover'];
   function serialize(it){
     const o={};
     FIELDS.forEach(f=>{ o[f]=(it[f]===undefined?null:it[f]); });
