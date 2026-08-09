@@ -3465,17 +3465,15 @@ function showBuyForm(it){
       <div class="fld"><label>정가 (원)</label><input id="inl-list" type="number" inputmode="numeric" placeholder="59000"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>결제</label><select id="inl-pay"><option value="카드">카드</option><option value="현금">현금</option><option value="복지포인트">복지포인트</option><option value="선물">선물</option></select></div>
+      <div class="fld"><label>구매일자</label><input id="inl-buy" type="date" value="${today}"></div>
       <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option></select></div>
     </div>
     <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
   $('#inl-save').onclick=()=>{
-    it.store=$('#inl-store').value.trim();
     it.price=Number($('#inl-price').value)||null;
     const _lp=Number($('#inl-list').value)||null; if(_lp!=null) it.listPrice=_lp;
     if(it.orig==null) it.orig=it.price;
     it.buy=$('#inl-buy').value||today;
-    it.pay=$('#inl-pay').value;
     it.status=$('#inl-open').value;
     persistItem(it);
     hide('detail');
