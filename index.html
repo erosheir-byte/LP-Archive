@@ -1030,7 +1030,7 @@ body.state-shared #shared-view{display:block}
   <div class="stats" id="stats2" style="padding-top:16px"></div>
   <div class="export-note" id="bigstats"></div>
   <!-- 장부 성격 카드(자주 간 구매처·수집 히스토리) — 마이페이지에서 이동 -->
-  <div class="taste" id="stats-taste" style="margin-top:16px"></div>
+  <div class="taste" id="stats-taste" style="margin-top:16px;padding:0 20px 26px"></div>
 </div>
 
 <div class="view" id="view-cal">
@@ -4574,13 +4574,12 @@ function renderStats(){
   const wish=DATA.filter(d=>statusGroup(d.status)==='위시').length;
   const totalBuy=real.reduce((s,d)=>s+(d.price||0),0);                 // 총 구매가(위시 제외)
   const totalSell=sold.reduce((s,d)=>s+(d.sellPrice||0),0);            // 총 판매가
-  const profit=sold.reduce((s,d)=>s+(d.profit||0),0);                  // 총 판매 차익
   $('#stats2').innerHTML=`
     <div class="stat"><div class="lab">보유 중</div><div class="val">${owned.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">♪</div></div>
     <div class="stat"><div class="lab">판매·교환</div><div class="val">${soldExch.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">↻</div></div>
     <div class="stat"><div class="lab">총 구매가</div><div class="val sm">${won(totalBuy)}</div></div>
     <div class="stat"><div class="lab">총 판매가</div><div class="val sm">${won(totalSell)}</div></div>
-    <div class="stat ${profit>=0?'pos':''}" style="grid-column:1/-1"><div class="lab">총 판매 차익</div><div class="val sm">${profit>=0?'+':''}${won(profit)}</div></div>`;
+`;
   $('#hsub').innerHTML = isEN()
     ? `Total <b>${real.length}</b><span class="sep">·</span>Owned <b>${owned.length}</b><span class="sep">·</span>Opened <b>${opened}</b><span class="sep">·</span>Sealed <b>${sealed}</b>`
     : `총 <b>${real.length}</b>장<span class="sep">·</span>보유 <b>${owned.length}</b><span class="sep">·</span>개봉 <b>${opened}</b><span class="sep">·</span>미개봉 <b>${sealed}</b>`;
@@ -4611,8 +4610,7 @@ function renderStats(){
       </div>`).join('')}
     <div style="height:1px;background:var(--line);margin:14px 0"></div>` : '';
 
-  // 소장 가치 (구매가 vs 판매 차익)
-  const bestSell=sold.slice().sort((a,b)=>((b.profit||0))-((a.profit||0)))[0];
+  // 소장 가치
   const valueHTML=`
     <div style="font-weight:700;color:var(--txt);margin-bottom:8px">소장 가치</div>
     <div style="display:flex;justify-content:space-between;margin:6px 0"><span>보유분 구매가 합</span><b style="color:var(--txt)">${won(owned.reduce((s,d)=>s+(d.price||0),0))}</b></div>
@@ -4624,9 +4622,16 @@ function renderStats(){
   // ── 장부 성격 카드: 자주 간 구매처 + 수집 히스토리 (마이페이지에서 이동) ──
   const st=$('#stats-taste');
   if(st){
+    // 대소문자 구분 없이 같은 구매처로 카운트 (yes24 = Yes24) — 표기는 가장 많이 쓴 원문
     const storeMap={};
-    real.forEach(d=>{ const k=(d.store||'').trim(); if(!k||k==='-')return; storeMap[k]=(storeMap[k]||0)+1; });
-    const storeTop=Object.entries(storeMap).sort((a,b)=>b[1]-a[1]).slice(0,3).filter(([k])=>k!=='선물'&&k!=='교환');
+    real.forEach(d=>{ const raw=(d.store||'').trim(); if(!raw||raw==='-')return;
+      const low=raw.toLowerCase();
+      const e=(storeMap[low]=storeMap[low]||{cnt:0,names:{}});
+      e.cnt++; e.names[raw]=(e.names[raw]||0)+1; });
+    const storeTop=Object.entries(storeMap)
+      .filter(([low])=>low!=='선물'&&low!=='교환')
+      .sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,3)
+      .map(([low,e])=>({low, cnt:e.cnt, name:Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0]}));
     const byYear={};
     real.forEach(d=>{ if(!d.buy)return; const y=String(d.buy).slice(0,4); if(!/^\d{4}$/.test(y))return; byYear[y]=(byYear[y]||0)+1; });
     const years=Object.keys(byYear).sort();
@@ -4634,7 +4639,7 @@ function renderStats(){
     st.innerHTML=`
       <div class="t-card">
         <div class="t-head">자주 간 구매처</div>
-        ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+        ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s.name)}</span><span class="t-val">${s.cnt}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
       </div>
       <div class="t-card">
         <div class="t-head">수집 히스토리</div>
@@ -4644,7 +4649,7 @@ function renderStats(){
     const dShort=s=>String(s||'').slice(2,10).replace(/-/g,'.');
     st.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
       const s=storeTop[+el.dataset.ts]; if(!s) return;
-      openTasteList(`${s[0]} · ${s[1]}장`, real.filter(d=>(d.store||'').trim()===s[0])
+      openTasteList(`${s.name} · ${s.cnt}장`, real.filter(d=>(d.store||'').trim().toLowerCase()===s.low)
         .sort((a,b)=>String(b.buy||'').localeCompare(String(a.buy||'')))
         .map(it=>({it, tag: dShort(it.buy)})));
     });
