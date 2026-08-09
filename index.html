@@ -1029,7 +1029,8 @@ body.state-shared #shared-view{display:block}
 <div class="view" id="view-stats">
   <div class="stats" id="stats2" style="padding-top:16px"></div>
   <div class="export-note" id="bigstats"></div>
-  <button class="share-card-btn" id="share-card-btn" type="button">📤 컬렉션 카드 공유</button>
+  <!-- 장부 성격 카드(자주 간 구매처·수집 히스토리) — 마이페이지에서 이동 -->
+  <div class="taste" id="stats-taste" style="margin-top:16px"></div>
 </div>
 
 <div class="view" id="view-cal">
@@ -1067,6 +1068,7 @@ body.state-shared #shared-view{display:block}
     <h3>내 취향 요약</h3>
   </div>
   <div class="taste" id="taste"></div>
+  <button class="share-card-btn" id="share-card-btn" type="button">📤 컬렉션 카드 공유</button>
 </div>
 
 <!-- 환경설정 시트 -->
@@ -4618,6 +4620,35 @@ function renderStats(){
 `;
 
   $('#bigstats').innerHTML=ratingHTML+valueHTML;
+
+  // ── 장부 성격 카드: 자주 간 구매처 + 수집 히스토리 (마이페이지에서 이동) ──
+  const st=$('#stats-taste');
+  if(st){
+    const storeMap={};
+    real.forEach(d=>{ const k=(d.store||'').trim(); if(!k||k==='-')return; storeMap[k]=(storeMap[k]||0)+1; });
+    const storeTop=Object.entries(storeMap).sort((a,b)=>b[1]-a[1]).slice(0,3).filter(([k])=>k!=='선물'&&k!=='교환');
+    const byYear={};
+    real.forEach(d=>{ if(!d.buy)return; const y=String(d.buy).slice(0,4); if(!/^\d{4}$/.test(y))return; byYear[y]=(byYear[y]||0)+1; });
+    const years=Object.keys(byYear).sort();
+    const yearMax=Math.max(1,...Object.values(byYear));
+    st.innerHTML=`
+      <div class="t-card">
+        <div class="t-head">자주 간 구매처</div>
+        ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
+      </div>
+      <div class="t-card">
+        <div class="t-head">수집 히스토리</div>
+        <div class="t-years">${years.map(y=>`<div class="t-year" data-year="${y}" role="button" tabindex="0" title="${y}년 구매 앨범 보기"><span class="t-ybar" style="height:${Math.round(byYear[y]/yearMax*100)}%"></span><span class="t-ynum">${byYear[y]}</span><span class="t-ylab">'${y.slice(2)}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}</div>
+      </div>`;
+    st.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
+    const dShort=s=>String(s||'').slice(2,10).replace(/-/g,'.');
+    st.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
+      const s=storeTop[+el.dataset.ts]; if(!s) return;
+      openTasteList(`${s[0]} · ${s[1]}장`, real.filter(d=>(d.store||'').trim()===s[0])
+        .sort((a,b)=>String(b.buy||'').localeCompare(String(a.buy||'')))
+        .map(it=>({it, tag: dShort(it.buy)})));
+    });
+  }
 }
 
 /* ===== 월별 요약 (달력 아래, 달력의 그 달에 연동) ===== */
@@ -4776,21 +4807,12 @@ function renderTaste(){
   const genreTop=top(tally('genre'),3);
   const genreMax=genreTop.length?genreTop[0][1]:1;
 
-  // 4) 자주 간 구매처 TOP3 (+ 구매처별 총 지출)
-  const storeTop=top(tally('store'),3).filter(([k])=>k!=='선물'&&k!=='교환');
-
-  // 4.5) 가장 많이 들은 앨범 TOP5 (청음 기록 횟수)
+  // 3) 가장 많이 들은 앨범 TOP5 (청음 기록 횟수)
   const listenRank=DATA
     .map(d=>({d, cnt:Array.isArray(d.listens)?d.listens.length:0}))
     .filter(x=>x.cnt>0)
     .sort((a,b)=>b.cnt-a.cnt)
     .slice(0,5);
-
-  // 5) 수집 연대기 (연도별)
-  const byYear={};
-  owned.forEach(d=>{ if(!d.buy)return; const y=String(d.buy).slice(0,4); if(!/^\d{4}$/.test(y))return; byYear[y]=(byYear[y]||0)+1; });
-  const years=Object.keys(byYear).sort();
-  const yearMax=Math.max(1,...Object.values(byYear));
 
   const cards=[];
 
@@ -4806,26 +4828,13 @@ function renderTaste(){
     ${genreTop.map(([g,c],i)=>`<div class="t-bar-row t-tap" data-tg="${i}"><span class="t-bar-lab">${escapeHtml(g)}</span><span class="t-bar-track"><span class="t-bar-fill" style="width:${Math.round(c/genreMax*100)}%"></span></span><span class="t-bar-num">${c}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
-  // 단골 구매처
-  cards.push(`<div class="t-card">
-    <div class="t-head">자주 간 구매처</div>
-    ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s[0])}</span><span class="t-val">${s[1]}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
-  </div>`);
-
   // 가장 많이 들은 앨범 (청음 횟수)
   cards.push(`<div class="t-card">
     <div class="t-head">가장 많이 들은 앨범</div>
     ${listenRank.map((r,i)=>`<div class="t-row t-tap" data-id="${r.d.id}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.d.album||r.d.artist||'—')}<span class="t-sub">${escapeHtml(r.d.artist||'')}</span></span><span class="t-val">${r.cnt}${isEN()?'':'회'} 🎧</span></div>`).join('')||'<div class="t-empty">아직 청음 기록이 없어요</div>'}
   </div>`);
 
-  // 수집 히스토리
-  cards.push(`<div class="t-card">
-    <div class="t-head">수집 히스토리</div>
-    <div class="t-years">${years.map(y=>`<div class="t-year" data-year="${y}" role="button" tabindex="0" title="${y}년 구매 앨범 보기"><span class="t-ybar" style="height:${Math.round(byYear[y]/yearMax*100)}%"></span><span class="t-ynum">${byYear[y]}</span><span class="t-ylab">'${y.slice(2)}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}</div>
-  </div>`);
-
   wrap.innerHTML=cards.join('');
-  wrap.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
   const dShort=s=>String(s||'').slice(2,10).replace(/-/g,'.');
   // 최애 아티스트 → 그 아티스트의 앨범들
   wrap.querySelectorAll('[data-ta]').forEach(el=>el.onclick=()=>{
@@ -4836,13 +4845,6 @@ function renderTaste(){
   wrap.querySelectorAll('[data-tg]').forEach(el=>el.onclick=()=>{
     const g=genreTop[+el.dataset.tg]; if(!g) return;
     openTasteList(`${g[0]} · ${g[1]}장`, owned.filter(d=>(d.genre||'').trim()===g[0]).map(it=>({it, tag: it.year?String(it.year):''})));
-  });
-  // 자주 간 구매처 → 그 구매처에서 산 앨범들
-  wrap.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
-    const s=storeTop[+el.dataset.ts]; if(!s) return;
-    openTasteList(`${s[0]} · ${s[1]}장`, owned.filter(d=>(d.store||'').trim()===s[0])
-      .sort((a,b)=>String(b.buy||'').localeCompare(String(a.buy||'')))
-      .map(it=>({it, tag: dShort(it.buy)})));
   });
   // 가장 많이 들은 앨범 → 그 앨범의 청음 기록들
   wrap.querySelectorAll('.t-row.t-tap[data-id]').forEach(el=>el.onclick=()=>{
