@@ -2649,12 +2649,13 @@ async function _fetchPreviewUrl(it){
   const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();  // (), [] 수식어 제거
   let urls = [];
   const stores = country==='KR' ? ['KR','US'] : ['US','KR'];   // 스토어별 보유가 달라 둘 다 시도
+  const langQ = country==='KR' ? '&lang=ko_kr' : '';           // 한국어 UI면 트랙명을 한국어로 받는다
   try{
     // 0) 사용자가 미리듣기 음원 앨범을 직접 지정했으면 그 앨범 수록곡을 그대로 사용
     if(it.previewAlbumId){
       for(const st of stores){
         try{
-          const lr=await fetch('https://itunes.apple.com/lookup?id='+it.previewAlbumId+'&entity=song&country='+st+'&limit=80');
+          const lr=await fetch('https://itunes.apple.com/lookup?id='+it.previewAlbumId+'&entity=song&country='+st+'&limit=80'+langQ);
           const lj=await lr.json();
           const u=(lj.results||[])
             .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
@@ -2679,13 +2680,24 @@ async function _fetchPreviewUrl(it){
       }
       // (이름·아티스트가 안 맞으면 재생하지 않음 — 검색 첫 결과를 추측으로 트는 폴백 제거)
       if(cand && cand.collectionId){
-        const lr=await fetch('https://itunes.apple.com/lookup?id='+cand.collectionId+'&entity=song&country='+candCountry+'&limit=80');
-        const lj=await lr.json();
-        urls=(lj.results||[])
-          .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
-          .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()}))
-          .filter(t=>t.url);
-        if(urls.length) it._pvName = cand.collectionName || '';   // 자동으로 매칭된 앨범명 기록
+        // 트랙명이 한국어로 오도록: 한국어 UI면 US 스토어에서 찾았어도 KR 스토어 조회를 먼저 시도
+        const lookStores = country==='KR' ? ['KR','US'] : [candCountry, candCountry==='KR'?'US':'KR'];
+        for(const st of lookStores){
+          try{
+            const lr=await fetch('https://itunes.apple.com/lookup?id='+cand.collectionId+'&entity=song&country='+st+'&limit=80'+langQ);
+            const lj=await lr.json();
+            const res=(lj.results||[]);
+            const u=res.filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
+              .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()}))
+              .filter(t=>t.url);
+            if(u.length){
+              urls=u;
+              const colRes=res.find(x=>x.wrapperType==='collection');
+              it._pvName=(colRes&&colRes.collectionName)||cand.collectionName||'';   // 조회한 스토어 언어의 앨범명
+              break;
+            }
+          }catch(e){}
+        }
       }
     }
     // 3) 앨범을 못 찾았을 때만 폴백: 곡 검색(양 스토어) 후 앨범명·아티스트가 모두 맞는 곡만 (없으면 빈 목록)
