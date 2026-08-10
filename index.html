@@ -4739,15 +4739,20 @@ function renderCal(){
       // priority for the visible tile: open(CD) > sold > arrive > buy
       const order={open:0,sold:1,arrive:2,buy:3};
       const rank=k=>(order[k]!=null?order[k]:9);
-      // 사용자가 이 날 대표 사진을 골랐으면 그 항목을 우선 사용
+      // 사용자가 이 날 표시할 기록(항목+종류)을 골랐으면 그것을 우선 사용
       const pid=calPick[dateStr];
-      let top, picked=false;
-      if(pid){ const c=[...items].filter(e=>e.it.id===pid).sort((a,b)=>rank(a.kind)-rank(b.kind))[0]; if(c){ top=c; picked=true; } }
+      let top, picked=false, pickedKind=null;
+      if(pid){
+        const pk=(typeof pid==='object'&&pid)?pid:{id:pid,kind:null};   // 구버전 값은 항목 id 문자열
+        const c=[...items].filter(e=>e.it.id===pk.id && (!pk.kind || e.kind===pk.kind))
+          .sort((a,b)=>rank(a.kind)-rank(b.kind))[0];
+        if(c){ top=c; picked=true; pickedKind=pk.kind; }
+      }
       if(!top) top=[...items].sort((a,b)=>rank(a.kind)-rank(b.kind))[0];
       const art=repArtFor(top.it);
       const cls = top.kind==='buy'?'ph-buy' : top.kind==='sold'?'ph-sold' : '';
-      // 직접 고른 항목은 사진(커버)을 그대로 보여준다. 자동 선택 개봉은 CD판으로.
-      if(top.kind==='open' && !(picked && art)){
+      // 개봉은 CD판으로 표시. 단 (구버전) 항목만 고른 픽은 커버 사진을 그대로 보여준다.
+      if(top.kind==='open' && !(picked && !pickedKind && art)){
         inner=`<div class="ph-cd" style="--disc:${discColor(top.it.color)}"></div>`;
       } else if(art){
         inner=`<img class="ph-img ${cls}" src="${art}" alt="">`;
@@ -4783,12 +4788,13 @@ function openDayList(dateStr, items){
   const title=`${d.getMonth()+1}월 ${d.getDate()}일`;
   $('#daylist-title').textContent=items.length?`${title} · ${items.length}건`:title;
   let html='';
-  // 서로 다른 커버(앨범)가 2개 이상이면 대표 사진을 고를 수 있게 📌 버튼 노출
-  const distinctIds=[...new Set(items.map(e=>e.it.id))];
-  const showPins = distinctIds.length>1;
+  // 기록이 2건 이상이면(같은 앨범의 도착·개봉·청음이어도) 달력에 표시할 기록을 고를 수 있게 📌 노출
+  const showPins = items.length>1;
+  const pk0=calPick[dateStr];
+  const pk=(typeof pk0==='object'&&pk0)?pk0:(pk0?{id:pk0,kind:null}:null);   // 구버전 값 호환
   const pinSVG=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.8V4h6v6.8a2 2 0 0 0 .5 1.3l1.9 2.1a1 1 0 0 1-.7 1.8H7.3a1 1 0 0 1-.7-1.8l1.9-2.1a2 2 0 0 0 .5-1.3Z"/></svg>`;
   if(items.length){
-    if(showPins) html+=`<div class="dl-pinhint">${pinSVG} 달력에 대표로 나올 앨범을 골라주세요</div>`;
+    if(showPins) html+=`<div class="dl-pinhint">${pinSVG} 달력 칸에 표시할 기록을 골라주세요</div>`;
     html+=items.map(ev=>{
       const it=ev.it;
       const art=repArtFor(it);
@@ -4797,7 +4803,7 @@ function openDayList(dateStr, items){
         : `<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
       const kind=KIND_LABEL[ev.kind]||'';
       const sub = ev.kind==='listen' && ev.note ? `<div class="dl-note">🎧 ${escapeHtml(ev.note)}</div>` : '';
-      const on = showPins && calPick[dateStr]===it.id;
+      const on = showPins && !!pk && pk.id===it.id && (!pk.kind || pk.kind===ev.kind);
       const item=`<button type="button" class="dl-item" data-id="${it.id}">
         <div class="dl-thumb">${thumb}</div>
         <div class="dl-info">
@@ -4808,7 +4814,7 @@ function openDayList(dateStr, items){
         <span class="dl-kind dl-${ev.kind}">${kind}</span>
       </button>`;
       if(!showPins) return item;
-      const pin=`<button type="button" class="dl-pin ${on?'on':''}" data-pin="${it.id}" title="${on?'대표 지정 해제':'이 날 대표 사진으로 지정'}" aria-label="대표 사진 지정">${pinSVG}</button>`;
+      const pin=`<button type="button" class="dl-pin ${on?'on':''}" data-pin="${it.id}" data-kind="${ev.kind}" title="${on?'표시 지정 해제':'이 기록을 달력에 표시'}" aria-label="달력 표시 지정">${pinSVG}</button>`;
       return `<div class="dl-row${on?' picked':''}">${item}${pin}</div>`;
     }).join('');
   } else {
@@ -4821,9 +4827,11 @@ function openDayList(dateStr, items){
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   wrap.querySelectorAll('.dl-pin').forEach(b=>b.onclick=(e)=>{
     e.stopPropagation();
-    const id=b.dataset.pin;
-    if(calPick[dateStr]===id) delete calPick[dateStr];   // 다시 누르면 자동 선택으로 되돌림
-    else calPick[dateStr]=id;
+    const id=b.dataset.pin, kind=b.dataset.kind;
+    const cur=calPick[dateStr];
+    const same = cur && (typeof cur==='object' ? (cur.id===id && cur.kind===kind) : cur===id);
+    if(same) delete calPick[dateStr];   // 다시 누르면 자동 선택으로 되돌림
+    else calPick[dateStr]={id, kind};   // 항목 + 기록 종류(도착/개봉/청음 등)까지 지정
     saveCalPick(); renderCal();
     openDayList(dateStr, items);   // 팝업 다시 그려 선택 상태 갱신
   });
