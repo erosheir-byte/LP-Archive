@@ -67,6 +67,13 @@ html[data-theme="light"] .disc-prev{background:#fff}
 html[data-theme="light"] .palette .sw{border-color:rgba(0,0,0,.14);box-shadow:inset 0 1px 2px rgba(255,255,255,.35),0 1px 3px rgba(0,0,0,.18)}
 /* 별점: 채워지지 않은 별(반개 뒤쪽 포함)이 검게 보이던 것 → 밝은 회색 */
 html[data-theme="light"] .stars .star{color:#d9d2c6}
+/* 구매처·장르 자동완성 상자: 높이 제한 + 스크롤 */
+.sug-box{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:var(--card);border:1px solid var(--line);border-radius:12px;max-height:214px;overflow-y:auto;box-shadow:0 10px 26px rgba(0,0,0,.4);display:none;-webkit-overflow-scrolling:touch}
+.sug-box.show{display:block}
+.sug-it{padding:11px 14px;font-size:13.5px;color:var(--txt);cursor:pointer;border-bottom:1px solid var(--line)}
+.sug-it:last-child{border-bottom:none}
+.sug-it:active{background:var(--card2)}
+html[data-theme="light"] .sug-box{box-shadow:0 10px 26px rgba(0,0,0,.15)}
 /* 커버플로우 하단 그라데이션: 짙은 검정 → 배경색으로 자연스럽게 */
 html[data-theme="light"] .cf-stage{background:linear-gradient(180deg,transparent,rgba(0,0,0,.05))}
 /* 커버플로우 중앙 반투명 재생 컨트롤 */
@@ -1281,7 +1288,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>정가 (원)</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2 buyonly">
-      <div class="fld"><label>구매처</label><input id="f-store" list="dl-stores" placeholder="yes24" autocomplete="off"></div>
+      <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24" autocomplete="off"></div>
       <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
     </div>
     <div class="row2" id="f-eta-row" style="display:none">
@@ -1293,7 +1300,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르</label><input id="f-genre" list="dl-genres" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
+      <div class="fld"><label>장르</label><input id="f-genre" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
       <div class="fld"><label>발매년도</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
     <div class="fld"><label>비고</label><input id="f-note" placeholder="메모"></div>
@@ -1303,10 +1310,6 @@ body.state-shared #shared-view{display:block}
     </div>
   </div>
 </div>
-
-<!-- 구매처·장르 자동완성 후보 (기존 입력값에서 채워짐) -->
-<datalist id="dl-stores"></datalist>
-<datalist id="dl-genres"></datalist>
 
 <!-- 취향 분석 카드 미리보기 시트 -->
 <div class="ov" id="ov-sharecard"></div>
@@ -1351,7 +1354,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>앨범명</label><input id="e-album" placeholder="예: 30"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르</label><input id="e-genre" list="dl-genres" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
+      <div class="fld"><label>장르</label><input id="e-genre" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
       <div class="fld"><label>발매년도</label><input id="e-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
     <div class="fld"><label>별점</label><div class="e-rate" id="e-rate"></div></div>
@@ -1408,7 +1411,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>정가 (원)</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>구매처</label><input id="e-store" list="dl-stores" placeholder="yes24" autocomplete="off"></div>
+      <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24" autocomplete="off"></div>
       <div class="fld"><label>결제</label><select id="e-pay"></select></div>
     </div>
     <div class="row2">
@@ -4289,22 +4292,54 @@ function paintGradeDesc(prefix){
   d.innerHTML=lines.join('<br>');
 }
 let openUnknown=false;
-/* ===== 구매처·장르 자동완성 (기존 입력값을 드롭다운 후보로 — 같은 곳 다르게 입력 방지) ===== */
-function refreshFieldSuggestions(){
-  const sd=document.getElementById('dl-stores'), gd=document.getElementById('dl-genres');
-  if(!sd||!gd) return;
-  // 구매처: 대소문자 무시로 묶고, 가장 많이 쓴 표기를 대표로 (많이 쓴 순)
+/* ===== 구매처·장르 자동완성 (커스텀 드롭다운 — 높이 제한 + 스크롤) ===== */
+function _storeSuggestions(){
+  // 대소문자 무시로 묶고, 가장 많이 쓴 표기를 대표로 (많이 쓴 순)
   const sm={};
   DATA.forEach(d=>{ const raw=(d.store||'').trim(); if(!raw||raw==='-')return;
     const low=raw.toLowerCase(); const e=(sm[low]=sm[low]||{cnt:0,names:{}}); e.cnt++; e.names[raw]=(e.names[raw]||0)+1; });
-  const stores=Object.values(sm).sort((a,b)=>b.cnt-a.cnt)
+  return Object.values(sm).sort((a,b)=>b.cnt-a.cnt)
     .map(e=>Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0]);
-  sd.innerHTML=stores.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
-  // 장르: 쉼표로 나눠 개별 장르도 후보로 (많이 쓴 순)
+}
+function _genreSuggestions(){
+  // 쉼표로 나눠 개별 장르 단위 (많이 쓴 순)
   const gm={};
   DATA.forEach(d=>{ String(d.genre||'').split(',').forEach(t=>{ const g=t.trim(); if(g&&g!=='-') gm[g]=(gm[g]||0)+1; }); });
-  const genres=Object.entries(gm).sort((a,b)=>b[1]-a[1]).map(([g])=>g);
-  gd.innerHTML=genres.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+  return Object.entries(gm).sort((a,b)=>b[1]-a[1]).map(([g])=>g);
+}
+// 입력칸 아래에 후보 상자를 붙인다 (max-height 스크롤). multi=쉼표 구분 입력(장르)
+function attachSuggest(inputId, getItems, opts){
+  const inp=document.getElementById(inputId); if(!inp||inp._sugWired) return;
+  inp._sugWired=true;
+  const fld=inp.closest('.fld')||inp.parentElement;
+  fld.style.position='relative';
+  const box=document.createElement('div'); box.className='sug-box'; fld.appendChild(box);
+  const lastToken=v=>{ const i=v.lastIndexOf(','); return i<0?v:v.slice(i+1); };
+  const render=()=>{
+    const q=((opts&&opts.multi)?lastToken(inp.value):inp.value).trim().toLowerCase();
+    const list=getItems().filter(n=>!q || n.toLowerCase().includes(q)).slice(0,50);
+    if(!list.length || (list.length===1 && list[0].toLowerCase()===q)){ box.classList.remove('show'); box.innerHTML=''; return; }
+    box.innerHTML=list.map(n=>`<div class="sug-it">${escapeHtml(n)}</div>`).join('');
+    box.classList.add('show');
+    box.querySelectorAll('.sug-it').forEach(el=>{
+      el.onpointerdown=(e)=>{ e.preventDefault();   // blur 전에 선택이 처리되게
+        const v=el.textContent;
+        if(opts&&opts.multi){ const i=inp.value.lastIndexOf(','); inp.value = i<0 ? v : (inp.value.slice(0,i+1)+' '+v); }
+        else inp.value=v;
+        box.classList.remove('show');
+        inp.dispatchEvent(new Event('input',{bubbles:true}));
+      };
+    });
+  };
+  inp.addEventListener('focus', render);
+  inp.addEventListener('input', render);
+  inp.addEventListener('blur', ()=>setTimeout(()=>box.classList.remove('show'),150));
+}
+function refreshFieldSuggestions(){   // 폼 열 때 호출 — 최초 1회만 실제로 연결됨
+  attachSuggest('f-store', _storeSuggestions);
+  attachSuggest('e-store', _storeSuggestions);
+  attachSuggest('f-genre', _genreSuggestions, {multi:true});
+  attachSuggest('e-genre', _genreSuggestions, {multi:true});
 }
 function openAdd(initStatus, presetDate){
   refreshFieldSuggestions();
