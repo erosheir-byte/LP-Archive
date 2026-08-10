@@ -1992,7 +1992,9 @@ function artKey(artist,album){return (artist+'|'+album).toLowerCase();}
 
 // 1) iTunes (Apple) — no key, CORS-friendly
 async function _itunesStore(term, limit, country){
-  const url='https://itunes.apple.com/search?media=music&entity=album&country='+country+'&limit='+limit+'&term='+encodeURIComponent(term);
+  // iTunes API는 lang 미지정 시 영어(로마자) 메타데이터가 기본 → 한국어 UI면 한국어 앨범명으로 받는다
+  const langQ=(typeof isEN==='function'&&isEN())?'':'&lang=ko_kr';
+  const url='https://itunes.apple.com/search?media=music&entity=album&country='+country+'&limit='+limit+'&term='+encodeURIComponent(term)+langQ;
   try{const r=await fetch(url);const j=await r.json();
     return (j.results||[]).filter(x=>x.artworkUrl100).map(x=>({
       img:x.artworkUrl100.replace('100x100','600x600'),
@@ -2674,7 +2676,7 @@ async function _fetchPreviewUrl(it){
       const artistOk=x=>{ if(!wantAr) return true; const a=norm(x.artistName); return a===wantAr || a.includes(wantAr) || wantAr.includes(a); };
       let cand=null, candCountry=country;
       for(const st of stores){
-        const ar=await fetch('https://itunes.apple.com/search?media=music&entity=album&country='+st+'&limit=8&term='+encodeURIComponent(term));
+        const ar=await fetch('https://itunes.apple.com/search?media=music&entity=album&country='+st+'&limit=8&term='+encodeURIComponent(term)+langQ);
         const aj=await ar.json();
         const cands=(aj.results||[]);
         const c = cands.find(x=>norm(x.collectionName)===wantAl && (!wantAr || norm(x.artistName)===wantAr))
@@ -2708,7 +2710,7 @@ async function _fetchPreviewUrl(it){
     if(!urls.length && term){
       const al=norm(album), ar2=norm(artist);
       for(const st of stores){
-        const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+st+'&limit=25&term='+encodeURIComponent(term));
+        const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+st+'&limit=25&term='+encodeURIComponent(term)+langQ);
         const j=await r.json();
         let pool=(j.results||[]).filter(x=>x.previewUrl);
         if(al){ pool=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al)); }); }
