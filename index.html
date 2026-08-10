@@ -1275,7 +1275,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>정가 (원)</label><input id="f-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2 buyonly">
-      <div class="fld"><label>구매처</label><input id="f-store" placeholder="yes24"></div>
+      <div class="fld"><label>구매처</label><input id="f-store" list="dl-stores" placeholder="yes24" autocomplete="off"></div>
       <div class="fld"><label>구매일자</label><input id="f-buy" type="date"></div>
     </div>
     <div class="row2" id="f-eta-row" style="display:none">
@@ -1287,7 +1287,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르</label><input id="f-genre" placeholder="예: 가요, R&B/소울"></div>
+      <div class="fld"><label>장르</label><input id="f-genre" list="dl-genres" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
       <div class="fld"><label>발매년도</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
     <div class="fld"><label>비고</label><input id="f-note" placeholder="메모"></div>
@@ -1297,6 +1297,10 @@ body.state-shared #shared-view{display:block}
     </div>
   </div>
 </div>
+
+<!-- 구매처·장르 자동완성 후보 (기존 입력값에서 채워짐) -->
+<datalist id="dl-stores"></datalist>
+<datalist id="dl-genres"></datalist>
 
 <!-- 취향 분석 카드 미리보기 시트 -->
 <div class="ov" id="ov-sharecard"></div>
@@ -1341,7 +1345,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>앨범명</label><input id="e-album" placeholder="예: 30"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르</label><input id="e-genre" placeholder="예: 가요, R&B/소울"></div>
+      <div class="fld"><label>장르</label><input id="e-genre" list="dl-genres" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
       <div class="fld"><label>발매년도</label><input id="e-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
     <div class="fld"><label>별점</label><div class="e-rate" id="e-rate"></div></div>
@@ -1398,7 +1402,7 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>정가 (원)</label><input id="e-list" type="number" inputmode="numeric" placeholder="49000"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>구매처</label><input id="e-store" placeholder="yes24"></div>
+      <div class="fld"><label>구매처</label><input id="e-store" list="dl-stores" placeholder="yes24" autocomplete="off"></div>
       <div class="fld"><label>결제</label><select id="e-pay"></select></div>
     </div>
     <div class="row2">
@@ -3173,6 +3177,7 @@ function openListenForm(it, presetDate){
 }; }
 
 function showEditForm(it){
+  if(typeof refreshFieldSuggestions==='function') refreshFieldSuggestions();
   const wish=it.status==='위시';
   const opt=(v,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${v}</option>`;
   const statuses=['미개봉','개봉','배송전','판매','교환','위시'];
@@ -4260,7 +4265,25 @@ function paintGradeDesc(prefix){
   d.innerHTML=lines.join('<br>');
 }
 let openUnknown=false;
+/* ===== 구매처·장르 자동완성 (기존 입력값을 드롭다운 후보로 — 같은 곳 다르게 입력 방지) ===== */
+function refreshFieldSuggestions(){
+  const sd=document.getElementById('dl-stores'), gd=document.getElementById('dl-genres');
+  if(!sd||!gd) return;
+  // 구매처: 대소문자 무시로 묶고, 가장 많이 쓴 표기를 대표로 (많이 쓴 순)
+  const sm={};
+  DATA.forEach(d=>{ const raw=(d.store||'').trim(); if(!raw||raw==='-')return;
+    const low=raw.toLowerCase(); const e=(sm[low]=sm[low]||{cnt:0,names:{}}); e.cnt++; e.names[raw]=(e.names[raw]||0)+1; });
+  const stores=Object.values(sm).sort((a,b)=>b.cnt-a.cnt)
+    .map(e=>Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0]);
+  sd.innerHTML=stores.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+  // 장르: 쉼표로 나눠 개별 장르도 후보로 (많이 쓴 순)
+  const gm={};
+  DATA.forEach(d=>{ String(d.genre||'').split(',').forEach(t=>{ const g=t.trim(); if(g&&g!=='-') gm[g]=(gm[g]||0)+1; }); });
+  const genres=Object.entries(gm).sort((a,b)=>b[1]-a[1]).map(([g])=>g);
+  gd.innerHTML=genres.map(n=>`<option value="${escapeHtml(n)}"></option>`).join('');
+}
 function openAdd(initStatus, presetDate){
+  refreshFieldSuggestions();
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   { const fc=$('#f-color'); if(fc){ delete fc.dataset.hex; delete fc.dataset.photo; fc.dataset.camswatch='1'; } }
   window.__addDraft={discPhoto:null};   // 추가 폼의 판 사진 임시 보관 (저장 시 항목에 반영)
