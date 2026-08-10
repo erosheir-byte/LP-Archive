@@ -76,6 +76,16 @@ html[data-theme="light"] .dt-edit-btn{background:rgba(255,255,255,.92);color:#44
 .sug-it:last-child{border-bottom:none}
 .sug-it:active{background:var(--card2)}
 html[data-theme="light"] .sug-box{box-shadow:0 10px 26px rgba(0,0,0,.15)}
+/* 데이터 가져오기 (마이페이지 섹션 + 미리보기 시트) */
+.import-sec{display:flex;flex-direction:column;gap:9px;margin-bottom:6px}
+.imp-template{align-self:center;background:none;border:none;color:var(--dim);font-family:inherit;font-size:12px;cursor:pointer;padding:4px 8px;text-decoration:underline}
+.imp-summary{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+.imp-tools{display:flex;gap:8px}
+.imp-selbtn{background:var(--card2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:inherit;font-size:12px;padding:7px 12px;cursor:pointer}
+.imp-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 12px;cursor:pointer}
+.imp-row.dup{opacity:.7}
+.imp-chk{width:19px;height:19px;accent-color:var(--accent);flex:0 0 auto}
+.imp-tag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;font-size:10.5px;background:var(--card2);border:1px solid var(--line);color:var(--dim);vertical-align:1px}
 /* 커버플로우 하단 그라데이션: 짙은 검정 → 배경색으로 자연스럽게 */
 html[data-theme="light"] .cf-stage{background:linear-gradient(180deg,transparent,rgba(0,0,0,.05))}
 /* 커버플로우 중앙 반투명 재생 컨트롤 */
@@ -1082,6 +1092,16 @@ body.state-shared #shared-view{display:block}
   <div class="like-grid" id="like-grid"></div>
 
   <div class="my-sec-head" style="margin-top:22px">
+    <h3>데이터 가져오기</h3>
+  </div>
+  <div class="import-sec">
+    <button type="button" class="dl-addlisten" id="imp-discogs" style="margin-top:0">💿 Discogs 컬렉션 가져오기</button>
+    <button type="button" class="dl-addlisten" id="imp-file" style="margin-top:0">📄 엑셀·CSV 파일로 한번에 등록</button>
+    <button type="button" class="imp-template" id="imp-template">⤓ 엑셀 양식(CSV) 받기</button>
+    <input type="file" id="imp-fileinput" accept=".xlsx,.xls,.csv,text/csv" hidden>
+  </div>
+
+  <div class="my-sec-head" style="margin-top:22px">
     <h3>내 취향 요약</h3>
   </div>
   <div class="taste" id="taste"></div>
@@ -1309,6 +1329,26 @@ body.state-shared #shared-view{display:block}
     <div class="btnrow">
       <button class="btn ghost" id="add-cancel">취소</button>
       <button class="btn primary" id="add-save">보관함에 추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 일괄 가져오기 미리보기 시트 -->
+<div class="ov" id="ov-import"></div>
+<div class="sheet" id="sheet-import">
+  <div class="grab"></div>
+  <button class="sheet-x" data-close="import" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2 id="imp-title">가져오기 미리보기</h2>
+    <div class="imp-summary" id="imp-summary"></div>
+    <div class="imp-tools">
+      <button type="button" class="imp-selbtn" id="imp-selall">전체 선택</button>
+      <button type="button" class="imp-selbtn" id="imp-selnone">전체 해제</button>
+    </div>
+    <div class="daylist" id="imp-list" style="margin-top:10px"></div>
+    <div class="btnrow">
+      <button class="btn ghost" data-close="import">취소</button>
+      <button class="btn primary" id="imp-confirm">가져오기</button>
     </div>
   </div>
 </div>
@@ -5333,8 +5373,9 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row col" style="cursor:default">
-        <div class="set-l"><div class="set-t">Discogs 토큰</div><div class="set-d">바코드 스캔으로 음반 정보를 불러올 때 사용해요</div></div>
+        <div class="set-l"><div class="set-t">Discogs 연동</div><div class="set-d">토큰은 바코드 스캔에, 사용자명은 컬렉션 가져오기에 사용해요</div></div>
         <div class="set-token"><input id="set-discogs" placeholder="Discogs Personal Token" value="${escapeHtml(SETTINGS.discogsToken||'')}"><button type="button" id="set-discogs-save">저장</button></div>
+        <div class="set-token" style="margin-top:8px"><input id="set-discogs-user" placeholder="Discogs 사용자명 (Username)" value="${escapeHtml(SETTINGS.discogsUser||'')}"><button type="button" id="set-discogs-user-save">저장</button></div>
       </div>
     </div>
     <div class="set-card">
@@ -5385,6 +5426,7 @@ function renderSettings(){
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
   // Discogs 토큰 저장
   { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
+  { const sv=$('#set-discogs-user-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsUser=$('#set-discogs-user').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
   // 계정 비우기 (이 계정의 모든 LP 삭제)
   { const cl=$('#set-clear'); if(cl) cl.onclick=async()=>{
       if(!(window.LPCloud && window.LPCloud.clearAll)){ alert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
@@ -5876,6 +5918,215 @@ window.bootApp=function(items){
   }
 };
 
+/* ===== 대량 가져오기: Discogs 컬렉션 · 엑셀/CSV (마이페이지 '데이터 가져오기') ===== */
+// CSV 파서 — 따옴표 필드·쉼표/줄바꿈 포함 값·CRLF·BOM 처리
+function parseCSV(text){
+  text=String(text||'').replace(/^\uFEFF/,'');
+  const rows=[]; let row=[], cur='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){
+      if(ch==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; }
+      else cur+=ch;
+    }else{
+      if(ch==='"') inQ=true;
+      else if(ch===','){ row.push(cur); cur=''; }
+      else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n') i++; row.push(cur); cur=''; rows.push(row); row=[]; }
+      else cur+=ch;
+    }
+  }
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+// 머리글 이름 → 필드 매핑 (한국어/영어 모두 허용)
+const IMP_HEADERS={
+  artist:['가수','아티스트','artist'],
+  album:['앨범명','앨범','album','title','제목'],
+  color:['컬러','색상','color'],
+  status:['구분','상태','status'],
+  store:['구매처','store','shop'],
+  price:['구매가','구매가(원)','구매가 (원)','price'],
+  listPrice:['정가','정가(원)','정가 (원)','listprice','list price'],
+  buy:['구매일','구매일자','구매 일자','buy','date','purchase date'],
+  genre:['장르','genre'],
+  year:['발매년도','연도','발매 연도','year'],
+  note:['비고','메모','note','memo']
+};
+function mapHeaderRow(cells){
+  const low=(cells||[]).map(c=>String(c==null?'':c).trim().toLowerCase());
+  const idx={};
+  Object.entries(IMP_HEADERS).forEach(([k,names])=>{
+    const i=low.findIndex(h=>names.includes(h));
+    if(i>=0) idx[k]=i;
+  });
+  return idx;
+}
+// [머리글행, 데이터행...] → 표준 행 객체 배열 (머리글 인식 실패 시 null)
+function rowsFromAoa(aoa){
+  if(!aoa||!aoa.length) return [];
+  const idx=mapHeaderRow(aoa[0]);
+  if(idx.artist===undefined && idx.album===undefined) return null;
+  return aoa.slice(1).map(r=>{
+    const g=k=> idx[k]!==undefined ? String(r[idx[k]]==null?'':r[idx[k]]).trim() : '';
+    return { artist:g('artist'), album:g('album'), color:g('color'), status:g('status'),
+             store:g('store'), price:g('price'), listPrice:g('listPrice'), buy:g('buy'),
+             genre:g('genre'), year:g('year'), note:g('note') };
+  });
+}
+// 표준 행 → 앱 항목 객체 (id 유일성 보장: 'u'+시각+'-'+순번)
+function importRowsToItems(rows){
+  const now=Date.now(); const items=[]; const errors=[];
+  const normDate=v=>{ if(!v) return null;
+    const m=String(v).trim().replace(/[./]/g,'-').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    return m ? `${m[1]}-${String(+m[2]).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}` : null; };
+  const normStatus=v=>{ const t=String(v||'').trim();
+    if(['미개봉','개봉','배송전','위시','판매','교환'].includes(t)) return t;
+    return '미개봉'; };
+  rows.forEach((r,i)=>{
+    const ar=(r.artist||'').trim(), al=(r.album||'').trim();
+    if(!ar && !al){ errors.push(r); return; }
+    const toNum=v=>{ if(v==null||v==='') return null; const n=Number(String(v).replace(/[^\d.]/g,'')); return isNaN(n)||!n?null:n; };
+    const price=toNum(r.price);
+    const it={ id:'u'+now+'-'+i, no:DATA.length+items.length+1,
+      artist:ar||'-', album:al, color:(r.color||'').trim()||'블랙', colorHex:null,
+      discPhoto:null, discOpacity:null,
+      store:(r.store||'').trim(), price, orig:price, listPrice:toNum(r.listPrice), pay:'',
+      buy:normDate(r.buy), arrive:null, openDate:null,
+      status:normStatus(r.status), sellDate:null, sellPrice:null, profit:null,
+      sleeveGrade:'', mediaGrade:'',
+      previewAlbumId:null, previewAlbumName:null,
+      rating:0, note:(r.note||'').trim(),
+      genre:(r.genre||'').trim(), year:(parseInt(r.year,10)||null),
+      rpm:'', inch:'' };
+    if(r.cover){ it._art=r.cover; it.cover=r.cover; }
+    if(r.discogsId!=null) it.discogsId=r.discogsId;
+    items.push(it);
+  });
+  return {items, errors};
+}
+// 미리보기 시트: 체크로 골라서 일괄 등록 (중복 앨범은 표시 + 기본 제외)
+let _impItems=[];
+function openImportPreview(items, srcLabel){
+  _impItems=items||[];
+  const wrap=$('#imp-list'); if(!wrap) return;
+  const exist=new Set(DATA.map(x=>artKey(x.artist,x.album)));
+  let dup=0;
+  wrap.innerHTML=_impItems.map((it,i)=>{
+    const isDup=exist.has(artKey(it.artist,it.album)); if(isDup) dup++;
+    const thumb=it._art?`<img src="${it._art}" alt="">`:`<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
+    const sub=[it.year?String(it.year):'', it.genre||'', it.store||''].filter(Boolean).join(' · ');
+    return `<label class="imp-row${isDup?' dup':''}">
+      <input type="checkbox" class="imp-chk" data-i="${i}" ${isDup?'':'checked'}>
+      <div class="dl-thumb">${thumb}</div>
+      <div class="dl-info">
+        <div class="dl-al">${escapeHtml(it.album||'제목 없음')}${isDup?'<span class="imp-tag">이미 있음</span>':''}</div>
+        <div class="dl-ar">${escapeHtml(it.artist||'')}${sub?' · '+escapeHtml(sub):''}</div>
+      </div>
+    </label>`;
+  }).join('') || '<div class="dl-emptyday">가져올 항목이 없어요.</div>';
+  $('#imp-title').textContent=srcLabel||'가져오기 미리보기';
+  const paint=()=>{
+    const n=wrap.querySelectorAll('.imp-chk:checked').length;
+    $('#imp-summary').textContent=`${_impItems.length}건 중 ${n}건 선택${dup?` · 이미 있는 앨범 ${dup}건은 기본 제외`:''}`;
+    const btn=$('#imp-confirm'); btn.textContent=n?`${n}장 가져오기`:'가져오기'; btn.disabled=!n;
+  };
+  wrap.querySelectorAll('.imp-chk').forEach(c=>c.onchange=paint);
+  paint();
+  $('#imp-selall').onclick=()=>{ wrap.querySelectorAll('.imp-chk').forEach(c=>c.checked=true); paint(); };
+  $('#imp-selnone').onclick=()=>{ wrap.querySelectorAll('.imp-chk').forEach(c=>c.checked=false); paint(); };
+  $('#imp-confirm').onclick=async ()=>{
+    const sel=[...wrap.querySelectorAll('.imp-chk:checked')].map(c=>_impItems[+c.dataset.i]).filter(Boolean);
+    if(!sel.length) return;
+    sel.forEach(it=>{ DATA.unshift(it);
+      if(it._art){ const k=artKey(it.artist,it.album); artCache[k]=it._art; pickedArt[k]=it._art; } });
+    try{
+      if(window.LPCloud && window.LPCloud.saveItems) await window.LPCloud.saveItems(sel);
+      else sel.forEach(it=>cloudSaveItem(it));
+    }catch(e){ console.error('bulk save', e); }
+    hide('import');
+    renderChips(); renderGrid(); renderStats(); buildCoverFlow();
+    previewToast(`${sel.length}장을 등록했어요 ✓`);
+  };
+  show('import');
+}
+// Discogs 컬렉션 가져오기 (환경설정의 사용자명 필요, 토큰은 있으면 사용)
+async function importFromDiscogs(){
+  const user=(SETTINGS.discogsUser||'').trim();
+  if(!user){
+    alert('환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.');
+    renderSettings(); show('settings');
+    return;
+  }
+  const token=(SETTINGS.discogsToken||'').trim();
+  previewToast('Discogs 컬렉션을 불러오는 중…');
+  const all=[]; let page=1, pages=1;
+  try{
+    while(page<=pages && all.length<1000){
+      const url='https://api.discogs.com/users/'+encodeURIComponent(user)+'/collection/folders/0/releases?per_page=100&sort=added&page='+page+(token?('&token='+encodeURIComponent(token)):'');
+      const res=await fetch(url);
+      if(res.status===404){ alert('Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.'); return; }
+      if(res.status===401||res.status===403){ alert('컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.'); return; }
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const j=await res.json();
+      pages=(j.pagination&&j.pagination.pages)||1;
+      (j.releases||[]).forEach(rel=>{
+        const b=rel.basic_information||{};
+        const artist=((b.artists&&b.artists[0]&&b.artists[0].name)||'').replace(/\s*\(\d+\)\s*$/,'').trim();   // Discogs 동명 표기 "(2)" 제거
+        all.push({ artist, album:(b.title||'').trim(),
+          year:b.year||'', genre:(b.genres&&b.genres[0])||'',
+          cover:(b.cover_image&&!/spacer\.gif/.test(b.cover_image))?b.cover_image:'',
+          buy:(rel.date_added||'').slice(0,10),
+          discogsId:rel.id||b.id||null });
+      });
+      previewToast(`Discogs에서 ${all.length}장 불러오는 중…`);
+      page++;
+      if(page<=pages) await new Promise(r=>setTimeout(r,1100));   // rate limit(분당 60회) 여유
+    }
+  }catch(e){ console.error('discogs import', e); alert('Discogs 조회 중 오류가 났어요. 잠시 후 다시 시도해주세요.'); return; }
+  if(!all.length){ alert('가져올 컬렉션이 비어 있어요.'); return; }
+  const {items}=importRowsToItems(all);
+  openImportPreview(items, `Discogs 컬렉션 · ${items.length}장`);
+}
+// 엑셀(.xlsx)/CSV 파일 가져오기 — xlsx 해석 도구는 필요할 때만 CDN에서 로드
+async function importFromFile(file){
+  const name=(file.name||'').toLowerCase();
+  let aoa=null;
+  try{
+    if(name.endsWith('.csv') || file.type==='text/csv'){
+      aoa=parseCSV(await file.text());
+    }else{
+      previewToast('엑셀 해석 도구를 불러오는 중…');
+      let X=null;
+      try{ X=await import('https://esm.sh/xlsx@0.18.5'); }
+      catch(e1){ try{ X=await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm'); }catch(e2){} }
+      const XLSX=X && ((X.default&&X.default.read)?X.default:X);
+      if(!XLSX || !XLSX.read){ alert('엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.'); return; }
+      const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+    }
+  }catch(e){ console.error('file import', e); alert('파일을 읽는 중 오류가 났어요. 양식을 확인해주세요.'); return; }
+  const rows=rowsFromAoa(aoa);
+  if(rows===null){ alert('머리글 행을 인식하지 못했어요. 첫 행에 "가수, 앨범명, ..." 같은 제목을 넣어주세요. (엑셀 양식 받기 참고)'); return; }
+  const rows2=rows.filter(r=>(r.artist||r.album));
+  if(!rows2.length){ alert('가져올 행이 없어요. 양식을 확인해주세요.'); return; }
+  const {items}=importRowsToItems(rows2);
+  openImportPreview(items, `파일 가져오기 · ${items.length}장`);
+}
+// 엑셀 양식(CSV) 다운로드 — BOM 포함(엑셀에서 한글 안 깨짐)
+function downloadImportTemplate(){
+  const csv='\uFEFF가수,앨범명,컬러,구분,구매처,구매가,정가,구매일,장르,발매년도,비고\r\nTom Misch,Geography,블랙,미개봉,yes24,45000,49000,2026-01-15,팝,2018,예시 행은 지우고 쓰세요\r\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='lp-import-template.csv'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+{ const b=$('#imp-discogs'); if(b) b.onclick=importFromDiscogs; }
+{ const b=$('#imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
+{ const f=$('#imp-fileinput'); if(f) f.onchange=e=>{ const file=e.target.files[0]; if(file) importFromFile(file); }; }
+{ const t=$('#imp-template'); if(t) t.onclick=downloadImportTemplate; }
+{ const ov=$('#ov-import'); if(ov) ov.onclick=()=>hide('import'); }
+
 /* ===== 안드로이드 하드웨어 뒤로가기 ===== */
 /* 우선순위: 열린 시트/오버레이 닫기 → 비홈(보관함) 뷰면 보관함으로 → 더 닫을 게 없으면 종료 확인 */
 function showExitConfirm(){
@@ -6137,7 +6388,7 @@ function start(){
     'status','sellDate','sellPrice','profit','note','genre','rating','liked',
     'discColorCustom','discOpacity','discPhoto','colorHex',
     'listPrice','sleeveGrade','mediaGrade','openDate','listens','previewAlbumId','previewAlbumName',
-    'rpm','inch','year','repCover'];
+    'rpm','inch','year','repCover','discogsId'];
   function serialize(it){
     const o={};
     FIELDS.forEach(f=>{ o[f]=(it[f]===undefined?null:it[f]); });
@@ -6164,6 +6415,15 @@ function start(){
 
   // ===== 앱(classic) → 클라우드 다리 =====
   window.LPCloud={
+    // 일괄 저장: 가져오기 등 여러 장을 한 번에 (400개 단위 배치 커밋)
+    async saveItems(items){
+      if(!currentUser||!Array.isArray(items)||!items.length) return;
+      for(let i=0;i<items.length;i+=400){
+        const b=writeBatch(db);
+        items.slice(i,i+400).forEach(it=>b.set(doc(db,'users',currentUser.uid,'lps',String(it.id)),serialize(it)));
+        await b.commit();
+      }
+    },
     saveItem(it){
       if(!currentUser||!it||it.id==null) return;
       clearTimeout(saveTimers[it.id]);
