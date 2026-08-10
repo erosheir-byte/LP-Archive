@@ -67,8 +67,10 @@ html[data-theme="light"] .disc-prev{background:#fff}
 html[data-theme="light"] .palette .sw{border-color:rgba(0,0,0,.14);box-shadow:inset 0 1px 2px rgba(255,255,255,.35),0 1px 3px rgba(0,0,0,.18)}
 /* 별점: 채워지지 않은 별(반개 뒤쪽 포함)이 검게 보이던 것 → 밝은 회색 */
 html[data-theme="light"] .stars .star{color:#d9d2c6}
+/* 커버의 연필(수정) 버튼: 다크 원 → 흰 원 + 진한 아이콘 */
+html[data-theme="light"] .dt-edit-btn{background:rgba(255,255,255,.92);color:#443e4c;border-color:rgba(0,0,0,.12);box-shadow:0 2px 8px rgba(0,0,0,.18)}
 /* 구매처·장르 자동완성 상자: 높이 제한 + 스크롤 */
-.sug-box{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:var(--card);border:1px solid var(--line);border-radius:12px;max-height:214px;overflow-y:auto;box-shadow:0 10px 26px rgba(0,0,0,.4);display:none;-webkit-overflow-scrolling:touch}
+.sug-box{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:var(--card);border:1px solid var(--line);border-radius:12px;max-height:214px;overflow-y:auto;box-shadow:0 10px 26px rgba(0,0,0,.4);display:none;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain}
 .sug-box.show{display:block}
 .sug-it{padding:11px 14px;font-size:13.5px;color:var(--txt);cursor:pointer;border-bottom:1px solid var(--line)}
 .sug-it:last-child{border-bottom:none}
@@ -4314,19 +4316,24 @@ function attachSuggest(inputId, getItems, opts){
   const fld=inp.closest('.fld')||inp.parentElement;
   fld.style.position='relative';
   const box=document.createElement('div'); box.className='sug-box'; fld.appendChild(box);
+  // 상자 안을 눌러도 입력 포커스가 풀리지 않게 (blur로 닫히는 것 방지) — 스크롤 제스처는 그대로 동작
+  box.addEventListener('mousedown', e=>e.preventDefault());
   const lastToken=v=>{ const i=v.lastIndexOf(','); return i<0?v:v.slice(i+1); };
   const render=()=>{
+    if(inp._sugSkip){ inp._sugSkip=false; box.classList.remove('show'); box.innerHTML=''; return; }   // 선택 직후 재오픈 방지
     const q=((opts&&opts.multi)?lastToken(inp.value):inp.value).trim().toLowerCase();
     const list=getItems().filter(n=>!q || n.toLowerCase().includes(q)).slice(0,50);
     if(!list.length || (list.length===1 && list[0].toLowerCase()===q)){ box.classList.remove('show'); box.innerHTML=''; return; }
     box.innerHTML=list.map(n=>`<div class="sug-it">${escapeHtml(n)}</div>`).join('');
     box.classList.add('show');
     box.querySelectorAll('.sug-it').forEach(el=>{
-      el.onpointerdown=(e)=>{ e.preventDefault();   // blur 전에 선택이 처리되게
+      // 탭(클릭)일 때만 선택 — 드래그는 스크롤로 동작해야 하므로 pointerdown 선택 금지
+      el.onclick=()=>{
         const v=el.textContent;
         if(opts&&opts.multi){ const i=inp.value.lastIndexOf(','); inp.value = i<0 ? v : (inp.value.slice(0,i+1)+' '+v); }
         else inp.value=v;
         box.classList.remove('show');
+        inp._sugSkip=true;
         inp.dispatchEvent(new Event('input',{bubbles:true}));
       };
     });
