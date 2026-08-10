@@ -3108,6 +3108,8 @@ function openDetail(id, mode){
   if(sameAlbum.length>1){
     action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?'📌 대표 이미지 지정됨 — 해제하기':'📌 이 커버를 대표 이미지로'}</button>`;
   }
+  // 같은 앨범을 한 장 더 살 때: 이 앨범 정보를 복사해 추가 폼을 미리 채움
+  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 한 장 더 추가</button>`;
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
@@ -3158,6 +3160,7 @@ function openDetail(id, mode){
   bindStarHits();
   const ab=$('#act-arrive'); if(ab) ab.onclick=()=>showArriveForm(it);
   const bb=$('#act-buy'); if(bb) bb.onclick=()=>showBuyForm(it);
+  { const cb=$('#act-clone'); if(cb) cb.onclick=()=>cloneToAdd(it); }
   // 대표 이미지 지정/해제: 같은 앨범의 다른 장에 걸린 지정은 풀고 이 장으로 옮긴다
   { const rb=$('#act-repcover'); if(rb) rb.onclick=()=>{
       const on=!it.repCover;
@@ -4377,6 +4380,31 @@ function openAdd(initStatus, presetDate){
   setupColorField('f');
   toggleBuyFields();
   show('add');
+}
+// 같은 앨범 한 장 더: 기존 항목 정보를 복사해 추가 폼을 미리 채운다 (구매일은 오늘)
+function cloneToAdd(it){
+  hide('detail');
+  openAdd(it.status==='개봉' ? '개봉' : (statusGroup(it.status)==='배송전' ? '배송전' : (it.status==='위시' ? '위시' : undefined)));
+  $('#f-artist').value=it.artist||'';
+  $('#f-album').value=it.album||'';
+  const fc=$('#f-color');
+  if(fc){ fc.value=it.color||'';
+    if(it.colorHex) fc.dataset.hex=it.colorHex; else delete fc.dataset.hex;
+    if(it.discPhoto){ fc.dataset.photo=it.discPhoto; window.__addDraft={discPhoto:it.discPhoto}; } }
+  if(it.discOpacity!=null){ const op=$('#f-op'); if(op) op.value=Math.round(it.discOpacity*100); }
+  { const el=$('#f-store'); if(el) el.value=it.store||''; }
+  { const el=$('#f-price'); if(el) el.value=it.price!=null?it.price:''; }
+  { const el=$('#f-list'); if(el) el.value=it.listPrice!=null?it.listPrice:''; }
+  { const el=$('#f-genre'); if(el){ el.value=it.genre||''; el.dataset.auto=''; } }
+  { const el=$('#f-year'); if(el){ el.value=it.year||''; el.dataset.auto=''; } }
+  { const el=$('#f-rpm'); if(el&&it.rpm) el.value=it.rpm; }
+  { const el=$('#f-inch'); if(el&&it.inch) el.value=it.inch; }
+  const art=artFor(it);
+  if(art){ const pa=$('#pa-prev'); pa.innerHTML=''; const im=document.createElement('img'); im.src=art;
+           pa.appendChild(im); pa.dataset.url=art; $('#pt-prev').textContent='이 커버로 저장돼요 ✓'; }
+  window.__addPv = it.previewAlbumId ? {id:it.previewAlbumId, name:it.previewAlbumName||''} : null;
+  setupColorField('f'); toggleBuyFields(); paintGradeDesc('f');
+  previewToast(isEN&&isEN() ? 'Copied — review and add ✓' : '앨범 정보를 복사했어요 — 확인 후 추가하세요 ✓');
 }
 $('#f-status').onchange=toggleBuyFields;
 { const fc=$('#f-cat'); if(fc) fc.onchange=toggleBuyFields; }
