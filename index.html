@@ -3977,10 +3977,21 @@ function _tasteCardStats(){
 // 평균 별점에 따른 한 줄 페르소나 (왓챠피디아 '지조파' 느낌)
 function _ratingPersona(s, en){
   if(!s.rated) return en?'Your rating journey starts now':'이제 막 별점 여정을 시작했어요';
+  if(s.avg>=4.7) return en?"Five stars aren't enough — a perfect-score machine":"별 다섯 개로는 부족한 '만점 제조기'";
   if(s.avg>=4.3) return en?"A generous ear — every record is loved":"판마다 애정이 넘치는 '후한 귀'";
-  if(s.avg>=3.5) return en?"Steady taste, not swayed by hype":"유행에 휘둘리지 않는 '지조파'";
+  if(s.avg>=3.8) return en?"Warm but discerning — praise with reasons":"칭찬에도 이유가 있는 '따뜻한 감별사'";
+  if(s.avg>=3.2) return en?"Steady taste, not swayed by hype":"유행에 휘둘리지 않는 '지조파'";
   if(s.avg>=2.5) return en?"A balanced, honest listener":"냉정하게 듣는 '균형파'";
   return en?"A critic with a sharp needle":"깐깐한 바늘의 '평론가'";
+}
+// 청음 횟수에 따른 한 줄 문구
+function _listenCopy(n, en){
+  if(!n)      return en?'Time to drop the needle!':'이제 바늘을 올려볼 시간이에요.';
+  if(n<10)    return en?'The needle is just getting started.':'이제 막 바늘을 올리기 시작했어요.';
+  if(n<30)    return en?'Getting closer to your turntable every day.':'턴테이블과 부쩍 친해지는 중이에요.';
+  if(n<70)    return en?'A devoted listener — the turntable rarely rests.':'턴테이블이 쉴 틈 없는 애청가시네요.';
+  if(n<150)   return en?'The needle has been busy. Well done.':'바늘이 닳도록 들었어요. 대단합니다.';
+  return en?'A true audiophile — records are your life.':'인생의 BGM이 전부 바이닐인 경지예요.';
 }
 function buildShareCardCanvas(){
   const s=_tasteCardStats(), en=isEN();
@@ -4097,7 +4108,7 @@ function buildShareCardCanvas(){
   y+=76; x.textAlign='center'; x.fillStyle='#fff'; x.font='800 58px sans-serif';
   x.fillText(en?`${s.listens} plays`:`총 ${s.listens}회`, W/2, y);
   y+=46; x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
-  x.fillText(s.listens?(en?'The needle has been busy. Well done.':'바늘이 닳도록 들었어요. 대단합니다.'):(en?'Time to drop the needle!':'이제 바늘을 올려볼 시간이에요.'), W/2, y);
+  x.fillText(_listenCopy(s.listens, en), W/2, y);
   y+=26;
 
   // ── 푸터
