@@ -1234,10 +1234,10 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>판 투명도 <span class="op-lab" id="f-oplab">100%</span></label><input type="range" id="f-op" min="20" max="100" value="100" class="vd-range"></div>
     </div>
     <div class="row2" id="f-spec-row">
-      <div class="fld"><label>회전수 (RPM)</label>
+      <div class="fld" id="f-rpm-fld"><label>회전수 (RPM)</label>
         <select id="f-rpm"><option value="33">33 RPM</option><option value="45">45 RPM</option></select>
       </div>
-      <div class="fld"><label>크기 (인치)</label>
+      <div class="fld" id="f-inch-fld"><label>크기 (인치)</label>
         <select id="f-inch"><option value='12"'>12"</option><option value='7"'>7"</option><option value='10"'>10"</option></select>
       </div>
     </div>
@@ -1367,10 +1367,10 @@ body.state-shared #shared-view{display:block}
       <div class="fld"><label>판 투명도 <span class="op-lab" id="e-oplab">100%</span></label><input type="range" id="e-op" min="20" max="100" value="100" class="vd-range"></div>
     </div>
     <div class="row2" id="e-spec-row">
-      <div class="fld"><label>회전수 (RPM)</label>
+      <div class="fld" id="e-rpm-fld"><label>회전수 (RPM)</label>
         <select id="e-rpm"><option value="33">33 RPM</option><option value="45">45 RPM</option></select>
       </div>
-      <div class="fld"><label>크기 (인치)</label>
+      <div class="fld" id="e-inch-fld"><label>크기 (인치)</label>
         <select id="e-inch"><option value='12"'>12"</option><option value='7"'>7"</option><option value='10"'>10"</option></select>
       </div>
     </div>
@@ -1783,6 +1783,10 @@ const I18N = {
   "모아보기 중복 앨범 한 장만":"One card per album in Cover Flow",
   "커버플로우에서 같은 앨범이 여러 장이어도 하나만 보여요":"Show duplicates of the same album as a single card",
   "RPM·인치 선택":"RPM & size",
+  "RPM 선택":"RPM",
+  "인치 선택":"Size (inch)",
+  "추가·수정 화면에서 회전수(33/45)를 기록해요":"Record RPM (33/45) in add/edit forms",
+  "추가·수정 화면에서 크기(12\"/7\"/10\")를 기록해요":"Record size (12\"/7\"/10\") in add/edit forms",
   "추가·수정 화면에서 회전수(33/45)와 크기(12\"/7\"/10\")를 기록해요":"Record speed (33/45) and size (12\"/7\"/10\") in the add/edit screens",
   "회전수 (RPM)":"Speed (RPM)",
   "크기 (인치)":"Size (inch)",
@@ -2295,17 +2299,30 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showSpec:false, crackleLevel:'low', theme:'dark' };
+const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
   let raw={}; try{ raw=JSON.parse(localStorage.getItem('lp_settings')||'{}'); }catch(e){ raw={}; }
   SETTINGS=Object.assign({}, DEFAULT_SETTINGS, raw);
+  // 구버전 마이그레이션: showSpec(통합) → showRpm/showInch 분리
+  if(raw.showSpec!==undefined && raw.showRpm===undefined && raw.showInch===undefined){ SETTINGS.showRpm=!!raw.showSpec; SETTINGS.showInch=!!raw.showSpec; }
   // 구버전 마이그레이션: vinylCrackle(불리언) → crackleLevel
   if(raw.crackleLevel===undefined && raw.vinylCrackle===false) SETTINGS.crackleLevel='off';
   applySettings(true);
 }
 function saveSettings(){ try{ localStorage.setItem('lp_settings', JSON.stringify(SETTINGS)); }catch(e){} }
+// 추가/수정 폼의 RPM·인치 필드 표시 — 각각의 설정으로 개별 on/off
+function applySpecRows(prefix){
+  const rpmOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showRpm;
+  const inchOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showInch;
+  const row=document.getElementById(prefix+'-spec-row');
+  const rf=document.getElementById(prefix+'-rpm-fld');
+  const nf=document.getElementById(prefix+'-inch-fld');
+  if(rf) rf.style.display=rpmOn?'':'none';
+  if(nf) nf.style.display=inchOn?'':'none';
+  if(row) row.style.display=(rpmOn||inchOn)?'':'none';
+}
 function applySettings(initial){
   // 액센트 색
   const pair=ACCENTS.find(a=>a[1]===SETTINGS.accent)||ACCENTS[0];
@@ -3045,9 +3062,9 @@ function openDetail(id, mode){
     if(it.mediaGrade) R('음반 상태', gradeCell(it.mediaGrade));
     if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('음반 상태', gradeCell(it.grade));  // 구 데이터 폴백
   }
-  if((typeof SETTINGS==='undefined' || SETTINGS.showSpec!==false) && (it.rpm||it.inch)){
-    R('규격', [it.rpm?it.rpm+' RPM':'', it.inch||''].filter(Boolean).join(' · '));
-  }
+  { const rpmOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showRpm, inchOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showInch;
+    const parts=[rpmOn&&it.rpm?it.rpm+' RPM':'', inchOn?(it.inch||''):''].filter(Boolean);
+    if(parts.length) R('규격', parts.join(' · ')); }
   R('장르', it.genre);
   if(it.year && (typeof SETTINGS==='undefined' || SETTINGS.showYear!==false)) R('발매년도', it.year+'년');
   R('구매처', it.store);
@@ -3193,7 +3210,7 @@ function showEditForm(it){
   $('#e-color').value=it.color||'';
   if($('#e-rpm')) $('#e-rpm').value=it.rpm||'33';
   if($('#e-inch')) $('#e-inch').value=it.inch||'12"';
-  { const sr=$('#e-spec-row'); if(sr) sr.style.display=(typeof SETTINGS==='undefined'||SETTINGS.showSpec!==false)?'':'none'; }
+  applySpecRows('e');
   $('#e-status').innerHTML=statuses.map(s=>opt(s,it.status)).join('');
   $('#e-pay').innerHTML=`<option value=""></option>`+pays.map(s=>opt(s,it.pay)).join('');
   $('#e-store').value=it.store||'';
@@ -3271,8 +3288,8 @@ function showEditForm(it){
     if(it.sellPrice!=null && it.price!=null) it.profit=it.sellPrice-it.price;
     it.note=$('#e-note').value.trim();
     it.rating=editRating;
-    if($('#e-rpm')) it.rpm=$('#e-rpm').value;
-    if($('#e-inch')) it.inch=$('#e-inch').value;
+    if(SETTINGS.showRpm && $('#e-rpm')) it.rpm=$('#e-rpm').value;       // 꺼져 있으면 기존 값 유지
+    if(SETTINGS.showInch && $('#e-inch')) it.inch=$('#e-inch').value;
     // 개봉이면 슬리브/음반 등급 저장, 아니면 비움. 구 grade 필드는 정리.
     if(it.status==='개봉'){ it.sleeveGrade=($('#e-sleeve')&&$('#e-sleeve').value)||''; it.mediaGrade=($('#e-media')&&$('#e-media').value)||''; }
     else { it.sleeveGrade=''; it.mediaGrade=''; }
@@ -4223,9 +4240,8 @@ function toggleBuyFields(){
     const showGrade = (status==='개봉') && (typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false);
     gradeFld.style.display = showGrade ? '' : 'none';
   }
-  // RPM·인치: 설정이 켜져 있을 때만 표시
-  const specRow=$('#f-spec-row');
-  if(specRow) specRow.style.display = (typeof SETTINGS==='undefined' || SETTINGS.showSpec!==false) ? '' : 'none';
+  // RPM·인치: 각각 설정이 켜져 있을 때만 표시
+  applySpecRows('f');
   // 도착일/배송 예정일: 위시가 아니면 표시 (배송전이면 '배송 예정일', 보유중이면 '도착일')
   const etaRow=$('#f-eta-row');
   if(etaRow){
@@ -4466,8 +4482,8 @@ $('#add-save').onclick=()=>{
     rating:0, note:$('#f-note').value.trim(), _art:url,
     genre: ($('#f-genre')&&$('#f-genre').value.trim())||'',
     year: ($('#f-year')&&Number($('#f-year').value))||null,
-    rpm: ($('#f-rpm')&&$('#f-rpm').value)||'',
-    inch: ($('#f-inch')&&$('#f-inch').value)||''
+    rpm: (SETTINGS.showRpm&&$('#f-rpm')&&$('#f-rpm').value)||'',
+    inch: (SETTINGS.showInch&&$('#f-inch')&&$('#f-inch').value)||''
   };
   if(url){artCache[artKey(ar,al)]=url; pickedArt[artKey(ar,al)]=url; it.cover=url;}
   DATA.unshift(it);
@@ -5209,9 +5225,13 @@ function renderSettings(){
         <div class="set-l"><div class="set-t">모아보기 중복 앨범 한 장만</div><div class="set-d">커버플로우에서 같은 앨범이 여러 장이어도 하나만 보여요</div></div>
         ${tog(SETTINGS.dedupeFlow!==false)}
       </div>
-      <div class="set-row" data-act="showSpec">
-        <div class="set-l"><div class="set-t">RPM·인치 선택</div><div class="set-d">추가·수정 화면에서 회전수(33/45)와 크기(12"/7"/10")를 기록해요</div></div>
-        ${tog(SETTINGS.showSpec)}
+      <div class="set-row" data-act="showRpm">
+        <div class="set-l"><div class="set-t">RPM 선택</div><div class="set-d">추가·수정 화면에서 회전수(33/45)를 기록해요</div></div>
+        ${tog(SETTINGS.showRpm)}
+      </div>
+      <div class="set-row" data-act="showInch">
+        <div class="set-l"><div class="set-t">인치 선택</div><div class="set-d">추가·수정 화면에서 크기(12"/7"/10")를 기록해요</div></div>
+        ${tog(SETTINGS.showInch)}
       </div>
       <div class="set-row col">
         <div class="set-l"><div class="set-t">기본 보기 모드</div><div class="set-d">보관함을 열 때 기본 레이아웃</div></div>
