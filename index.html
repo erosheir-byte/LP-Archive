@@ -3797,9 +3797,9 @@ function schedulePreview(){
         $('#pa-prev').innerHTML=`<img src="${c.img}">`;
         $('#pa-prev').dataset.url=c.img;
         $('#pt-prev').textContent='이 커버로 저장돼요 ✓';
-        // 선택한 후보의 앨범명/가수가 있으면 입력칸 자동 채움
+        // 선택한 후보의 앨범명/가수로 입력칸을 채움 (오타를 쳤어도 후보를 고르면 바로잡힌다)
         if(c.album) $('#f-album').value=c.album;
-        if(c.artist && !$('#f-artist').value.trim()) $('#f-artist').value=c.artist;
+        if(c.artist) $('#f-artist').value=c.artist;
         autofillGenre(c); autofillYear(c);
         // 고른 후보가 iTunes 앨범이면 음원 연결도 그 앨범으로 (아니면 자동 매칭에 맡김)
         window.__addPv = c.collectionId ? {id:c.collectionId, name:c.album||''} : null;
