@@ -922,6 +922,9 @@ body.state-shared #shared-view{display:block}
 .acct{top:54px}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .share-card-btn:active{transform:scale(.98)}
+/* 취향 카드 미리보기 */
+.sharecard-wrap{max-height:52vh;overflow-y:auto;border-radius:14px;border:1px solid var(--line);background:#121016}
+.sharecard-wrap img{display:block;width:100%}
 </style>
 </head>
 <body class="state-boot">
@@ -1292,6 +1295,21 @@ body.state-shared #shared-view{display:block}
     <div class="btnrow">
       <button class="btn ghost" id="add-cancel">취소</button>
       <button class="btn primary" id="add-save">보관함에 추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 취향 분석 카드 미리보기 시트 -->
+<div class="ov" id="ov-sharecard"></div>
+<div class="sheet" id="sheet-sharecard">
+  <div class="grab"></div>
+  <button class="sheet-x" data-close="sharecard" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2>📤 취향 카드</h2>
+    <div class="sharecard-wrap"><img id="sharecard-img" alt="취향 분석 카드"></div>
+    <div class="btnrow">
+      <button class="btn ghost" data-close="sharecard">닫기</button>
+      <button class="btn primary" id="sharecard-share">공유하기</button>
     </div>
   </div>
 </div>
@@ -3926,72 +3944,208 @@ function applyDiscogsResult(r){
 // 추가 시트 닫힐 때 카메라 정리
 { const x=document.querySelector('#sheet-add .sheet-x'); if(x){ const orig=x.onclick; x.addEventListener('click',()=>{ stopBarcodeScan(); const bx=$('#bc-box'); if(bx) bx.style.display='none'; }); } }
 
-/* ===== 컬렉션 요약 공유 카드 (이미지 생성 → 공유/다운로드) ===== */
-function _collStatsForCard(){
+/* ===== 취향 분석 공유 카드 (이미지 생성 → 미리보기 팝업 → 공유) ===== */
+function _tasteCardStats(){
   const real=DATA.filter(d=>statusGroup(d.status)!=='위시');
-  const owned=DATA.filter(d=>statusGroup(d.status)==='보유중');
-  const liked=DATA.filter(d=>d.liked).length;
-  const buy=real.reduce((s,d)=>s+(d.price||0),0);
-  const gc={}, ac={};
-  real.forEach(d=>{ if(d.genre) gc[d.genre]=(gc[d.genre]||0)+1; if(d.artist && d.artist!=='-') ac[d.artist]=(ac[d.artist]||0)+1; });
-  const top=o=>Object.keys(o).sort((a,b)=>o[b]-o[a])[0]||'';
-  return { total:real.length, owned:owned.length, liked, buy, genre:top(gc), artist:top(ac) };
+  const owned=real.filter(d=>statusGroup(d.status)==='보유중').length;
+  const opened=real.filter(d=>d.status==='개봉').length;
+  const sealed=real.filter(d=>d.status==='미개봉').length;
+  const rated=DATA.filter(d=>d.rating>0);
+  const avg=rated.length?rated.reduce((s,d)=>s+d.rating,0)/rated.length:0;
+  const hist=[]; for(let v=0.5;v<=5;v+=0.5) hist.push({v, n:rated.filter(d=>d.rating===v).length});
+  const most=rated.length?hist.slice().sort((a,b)=>b.n-a.n||b.v-a.v)[0].v:0;
+  const byArtist={};
+  real.forEach(d=>{ const a=(d.artist||'').trim(); if(!a||a==='-')return; (byArtist[a]=byArtist[a]||[]).push(d); });
+  const artists=Object.entries(byArtist).map(([a,arr])=>{
+    const r=arr.filter(q=>q.rating);
+    return {name:a, cnt:arr.length, avg:r.length?r.reduce((s,q)=>s+q.rating,0)/r.length:0};
+  }).sort((p,q)=>q.cnt-p.cnt||q.avg-p.avg).slice(0,3);
+  const gm={}; real.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
+  const genres=Object.entries(gm).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const sm={}; real.forEach(d=>{ const raw=(d.store||'').trim(); if(!raw||raw==='-')return;
+    const low=raw.toLowerCase(); const e=(sm[low]=sm[low]||{cnt:0,names:{}}); e.cnt++; e.names[raw]=(e.names[raw]||0)+1; });
+  const stores=Object.entries(sm).filter(([l])=>l!=='선물'&&l!=='교환').sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,3)
+    .map(([l,e])=>({name:Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0], cnt:e.cnt}));
+  const byYear={}; real.forEach(d=>{ if(!d.buy)return; const yy=String(d.buy).slice(0,4); if(/^\d{4}$/.test(yy)) byYear[yy]=(byYear[yy]||0)+1; });
+  const listens=DATA.reduce((s,d)=>s+(Array.isArray(d.listens)?d.listens.length:0),0);
+  return { total:real.length, owned, opened, sealed, rated:rated.length, avg, hist, most,
+           artists, genres, stores, byYear, years:Object.keys(byYear).sort(), listens };
+}
+// 평균 별점에 따른 한 줄 페르소나 (왓챠피디아 '지조파' 느낌)
+function _ratingPersona(s, en){
+  if(!s.rated) return en?'Your rating journey starts now':'이제 막 별점 여정을 시작했어요';
+  if(s.avg>=4.3) return en?"A generous ear — every record is loved":"판마다 애정이 넘치는 '후한 귀'";
+  if(s.avg>=3.5) return en?"Steady taste, not swayed by hype":"유행에 휘둘리지 않는 '지조파'";
+  if(s.avg>=2.5) return en?"A balanced, honest listener":"냉정하게 듣는 '균형파'";
+  return en?"A critic with a sharp needle":"깐깐한 바늘의 '평론가'";
 }
 function buildShareCardCanvas(){
-  const s=_collStatsForCard(), en=isEN();
-  const W=1080,H=1350, c=document.createElement('canvas'); c.width=W;c.height=H;
+  const s=_tasteCardStats(), en=isEN();
+  const W=1080, M=70, BUF=3400;
+  const c=document.createElement('canvas'); c.width=W; c.height=BUF;
   const x=c.getContext('2d');
-  const accent=(typeof SETTINGS!=='undefined'&&SETTINGS.accent)||'#e8643c';
-  const bg=x.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#16121a'); bg.addColorStop(1,'#0b0a0e');
-  x.fillStyle=bg; x.fillRect(0,0,W,H);
-  const gl=x.createRadialGradient(W/2,360,40,W/2,360,540); gl.addColorStop(0,accent+'55'); gl.addColorStop(1,'rgba(0,0,0,0)');
-  x.fillStyle=gl; x.fillRect(0,0,W,760);
-  const cx=W/2, cy=360, R=240;
-  x.beginPath(); x.arc(cx,cy,R,0,7); x.fillStyle='#0c0c0e'; x.fill();
-  x.strokeStyle='rgba(255,255,255,.06)'; x.lineWidth=2;
-  for(let r=72;r<R;r+=14){ x.beginPath(); x.arc(cx,cy,r,0,7); x.stroke(); }
-  x.strokeStyle='rgba(255,255,255,.22)'; x.lineWidth=10; x.beginPath(); x.arc(cx,cy,R-12,-2.5,-1.7); x.stroke();
-  const lab=x.createLinearGradient(cx-60,cy-60,cx+60,cy+60); lab.addColorStop(0,accent); lab.addColorStop(1,'#b8472a');
-  x.beginPath(); x.arc(cx,cy,66,0,7); x.fillStyle=lab; x.fill();
-  x.beginPath(); x.arc(cx,cy,9,0,7); x.fillStyle='#0c0c0e'; x.fill();
-  x.textAlign='center'; x.fillStyle='#fff'; x.font='800 64px "Bricolage Grotesque",sans-serif';
-  x.fillText('My Vinyl', cx, 778);
-  x.fillStyle=accent; x.font='700 28px sans-serif';
-  x.fillText(en?'MY VINYL COLLECTION':'내 바이닐 컬렉션', cx, 820);
-  x.fillStyle='#fff'; x.font='800 116px sans-serif';
-  x.fillText(String(s.total), cx-210, 985); x.fillText(String(s.owned), cx+210, 985);
-  x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
-  x.fillText(en?'TOTAL':'총 보유', cx-210, 1028); x.fillText(en?'IN COLLECTION':'소장 중', cx+210, 1028);
-  let ry=1120; const lx=150, rx=W-150;
-  const row=(k,v)=>{ x.textAlign='left'; x.fillStyle='rgba(255,255,255,.5)'; x.font='600 28px sans-serif'; x.fillText(k,lx,ry);
-    x.textAlign='right'; x.fillStyle='#fff'; x.font='700 30px sans-serif'; x.fillText(v||'–',rx,ry); ry+=56; };
-  row(en?'Liked':'좋아요', String(s.liked));
-  if(s.genre) row(en?'Top genre':'최다 장르', s.genre);
-  if(s.artist) row(en?'Top artist':'최애 아티스트', s.artist);
-  if(!(typeof SETTINGS!=='undefined'&&SETTINGS.hideMoney) && s.buy) row(en?'Spent':'총 구매가', '₩'+Number(s.buy).toLocaleString('ko-KR'));
+  const pair=(typeof ACCENTS!=='undefined'&&typeof SETTINGS!=='undefined'&&ACCENTS.find(a=>a[1]===SETTINGS.accent))||null;
+  const accent=(pair&&pair[1])||'#e8643c', accent2=(pair&&pair[2])||'#f2a444';
+  x.fillStyle='#121016'; x.fillRect(0,0,W,BUF);
+
+  // ── 헤더 밴드 (브랜드 컬러 + LP 장식)
+  const hb=x.createLinearGradient(0,0,W,260); hb.addColorStop(0,accent); hb.addColorStop(1,accent2);
+  x.fillStyle=hb; x.fillRect(0,0,W,260);
+  x.save(); x.globalAlpha=.22;
+  x.beginPath(); x.arc(W-80,130,160,0,7); x.fillStyle='#000'; x.fill();
+  x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=2;
+  for(let r=60;r<160;r+=16){ x.beginPath(); x.arc(W-80,130,r,0,7); x.stroke(); }
+  x.restore();
+  x.textAlign='left'; x.fillStyle='#fff';
+  x.font='800 62px "Bricolage Grotesque",sans-serif';
+  x.fillText('MY VINYL ARCHIVE', M, 120);
+  x.font='700 34px sans-serif'; x.fillStyle='rgba(255,255,255,.92)';
+  x.fillText(en?'Taste Report':'취향 분석', M, 180);
+  let y=260;
+
+  const line=()=>{ x.strokeStyle='rgba(255,255,255,.08)'; x.lineWidth=2; x.beginPath(); x.moveTo(M,y); x.lineTo(W-M,y); x.stroke(); };
+  const sec=(t)=>{ y+=82; x.textAlign='left'; x.fillStyle='#fff'; x.font='800 42px sans-serif'; x.fillText(t,M,y); y+=12; };
+  const noData=()=>{ y+=58; x.textAlign='left'; x.fillStyle='rgba(255,255,255,.35)'; x.font='600 28px sans-serif'; x.fillText(en?'No data yet':'데이터 없음', M, y); y+=40; };
+  const rankRows=(rows)=>{
+    if(!rows.length){ noData(); return; }
+    rows.forEach((r,i)=>{ y+=64;
+      x.textAlign='left';
+      x.fillStyle=accent2; x.font='800 30px sans-serif'; x.fillText(String(i+1), M, y);
+      x.fillStyle='#fff'; x.font='700 32px sans-serif';
+      let nm=r.name; while(x.measureText(nm).width>W-2*M-260 && nm.length>2) nm=nm.slice(0,-2)+'…';
+      x.fillText(nm, M+52, y);
+      x.textAlign='right'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 28px sans-serif'; x.fillText(r.right, W-M, y);
+    });
+    y+=44;
+  };
+
+  // ── 컬렉션 요약 (전체·보유·개봉·미개봉)
+  sec(en?'Collection':'컬렉션');
+  y+=84;
+  [[s.total,en?'Total':'전체'],[s.owned,en?'Owned':'보유'],[s.opened,en?'Opened':'개봉'],[s.sealed,en?'Sealed':'미개봉']].forEach((cl,i)=>{
+    const cxx=M+(W-2*M)*(i+0.5)/4;
+    x.textAlign='center'; x.fillStyle='#fff'; x.font='800 60px sans-serif'; x.fillText(String(cl[0]),cxx,y);
+    x.fillStyle='rgba(255,255,255,.5)'; x.font='600 26px sans-serif'; x.fillText(cl[1],cxx,y+42);
+  });
+  y+=80; line();
+
+  // ── 별점 분포 (페르소나 + 히스토그램 + 3지표)
+  sec(en?'Ratings':'별점 분포');
+  y+=52;
+  x.textAlign='center'; x.fillStyle=accent2; x.font='700 32px sans-serif';
+  x.fillText(_ratingPersona(s,en), W/2, y);
+  if(s.rated){
+    y+=44; const bh=170, gap=14, bw=(W-2*M-9*gap)/10, base=y+bh;
+    const maxN=Math.max(...s.hist.map(h=>h.n),1);
+    s.hist.forEach((h,i)=>{ const bx=M+i*(bw+gap); const hh=h.n?Math.max(12,Math.round(h.n/maxN*bh)):6;
+      x.fillStyle=h.v===s.most?accent:'rgba(255,255,255,.14)';
+      x.fillRect(bx, base-hh, bw, hh);
+      if(h.v===s.most){ x.textAlign='center'; x.fillStyle='#fff'; x.font='700 26px sans-serif'; x.fillText(String(h.v), bx+bw/2, base-hh-12); }
+    });
+    x.textAlign='left'; x.fillStyle='rgba(255,255,255,.4)'; x.font='600 24px sans-serif'; x.fillText('0.5',M,base+34);
+    x.textAlign='right'; x.fillText('5',W-M,base+34);
+    y=base+96;
+    [[s.avg.toFixed(1),en?'Average':'별점 평균'],[String(s.rated),en?'Rated':'평가한 앨범'],[String(s.most),en?'Most given':'많이 준 별점']].forEach((t,i)=>{
+      const cxx=M+(W-2*M)*(i+0.5)/3;
+      x.textAlign='center'; x.fillStyle='#fff'; x.font='800 46px sans-serif'; x.fillText(t[0],cxx,y);
+      x.fillStyle='rgba(255,255,255,.5)'; x.font='600 25px sans-serif'; x.fillText(t[1],cxx,y+38);
+    });
+    y+=76;
+  } else { y+=44; }
+  line();
+
+  // ── 순위 섹션들
+  sec(en?'Top artists':'최애 아티스트');
+  rankRows(s.artists.map(a=>({name:a.name, right:`${a.cnt}${en?'':'장'}${a.avg?` · ★${a.avg.toFixed(1)}`:''}`})));
+  line();
+  sec(en?'Top genres':'최애 장르');
+  rankRows(s.genres.map(([g,n])=>({name:g, right:`${n}${en?'':'장'} · ${Math.round(n/Math.max(1,s.total)*100)}%`})));
+  line();
+  sec(en?'Favorite stores':'자주 간 구매처');
+  rankRows(s.stores.map(st=>({name:st.name, right:`${st.cnt}${en?'':'장'}`})));
+  line();
+
+  // ── 수집 히스토리 (연도 바 + 수집 연차 문구)
+  sec(en?'Collecting history':'수집 히스토리');
+  if(s.years.length){
+    y+=44; const bh=150, base=y+bh, n=s.years.length, gap=24;
+    const bw=Math.min(90,(W-2*M-(n-1)*gap)/n);
+    const maxY=Math.max(...s.years.map(yy=>s.byYear[yy]),1);
+    const startX=M+((W-2*M)-(n*bw+(n-1)*gap))/2;
+    s.years.forEach((yy,i)=>{ const bx=startX+i*(bw+gap); const hh=Math.max(8,Math.round(s.byYear[yy]/maxY*bh));
+      const g2=x.createLinearGradient(0,base-hh,0,base); g2.addColorStop(0,accent2); g2.addColorStop(1,accent);
+      x.fillStyle=g2; x.fillRect(bx,base-hh,bw,hh);
+      x.textAlign='center'; x.fillStyle='#fff'; x.font='700 26px sans-serif'; x.fillText(String(s.byYear[yy]),bx+bw/2,base-hh-10);
+      x.fillStyle='rgba(255,255,255,.45)'; x.font='600 24px sans-serif'; x.fillText("'"+yy.slice(2),bx+bw/2,base+34);
+    });
+    y=base+92;
+    const fy=s.years[0], nY=(new Date().getFullYear()-parseInt(fy,10))+1;
+    x.textAlign='center'; x.fillStyle=accent2; x.font='700 30px sans-serif';
+    x.fillText(en?`Collecting since ${fy}`:`${fy}년부터 ${nY}년째 수집 중`, W/2, y);
+    y+=18;
+  } else noData();
+  line();
+
+  // ── 청음
+  sec(en?'Listening':'청음');
+  y+=76; x.textAlign='center'; x.fillStyle='#fff'; x.font='800 58px sans-serif';
+  x.fillText(en?`${s.listens} plays`:`총 ${s.listens}회`, W/2, y);
+  y+=46; x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
+  x.fillText(s.listens?(en?'The needle has been busy. Well done.':'바늘이 닳도록 들었어요. 대단합니다.'):(en?'Time to drop the needle!':'이제 바늘을 올려볼 시간이에요.'), W/2, y);
+  y+=26;
+
+  // ── 푸터
+  y+=36; line(); y+=58;
   x.textAlign='center'; x.fillStyle='rgba(255,255,255,.4)'; x.font='600 26px sans-serif';
-  x.fillText('lp-archive.web.app', cx, H-72);
-  return c;
+  x.fillText('lp-archive.web.app', W/2, y);
+  y+=52;
+
+  const out=document.createElement('canvas'); out.width=W; out.height=Math.min(y,BUF);
+  out.getContext('2d').drawImage(c,0,0,W,out.height,0,0,W,out.height);
+  return out;
+}
+// 공유: 웹/PWA는 파일 공유 → 앱(웹뷰)은 카드 업로드 후 OS 공유시트 → 마지막 폴백은 다운로드
+async function _shareCardBlob(blob){
+  if(!blob) return false;
+  const file=new File([blob],'my-vinyl-taste.png',{type:'image/png'});
+  const text=isEN()?'My vinyl taste report 🎵':'내 바이닐 취향 분석 🎵';
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'My Vinyl', text});
+      return true;
+    }
+  }catch(e){ if(e && e.name==='AbortError') return true; }
+  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+    const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+    if(Sh && Sh.share && window.LPCloud && window.LPCloud.uploadImage){
+      try{
+        const url=await window.LPCloud.uploadImage(blob,'png');   // 카드 이미지를 올려 링크로 공유
+        await Sh.share({ title:'My Vinyl', text, url, dialogTitle:isEN()?'Share taste card':'취향 카드 공유' });
+        return true;
+      }catch(e){ console.error('native card share', e); }
+    }
+  }
+  try{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='my-vinyl-taste.png'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    return true;
+  }catch(e){ return false; }
 }
 async function shareCollectionCard(){
   try{
     const canvas=buildShareCardCanvas();
-    canvas.toBlob(async (blob)=>{
-      if(!blob) return;
-      const file=new File([blob],'my-vinyl.png',{type:'image/png'});
-      try{
-        if(navigator.canShare && navigator.canShare({files:[file]})){
-          await navigator.share({files:[file], title:'My Vinyl', text:isEN()?'My vinyl collection 🎵':'내 바이닐 컬렉션 🎵'});
-          return;
-        }
-      }catch(e){ if(e && e.name==='AbortError') return; }
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=url; a.download='my-vinyl.png'; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),3000);
-    },'image/png');
-  }catch(e){ console.error('share card', e); }
+    window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+    const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
+    show('sharecard');
+  }catch(e){ console.error('share card', e); alert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 났어요.'); }
 }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
+{ const b=$('#sharecard-share'); if(b) b.onclick=async()=>{
+    const ok=await _shareCardBlob(window.__shareCardBlob);
+    if(!ok) previewToast(isEN()?'Sharing is not available here':'이 환경에선 공유할 수 없어요');
+}; }
+{ const ov=$('#ov-sharecard'); if(ov) ov.onclick=()=>hide('sharecard'); }
 
 // 추가 폼의 실제 상태값: 구분이 '보유중'이면 미개봉/개봉 하위선택, 아니면 구분 그대로
 function addStatus(){
