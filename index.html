@@ -1003,7 +1003,6 @@ body.state-shared #shared-view{display:block}
     <div class="count" id="count"></div>
     <div class="ctrls">
       <select id="sort" class="sortsel">
-        <option value="default">기본순</option>
         <option value="added">등록일순</option>
         <option value="purchase">구매순</option>
         <option value="album">앨범명 순</option>
@@ -2382,7 +2381,7 @@ function statusChip(s){
 }
 
 /* ---------- render grid ---------- */
-let filter={q:'',chip:'전체',sub:'',sort:'default',sortDir:'asc',genre:'',view:'grid'};   // view: 'grid'|'list'
+let filter={q:'',chip:'전체',sub:'',sort:'added',sortDir:'asc',genre:'',view:'grid'};   // view: 'grid'|'list'
 let gridDisc = (()=>{ try{ return localStorage.getItem('lp_griddisc')==='1'; }catch(e){ return false; } })();   // 그리드 LP판 보기
 
 // classify a record's status into a top-level group
@@ -2435,6 +2434,7 @@ function renderGrid(){
   let list=DATA.filter(passes);
   const regTime=it=>{ const id=String(it.id||''); const n=Number(id.slice(1)); return (id[0]==='u'||id[0]==='s')&&!isNaN(n)?n:0; };
   const cmp={
+    default:(a,b)=>regTime(b)-regTime(a),                                 // (구버전 값 폴백) = 등록일순
     added:(a,b)=>regTime(b)-regTime(a),                                   // 최근 등록 먼저
     purchase:(a,b)=>(b.buy||'').localeCompare(a.buy||''),                 // 최근 구매 먼저
     album:(a,b)=>(a.album||'').localeCompare(b.album||'','ko'),
@@ -4393,8 +4393,8 @@ function saveSellExchange(){
   }
   hide('sx');
   // 판매·교환 탭으로 이동해 결과 표시
-  filter={q:'',chip:'판매·교환',sub:'',sort:'default'};
-  $('#q').value=''; if($('#sort'))$('#sort').value='default';
+  filter={q:'',chip:'판매·교환',sub:'',sort:'added'};
+  $('#q').value=''; if($('#sort'))$('#sort').value='added';
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.v==='coll'));
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#view-coll').classList.add('on');
@@ -4448,8 +4448,8 @@ $('#add-save').onclick=()=>{
   DATA.unshift(it);
   cloudSaveItem(it);
   hide('add');
-  filter={q:'',chip:wish?'위시':'전체',sub:'',sort:'default'};
-  $('#q').value='';if($('#sort'))$('#sort').value='default';
+  filter={q:'',chip:wish?'위시':'전체',sub:'',sort:'added'};
+  $('#q').value='';if($('#sort'))$('#sort').value='added';
   // make sure we're on the collection view so the result is visible
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.v==='coll'));
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
@@ -5732,7 +5732,7 @@ window.bootApp=function(items){
   // 이전 사용자 흔적 제거 후, 저장된 커버를 캐시에 반영
   Object.keys(pickedArt).forEach(k=>delete pickedArt[k]);
   DATA.forEach(it=>{ if(it._art){ const k=artKey(it.artist,it.album); pickedArt[k]=it._art; artCache[k]=it._art; } });
-  filter={q:'',chip:'전체',sub:'',sort:'default',sortDir:'asc',genre:'',view:'grid'};
+  filter={q:'',chip:'전체',sub:'',sort:'added',sortDir:'asc',genre:'',view:'grid'};
   calYear=null; cfIndex=0;
   if($('#q')) $('#q').value='';
   // 로그인 후 저장된 환경설정·컬렉션을 로드한다.
