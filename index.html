@@ -3968,8 +3968,11 @@ function _tasteCardStats(){
     .map(([l,e])=>({name:Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0], cnt:e.cnt}));
   const byYear={}; real.forEach(d=>{ if(!d.buy)return; const yy=String(d.buy).slice(0,4); if(/^\d{4}$/.test(yy)) byYear[yy]=(byYear[yy]||0)+1; });
   const listens=DATA.reduce((s,d)=>s+(Array.isArray(d.listens)?d.listens.length:0),0);
+  // 최애 앨범: 청음 횟수 기준 TOP3
+  const albums=DATA.map(d=>({name:(d.album||'').trim()||(d.artist||''), artist:(d.artist||'').trim(), cnt:Array.isArray(d.listens)?d.listens.length:0}))
+    .filter(a=>a.cnt>0).sort((p,q)=>q.cnt-p.cnt).slice(0,3);
   return { total:real.length, owned, opened, sealed, rated:rated.length, avg, hist, most,
-           artists, genres, stores, byYear, years:Object.keys(byYear).sort(), listens };
+           artists, genres, stores, byYear, years:Object.keys(byYear).sort(), listens, albums };
 }
 // 평균 별점에 따른 한 줄 페르소나 (왓챠피디아 '지조파' 느낌)
 function _ratingPersona(s, en){
@@ -4055,6 +4058,9 @@ function buildShareCardCanvas(){
   line();
 
   // ── 순위 섹션들
+  sec(en?'Top albums':'최애 앨범');   // 청음 횟수 기준
+  rankRows(s.albums.map(a=>({name:a.artist?`${a.name} · ${a.artist}`:a.name, right:`${a.cnt}${en?' plays':'회'} 🎧`})));
+  line();
   sec(en?'Top artists':'최애 아티스트');
   rankRows(s.artists.map(a=>({name:a.name, right:`${a.cnt}${en?'':'장'}${a.avg?` · ★${a.avg.toFixed(1)}`:''}`})));
   line();
