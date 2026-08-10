@@ -77,8 +77,6 @@ html[data-theme="light"] .dt-edit-btn{background:rgba(255,255,255,.92);color:#44
 .sug-it:active{background:var(--card2)}
 html[data-theme="light"] .sug-box{box-shadow:0 10px 26px rgba(0,0,0,.15)}
 /* 데이터 가져오기 (마이페이지 섹션 + 미리보기 시트) */
-.import-sec{display:flex;flex-direction:column;gap:9px;margin-bottom:6px}
-.imp-template{align-self:center;background:none;border:none;color:var(--dim);font-family:inherit;font-size:12px;cursor:pointer;padding:4px 8px;text-decoration:underline}
 .imp-summary{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
 .imp-tools{display:flex;gap:8px}
 .imp-selbtn{background:var(--card2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:inherit;font-size:12px;padding:7px 12px;cursor:pointer}
@@ -1091,15 +1089,7 @@ body.state-shared #shared-view{display:block}
   </div>
   <div class="like-grid" id="like-grid"></div>
 
-  <div class="my-sec-head" style="margin-top:22px">
-    <h3>데이터 가져오기</h3>
-  </div>
-  <div class="import-sec">
-    <button type="button" class="dl-addlisten" id="imp-discogs" style="margin-top:0">💿 Discogs 컬렉션 가져오기</button>
-    <button type="button" class="dl-addlisten" id="imp-file" style="margin-top:0">📄 엑셀·CSV 파일로 한번에 등록</button>
-    <button type="button" class="imp-template" id="imp-template">⤓ 엑셀 양식(CSV) 받기</button>
-    <input type="file" id="imp-fileinput" accept=".xlsx,.xls,.csv,text/csv" hidden>
-  </div>
+  <input type="file" id="imp-fileinput" accept=".xlsx,.xls,.csv,text/csv" hidden>
 
   <div class="my-sec-head" style="margin-top:22px">
     <h3>내 취향 요약</h3>
@@ -5379,6 +5369,11 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-card">
+      <div class="set-row tap" id="set-imp-discogs"><div class="set-l"><div class="set-t">💿 Discogs 컬렉션 가져오기</div><div class="set-d">Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
+    </div>
+    <div class="set-card">
       <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
     </div>
     <div class="set-card">
@@ -5423,6 +5418,9 @@ function renderSettings(){
     saveSettings(); applySettings();
   });
   // 내보내기
+  { const b=$('#set-imp-discogs'); if(b) b.onclick=importFromDiscogs; }
+  { const b=$('#set-imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
+  { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
   // Discogs 토큰 저장
   { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
@@ -6113,18 +6111,25 @@ async function importFromFile(file){
   const {items}=importRowsToItems(rows2);
   openImportPreview(items, `파일 가져오기 · ${items.length}장`);
 }
-// 엑셀 양식(CSV) 다운로드 — BOM 포함(엑셀에서 한글 안 깨짐)
-function downloadImportTemplate(){
+// 엑셀 양식(CSV) 받기 — BOM 포함(엑셀에서 한글 안 깨짐).
+// 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일을 올려 OS 공유시트/브라우저로 전달한다.
+async function downloadImportTemplate(){
   const csv='\uFEFF가수,앨범명,컬러,구분,구매처,구매가,정가,구매일,장르,발매년도,비고\r\nTom Misch,Geography,블랙,미개봉,yes24,45000,49000,2026-01-15,팝,2018,예시 행은 지우고 쓰세요\r\n';
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+    try{
+      previewToast('양식 파일 준비 중…');
+      const url=await window.LPCloud.uploadImage(blob,'csv');
+      const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+      if(Sh && Sh.share){ await Sh.share({ title:'LP 등록 양식 (CSV)', text:'엑셀에서 열어 채운 뒤 앱에 업로드하세요', url, dialogTitle:'양식 받기' }); return; }
+      window.open(url,'_blank'); return;
+    }catch(e){ console.error('template share', e); alert('양식을 준비하지 못했어요. 로그인과 네트워크를 확인해주세요.'); return; }
+  }
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='lp-import-template.csv'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
-{ const b=$('#imp-discogs'); if(b) b.onclick=importFromDiscogs; }
-{ const b=$('#imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
 { const f=$('#imp-fileinput'); if(f) f.onchange=e=>{ const file=e.target.files[0]; if(file) importFromFile(file); }; }
-{ const t=$('#imp-template'); if(t) t.onclick=downloadImportTemplate; }
 { const ov=$('#ov-import'); if(ov) ov.onclick=()=>hide('import'); }
 
 /* ===== 안드로이드 하드웨어 뒤로가기 ===== */
