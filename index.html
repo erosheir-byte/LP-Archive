@@ -4153,13 +4153,13 @@ function buildShareCardCanvas(){
   line();
 
   // ── 순위 섹션들
-  sec(en?'Top albums':'최애 앨범');   // 청음 횟수 기준
+  sec(en?'Top albums':'선호하는 앨범');   // 청음 횟수 기준
   rankRows(s.albums.map(a=>({name:a.artist?`${a.name} · ${a.artist}`:a.name, right:`${a.cnt}${en?' plays':'회'} 🎧`})));
   line();
-  sec(en?'Top artists':'최애 아티스트');
+  sec(en?'Top artists':'선호하는 아티스트');
   rankRows(s.artists.map(a=>({name:a.name, right:`${a.cnt}${en?'':'장'}${a.avg?` · ★${a.avg.toFixed(1)}`:''}`})));
   line();
-  sec(en?'Top genres':'최애 장르');
+  sec(en?'Top genres':'선호하는 장르');
   rankRows(s.genres.map(([g,n])=>({name:g, right:`${n}${en?'':'장'} · ${Math.round(n/Math.max(1,s.total)*100)}%`})));
   line();
   sec(en?'Favorite stores':'자주 간 구매처');
