@@ -406,10 +406,9 @@ h1 .em{color:var(--accent)}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(14,13,17,.85);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 18px calc(11px + env(safe-area-inset-bottom));z-index:40}
 .nav button{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s}
 .nav button.on{color:var(--accent2)}
-.fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;border:none;padding:0;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;background:none}
+.fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;border:none;padding:0;box-shadow:0 8px 24px rgba(232,180,90,.5);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;background:none}
 .fab svg{width:100%;height:100%;display:block}
 .fab:active{transform:scale(.9) rotate(18deg)}
-.fab.wish{box-shadow:0 8px 24px rgba(232,180,90,.5)}
 
 /* Modal / sheet */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:.25s;touch-action:none;overscroll-behavior:none}
@@ -2216,9 +2215,10 @@ function colorHexOf(inp){
 function heartSVG(filled){
   return `<svg class="heart-ic" viewBox="0 0 24 24" width="22" height="22" fill="${filled?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>`;
 }
-function fabVinylSVG(wish){
-  const label = wish ? '#e8a23c' : '#e8643c';
-  const label2 = wish ? '#f0cf8a' : '#f2a444';
+function fabVinylSVG(){
+  // 모든 탭에서 위시 버전(골드 라벨 + 금색 글로우)으로 통일
+  const label = '#e8a23c';
+  const label2 = '#f0cf8a';
   return `<svg viewBox="0 0 58 58" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <radialGradient id="fab-vinyl" cx="40%" cy="35%" r="75%">
@@ -2510,11 +2510,10 @@ function renderGrid(){
   if(filter.sortDir==='desc') list=(cmp?list:[...list]).reverse();       // 내림차순이면 뒤집기
   $('#count').innerHTML=`<b>${list.length}</b>장 표시 중`;
   const isWish=filter.chip==='위시';
-  // FAB reflects context: wish vs normal add
+  // FAB: 모양은 모든 탭 동일(위시 버전), 문구·동작만 컨텍스트 반영
   const fab=$('#fab');
   if(fab){
-    fab.classList.toggle('wish', isWish);
-    fab.innerHTML = fabVinylSVG(isWish);
+    fab.innerHTML = fabVinylSVG();
     fab.title = isWish ? '위시 추가' : 'LP 추가';
   }
   if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
