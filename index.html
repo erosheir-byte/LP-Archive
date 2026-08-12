@@ -2263,12 +2263,14 @@ function renderPalette(containerId, inputId, onChange){
   // 현재 표시색: 직접 선택한 hex가 있으면 그것, 없으면 이름에서 유추
   const effHex=((inp&&inp.dataset.hex) || discColor(cur) || '').toLowerCase();
   const inPalette=PALETTE.some(([l,bg])=>bg.toLowerCase()===effHex);
+  // 판 사진이 지정돼 있으면 사진 칩에만 ✓ — 컬러 칩과 동시에 체크되지 않게
+  const hasPhoto = !!(inp && inp.dataset.camswatch==='1' && inp.dataset.photo);
   let html=PALETTE.map(([label,bg])=>{
-    const on = (bg.toLowerCase()===effHex) ? ' on':'';   // 색(hex)이 같으면 선택 표시 — 이름을 바꿔도 유지
+    const on = (!hasPhoto && bg.toLowerCase()===effHex) ? ' on':'';   // 색(hex)이 같으면 선택 표시 — 이름을 바꿔도 유지
     return `<button type="button" class="sw${on}" data-label="${label}" data-hex="${bg}" title="${label}" style="--sw:${bg}"></button>`;
   }).join('');
   // 칩에 없는 색: 무지개 스와치를 눌러 색상 피커로 직접 선택 (색은 hex로 저장, 이름은 자유롭게 입력)
-  const isCustom = !!(inp&&inp.dataset.hex) && !inPalette;
+  const isCustom = !hasPhoto && !!(inp&&inp.dataset.hex) && !inPalette;
   const customBg = isCustom ? inp.dataset.hex : 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
   html+=`<button type="button" class="sw sw-custom${isCustom?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
   // 판에 사진 넣기 칩 (수정 화면에서만: dataset.camswatch)
