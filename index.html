@@ -406,10 +406,9 @@ h1 .em{color:var(--accent)}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(14,13,17,.85);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 18px calc(11px + env(safe-area-inset-bottom));z-index:40}
 .nav button{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s}
 .nav button.on{color:var(--accent2)}
-.fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;border:none;padding:0;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;background:none}
+.fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;border:none;padding:0;box-shadow:0 8px 24px rgba(232,180,90,.5);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;background:none}
 .fab svg{width:100%;height:100%;display:block}
 .fab:active{transform:scale(.9) rotate(18deg)}
-.fab.wish{box-shadow:0 8px 24px rgba(232,180,90,.5)}
 
 /* Modal / sheet */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:.25s;touch-action:none;overscroll-behavior:none}
@@ -2216,9 +2215,10 @@ function colorHexOf(inp){
 function heartSVG(filled){
   return `<svg class="heart-ic" viewBox="0 0 24 24" width="22" height="22" fill="${filled?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>`;
 }
-function fabVinylSVG(wish){
-  const label = wish ? '#e8a23c' : '#e8643c';
-  const label2 = wish ? '#f0cf8a' : '#f2a444';
+function fabVinylSVG(){
+  // 모든 탭에서 위시 버전(골드 라벨 + 금색 글로우)으로 통일
+  const label = '#e8a23c';
+  const label2 = '#f0cf8a';
   return `<svg viewBox="0 0 58 58" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <radialGradient id="fab-vinyl" cx="40%" cy="35%" r="75%">
@@ -2263,12 +2263,14 @@ function renderPalette(containerId, inputId, onChange){
   // 현재 표시색: 직접 선택한 hex가 있으면 그것, 없으면 이름에서 유추
   const effHex=((inp&&inp.dataset.hex) || discColor(cur) || '').toLowerCase();
   const inPalette=PALETTE.some(([l,bg])=>bg.toLowerCase()===effHex);
+  // 판 사진이 지정돼 있으면 사진 칩에만 ✓ — 컬러 칩과 동시에 체크되지 않게
+  const hasPhoto = !!(inp && inp.dataset.camswatch==='1' && inp.dataset.photo);
   let html=PALETTE.map(([label,bg])=>{
-    const on = (bg.toLowerCase()===effHex) ? ' on':'';   // 색(hex)이 같으면 선택 표시 — 이름을 바꿔도 유지
+    const on = (!hasPhoto && bg.toLowerCase()===effHex) ? ' on':'';   // 색(hex)이 같으면 선택 표시 — 이름을 바꿔도 유지
     return `<button type="button" class="sw${on}" data-label="${label}" data-hex="${bg}" title="${label}" style="--sw:${bg}"></button>`;
   }).join('');
   // 칩에 없는 색: 무지개 스와치를 눌러 색상 피커로 직접 선택 (색은 hex로 저장, 이름은 자유롭게 입력)
-  const isCustom = !!(inp&&inp.dataset.hex) && !inPalette;
+  const isCustom = !hasPhoto && !!(inp&&inp.dataset.hex) && !inPalette;
   const customBg = isCustom ? inp.dataset.hex : 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
   html+=`<button type="button" class="sw sw-custom${isCustom?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
   // 판에 사진 넣기 칩 (수정 화면에서만: dataset.camswatch)
@@ -2510,11 +2512,10 @@ function renderGrid(){
   if(filter.sortDir==='desc') list=(cmp?list:[...list]).reverse();       // 내림차순이면 뒤집기
   $('#count').innerHTML=`<b>${list.length}</b>장 표시 중`;
   const isWish=filter.chip==='위시';
-  // FAB reflects context: wish vs normal add
+  // FAB: 모양은 모든 탭 동일(위시 버전), 문구·동작만 컨텍스트 반영
   const fab=$('#fab');
   if(fab){
-    fab.classList.toggle('wish', isWish);
-    fab.innerHTML = fabVinylSVG(isWish);
+    fab.innerHTML = fabVinylSVG();
     fab.title = isWish ? '위시 추가' : 'LP 추가';
   }
   if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
@@ -4154,13 +4155,13 @@ function buildShareCardCanvas(){
   line();
 
   // ── 순위 섹션들
-  sec(en?'Top albums':'최애 앨범');   // 청음 횟수 기준
+  sec(en?'Top albums':'선호하는 앨범');   // 청음 횟수 기준
   rankRows(s.albums.map(a=>({name:a.artist?`${a.name} · ${a.artist}`:a.name, right:`${a.cnt}${en?' plays':'회'} 🎧`})));
   line();
-  sec(en?'Top artists':'최애 아티스트');
+  sec(en?'Top artists':'선호하는 아티스트');
   rankRows(s.artists.map(a=>({name:a.name, right:`${a.cnt}${en?'':'장'}${a.avg?` · ★${a.avg.toFixed(1)}`:''}`})));
   line();
-  sec(en?'Top genres':'최애 장르');
+  sec(en?'Top genres':'선호하는 장르');
   rankRows(s.genres.map(([g,n])=>({name:g, right:`${n}${en?'':'장'} · ${Math.round(n/Math.max(1,s.total)*100)}%`})));
   line();
   sec(en?'Favorite stores':'자주 간 구매처');
