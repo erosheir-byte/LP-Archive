@@ -154,7 +154,8 @@ html[data-theme="light"] .cal-cell .dnum{color:var(--muted);text-shadow:none}
 .appdlg .exit-ok.danger{background:linear-gradient(150deg,#f07a8a,#e0617a);color:#fff}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none}
-body{padding-bottom:90px;max-width:560px;margin:0 auto;position:relative;min-height:100vh}
+body{padding-bottom:calc(90px + var(--adh,0px));max-width:560px;margin:0 auto;position:relative;min-height:100vh}
+body.has-adbanner{--adh:56px}   /* 하단 AdMob 배너 높이만큼 확보 (네이티브에서만) */
 body::before{content:'';position:fixed;inset:0;background:
   radial-gradient(900px 500px at 80% -10%, rgba(232,100,60,.14), transparent 60%),
   radial-gradient(700px 500px at 0% 100%, rgba(106,160,232,.10), transparent 55%);
@@ -439,7 +440,7 @@ h1 .em{color:var(--accent)}
 .vd-tilthint{text-align:center;color:var(--dim);font-size:11.5px;margin-top:6px}
 
 /* Bottom nav / FAB */
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(14,13,17,.85);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 18px calc(11px + env(safe-area-inset-bottom));z-index:40}
+.nav{position:fixed;bottom:var(--adh,0px);left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(14,13,17,.85);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 18px calc(11px + env(safe-area-inset-bottom));z-index:40}
 .nav button{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s}
 .nav button.on{color:var(--accent2)}
 .fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;border:none;padding:0;box-shadow:0 8px 24px rgba(232,180,90,.5);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;background:none}
@@ -5623,6 +5624,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
+      <div class="set-row tap" id="set-adfree"><div class="set-l"><div class="set-t">광고 보고 배너 잠시 끄기</div><div class="set-d">짧은 광고를 보면 1시간 동안 하단 배너가 사라져요 (앱 전용)</div></div><span class="set-chev">▶</span></div>
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
@@ -5672,6 +5674,8 @@ function renderSettings(){
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
   { const tb=$('#set-tour'); if(tb) tb.onclick=()=>{ hide('settings'); startTour(); }; }
+  // 광고 보고 배너 잠시 끄기 (보상형)
+  { const af=$('#set-adfree'); if(af) af.onclick=()=>{ try{ watchRewardedToHideBanner(); }catch(e){} }; }
   // Discogs 토큰 저장
   { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
   { const sv=$('#set-discogs-user-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsUser=$('#set-discogs-user').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
@@ -6622,6 +6626,53 @@ function handleAppBack(){
   window.addEventListener('touchend',settle);
   window.addEventListener('touchcancel',settle);
 })();
+
+/* ===== 광고 (Google AdMob) — 네이티브(APK)에서만 동작, 웹/PWA 에서는 전부 no-op =====
+   하단 배너 + 보상형(광고 시청 시 배너 1시간 숨김).
+   ⚠️ 아래는 구글 공식 "테스트" 광고 ID 입니다. 실제 수익을 받으려면 애드몹 콘솔에서
+   발급한 App ID(워크플로) 와 광고단위 ID(아래) 로 교체하세요. 개발 중 실광고 클릭은 계정 정지 위험. */
+const AD_IDS = {
+  banner: 'ca-app-pub-3940256099942544/6300978111',   // TODO: 실제 배너 광고단위 ID
+  reward: 'ca-app-pub-3940256099942544/5224354917'     // TODO: 실제 보상형 광고단위 ID
+};
+function _admob(){ try{ const C=window.Capacitor; if(!C||!(C.isNativePlatform&&C.isNativePlatform())) return null; return (C.Plugins&&C.Plugins.AdMob)||null; }catch(e){ return null; } }
+function _bannerSuppressed(){ return Date.now() < (+(localStorage.getItem('adBannerHideUntil')||0)); }
+async function showBanner(){
+  const A=_admob(); if(!A||_bannerSuppressed()) return;
+  try{
+    await A.showBanner({ adId:AD_IDS.banner, adSize:'ADAPTIVE_BANNER', position:'BOTTOM_CENTER', margin:0 });
+    document.body.classList.add('has-adbanner');
+  }catch(e){ console.warn('banner', e); }
+}
+async function hideBanner(){
+  const A=_admob(); document.body.classList.remove('has-adbanner'); if(!A) return;
+  try{ await A.hideBanner(); }catch(e){}
+  try{ await A.removeBanner(); }catch(e){}
+}
+async function refreshBanner(){ if(_bannerSuppressed()) await hideBanner(); else await showBanner(); }
+async function initAds(){
+  const A=_admob(); if(!A) return;
+  try{
+    await A.initialize({});
+    // (선택) EEA 동의: 플러그인이 UMP 를 제공하면 여기서 requestConsentInfo/showForm 호출
+    await refreshBanner();
+    // 배너 숨김이 만료되면 다시 표시하도록 주기적으로 확인
+    setInterval(()=>{ try{ refreshBanner(); }catch(e){} }, 60*1000);
+  }catch(e){ console.warn('ad init', e); }
+}
+async function watchRewardedToHideBanner(){
+  const A=_admob();
+  if(!A){ alert('광고 보상은 앱(설치본)에서만 이용할 수 있어요.'); return; }
+  try{
+    await A.prepareRewardVideoAd({ adId:AD_IDS.reward });
+    await A.showRewardVideoAd();
+    localStorage.setItem('adBannerHideUntil', String(Date.now()+60*60*1000));   // 1시간
+    await hideBanner();
+    alert('감사합니다! 1시간 동안 하단 배너 광고가 숨겨져요.');
+  }catch(e){ console.warn('reward', e); alert('지금은 볼 수 있는 광고가 없어요. 잠시 후 다시 시도해 주세요.'); }
+}
+// 앱(네이티브)에서 부팅 시 광고 초기화 (웹에서는 _admob()가 null → 아무 일도 안 함)
+try{ if(document.readyState==='loading') window.addEventListener('DOMContentLoaded', initAds); else initAds(); }catch(e){}
 </script>
 <script>
 /* PWA: 서비스워커 등록 (오프라인 앱 셸 + 설치 가능) */
