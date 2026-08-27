@@ -117,6 +117,10 @@ html[data-theme="light"] .cal-cell .dnum{color:var(--muted);text-shadow:none}
 .exit-btns button{flex:1;padding:13px;border-radius:12px;border:none;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .exit-cancel{background:var(--card);color:var(--muted);border:1px solid var(--line)}
 .exit-ok{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09}
+/* 공용 다이얼로그(appAlert/appConfirm) — 시스템 alert/confirm 대신 앱 스타일 팝업 */
+.appdlg .exit-t{font-size:14.5px;font-weight:600;white-space:normal;word-break:keep-all}
+.appdlg .dlg-title{font-size:16.5px;font-weight:800;color:var(--txt);text-align:center;margin-bottom:10px}
+.appdlg .exit-ok.danger{background:linear-gradient(150deg,#f07a8a,#e0617a);color:#fff}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none}
 body{padding-bottom:90px;max-width:560px;margin:0 auto;position:relative;min-height:100vh}
@@ -3025,6 +3029,31 @@ async function playPreview(it, disc){
   _preview.last[it.id]=urls[_preview.idx].url;
   _playPreviewIdx(disc);
 }
+/* 공용 확인/알림 다이얼로그 — 시스템 alert/confirm 대신 앱 디자인의 팝업.
+   appAlert(msg,{title}) → Promise, appConfirm(msg,{title,okText,cancelText,danger}) → Promise<boolean> */
+function _appDialog(opts){
+  return new Promise(res=>{
+    const m=document.createElement('div'); m.className='exit-ov appdlg';
+    m.style.zIndex=String((window.__sheetZ||300)+100);   // 열린 시트 위에 뜨게
+    m.innerHTML=`<div class="exit-box">
+      ${opts.title?`<div class="dlg-title">${escapeHtml(opts.title)}</div>`:''}
+      <div class="exit-t">${escapeHtml(String(opts.msg||'')).replace(/\n/g,'<br>')}</div>
+      <div class="exit-btns">
+        ${opts.confirm?`<button type="button" class="exit-cancel">${escapeHtml(opts.cancelText||'취소')}</button>`:''}
+        <button type="button" class="exit-ok${opts.danger?' danger':''}">${escapeHtml(opts.okText||'확인')}</button>
+      </div></div>`;
+    document.body.appendChild(m);
+    requestAnimationFrame(()=>m.classList.add('show'));
+    const close=v=>{ m.classList.remove('show'); setTimeout(()=>{ try{m.remove();}catch(e){} },200); res(v); };
+    const c=m.querySelector('.exit-cancel'); if(c) c.onclick=()=>close(false);
+    m.querySelector('.exit-ok').onclick=()=>close(true);
+    m.onclick=e=>{ if(e.target===m) close(opts.confirm?false:true); };
+  });
+}
+function appAlert(msg, o){ return _appDialog(Object.assign({msg, confirm:false}, o||{})); }
+function appConfirm(msg, o){ return _appDialog(Object.assign({msg, confirm:true}, o||{})); }
+window.appAlert=appAlert; window.appConfirm=appConfirm;   // module(Firebase) 코드에서도 사용
+
 function previewToast(msg){
   let t=document.getElementById('preview-toast');
   if(!t){ t=document.createElement('div'); t.id='preview-toast'; document.body.appendChild(t); }
@@ -3205,8 +3234,8 @@ function openDetail(id, mode){
   }; }
   // 우측 상단 '수정' 버튼 — 상세를 연 순간부터 항상 보이는 수정 진입점
   { const eb=$('#dt-edit'); if(eb) eb.onclick=()=>showEditForm(it); }
-  const db=$('#act-delete'); if(db) db.onclick=()=>{
-    if(confirm(`'${it.album||'이 앨범'}'을(를) 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) deleteRecord(it.id);
+  const db=$('#act-delete'); if(db) db.onclick=async()=>{
+    if(await appConfirm(`'${it.album||'이 앨범'}'을(를) 삭제할까요?\n삭제하면 되돌릴 수 없어요.`, {okText:'삭제', danger:true})) deleteRecord(it.id);
   };
   // 수동 연결이 없고 자동 매칭도 아직 조회 전이면, 백그라운드로 조회해 행을 갱신
   if(!it.previewAlbumId && !it.previewAlbumName && it._pvName===undefined){
@@ -3408,7 +3437,7 @@ function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,pr
   $('#vd-file').onchange=async e=>{
     const f=e.target.files[0]; if(!f)return;
     try{ loadVimg(await fileToDataURL(f, 1000)); }
-    catch(err){ alert('이미지를 불러오지 못했어요'); }
+    catch(err){ appAlert('이미지를 불러오지 못했어요'); }
   };
   // 미리보기(샌드박스)에서 파일 선택이 막힐 때 쓰는 샘플 주입 훅
   window.__vdLoadSample=(dataURL)=>{ try{ loadVimg(dataURL); }catch(e){} };
@@ -3463,7 +3492,7 @@ function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,pr
     }
   };
   $('#vd-photo-save').onclick=async ()=>{
-    if(!vimg){ alert('사진을 먼저 올려주세요'); return; }
+    if(!vimg){ appAlert('사진을 먼저 올려주세요'); return; }
     // render the visible circle region to a square canvas, masked to a circle
     const cropped=await cropToVinyl(imgwrap._im, stage, {vx,vy,vscale,vrot,opacity:vopacity});
     let url=cropped; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(cropped),'jpg'); }catch(up){}
@@ -3669,7 +3698,7 @@ async function openCoverPicker(it){
       const u=await fileToDataURL(f);
       let url=u; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); }catch(up){}
       applyCover(it,url); box.classList.remove('show'); box.innerHTML='';
-    }catch(err){alert('이미지를 불러오지 못했어요');}
+    }catch(err){appAlert('이미지를 불러오지 못했어요');}
   };
   $('#pk-urlbtn').onclick=()=>{
     const u=$('#pk-urlin').value.trim();
@@ -3898,7 +3927,7 @@ $('#f-file').onchange=async e=>{
     setPrevImg(u,'업로드 중…');
     try{ const url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); setPrevImg(url,'올린 사진으로 저장돼요 ✓'); }
     catch(up){ setPrevImg(u,'사진 준비됨 ✓'); }
-  }catch(err){alert('이미지를 불러오지 못했어요');}
+  }catch(err){appAlert('이미지를 불러오지 못했어요');}
   finally{ try{ e.target.value=''; }catch(_){} }   // 같은 파일 다시 선택 가능하도록
 };
 
@@ -4242,7 +4271,7 @@ async function shareCollectionCard(){
     window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
     show('sharecard');
-  }catch(e){ console.error('share card', e); alert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 발생했어요.'); }
+  }catch(e){ console.error('share card', e); appAlert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 발생했어요.'); }
 }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
 { const b=$('#sharecard-share'); if(b) b.onclick=async()=>{
@@ -4503,14 +4532,14 @@ function renderSxPick(q){
   });
 }
 function saveSellExchange(){
-  if(!_sxPickId){ alert('판매/교환할 LP를 보관함에서 선택해주세요'); return; }
+  if(!_sxPickId){ appAlert('판매/교환할 LP를 보관함에서 선택해주세요'); return; }
   const it=DATA.find(d=>d.id===_sxPickId);
-  if(!it){ alert('선택한 LP를 찾을 수 없어요'); return; }
+  if(!it){ appAlert('선택한 LP를 찾을 수 없어요'); return; }
   const note=$('#sx-note').value.trim();
   if(_sxMode==='판매'){
     const date=$('#sx-selldate').value;
     const price=Number($('#sx-sellprice').value)||null;
-    if(!price){ alert('판매가를 입력해주세요'); return; }
+    if(!price){ appAlert('판매가를 입력해주세요'); return; }
     it.status='판매';
     it.sellDate=date||null;
     it.sellPrice=price;
@@ -4526,7 +4555,7 @@ function saveSellExchange(){
     cloudSaveItem(it);
     // 받은 LP를 새로 보관함에 추가
     const ar=$('#sx-e-artist').value.trim(), al=$('#sx-e-album').value.trim();
-    if(!ar && !al){ alert('교환으로 받은 앨범의 가수 또는 앨범명을 입력해주세요'); return; }
+    if(!ar && !al){ appAlert('교환으로 받은 앨범의 가수 또는 앨범명을 입력해주세요'); return; }
     const recv={
       id:'u'+Date.now(), no:DATA.length+1,
       artist:ar, album:al,
@@ -4565,7 +4594,7 @@ $('#add-save').onclick=()=>{
   if(!ar) missing.push('가수');
   if(!al) missing.push('앨범명');
   if(!$('#f-color').value.trim()) missing.push('컬러');
-  if(missing.length){ alert('필수 항목을 입력해주세요: '+missing.join(', ')); return; }
+  if(missing.length){ appAlert('필수 항목을 입력해주세요: '+missing.join(', ')); return; }
   const it={
     id:'u'+Date.now(), no:DATA.length+1,
     artist:ar, album:al,
@@ -5429,30 +5458,30 @@ function renderSettings(){
   { const sv=$('#set-discogs-user-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsUser=$('#set-discogs-user').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
   // 계정 비우기 (이 계정의 모든 LP 삭제)
   { const cl=$('#set-clear'); if(cl) cl.onclick=async()=>{
-      if(!(window.LPCloud && window.LPCloud.clearAll)){ alert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
+      if(!(window.LPCloud && window.LPCloud.clearAll)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
       const n=(typeof DATA!=='undefined'&&DATA)?DATA.length:0;
-      if(!confirm(`이 계정의 LP ${n}장을 모두 삭제할까요?\n되돌릴 수 없어요.`)) return;
-      if(!confirm('정말 전부 삭제합니다. 계속할까요?')) return;
+      if(!(await appConfirm(`이 계정의 LP ${n}장을 모두 삭제할까요?\n되돌릴 수 없어요.`, {okText:'모두 삭제', danger:true}))) return;
+      if(!(await appConfirm('정말 전부 삭제합니다. 계속할까요?', {okText:'삭제', danger:true}))) return;
       cl.style.pointerEvents='none';
       const t=cl.querySelector('.set-t'); const old=t?t.textContent:''; if(t) t.textContent='삭제 중…';
       try{
         await window.LPCloud.clearAll();
         if(window.bootApp) window.bootApp([]);
-        alert('이 계정을 비웠어요.');
-      }catch(e){ console.error(e); alert('삭제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'); }
+        appAlert('이 계정을 비웠어요.');
+      }catch(e){ console.error(e); appAlert('삭제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'); }
       finally{ cl.style.pointerEvents=''; if(t) t.textContent=old; }
   }; }
   // 회원 탈퇴 (계정 + 모든 데이터 영구 삭제)
   { const dl=$('#set-delete'); if(dl) dl.onclick=async()=>{
-      if(!(window.LPCloud && window.LPCloud.deleteAccount)){ alert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
-      if(!confirm('회원 탈퇴 시 계정과 모든 데이터(LP·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?')) return;
-      if(!confirm('정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.')) return;
+      if(!(window.LPCloud && window.LPCloud.deleteAccount)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
+      if(!(await appConfirm('회원 탈퇴 시 계정과 모든 데이터(LP·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?', {okText:'계속', danger:true}))) return;
+      if(!(await appConfirm('정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.', {okText:'탈퇴', danger:true}))) return;
       const t=dl.querySelector('.set-t'); const old=t?t.textContent:'';
       const run=async(pw)=>{
         dl.style.pointerEvents='none'; if(t) t.textContent='탈퇴 처리 중…';
         try{
           await window.LPCloud.deleteAccount(pw);
-          alert('탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.');
+          appAlert('탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.');
           return true;
         }catch(e){
           if(e && e.code==='need-password'){
@@ -5465,7 +5494,7 @@ function renderSettings(){
           const msg = (e && e.code==='auth/requires-recent-login')
             ? '보안을 위해 다시 로그인한 뒤 탈퇴해 주세요. (로그아웃 → 재로그인 → 탈퇴)'
             : '탈퇴 처리 중 오류가 발생했어요. 데이터는 삭제됐을 수 있으니, 다시 로그인해 남은 계정을 탈퇴해 주세요.';
-          alert(msg);
+          appAlert(msg);
           return false;
         }finally{ dl.style.pointerEvents=''; if(t) t.textContent=old; }
       };
@@ -5473,8 +5502,8 @@ function renderSettings(){
   }; }
   // 로그아웃
   { const lo=$('#set-logout'); if(lo) lo.onclick=()=>{
-      if(window.LPCloud && window.LPCloud.logout){ if(confirm('로그아웃할까요?')) window.LPCloud.logout(); }
-      else alert('미리보기에서는 로그아웃이 동작하지 않아요. 실제 앱에서 사용하세요.');
+      if(window.LPCloud && window.LPCloud.logout){ appConfirm('로그아웃할까요?', {okText:'로그아웃'}).then(ok=>{ if(ok) window.LPCloud.logout(); }); }
+      else appAlert('미리보기에서는 로그아웃이 동작하지 않아요. 실제 앱에서 사용하세요.');
   }; }
 }
 function exportData(){
@@ -5487,7 +5516,7 @@ function exportData(){
     a.href=url; a.download='lp-archive-backup-'+new Date().toISOString().slice(0,10)+'.json';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-  }catch(e){ alert('내보내기에 실패했어요'); }
+  }catch(e){ appAlert('내보내기에 실패했어요'); }
 }
 
 // 새 컬렉션 만들기 / 이름 수정
@@ -5505,7 +5534,7 @@ function openCollNew(editId){
 }
 function saveCollFromForm(){
   const name=$('#coll-name').value.trim();
-  if(!name){ alert('컬렉션 이름을 입력해주세요'); return; }
+  if(!name){ appAlert('컬렉션 이름을 입력해주세요'); return; }
   const desc=$('#coll-desc').value.trim();
   if(_collEditId){
     const c=COLLECTIONS.find(x=>x.id===_collEditId);
@@ -5555,9 +5584,9 @@ function collRemove(itemId){
   c.ids=(c.ids||[]).filter(x=>x!==itemId);
   saveCollections(); renderCollItems(); renderCollections();
 }
-function deleteColl(){
+async function deleteColl(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
-  if(!confirm(`'${c.name}' 컬렉션을 삭제할까요?`)) return;
+  if(!(await appConfirm(`'${c.name}' 컬렉션을 삭제할까요?`, {okText:'삭제', danger:true}))) return;
   COLLECTIONS=COLLECTIONS.filter(x=>x.id!==_collOpenId);
   saveCollections(); renderCollections(); hide('colldetail'); _collOpenId=null;
 }
@@ -5578,15 +5607,15 @@ function _kakaoReady(){
 // 카카오 SDK 미리 로드 (공유 클릭 시 제스처 안에서 즉시 sendDefault 하도록)
 try{ _kakaoReady(); }catch(e){}
 function _copyShareUrl(url){
-  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(()=>alert('공유 링크를 복사했어요 🎵\n'+url), ()=>prompt('아래 링크를 복사해 공유하세요', url)); return; } }catch(e){}
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(()=>appAlert('공유 링크를 복사했어요 🎵\n'+url), ()=>prompt('아래 링크를 복사해 공유하세요', url)); return; } }catch(e){}
   prompt('아래 링크를 복사해 공유하세요', url);
 }
 // 이 컬렉션을 공개 링크로 공유. 공유 호출(카카오/공유시트)은 반드시 클릭 제스처 안에서 '즉시' 실행해야
 // 팝업/공유시트가 차단되지 않는다. 따라서 shareId는 동기로 만들고, Firestore 발행은 백그라운드로 돌린다.
 function shareCurrentCollection(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
-  if(!(window.LPCloud && window.LPCloud.shareCollection)){ alert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
-  if(!(c.ids&&c.ids.length)){ alert('공유할 LP가 없어요. 먼저 컬렉션에 LP를 담아주세요.'); return; }
+  if(!(window.LPCloud && window.LPCloud.shareCollection)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
+  if(!(c.ids&&c.ids.length)){ appAlert('공유할 LP가 없어요. 먼저 컬렉션에 LP를 담아주세요.'); return; }
   const shareId = c.shareId || ((self.crypto&&crypto.randomUUID)?crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+Math.random().toString(36).slice(2,10)));
   if(c.shareId!==shareId){ c.shareId=shareId; saveCollections(); }
   const url='https://lp-archive.web.app/?c='+encodeURIComponent(shareId);
@@ -6053,7 +6082,7 @@ function openImportPreview(items, srcLabel){
 async function importFromDiscogs(){
   const user=(SETTINGS.discogsUser||'').trim();
   if(!user){
-    alert('환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.');
+    appAlert('환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.');
     renderSettings(); show('settings');
     return;
   }
@@ -6064,8 +6093,8 @@ async function importFromDiscogs(){
     while(page<=pages && all.length<1000){
       const url='https://api.discogs.com/users/'+encodeURIComponent(user)+'/collection/folders/0/releases?per_page=100&sort=added&page='+page+(token?('&token='+encodeURIComponent(token)):'');
       const res=await fetch(url);
-      if(res.status===404){ alert('Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.'); return; }
-      if(res.status===401||res.status===403){ alert('컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.'); return; }
+      if(res.status===404){ appAlert('Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.'); return; }
+      if(res.status===401||res.status===403){ appAlert('컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.'); return; }
       if(!res.ok) throw new Error('HTTP '+res.status);
       const j=await res.json();
       pages=(j.pagination&&j.pagination.pages)||1;
@@ -6082,8 +6111,8 @@ async function importFromDiscogs(){
       page++;
       if(page<=pages) await new Promise(r=>setTimeout(r,1100));   // rate limit(분당 60회) 여유
     }
-  }catch(e){ console.error('discogs import', e); alert('Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'); return; }
-  if(!all.length){ alert('가져올 컬렉션이 비어 있어요.'); return; }
+  }catch(e){ console.error('discogs import', e); appAlert('Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'); return; }
+  if(!all.length){ appAlert('가져올 컬렉션이 비어 있어요.'); return; }
   const {items}=importRowsToItems(all);
   openImportPreview(items, `Discogs 컬렉션 · ${items.length}장`);
 }
@@ -6100,16 +6129,16 @@ async function importFromFile(file){
       try{ X=await import('https://esm.sh/xlsx@0.18.5'); }
       catch(e1){ try{ X=await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm'); }catch(e2){} }
       const XLSX=X && ((X.default&&X.default.read)?X.default:X);
-      if(!XLSX || !XLSX.read){ alert('엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.'); return; }
+      if(!XLSX || !XLSX.read){ appAlert('엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.'); return; }
       const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
     }
-  }catch(e){ console.error('file import', e); alert('파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.'); return; }
+  }catch(e){ console.error('file import', e); appAlert('파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.'); return; }
   const rows=rowsFromAoa(aoa);
-  if(rows===null){ alert('머리글 행을 인식하지 못했어요. 첫 행에 "가수, 앨범명, ..." 같은 제목을 넣어주세요. (엑셀 양식 받기 참고)'); return; }
+  if(rows===null){ appAlert('머리글 행을 인식하지 못했어요. 첫 행에 "가수, 앨범명, ..." 같은 제목을 넣어주세요. (엑셀 양식 받기 참고)'); return; }
   const rows2=rows.filter(r=>(r.artist||r.album));
-  if(!rows2.length){ alert('가져올 행이 없어요. 양식을 확인해주세요.'); return; }
+  if(!rows2.length){ appAlert('가져올 행이 없어요. 양식을 확인해주세요.'); return; }
   const {items}=importRowsToItems(rows2);
   openImportPreview(items, `파일 가져오기 · ${items.length}장`);
 }
@@ -6125,7 +6154,7 @@ async function downloadImportTemplate(){
       const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
       if(Sh && Sh.share){ await Sh.share({ title:'LP 등록 양식 (CSV)', text:'엑셀에서 열어 채운 뒤 앱에 업로드하세요', url, dialogTitle:'양식 받기' }); return; }
       window.open(url,'_blank'); return;
-    }catch(e){ console.error('template share', e); alert('양식을 준비하지 못했어요. 로그인과 네트워크를 확인해주세요.'); return; }
+    }catch(e){ console.error('template share', e); appAlert('양식을 준비하지 못했어요. 로그인과 네트워크를 확인해주세요.'); return; }
   }
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='lp-import-template.csv'; document.body.appendChild(a); a.click(); a.remove();
