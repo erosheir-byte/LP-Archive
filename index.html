@@ -1109,7 +1109,7 @@ body.state-shared #shared-view{display:block}
 <!-- 환경설정 시트 -->
 <div class="ov" id="ov-settings"></div>
 <div class="sheet" id="sheet-settings">
-  <div class="grab"></div>
+  <div class="grab" id="grab-settings"></div>
   <button class="sheet-x" data-close="settings" aria-label="닫기">✕</button>
   <div class="form">
     <h2>환경설정</h2>
@@ -1121,7 +1121,7 @@ body.state-shared #shared-view{display:block}
 <!-- 바이닐 꾸미기 팝업 -->
 <div class="ov" id="ov-vinyl"></div>
 <div class="sheet" id="sheet-vinyl">
-  <div class="grab"></div>
+  <div class="grab" id="grab-vinyl"></div>
   <button class="sheet-x" data-close="vinyl" aria-label="닫기">✕</button>
   <div class="form">
     <div class="dt-inline" id="vinyl-box"></div>
@@ -1130,7 +1130,7 @@ body.state-shared #shared-view{display:block}
 
 <div class="ov" id="ov-daylist"></div>
 <div class="sheet" id="sheet-daylist">
-  <div class="grab"></div>
+  <div class="grab" id="grab-daylist"></div>
   <button class="sheet-x" data-close="daylist" aria-label="닫기">✕</button>
   <div class="form">
     <h2 id="daylist-title">앨범 목록</h2>
@@ -1145,7 +1145,7 @@ body.state-shared #shared-view{display:block}
 <!-- 컬렉션 만들기/이름수정 시트 -->
 <div class="ov" id="ov-collnew"></div>
 <div class="sheet" id="sheet-collnew">
-  <div class="grab"></div>
+  <div class="grab" id="grab-collnew"></div>
   <button class="sheet-x" data-close="collnew" aria-label="닫기">✕</button>
   <div class="form">
     <h2 id="collnew-title">새 컬렉션</h2>
@@ -1164,7 +1164,7 @@ body.state-shared #shared-view{display:block}
 <!-- 컬렉션 상세(담긴 LP 보기 + 추가) 시트 -->
 <div class="ov" id="ov-colldetail"></div>
 <div class="sheet" id="sheet-colldetail">
-  <div class="grab"></div>
+  <div class="grab" id="grab-colldetail"></div>
   <button class="sheet-x" data-close="colldetail" aria-label="닫기">✕</button>
   <button class="sheet-x sx-edit" id="coll-edit" type="button" aria-label="컬렉션 수정" title="수정">✎</button>
   <div class="form">
@@ -1183,7 +1183,7 @@ body.state-shared #shared-view{display:block}
 <!-- LP 담기(선택) 시트 -->
 <div class="ov" id="ov-collpick"></div>
 <div class="sheet" id="sheet-collpick">
-  <div class="grab"></div>
+  <div class="grab" id="grab-collpick"></div>
   <button class="sheet-x" data-close="collpick" aria-label="닫기">✕</button>
   <div class="form">
     <h2>LP 담기</h2>
@@ -1334,7 +1334,7 @@ body.state-shared #shared-view{display:block}
 <!-- 일괄 가져오기 미리보기 시트 -->
 <div class="ov" id="ov-import"></div>
 <div class="sheet" id="sheet-import">
-  <div class="grab"></div>
+  <div class="grab" id="grab-import"></div>
   <button class="sheet-x" data-close="import" aria-label="닫기">✕</button>
   <div class="form">
     <h2 id="imp-title">가져오기 미리보기</h2>
@@ -1354,7 +1354,7 @@ body.state-shared #shared-view{display:block}
 <!-- 취향 분석 카드 미리보기 시트 -->
 <div class="ov" id="ov-sharecard"></div>
 <div class="sheet" id="sheet-sharecard">
-  <div class="grab"></div>
+  <div class="grab" id="grab-sharecard"></div>
   <button class="sheet-x" data-close="sharecard" aria-label="닫기">✕</button>
   <div class="form">
     <h2><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>취향 카드</h2>
@@ -1369,7 +1369,7 @@ body.state-shared #shared-view{display:block}
 <!-- 청음 기록 시트 -->
 <div class="ov" id="ov-listen"></div>
 <div class="sheet" id="sheet-listen">
-  <div class="grab"></div>
+  <div class="grab" id="grab-listen"></div>
   <button class="sheet-x" data-close="listen" aria-label="닫기">✕</button>
   <div class="form">
     <h2><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17v-5a9 9 0 0 1 18 0v5"/><path d="M21 18a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2z"/><path d="M3 18a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2z"/></svg>청음 기록</h2>
@@ -1481,7 +1481,7 @@ body.state-shared #shared-view{display:block}
 <!-- 판매/교환 등록 시트 -->
 <div class="ov" id="ov-sx"></div>
 <div class="sheet" id="sheet-sx">
-  <div class="grab"></div>
+  <div class="grab" id="grab-sx"></div>
   <button class="sheet-x" data-close="sx" aria-label="닫기">✕</button>
   <div class="form">
     <h2 id="sx-title">판매 / 교환</h2>
@@ -3833,9 +3833,11 @@ function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCo
 { const b=$('#coll-editdone'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }; }
 { const q=$('#collpick-q'); if(q) q.oninput=e=>renderCollPick(e.target.value); }
 // swipe-down to dismiss (drag from the grab handle / top area)
-function enableSwipeClose(name){
+function enableSwipeClose(name, opts){
   const sheet=$('#sheet-'+name);
   const handle=$('#grab-'+name);
+  if(!sheet||!handle) return;
+  const handleOnly=!!(opts&&opts.handleOnly);   // 내부 스크롤·제스처가 있는 시트는 손잡이에서만 끌기
   let y0=null,dy=0,drag=false;
   const startY=y=>{ if(sheet.scrollTop>2)return; drag=true;y0=y;dy=0;sheet.style.transition='none'; };
   const moveY=y=>{ if(!drag)return; dy=y-y0; if(dy<0)dy=0;
@@ -3844,7 +3846,7 @@ function enableSwipeClose(name){
     if(dy>110){ sheet.style.transform=`translateX(-50%) translateY(100%)`; setTimeout(()=>hide(name),200); }
     else sheet.style.transform=''; };
   // dragging anywhere on the handle, or on the sheet when scrolled to top
-  [handle,sheet].forEach(el=>{
+  (handleOnly?[handle]:[handle,sheet]).forEach(el=>{
     el.addEventListener('touchstart',e=>startY(e.touches[0].clientY),{passive:true});
     el.addEventListener('touchmove',e=>{ if(drag&&dy>0)e.preventDefault(); moveY(e.touches[0].clientY); },{passive:false});
     el.addEventListener('touchend',endY);
@@ -3856,6 +3858,9 @@ function enableSwipeClose(name){
 }
 enableSwipeClose('detail');
 enableSwipeClose('add');
+// 손잡이(grab bar)가 있는 모든 바텀시트에서 끌어내려 닫기 — 지금까지 손잡이가 장식이던 10개
+['settings','vinyl','daylist','collnew','colldetail','collpick','import','sharecard','listen','sx']
+  .forEach(n=>enableSwipeClose(n,{handleOnly:true}));
 
 // 컬렉션 시트: 가로가 우세한 드래그를 막아 좌우 흔들림 제거(세로 스크롤만 허용).
 // touch-action:pan-y 로 안 잡히는 브라우저(특히 iOS 러버밴드)까지 확실히 차단한다.
