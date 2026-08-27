@@ -721,6 +721,10 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .dt-inline{margin-top:12px}
 .dt-inline:empty{margin:0}
 .inl-title{font-weight:700;font-size:14px;margin-bottom:10px;color:var(--accent2)}
+/* 버튼·제목 앞 아이콘 (이모지 대신 SVG로 통일) */
+.bi{width:16px;height:16px;vertical-align:-3px;margin-right:7px;flex:0 0 auto}
+h2 .bi,.lst-head .bi{width:17px;height:17px;vertical-align:-3px}
+.set-t .bi{width:15px;height:15px;vertical-align:-2.5px;margin-right:6px}
 .dt-inline .fld{margin-bottom:11px}
 .dt-inline .fld label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
 .dt-inline .fld input,.dt-inline .fld select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:15px;font-family:inherit;outline:none}
@@ -1099,7 +1103,7 @@ body.state-shared #shared-view{display:block}
     <h3>내 취향 요약</h3>
   </div>
   <div class="taste" id="taste"></div>
-  <button class="share-card-btn" id="share-card-btn" type="button">📤 컬렉션 카드 공유</button>
+  <button class="share-card-btn" id="share-card-btn" type="button"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>컬렉션 카드 공유</button>
 </div>
 
 <!-- 환경설정 시트 -->
@@ -1166,7 +1170,7 @@ body.state-shared #shared-view{display:block}
   <div class="form">
     <div class="cd-head" id="cd-collhead"></div>
     <div class="btnrow" style="margin-top:4px">
-      <button class="btn ghost cd-normal" id="coll-share">📤 공유</button>
+      <button class="btn ghost cd-normal" id="coll-share"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>공유</button>
       <button class="btn ghost cd-normal" id="coll-editmode">✏️ 편집</button>
       <button class="btn ghost cd-edit" id="coll-addlp">+ LP 담기</button>
       <button class="btn ghost danger cd-edit" id="coll-del">삭제</button>
@@ -1228,7 +1232,7 @@ body.state-shared #shared-view{display:block}
       <div class="pt" id="pt-prev">가수·앨범 입력 후 미리보기</div>
     </div>
     <div class="pk-manual" style="margin-bottom:13px">
-      <button class="bc-btn" id="bc-scan" type="button">🔎 바코드로 찾기</button>
+      <button class="bc-btn" id="bc-scan" type="button"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>바코드로 찾기</button>
       <div class="bc-box" id="bc-box" style="display:none">
         <video id="bc-video" playsinline muted style="display:none"></video>
         <div class="bc-manual">
@@ -1353,7 +1357,7 @@ body.state-shared #shared-view{display:block}
   <div class="grab"></div>
   <button class="sheet-x" data-close="sharecard" aria-label="닫기">✕</button>
   <div class="form">
-    <h2>📤 취향 카드</h2>
+    <h2><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>취향 카드</h2>
     <div class="sharecard-wrap"><img id="sharecard-img" alt="취향 분석 카드"></div>
     <div class="btnrow">
       <button class="btn ghost" data-close="sharecard">닫기</button>
@@ -1368,7 +1372,7 @@ body.state-shared #shared-view{display:block}
   <div class="grab"></div>
   <button class="sheet-x" data-close="listen" aria-label="닫기">✕</button>
   <div class="form">
-    <h2>🎧 청음 기록</h2>
+    <h2><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17v-5a9 9 0 0 1 18 0v5"/><path d="M21 18a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2z"/><path d="M3 18a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2z"/></svg>청음 기록</h2>
     <div class="lf-album" id="lf-album"></div>
     <div class="fld"><label>들은 날짜</label><input type="date" id="lf-date"></div>
     <div class="fld"><label>메모 (선택)</label><input id="lf-note" placeholder="그날의 느낌이나 한마디"></div>
@@ -1526,7 +1530,7 @@ body.state-shared #shared-view{display:block}
    touching underlying data or program logic. User data (artist/album/notes/
    prices/dates) is never translated — only known UI strings in the dictionary. */
 const I18N = {
-  "📤 컬렉션 카드 공유":"📤 Share collection card",
+  "컬렉션 카드 공유":"Share collection card",
   "LP 지직거림 사운드":"Vinyl crackle sound",
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
   "앱 표시 언어를 선택해요":"Choose the app display language",
@@ -1631,9 +1635,9 @@ const I18N = {
   "위시 추가":"Add to Wishlist",
   "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
   "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
-  "📷 사진에서 직접 올리기":"📷 Upload from a photo",
+  "사진에서 직접 올리기":"Upload from a photo",
   "앨범아트가 안 찾아지면 — 직접 올리기":"Cover art not found? — Upload manually",
-  "📷 앨범아트 사진 올리기":"📷 Upload cover photo",
+  "앨범아트 사진 올리기":"Upload cover photo",
   "또는 이미지 주소(URL) 붙여넣기":"Or paste an image address (URL)",
   "적용":"Apply",
   "가수":"Artist",
@@ -1683,7 +1687,7 @@ const I18N = {
   "배송 예정일":"Est. delivery",
   "대표":"Pinned",
   "판에 사진 넣기":"Photo on the disc",
-  "📷 판에 사진 넣기":"📷 Photo on the disc",
+  "판에 사진 넣기":"Photo on the disc",
   "판 투명도":"Disc opacity",
   "판매일":"Sale date",
   "판매가":"Sale price",
@@ -1692,8 +1696,8 @@ const I18N = {
   "커버 수정":"Edit cover",
   "좋아요":"Like",
   "바이닐 꾸미기":"Decorate vinyl",
-  "📦 배송완료로 표시":"📦 Mark as delivered",
-  "🛒 구매완료로 표시":"🛒 Mark as purchased",
+  "배송완료로 표시":"Mark as delivered",
+  "구매완료로 표시":"Mark as purchased",
   "✏️ 정보 수정":"✏️ Edit details",
   "정보 수정":"Edit details",
   "판매/교환가 (원)":"Sale/Exchange price (KRW)",
@@ -1721,7 +1725,7 @@ const I18N = {
   "기본값으로 되돌리기":"Reset to default",
   "레코드판 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.":"Your photo fits inside the record-shaped guide. Drag with one finger to move, pinch with two to resize/tilt.",
   "사진을 올려주세요":"Please add a photo",
-  "📷 사진 올리기":"📷 Add photo",
+  "사진 올리기":"Add photo",
   "크기 ":"Size ",
   "기울기 ":"Tilt ",
   "이 사진으로 저장":"Save this photo",
@@ -1852,7 +1856,7 @@ const I18N = {
   /* --- accent color names --- */
   "코랄":"Coral","로즈":"Rose","앰버":"Amber",
   /* --- barcode lookup --- */
-  "🔎 바코드로 찾기":"🔎 Find by barcode",
+  "바코드로 찾기":"Find by barcode",
   "바코드 번호 직접 입력 (예: 0888072...)":"Enter barcode number (e.g. 0888072…)",
   "조회":"Look up",
   "이 브라우저는 카메라 바코드 인식을 지원하지 않아요. 아래에 번호를 직접 입력하세요.":"This browser doesn't support camera barcode scanning. Enter the number manually below.",
@@ -3054,6 +3058,24 @@ function appAlert(msg, o){ return _appDialog(Object.assign({msg, confirm:false},
 function appConfirm(msg, o){ return _appDialog(Object.assign({msg, confirm:true}, o||{})); }
 window.appAlert=appAlert; window.appConfirm=appConfirm;   // module(Firebase) 코드에서도 사용
 
+/* 앱 공용 아이콘 — 버튼·제목 앞에 붙는 SVG (이모지 대신 사용, 기기별 모양 차이 없음) */
+const ICONS={
+  share:'<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>',
+  headphones:'<path d="M3 17v-5a9 9 0 0 1 18 0v5"/><path d="M21 18a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2z"/><path d="M3 18a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2z"/>',
+  cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.1a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/>',
+  swap:'<path d="M17 2l4 4-4 4"/><path d="M3 6h18"/><path d="M7 22l-4-4 4-4"/><path d="M21 18H3"/>',
+  disc:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>',
+  file:'<path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/>',
+  box:'<path d="M21 8v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8"/><path d="M2 4h20v4H2z"/><path d="M10 12h4"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+  camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  pin:'<path d="M12 17v5"/><path d="M9 10.8V4h6v6.8a2 2 0 0 0 .5 1.3l1.9 2.1a1 1 0 0 1-.7 1.8H7.3a1 1 0 0 1-.7-1.8l1.9-2.1a2 2 0 0 0 .5-1.3Z"/>',
+  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>'
+};
+function ic(name){
+  return `<svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||''}</svg>`;
+}
 function previewToast(msg){
   let t=document.getElementById('preview-toast');
   if(!t){ t=document.createElement('div'); t.id='preview-toast'; document.body.appendChild(t); }
@@ -3162,19 +3184,19 @@ function openDetail(id, mode){
   rows.push(`<div class="dt-row"><span class="k">음원 연결</span><span class="v dt-pv-v"><span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span></span></div>`);
   const g=statusGroup(it.status);
   let action='';
-  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
-  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
+  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">${ic('box')}배송완료로 표시</button>`;
+  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">${ic('cart')}구매완료로 표시</button>`;
   // 같은 앨범이 여러 장이면, 이 장의 커버를 달력·모아보기 '대표 이미지'로 지정할 수 있게
   const sameAlbum=DATA.filter(x=>artKey(x.artist,x.album)===key);
   if(sameAlbum.length>1){
-    action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?'📌 대표 이미지 지정됨 — 해제하기':'📌 이 커버를 대표 이미지로'}</button>`;
+    action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?ic('pin')+'대표 이미지 지정됨 — 해제하기':ic('pin')+'이 커버를 대표 이미지로'}</button>`;
   }
   // 같은 앨범을 한 장 더 살 때: 이 앨범 정보를 복사해 추가 폼을 미리 채움
-  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 한 장 더 추가</button>`;
-  action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
+  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">${ic('copy')}같은 앨범 한 장 더 추가</button>`;
+  action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">${ic('trash')}삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
-  let listenHTML=`<div class="lst-head"><span>🎧 청음 기록${listens.length?` · ${listens.length}회`:''}</span><button class="lst-add" id="lst-add">+ 청음 기록</button></div>`;
+  let listenHTML=`<div class="lst-head"><span>${ic('headphones')}청음 기록${listens.length?` · ${listens.length}회`:''}</span><button class="lst-add" id="lst-add">+ 청음 기록</button></div>`;
   if(listens.length){
     listenHTML+=`<div class="lst-list">${listens.map((l,i)=>`
       <div class="lst-item">
@@ -3381,7 +3403,7 @@ function showEditForm(it){
 function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,prefix:'f'} 면 추가 폼 임시 보관 모드
   const box=$('#vinyl-box');   // 별도 팝업 시트에 렌더
   box.innerHTML=`
-    <div class="inl-title">📷 판에 사진 넣기</div>
+    <div class="inl-title"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>판에 사진 넣기</div>
     <div class="vd-pane" id="vd-pane-photo">
       <div class="vd-photodesc">레코드판 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.</div>
       <div class="vd-stage" id="vd-stage">
@@ -3389,7 +3411,7 @@ function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,pr
         <div class="vd-guide"></div>
         <div class="vd-guide-label" id="vd-guide-label">사진을 올려주세요</div>
       </div>
-      <label class="pk-up" for="vd-file" style="margin-top:12px">📷 사진 올리기</label>
+      <label class="pk-up" for="vd-file" style="margin-top:12px"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>사진 올리기</label>
       <input type="file" accept="image/*" id="vd-file" style="display:none">
       <div class="fld" style="margin-top:12px"><label>크기 <span id="vd-zoomlab" style="color:var(--accent2)">100%</span></label>
         <input type="range" id="vd-zoom" min="50" max="250" value="100" class="vd-range" disabled>
@@ -3661,7 +3683,7 @@ async function openCoverPicker(it){
     </div>`;
   const manual=`
     <div class="pk-manual">
-      <label class="pk-up">📷 사진에서 직접 올리기
+      <label class="pk-up"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>사진에서 직접 올리기
         <input type="file" accept="image/*" id="pk-file" hidden>
       </label>
       <div class="pk-url">
@@ -4881,9 +4903,9 @@ function openDayList(dateStr, items){
   } else {
     html+=`<div class="dl-emptyday">이 날에는 기록이 없어요.</div>`;
   }
-  html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">🎧 청음 기록 추가</button>`;
-  html+=`<button type="button" class="dl-addlisten" id="dl-addbuy">🛒 구매내역 추가</button>`;
-  html+=`<button type="button" class="dl-addlisten" id="dl-addsx">🔁 판매·교환 내역 추가</button>`;
+  html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">${ic('headphones')}청음 기록 추가</button>`;
+  html+=`<button type="button" class="dl-addlisten" id="dl-addbuy">${ic('cart')}구매내역 추가</button>`;
+  html+=`<button type="button" class="dl-addlisten" id="dl-addsx">${ic('swap')}판매·교환 내역 추가</button>`;
   wrap.innerHTML=html;
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   wrap.querySelectorAll('.dl-pin').forEach(b=>b.onclick=(e)=>{
@@ -5400,8 +5422,8 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-card">
-      <div class="set-row tap" id="set-imp-discogs"><div class="set-l"><div class="set-t">💿 Discogs 컬렉션 가져오기</div><div class="set-d">Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-imp-discogs"><div class="set-l"><div class="set-t"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>Discogs 컬렉션 가져오기</div><div class="set-d">Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg>엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
     </div>
     <div class="set-card">
