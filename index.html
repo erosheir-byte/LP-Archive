@@ -1620,7 +1620,7 @@ const I18N = {
   "미개봉 ":"Sealed ",
   "검색 결과가 없어요":"No results found",
   "위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요":"Your wishlist is empty — add one with the + button at the bottom right",
-  "이 달엔 기록이 없어요":"No records this month",
+  "이 달에는 기록이 없어요":"No records this month",
   "표시할 LP가 없어요":"No records to show",
   /* --- FAB / add sheet --- */
   "LP 추가":"Add Vinyl",
@@ -1660,7 +1660,7 @@ const I18N = {
   "보관함에 추가":"Add to Library",
   "앨범아트를 찾았어요 ✓":"Found cover art ✓",
   "앨범아트를 찾지 못했어요":"Couldn't find cover art",
-  "앨범아트를 못 찾았어요 — 직접 올려보세요":"No cover art found — upload your own",
+  "앨범아트를 찾지 못했어요 — 직접 올려보세요":"No cover art found — upload your own",
   "직접 올리기":"Upload",
   "이 커버로 저장돼요 ✓":"This cover will be saved ✓",
   "업로드 중…":"Uploading…",
@@ -1708,7 +1708,7 @@ const I18N = {
   "바이닐 판의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.":"Fine-tune the color and opacity of each disc to make your collection truly your own.",
   "Pro 멤버십 알아보기":"Learn about Pro membership",
   "(데모: Pro 켜기)":"(Demo: turn on Pro)",
-  "결제 연동은 준비 중이에요. 곧 만나요!":"Payments are coming soon. See you then!",
+  "결제 연동은 준비 중이에요. 조금만 기다려 주세요.":"Payments are coming soon. Please stay tuned.",
   "🎨 바이닐 꾸미기 ":"🎨 Decorate vinyl ",
   "색상":"Color",
   "사진":"Photo",
@@ -1841,7 +1841,7 @@ const I18N = {
   "데이터 내보내기 / 백업":"Export data / Backup",
   "전체 기록을 JSON 파일로 저장":"Save your entire collection as a JSON file",
   "앱 정보":"About",
-  "로그아웃 할까요?":"Sign out?",
+  "로그아웃할까요?":"Sign out?",
   "미리보기에서는 로그아웃이 동작하지 않아요. 실제 앱에서 사용하세요.":"Sign out doesn't work in preview. Please use the real app.",
   "내보내기에 실패했어요":"Export failed",
   "저장됨 ✓":"Saved ✓",
@@ -1857,7 +1857,7 @@ const I18N = {
   "바코드 번호를 인식하지 못했어요.":"Couldn't read a barcode number.",
   "Discogs 토큰이 없어요. 마이페이지 환경설정에서 입력하세요.":"No Discogs token. Add one in My Page → Settings.",
   "이 바코드로 음반을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.":"No record found for this barcode. Check the number or enter it manually.",
-  "조회 중 오류가 났어요. 네트워크를 확인하세요.":"An error occurred during lookup. Please check your network.",
+  "조회 중 오류가 발생했어요. 네트워크를 확인하세요.":"An error occurred during lookup. Please check your network.",
   "Discogs 커버로 저장돼요 ✓":"Discogs cover will be saved ✓",
   /* --- condition grade --- */
   "상태 등급":"Condition grade",
@@ -3145,7 +3145,7 @@ function openDetail(id, mode){
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
-  let listenHTML=`<div class="lst-head"><span>🎧 청음 기록${listens.length?` · ${listens.length}회`:''}</span><button class="lst-add" id="lst-add">+ 들었어요</button></div>`;
+  let listenHTML=`<div class="lst-head"><span>🎧 청음 기록${listens.length?` · ${listens.length}회`:''}</span><button class="lst-add" id="lst-add">+ 청음 기록</button></div>`;
   if(listens.length){
     listenHTML+=`<div class="lst-list">${listens.map((l,i)=>`
       <div class="lst-item">
@@ -3848,7 +3848,7 @@ function schedulePreview(){
       // default-select the first candidate
       $('#pa-prev').innerHTML=`<img src="${cands[0].img}">`;
       $('#pa-prev').dataset.url=cands[0].img;
-      $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 걸 선택하세요`:'앨범아트를 찾았어요 ✓';
+      $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 것을 선택하세요`:'앨범아트를 찾았어요 ✓';
       autofillGenre(cands[0]); autofillYear(cands[0]);
       // 기본 선택된 후보가 iTunes 앨범이면 음원 연결도 그 앨범으로 자동 지정
       window.__addPv = cands[0].collectionId ? {id:cands[0].collectionId, name:cands[0].album||''} : null;
@@ -3871,7 +3871,7 @@ function schedulePreview(){
       });
     }else{
       $('#pa-prev').textContent='art';$('#pa-prev').dataset.url='';
-      $('#pt-prev').textContent='앨범아트를 못 찾았어요 — 직접 올려보세요';
+      $('#pt-prev').textContent='앨범아트를 찾지 못했어요 — 직접 올려보세요';
       box.classList.add('show');box.innerHTML=ART_UPLOAD_TILE;
       wireArtUploadTile(box);
     }
@@ -4007,7 +4007,7 @@ async function lookupBarcode(code){
     applyDiscogsResult(results[0]);
     bcStatus((isEN()?'✓ Found: ':'✓ 찾았어요: ')+(results[0].title||''));
   }catch(err){
-    bcStatus('조회 중 오류가 났어요. 네트워크를 확인하세요.');
+    bcStatus('조회 중 오류가 발생했어요. 네트워크를 확인하세요.');
   }
 }
 function applyDiscogsResult(r){
@@ -4242,12 +4242,12 @@ async function shareCollectionCard(){
     window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
     show('sharecard');
-  }catch(e){ console.error('share card', e); alert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 났어요.'); }
+  }catch(e){ console.error('share card', e); alert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 발생했어요.'); }
 }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
 { const b=$('#sharecard-share'); if(b) b.onclick=async()=>{
     const ok=await _shareCardBlob(window.__shareCardBlob);
-    if(!ok) previewToast(isEN()?'Sharing is not available here':'이 환경에선 공유할 수 없어요');
+    if(!ok) previewToast(isEN()?'Sharing is not available here':'이 환경에서는 공유할 수 없어요');
 }; }
 { const ov=$('#ov-sharecard'); if(ov) ov.onclick=()=>hide('sharecard'); }
 
@@ -4799,7 +4799,7 @@ function renderCal(){
     html+=`<div class="cal-cell ${isToday?'today':''} ${inner?'has':''}" data-date="${dateStr}" ${d===1?`style="grid-column-start:${startDow+1}"`:''}>${inner}<span class="dnum">${d}</span></div>`;
   }
   $('#cal-grid').innerHTML=html;
-  $('#cal-empty').textContent = ev.length ? '' : '이 달엔 기록이 없어요';
+  $('#cal-empty').textContent = ev.length ? '' : '이 달에는 기록이 없어요';
   // 날짜 클릭 → 그날 항목 보기 + 청음 추가
   $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
     const items=byDay[+cell.dataset.date.slice(-2)]||[];
@@ -4850,7 +4850,7 @@ function openDayList(dateStr, items){
       return `<div class="dl-row${on?' picked':''}">${item}${pin}</div>`;
     }).join('');
   } else {
-    html+=`<div class="dl-emptyday">이 날엔 기록이 없어요.</div>`;
+    html+=`<div class="dl-emptyday">이 날에는 기록이 없어요.</div>`;
   }
   html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">🎧 청음 기록 추가</button>`;
   html+=`<button type="button" class="dl-addlisten" id="dl-addbuy">🛒 구매내역 추가</button>`;
@@ -5439,7 +5439,7 @@ function renderSettings(){
         await window.LPCloud.clearAll();
         if(window.bootApp) window.bootApp([]);
         alert('이 계정을 비웠어요.');
-      }catch(e){ console.error(e); alert('삭제 중 오류가 났어요. 잠시 후 다시 시도해 주세요.'); }
+      }catch(e){ console.error(e); alert('삭제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'); }
       finally{ cl.style.pointerEvents=''; if(t) t.textContent=old; }
   }; }
   // 회원 탈퇴 (계정 + 모든 데이터 영구 삭제)
@@ -5464,7 +5464,7 @@ function renderSettings(){
           console.error(e);
           const msg = (e && e.code==='auth/requires-recent-login')
             ? '보안을 위해 다시 로그인한 뒤 탈퇴해 주세요. (로그아웃 → 재로그인 → 탈퇴)'
-            : '탈퇴 처리 중 오류가 났어요. 데이터는 삭제됐을 수 있으니, 다시 로그인해 남은 계정을 탈퇴해 주세요.';
+            : '탈퇴 처리 중 오류가 발생했어요. 데이터는 삭제됐을 수 있으니, 다시 로그인해 남은 계정을 탈퇴해 주세요.';
           alert(msg);
           return false;
         }finally{ dl.style.pointerEvents=''; if(t) t.textContent=old; }
@@ -5473,7 +5473,7 @@ function renderSettings(){
   }; }
   // 로그아웃
   { const lo=$('#set-logout'); if(lo) lo.onclick=()=>{
-      if(window.LPCloud && window.LPCloud.logout){ if(confirm('로그아웃 할까요?')) window.LPCloud.logout(); }
+      if(window.LPCloud && window.LPCloud.logout){ if(confirm('로그아웃할까요?')) window.LPCloud.logout(); }
       else alert('미리보기에서는 로그아웃이 동작하지 않아요. 실제 앱에서 사용하세요.');
   }; }
 }
@@ -6082,7 +6082,7 @@ async function importFromDiscogs(){
       page++;
       if(page<=pages) await new Promise(r=>setTimeout(r,1100));   // rate limit(분당 60회) 여유
     }
-  }catch(e){ console.error('discogs import', e); alert('Discogs 조회 중 오류가 났어요. 잠시 후 다시 시도해주세요.'); return; }
+  }catch(e){ console.error('discogs import', e); alert('Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'); return; }
   if(!all.length){ alert('가져올 컬렉션이 비어 있어요.'); return; }
   const {items}=importRowsToItems(all);
   openImportPreview(items, `Discogs 컬렉션 · ${items.length}장`);
@@ -6105,7 +6105,7 @@ async function importFromFile(file){
       const ws=wb.Sheets[wb.SheetNames[0]];
       aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
     }
-  }catch(e){ console.error('file import', e); alert('파일을 읽는 중 오류가 났어요. 양식을 확인해주세요.'); return; }
+  }catch(e){ console.error('file import', e); alert('파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.'); return; }
   const rows=rowsFromAoa(aoa);
   if(rows===null){ alert('머리글 행을 인식하지 못했어요. 첫 행에 "가수, 앨범명, ..." 같은 제목을 넣어주세요. (엑셀 양식 받기 참고)'); return; }
   const rows2=rows.filter(r=>(r.artist||r.album));
@@ -6116,7 +6116,7 @@ async function importFromFile(file){
 // 엑셀 양식(CSV) 받기 — BOM 포함(엑셀에서 한글 안 깨짐).
 // 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일을 올려 OS 공유시트/브라우저로 전달한다.
 async function downloadImportTemplate(){
-  const csv='\uFEFF가수,앨범명,컬러,구분,구매처,구매가,정가,구매일,장르,발매년도,비고\r\nTom Misch,Geography,블랙,미개봉,yes24,45000,49000,2026-01-15,팝,2018,예시 행은 지우고 쓰세요\r\n';
+  const csv='\uFEFF가수,앨범명,컬러,구분,구매처,구매가,정가,구매일,장르,발매년도,비고\r\nTom Misch,Geography,블랙,미개봉,yes24,45000,49000,2026-01-15,팝,2018,예시 행은 지우고 사용하세요\r\n';
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
     try{
