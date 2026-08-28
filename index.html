@@ -2347,7 +2347,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'WrQmVDqssjeZdRRllyWaacrSnrsoPUpEyXUrXlFv', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark' };
+const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -4025,39 +4025,91 @@ function stopBarcodeScan(){
   if(_bcStream){ _bcStream.getTracks().forEach(t=>t.stop()); _bcStream=null; }
   const vid=$('#bc-video'); if(vid){ vid.style.display='none'; try{vid.srcObject=null;}catch(e){} }
 }
-async function lookupBarcode(code){
-  code=String(code||'').replace(/\D/g,'');
-  if(!code){ bcStatus('바코드 번호를 인식하지 못했어요.'); return; }
+/* 바코드 조회 — 키(토큰) 없이 되는 곳부터 순서대로 시도
+   ① Deezer UPC (JSONP, 키 불필요)  ② MusicBrainz 바코드 (키 불필요)
+   ③ Discogs (토큰을 직접 넣은 사용자만, 바이닐 정보가 가장 정확)
+   ①②는 호출 한도가 사용자 IP 단위라 사용자가 늘어도 안전하다. */
+function _dzUPC(code){
+  return new Promise(res=>{
+    const cb='dzu_'+Math.random().toString(36).slice(2);
+    const t=setTimeout(()=>{cleanup();res(null);},7000);
+    function cleanup(){ clearTimeout(t); try{delete window[cb];}catch(e){} try{s.remove();}catch(e){} }
+    window[cb]=data=>{
+      let out=null;
+      try{
+        if(data && data.id && !data.error){
+          out={ artist:(data.artist&&data.artist.name)||'', album:data.title||'',
+                year:(data.release_date||'').slice(0,4), cover:data.cover_big||data.cover_medium||'',
+                genre:(data.genres&&data.genres.data&&data.genres.data[0]&&data.genres.data[0].name)||'', src:'Deezer' };
+        }
+      }catch(e){}
+      cleanup(); res(out);
+    };
+    const s=document.createElement('script');
+    s.onerror=()=>{cleanup();res(null);};
+    s.src='https://api.deezer.com/album/upc:'+encodeURIComponent(code)+'?output=jsonp&callback='+cb;
+    document.body.appendChild(s);
+  });
+}
+async function _mbBarcode(code){
+  try{
+    const u='https://musicbrainz.org/ws/2/release/?fmt=json&limit=3&query=barcode:'+encodeURIComponent(code);
+    const r=await fetch(u,{headers:{'Accept':'application/json'}});
+    if(!r.ok) return null;
+    const j=await r.json();
+    const rel=(j.releases||[])[0];
+    if(!rel) return null;
+    return { artist:(rel['artist-credit']&&rel['artist-credit'][0]&&rel['artist-credit'][0].name)||'',
+             album:rel.title||'', year:(rel.date||'').slice(0,4),
+             cover: rel.id ? ('https://coverartarchive.org/release/'+rel.id+'/front-500') : '',
+             genre:'', src:'MusicBrainz' };
+  }catch(e){ return null; }
+}
+async function _dgBarcode(code){
   const token=(SETTINGS && SETTINGS.discogsToken||'').trim();
-  if(!token){ bcStatus('Discogs 토큰이 없어요. 마이페이지 환경설정에서 입력하세요.'); return; }
-  bcStatus(isEN() ? ('Looking up barcode '+code+'…') : ('바코드 '+code+' 조회 중…'));
+  if(!token) return null;
   try{
     const url='https://api.discogs.com/database/search?type=release&barcode='+encodeURIComponent(code)+'&per_page=5&token='+encodeURIComponent(token);
-    const res=await fetch(url,{headers:{'User-Agent':'LPArchive/1.0'}});
-    if(!res.ok){ bcStatus(isEN() ? ('Lookup failed (HTTP '+res.status+'). Check your token or network.') : ('조회 실패 (HTTP '+res.status+'). 토큰이나 네트워크를 확인하세요.')); return; }
+    const res=await fetch(url);
+    if(!res.ok) return null;
     const data=await res.json();
-    const results=(data && data.results)||[];
-    if(!results.length){ bcStatus('이 바코드로 음반을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.'); return; }
-    applyDiscogsResult(results[0]);
-    bcStatus((isEN()?'✓ Found: ':'✓ 찾았어요: ')+(results[0].title||''));
-  }catch(err){
-    bcStatus('조회 중 오류가 발생했어요. 네트워크를 확인하세요.');
-  }
+    const r=((data&&data.results)||[])[0];
+    if(!r) return null;
+    let artist='', album='';
+    if(r.title && r.title.includes(' - ')){ const p=r.title.split(' - '); artist=p[0].trim(); album=p.slice(1).join(' - ').trim(); }
+    else { album=(r.title||'').trim(); }
+    const cover=r.cover_image||r.thumb||'';
+    return { artist, album, year:String(r.year||'').slice(0,4),
+             cover:(cover && !/spacer\.gif/.test(cover))?cover:'',
+             genre:(r.genre&&r.genre[0])||'', src:'Discogs' };
+  }catch(e){ return null; }
 }
-function applyDiscogsResult(r){
-  // Discogs title은 보통 "Artist - Album" 형식
-  let artist='', album='';
-  if(r.title && r.title.includes(' - ')){ const p=r.title.split(' - '); artist=p[0].trim(); album=p.slice(1).join(' - ').trim(); }
-  else { album=(r.title||'').trim(); }
-  if(artist) $('#f-artist').value=artist;
-  if(album) $('#f-album').value=album;
-  // 발매연도 (Discogs year)
+async function lookupBarcode(code){
+  code=String(code||'').replace(/\D/g,'');
+  if(!code){ bcStatus(bcT('Could not read the barcode number.','바코드 번호를 인식하지 못했어요.')); return; }
+  bcStatus(bcT('Looking up barcode '+code+'…','바코드 '+code+' 조회 중…'));
+  let hit=null;
+  try{
+    hit = await _dzUPC(code);
+    if(!hit) hit = await _mbBarcode(code);
+    if(!hit) hit = await _dgBarcode(code);   // 토큰을 직접 넣은 사용자만
+  }catch(err){
+    bcStatus(bcT('Lookup error. Please check your network.','조회 중 오류가 발생했어요. 네트워크를 확인하세요.')); return;
+  }
+  if(!hit){
+    bcStatus(bcT('No record found for this barcode. Check the number or enter it manually.','이 바코드로 음반을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.'));
+    return;
+  }
+  applyBarcodeResult(hit);
+  bcStatus(bcT('✓ Found: ','✓ 찾았어요: ')+[hit.artist,hit.album].filter(Boolean).join(' - '));
+}
+// 조회 결과를 추가 폼에 채움 (제공처와 무관하게 같은 형태)
+function applyBarcodeResult(r){
+  if(r.artist) $('#f-artist').value=r.artist;
+  if(r.album) $('#f-album').value=r.album;
   if(r.year){ const yf=$('#f-year'); if(yf && !yf.value){ const y=parseInt(String(r.year).slice(0,4),10); if(y) yf.value=y; } }
-  // 커버
-  const cover=r.cover_image||r.thumb;
-  if(cover && !/spacer\.gif/.test(cover)){ setPrevImg(cover,'Discogs 커버로 저장돼요 ✓'); }
-  // 장르
-  if(r.genre && r.genre.length){ const gf=$('#f-genre'); if(gf && !gf.value) gf.value=r.genre[0]; }
+  if(r.genre){ const gf=$('#f-genre'); if(gf && !gf.value) gf.value=(typeof normGenre==='function'?normGenre(r.genre):r.genre); }
+  if(r.cover) setPrevImg(r.cover, bcT('This cover will be saved ✓', (r.src||'')+' 커버로 저장돼요 ✓'));
 }
 { const b=$('#bc-scan'); if(b) b.onclick=()=>{ const box=$('#bc-box'); if(box.style.display==='none'){ startBarcodeScan(); } else { stopBarcodeScan(); box.style.display='none'; } }; }
 { const l=$('#bc-lookup'); if(l) l.onclick=()=>{ stopBarcodeScan(); lookupBarcode($('#bc-num').value); }; }
@@ -5399,7 +5451,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row col" style="cursor:default">
-        <div class="set-l"><div class="set-t">Discogs 연동</div><div class="set-d">토큰은 바코드 스캔에, 사용자명은 컬렉션 가져오기에 사용해요</div></div>
+        <div class="set-l"><div class="set-t">Discogs 연동</div><div class="set-d">컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)</div></div>
         <div class="set-token"><input id="set-discogs" placeholder="Discogs Personal Token" value="${escapeHtml(SETTINGS.discogsToken||'')}"><button type="button" id="set-discogs-save">저장</button></div>
         <div class="set-token" style="margin-top:8px"><input id="set-discogs-user" placeholder="Discogs 사용자명 (Username)" value="${escapeHtml(SETTINGS.discogsUser||'')}"><button type="button" id="set-discogs-user-save">저장</button></div>
       </div>
