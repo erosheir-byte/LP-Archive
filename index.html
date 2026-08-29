@@ -452,6 +452,8 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .my-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
 .my-sec-head{display:flex;align-items:center;justify-content:space-between;margin:6px 4px 12px}
 .my-sec-head h3{font-size:14px;font-weight:800;margin:0}
+.coll-shared-tag{display:inline-block;margin-left:7px;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:700;vertical-align:1.5px;background:var(--card2);background:color-mix(in srgb,var(--accent) 16%,transparent);border:1px solid var(--line);border-color:color-mix(in srgb,var(--accent) 40%,transparent);color:var(--accent2)}
+.coll-shared-note{color:var(--dim)!important;font-size:11.5px;margin-top:2px}
 .coll-new-btn{background:var(--card2);background:color-mix(in srgb,var(--accent) 14%,transparent);border:1px solid var(--line);border-color:color-mix(in srgb,var(--accent) 38%,transparent);color:var(--accent2);font-family:inherit;font-size:12px;font-weight:700;padding:7px 13px;border-radius:100px;cursor:pointer}
 .coll-new-btn:active{transform:scale(.95)}
 .coll-list{display:flex;flex-direction:column;gap:11px;padding:0 2px 20px}
@@ -1167,6 +1169,7 @@ body.state-shared #shared-view{display:block}
     <div class="cd-head" id="cd-collhead"></div>
     <div class="btnrow" style="margin-top:4px">
       <button class="btn ghost cd-normal" id="coll-share">📤 공유</button>
+      <button class="btn ghost danger cd-normal" id="coll-unshare" style="display:none">🔒 공유 중지</button>
       <button class="btn ghost cd-normal" id="coll-editmode">✏️ 편집</button>
       <button class="btn ghost cd-edit" id="coll-addlp">+ LP 담기</button>
       <button class="btn ghost danger cd-edit" id="coll-del">삭제</button>
@@ -3806,6 +3809,7 @@ function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCo
 { const b=$('#coll-save'); if(b) b.onclick=saveCollFromForm; }
 { const b=$('#coll-addlp'); if(b) b.onclick=openCollPick; }
 { const b=$('#coll-del'); if(b) b.onclick=deleteColl; }
+{ const b=$('#coll-unshare'); if(b) b.onclick=unshareColl; }
 { const b=$('#coll-share'); if(b) b.onclick=shareCurrentCollection; }
 { const b=$('#coll-editmode'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.add('editing'); }; }
 { const b=$('#coll-editdone'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }; }
@@ -5198,7 +5202,7 @@ function renderCollections(){
     return `<div class="coll-card" data-id="${c.id}">
       <div class="coll-thumb" style="background:${cover}">${inner}</div>
       <div class="coll-meta">
-        <div class="nm">${escapeHtml(c.name||'제목 없음')}</div>
+        <div class="nm">${escapeHtml(c.name||'제목 없음')}${c.shareId?'<span class="coll-shared-tag">공유 중</span>':''}</div>
         ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
         <div class="ct">LP ${ (c.ids||[]).length }${isEN()?'':'<span>장</span>'}</div>
       </div>
@@ -5614,9 +5618,11 @@ function openCollDetail(id){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>
     </div>
     <div style="flex:1;min-width:0">
-      <div class="nm">${escapeHtml(c.name)}</div>
+      <div class="nm">${escapeHtml(c.name)}${c.shareId?'<span class="coll-shared-tag">공유 중</span>':''}</div>
       ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
+      ${c.shareId?'<div class="ds coll-shared-note">링크를 가진 누구나 볼 수 있어요</div>':''}
     </div>`;
+  { const ub=$('#coll-unshare'); if(ub) ub.style.display = c.shareId ? '' : 'none'; }
   renderCollItems();
   { const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }   // 항상 일반 보기로 시작
   show('colldetail');
@@ -5643,9 +5649,23 @@ function collRemove(itemId){
 }
 async function deleteColl(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
-  if(!(await appConfirm(`'${c.name}' 컬렉션을 삭제할까요?`, {okText:'삭제', danger:true}))) return;
+  const msg = c.shareId
+    ? `'${c.name}' 컬렉션을 삭제할까요?\n공유 링크도 함께 사용할 수 없게 됩니다.`
+    : `'${c.name}' 컬렉션을 삭제할까요?`;
+  if(!(await appConfirm(msg, {okText:'삭제', danger:true}))) return;
+  if(c.shareId){ try{ await window.LPCloud.unshareCollection(c.shareId); }catch(e){ console.error('unshare on delete', e); } }
   COLLECTIONS=COLLECTIONS.filter(x=>x.id!==_collOpenId);
   saveCollections(); renderCollections(); hide('colldetail'); _collOpenId=null;
+}
+// 공유 중지: 공개 문서를 지워 링크를 무효화하고, 로컬의 공유 표시도 해제
+async function unshareColl(){
+  const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c||!c.shareId) return;
+  if(!(await appConfirm(`'${c.name}' 공유를 중지할까요?\n기존 링크로는 더 이상 볼 수 없게 됩니다.`, {okText:'공유 중지', danger:true}))) return;
+  try{
+    if(window.LPCloud && window.LPCloud.unshareCollection) await window.LPCloud.unshareCollection(c.shareId);
+    delete c.shareId; saveCollections(); renderCollections(); openCollDetail(c.id);
+    previewToast('공유를 중지했어요');
+  }catch(e){ console.error('unshare', e); appAlert('공유 중지 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'); }
 }
 // 이 컬렉션을 공개 링크로 공유 (카톡 등: Web Share, 미지원 시 링크 복사)
 // 카카오톡 공유(Kakao Share) — JavaScript 키만 있으면 서버 없이 예쁜 카드 전송.
@@ -6582,6 +6602,11 @@ function start(){
         name:(coll.name||'컬렉션').slice(0,60), desc:(coll.desc||'').slice(0,140), color:coll.color||null, items, updatedAt:Date.now() };
       await setDoc(doc(db,'shared',String(shareId)), payload);
       return shareId;
+    },
+    // 공유 중지: 공개 문서 삭제 → 기존 링크 무효화
+    async unshareCollection(shareId){
+      if(!currentUser||!shareId) return;
+      await deleteDoc(doc(db,'shared',String(shareId)));
     },
     logout(){ return signOut(auth); },
     // 회원 탈퇴: 이 계정의 모든 데이터(Firestore lps·meta, Storage 이미지) + 인증 계정 자체를 삭제.
