@@ -175,7 +175,11 @@ jobs:
             echo "::error::ANDROID_KEYSTORE_BASE64 시크릿이 없습니다. 릴리스 키스토어를 먼저 등록하세요 (RELEASE.md 참고)."
             exit 1
           fi
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          # 윈도우에서 복사한 값에 CRLF/공백이 섞여도 동작하도록 전부 제거 후 디코드
+          echo "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > android/app/release.jks || {
+            echo "::error::ANDROID_KEYSTORE_BASE64 값이 올바른 base64 가 아닙니다. release.jks 를 다시 변환해 시크릿을 갱신하세요."
+            exit 1
+          }
           echo "keystore decoded ($(stat -c%s android/app/release.jks) bytes)"
 
       - name: Inject release signingConfig
