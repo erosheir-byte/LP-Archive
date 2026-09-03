@@ -36,6 +36,34 @@
   --red:#e85c6a;
   --blue:#6aa0e8;
 }
+/* ===== 첫 사용 가이드(코치마크): 어두운 막 + 점선 스포트라이트 + 안내 카드 ===== */
+.tour{position:fixed;inset:0;z-index:5000;display:none}
+.tour.show{display:block}
+.tour-hl{position:absolute;border:2px dashed var(--accent2);border-radius:14px;
+  box-shadow:0 0 0 200vmax rgba(0,0,0,.72);pointer-events:none;
+  transition:top .35s cubic-bezier(.4,0,.2,1),left .35s cubic-bezier(.4,0,.2,1),width .35s cubic-bezier(.4,0,.2,1),height .35s cubic-bezier(.4,0,.2,1),border-radius .35s;
+  animation:tour-pulse 1.6s ease-in-out infinite}
+.tour-hl.none{border-color:transparent;animation:none}
+@keyframes tour-pulse{0%,100%{outline:0 solid rgba(242,164,68,0)}50%{outline:6px solid rgba(242,164,68,.18)}}
+.tour-card{position:absolute;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:340px;
+  background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px 18px 14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.5);transition:top .35s cubic-bezier(.4,0,.2,1),bottom .35s cubic-bezier(.4,0,.2,1)}
+.tour-card.center{top:50%;transform:translate(-50%,-50%)}
+.tour-step{font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:.04em;margin-bottom:6px}
+.tour-t{font-size:17px;font-weight:800;color:var(--txt);line-height:1.3;margin-bottom:8px}
+.tour-d{font-size:13.5px;color:var(--muted);line-height:1.55;word-break:keep-all}
+.tour-dots{display:flex;gap:5px;margin:14px 0 12px}
+.tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.tour-dots i.on{background:var(--accent2);width:16px;border-radius:3px}
+.tour-btns{display:flex;gap:8px;align-items:center}
+.tour-btns .tour-skip{background:none;border:none;color:var(--dim);font-family:inherit;font-size:13px;font-weight:600;padding:10px 6px;cursor:pointer}
+.tour-btns .sp{flex:1}
+.tour-btns .tour-prev{background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:11px;padding:10px 14px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.tour-btns .tour-next{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09;border:none;border-radius:11px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer}
+.tour-arrow{position:absolute;left:50%;width:12px;height:12px;background:var(--bg2);border-left:1px solid var(--line);border-top:1px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.tour-card.below .tour-arrow{top:-7px}
+.tour-card.above .tour-arrow{bottom:-7px;transform:translateX(-50%) rotate(225deg)}
+.tour-card.center .tour-arrow{display:none}
 /* ===== 라이트(브라이트) 테마 ===== */
 html[data-theme="light"]{
   --bg:#f3f0ec;
@@ -1190,6 +1218,7 @@ body.state-shared #shared-view{display:block}
 </div>
 
 <!-- FAB -->
+<div class="tour" id="tour" aria-live="polite"><div class="tour-hl none" id="tour-hl"></div><div class="tour-card center" id="tour-card"></div></div>
 <button class="fab" id="fab" title="LP 추가">+</button>
 
 <!-- NAV -->
@@ -1924,7 +1953,6 @@ const I18N = {
   /* --- 설정 --- */
   "발매년도 표기":"Show release year",
   "카드와 상세에 LP 발매년도를 표시해요":"Show the release year on cards and detail",
-  "추가·수정 화면에서 크기(12\"/7\"/10\")를 기록해요":"Record the size (12\"/7\"/10\") on the add and edit screens",
   "Discogs 연동":"Discogs",
   "컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)":"Used for importing a collection (barcode scanning needs no setup)",
   "미디어 브리지:":"Media bridge:",
@@ -1981,6 +2009,27 @@ const I18N = {
   "🔍 앨범·가수 검색":"🔍 Search albums or artists",
   "Discogs 사용자명 (Username)":"Discogs username",
   "· 공유된 컬렉션":"· shared collection",
+  /* --- 첫 사용 가이드 --- */
+  "MY Vinyl Archive 에 오신 걸 환영해요":"Welcome to MY Vinyl Archive",
+  "내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
+  "LP 등록":"Add a record",
+  "+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
+  "판 돌려서 듣기":"Spin and listen",
+  "커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 지직 소리와 함께 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays with vinyl crackle. Press and hold to open the details.",
+  "자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
+  "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
+  "얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.":"See how much you have collected, where you buy most, and which albums you play the most.",
+  "컬렉션과 공유":"Collections and sharing",
+  "테마별 컬렉션을 만들고 링크로 공유할 수 있어요. 마이페이지에서는 취향 카드도 만들 수 있어요.":"Build themed collections and share them by link. You can also make a taste card from My page.",
+  "설정":"Settings",
+  "언어·테마·표시 옵션은 여기에서 바꿔요. 이 가이드는 설정의 「앱 가이드 다시 보기」로 언제든 다시 볼 수 있어요.":"Change language, theme and display options here. You can replay this guide any time from Settings › Replay app guide.",
+  "건너뛰기":"Skip",
+  "둘러보기":"Take the tour",
+  "이전":"Back",
+  "다음":"Next",
+  "시작하기":"Get started",
+  "앱 가이드 다시 보기":"Replay app guide",
+  "주요 기능을 처음처럼 다시 안내해요":"Walk through the main features again",
   /* --- misc --- */
   "닫기":"Close"
 };
@@ -5567,6 +5616,7 @@ function renderSettings(){
       <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
     </div>
     <div class="set-card">
+      <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">My Vinyl Archive · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px"><span>미디어 브리지:</span> ${_lpDiag()}</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
@@ -5612,6 +5662,7 @@ function renderSettings(){
   { const b=$('#set-imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
+  { const tb=$('#set-tour'); if(tb) tb.onclick=()=>{ hide('settings'); startTour(); }; }
   // Discogs 토큰 저장
   { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
   { const sv=$('#set-discogs-user-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsUser=$('#set-discogs-user').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
@@ -5840,6 +5891,113 @@ function renderCollPick(q){
     renderCollItems(); renderCollections();
   });
 }
+
+/* ===== 첫 사용 가이드(코치마크) =====
+   처음 로그인한 계정에 주요 기능을 점선 스포트라이트로 안내한다. 언제든 건너뛸 수 있고,
+   본 기록은 기기(localStorage)와 계정(meta/state.tourDone)에 함께 남겨 다시 뜨지 않는다.
+   설정 > 앱 가이드 다시 보기 로 재실행. */
+const TOUR_STEPS=[
+  { title:'MY Vinyl Archive 에 오신 걸 환영해요',
+    desc:'내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
+  { tab:'coll', target:'#fab', round:true, title:'LP 등록',
+    desc:'+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
+  { tab:'coll', target:'#cf-stage', pad:4, title:'판 돌려서 듣기',
+    desc:'커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 지직 소리와 함께 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
+  { tab:'coll', target:'#cf-mode-toggle', round:true, title:'LP판 보기',
+    desc:'자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
+  { tab:'cal', target:'#cal-grid', title:'달력',
+    desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
+  { tab:'stats', target:'#stats2', title:'통계',
+    desc:'얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.' },
+  { tab:'my', target:'#coll-new', title:'컬렉션과 공유',
+    desc:'테마별 컬렉션을 만들고 링크로 공유할 수 있어요. 마이페이지에서는 취향 카드도 만들 수 있어요.' },
+  { tab:'my', target:'#my-gear', round:true, title:'설정',
+    desc:'언어·테마·표시 옵션은 여기에서 바꿔요. 이 가이드는 설정의 「앱 가이드 다시 보기」로 언제든 다시 볼 수 있어요.' },
+];
+let _tour={ i:-1, on:false };
+function _tourSwitchTab(v){
+  const b=document.querySelector(`.nav button[data-v="${v}"]`);
+  if(b && !b.classList.contains('on')) b.click();
+}
+function _tourLayout(){
+  if(!_tour.on) return;
+  const st=TOUR_STEPS[_tour.i]; if(!st) return;
+  const hl=$('#tour-hl'), card=$('#tour-card');
+  const el=st.target?document.querySelector(st.target):null;
+  const vis=el && getComputedStyle(el).display!=='none' && getComputedStyle(el).visibility!=='hidden' && el.getBoundingClientRect().width>0;   // fixed 요소는 offsetParent 가 null 이라 rect 로 판단
+  if(!vis){ hl.classList.add('none'); hl.style.cssText='top:50%;left:50%;width:0;height:0'; card.className='tour-card center'; card.style.top=''; card.style.bottom=''; return; }
+  const pad=st.pad!=null?st.pad:8;
+  const r=el.getBoundingClientRect();
+  const top=Math.max(4,r.top-pad), left=Math.max(4,r.left-pad);
+  const w=Math.min(window.innerWidth-left-4,r.width+pad*2), h=r.height+pad*2;
+  hl.classList.remove('none');
+  hl.style.cssText=`top:${top}px;left:${left}px;width:${w}px;height:${h}px;border-radius:${st.round?'50%':'14px'}`;
+  // 카드는 대상 아래, 공간이 없으면 위
+  const H=window.innerHeight, need=230;
+  if(H-(top+h) >= need){ card.className='tour-card below'; card.style.bottom=''; card.style.top=(top+h+14)+'px'; }
+  else { card.className='tour-card above'; card.style.top=''; card.style.bottom=(H-top+14)+'px'; }
+  // 말풍선 꼬리를 대상 중앙에 맞춘다
+  requestAnimationFrame(()=>{ const ar=card.querySelector('.tour-arrow'); if(!ar) return;
+    const cr=card.getBoundingClientRect(); const cx=r.left+r.width/2-cr.left;
+    ar.style.left=Math.max(18,Math.min(cr.width-18,cx))+'px'; });
+}
+function _tourRender(){
+  const st=TOUR_STEPS[_tour.i], n=TOUR_STEPS.length, last=_tour.i===n-1, first=_tour.i===0;
+  const card=$('#tour-card');
+  card.innerHTML=`<div class="tour-arrow"></div>
+    ${first?'':`<div class="tour-step">${_tour.i} / ${n-1}</div>`}
+    <div class="tour-t">${st.title}</div>
+    <div class="tour-d">${st.desc}</div>
+    <div class="tour-dots">${TOUR_STEPS.map((_,k)=>`<i class="${k===_tour.i?'on':''}"></i>`).join('')}</div>
+    <div class="tour-btns">
+      <button type="button" class="tour-skip" id="tour-skip">${last?'':'건너뛰기'}</button><span class="sp"></span>
+      ${first?'':'<button type="button" class="tour-prev" id="tour-prev">이전</button>'}
+      <button type="button" class="tour-next" id="tour-next">${first?'둘러보기':(last?'시작하기':'다음')}</button>
+    </div>`;
+  const sk=$('#tour-skip'); if(sk) sk.onclick=endTour;
+  const pv=$('#tour-prev'); if(pv) pv.onclick=()=>tourGo(_tour.i-1);
+  $('#tour-next').onclick=()=>last?endTour():tourGo(_tour.i+1);
+}
+function tourGo(i){
+  if(i<0||i>=TOUR_STEPS.length) return;
+  _tour.i=i;
+  const st=TOUR_STEPS[i];
+  if(st.tab) _tourSwitchTab(st.tab);
+  const el=st.target?document.querySelector(st.target):null;
+  if(el){ try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} } }
+  _tourRender();
+  requestAnimationFrame(()=>requestAnimationFrame(_tourLayout));
+}
+function startTour(){
+  if(_tour.on) return;
+  try{ stopPreview(); }catch(e){}
+  document.querySelectorAll('.sheet.show').forEach(sh=>{ try{ hide(sh.id.replace(/^sheet-/,'')); }catch(e){} });
+  _tour.on=true;
+  $('#tour').classList.add('show');
+  lockScroll();
+  window.addEventListener('resize',_tourLayout);
+  tourGo(0);
+}
+function endTour(){
+  if(!_tour.on) return;
+  _tour.on=false; _tour.i=-1;
+  $('#tour').classList.remove('show');
+  window.removeEventListener('resize',_tourLayout);
+  if(!document.querySelector('.sheet.show')) unlockScroll();
+  _tourSwitchTab('coll');
+  try{ localStorage.setItem('lp_tour_done','1'); }catch(e){}
+  try{ if(window.LPCloud&&LPCloud.markTourDone) LPCloud.markTourDone(); }catch(e){}
+}
+// 로그인 직후 호출: 계정에 본 기록이 없고 이 기기에도 없으면 한 번 보여준다
+window.__maybeStartTour=function(cloudDone){
+  if(cloudDone) return;
+  let local=false; try{ local=localStorage.getItem('lp_tour_done')==='1'; }catch(e){}
+  if(local){ try{ if(window.LPCloud&&LPCloud.markTourDone) LPCloud.markTourDone(); }catch(e){} return; }
+  setTimeout(startTour, 700);
+};
+window.__startTour=startTour;
+window.__endTour=endTour;
+window.__tourOn=()=>_tour.on;
 
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v;
@@ -6344,6 +6502,8 @@ function showExitConfirm(){
   };
 }
 function handleAppBack(){
+  // 0-a) 첫 사용 가이드가 떠 있으면 뒤로가기 = 건너뛰기
+  try{ if(window.__tourOn && window.__tourOn()){ window.__endTour(); return; } }catch(e){}
   // 0) 종료 확인 모달이 떠 있으면 그것부터 닫기
   const ec=document.getElementById('exit-confirm');
   if(ec){ ec.classList.remove('show'); setTimeout(()=>{ try{ec.remove();}catch(e){} },200); return; }
@@ -6644,6 +6804,11 @@ function start(){
       try{ await setDoc(doc(db,'users',currentUser.uid,'meta','state'),{initialized:true},{merge:true}); }catch(e){}
       return ids.length;
     },
+    // 첫 사용 가이드를 봤다는 표식 — 다른 기기에서 로그인해도 다시 뜨지 않게 계정에 남긴다
+    async markTourDone(){
+      if(!currentUser) return;
+      try{ await setDoc(doc(db,'users',currentUser.uid,'meta','state'),{tourDone:true},{merge:true}); }catch(e){}
+    },
     // 컬렉션(플레이리스트)은 한 문서에 배열로 저장 → 재시작/기기 이동에도 유지
     saveCollections(list){
       if(!currentUser) return;
@@ -6727,8 +6892,8 @@ function start(){
       let items=await loadItems(user.uid);
       // 계정을 '딱 한 번'만 초기화(샘플 1장)한다. 이미 초기화된 계정은 비어 있어도 다시 시드하지 않음
       // → '계정 비우기'로 비운 계정이 재로그인할 때 샘플이 되살아나지 않게 하기 위함.
-      let inited=false;
-      try{ const ms=await getDoc(doc(db,'users',user.uid,'meta','state')); inited = ms.exists() && ms.data().initialized===true; }catch(e){}
+      let inited=false, tourDone=false;
+      try{ const ms=await getDoc(doc(db,'users',user.uid,'meta','state')); inited = ms.exists() && ms.data().initialized===true; tourDone = ms.exists() && ms.data().tourDone===true; }catch(e){}
       if(items.length===0 && !inited){
         const seed=window.buildInitialData?window.buildInitialData():[];
         if(seed.length) await migrate(user.uid, seed);
@@ -6739,6 +6904,7 @@ function start(){
       if(window.setAccount) window.setAccount(user.email||user.displayName||'계정');
       if(window.bootApp) window.bootApp(items);
       setState('app');
+      try{ if(window.__maybeStartTour) window.__maybeStartTour(tourDone); }catch(e){}
     }catch(e){
       console.error(e);
       setState('auth');
