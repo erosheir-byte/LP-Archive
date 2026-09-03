@@ -75,6 +75,16 @@ jobs:
             sed -i 's#<application#<uses-permission android:name="android.permission.CAMERA" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <application#' "$MANIFEST"
           fi
 
+      - name: Inject AdMob App ID + AD_ID permission
+        run: |
+          MF=android/app/src/main/AndroidManifest.xml
+          # ⚠️ 구글 공식 "테스트" App ID. 실제 수익은 애드몹에서 발급한 App ID 로 교체하세요.
+          APPID="ca-app-pub-3940256099942544~3347511713"
+          grep -q "com.google.android.gms.permission.AD_ID" "$MF" || \
+            sed -i 's#<application#<uses-permission android:name="com.google.android.gms.permission.AD_ID" />\n    <application#' "$MF"
+          grep -q "com.google.android.gms.ads.APPLICATION_ID" "$MF" || \
+            sed -i "s#</application>#    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$APPID\" />\n</application>#" "$MF"
+
       - name: Inject native media session plugin (잠금화면/상태바 컨트롤)
         run: |
           python3 - <<'PY'
