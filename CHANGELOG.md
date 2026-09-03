@@ -1,4 +1,4 @@
-# CHANGELOG — My Vinyl (LP 보관함)
+# CHANGELOG — Turnit (구 My Vinyl / LP 보관함)
 
 두 사람이 Claude Code로 함께 개발한 기록입니다. 병합된 PR 54개 + 진행 중 작업을 카테고리별로 정리했습니다.
 

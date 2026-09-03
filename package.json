@@ -2,7 +2,7 @@
   "name": "lp-archive",
   "version": "1.0.0",
   "private": true,
-  "description": "LP 보관함 (My Vinyl) — Capacitor 로 안드로이드/iOS 패키징. 웹 본체(index.html)를 www/ 로 번들해 앱에 내장한다.",
+  "description": "Turnit (구 LP 보관함/My Vinyl) — Capacitor 로 안드로이드/iOS 패키징. 웹 본체(index.html)를 www/ 로 번들해 앱에 내장한다.",
   "scripts": {
     "cap": "cap",
     "prepare:www": "node scripts/prepare-www.mjs",

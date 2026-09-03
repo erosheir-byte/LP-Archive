@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>My Vinyl</title>
+<title>Turnit</title>
 <meta property="og:type" content="website">
-<meta property="og:title" content="My Vinyl — 내 바이닐 컬렉션">
+<meta property="og:title" content="Turnit — 내 바이닐 컬렉션">
 <meta property="og:description" content="내 바이닐(LP) 컬렉션을 기록하고 친구와 공유해요 🎵">
 <meta property="og:image" content="https://lp-archive.web.app/icons/icon-512.png">
 <meta property="og:url" content="https://lp-archive.web.app">
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="My Vinyl">
+<meta name="apple-mobile-web-app-title" content="Turnit">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -162,10 +162,10 @@ body::before{content:'';position:fixed;inset:0;background:
 .wrap{position:relative;z-index:1}
 
 /* Header */
-header{padding:30px 20px 16px;position:relative}
-h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:46px;line-height:.95;letter-spacing:-.02em;text-transform:uppercase}
+header{padding:22px 20px 10px;position:relative}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:50px;line-height:.95;letter-spacing:-.03em}
 h1 .em{color:var(--accent)}
-.sub{color:var(--muted);font-size:13px;margin-top:12px;font-weight:500}
+.sub{color:var(--muted);font-size:13px;margin-top:0;padding-top:46px;font-weight:500;line-height:1.5}
 .sub b{color:var(--txt);font-weight:700}
 .sub .sep{color:var(--dim);margin:0 7px}
 
@@ -933,8 +933,8 @@ body.state-shared #shared-view{display:block}
 .auth-card{width:100%;max-width:360px;background:linear-gradient(165deg,var(--card2),var(--card));
   border:1px solid var(--line);border-radius:24px;padding:30px 24px 26px;
   box-shadow:0 30px 70px rgba(0,0,0,.5)}
-.auth-logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:38px;
-  line-height:.95;letter-spacing:-.02em;text-transform:uppercase;text-align:center}
+.auth-logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:44px;
+  line-height:.95;letter-spacing:-.03em;text-align:center}
 .auth-logo .em{color:var(--accent)}
 .auth-tagline{text-align:center;color:var(--muted);font-size:13px;margin-top:12px;font-weight:500}
 .auth-tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);
@@ -976,8 +976,8 @@ body.state-shared #shared-view{display:block}
   font-size:13px;font-weight:600;text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer}
 .acct-menu button:active{background:var(--card)}
 /* 언어 선택은 설정 시트(#set-lang)로 이동 */
-.cf-mode-toggle{top:98px}
-.acct{top:54px}
+.cf-mode-toggle{top:22px;right:20px}
+.acct{top:22px;right:64px}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:14px;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .share-card-btn:active{transform:scale(.98)}
 /* 취향 카드 미리보기 */
@@ -991,7 +991,7 @@ body.state-shared #shared-view{display:block}
 
 <div id="auth-screen">
   <div class="auth-card">
-    <div class="auth-logo">MY Vinyl<br><span class="em">Archive</span></div>
+    <div class="auth-logo">Turn<span class="em">-it</span></div>
     <div class="auth-tagline">내 바이닐 컬렉션을 어디서나</div>
     <div class="auth-tabs">
       <button class="auth-tab on" data-mode="login">로그인</button>
@@ -1027,7 +1027,6 @@ body.state-shared #shared-view{display:block}
       <button id="acct-logout">로그아웃</button>
     </div>
   </div>
-  <h1>MY Vinyl<br><span class="em">Archive</span></h1>
   <div class="sub" id="hsub">불러오는 중…</div>
 </header>
 
@@ -2013,7 +2012,7 @@ const I18N = {
   "Discogs 사용자명 (Username)":"Discogs username",
   "· 공유된 컬렉션":"· shared collection",
   /* --- 첫 사용 가이드 --- */
-  "MY Vinyl Archive 에 오신 걸 환영해요":"Welcome to MY Vinyl Archive",
+  "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
   "내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
   "LP 등록":"Add a record",
   "+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
@@ -2021,7 +2020,9 @@ const I18N = {
   "LP판 직접 돌리기":"Spin the record yourself",
   "카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
   "커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
-  "커버 사진 바꾸기":"Change the cover photo",
+  "앨범 커버 바꾸기":"Change the album cover",
+  "LP판 커버 바꾸기":"Change the disc cover",
+  "수정 화면의 컬러 팔레트 맨 끝 사진 칩을 누르면 LP판 자체에 사진을 넣을 수 있어요. 한 손가락으로 위치, 두 손가락으로 크기와 기울기를 조절해요.":"Tap the photo chip at the end of the color palette on the edit screen to put a photo on the disc itself. Drag with one finger to move it, and use two fingers to resize and tilt.",
   "상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.":"Tap the pencil on the cover in the detail view to pick a different cover or use your own photo. It shows on cards and the calendar too.",
   "자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
   "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
@@ -4125,8 +4126,8 @@ async function startBarcodeScan(){
     const name = err && err.name;
     let msg;
     if(name==='NotAllowedError' || name==='SecurityError'){
-      msg = bcT('Camera permission was denied. Turn it on in Settings → Apps → My Vinyl → Permissions → Camera, then retry — or enter the number below.',
-                '카메라 권한이 거부됐어요. 폰 설정 → 앱 → My Vinyl → 권한 → 카메라 를 켠 뒤 다시 시도하거나, 아래에 번호를 직접 입력하세요.');
+      msg = bcT('Camera permission was denied. Turn it on in Settings → Apps → Turnit → Permissions → Camera, then retry — or enter the number below.',
+                '카메라 권한이 거부됐어요. 폰 설정 → 앱 → Turnit → 권한 → 카메라 를 켠 뒤 다시 시도하거나, 아래에 번호를 직접 입력하세요.');
     }else if(name==='NotFoundError' || name==='OverconstrainedError'){
       msg = bcT('No camera was found on this device. Enter the number below.',
                 '이 기기에서 카메라를 찾지 못했어요. 아래에 번호를 직접 입력하세요.');
@@ -4343,7 +4344,7 @@ function buildShareCardCanvas(){
   x.restore();
   x.textAlign='left'; x.fillStyle='#fff';
   x.font='800 62px "Bricolage Grotesque",sans-serif';
-  x.fillText('MY VINYL ARCHIVE', M, 120);
+  x.fillText('TURNIT', M, 120);
   x.font='700 34px sans-serif'; x.fillStyle='rgba(255,255,255,.92)';
   x.fillText(en?'Taste Report':'취향 분석', M, 180);
   let y=260;
@@ -4459,7 +4460,7 @@ async function _shareCardBlob(blob){
   const text=isEN()?'My vinyl taste report 🎵':'내 바이닐 취향 분석 🎵';
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title:'My Vinyl', text});
+      await navigator.share({files:[file], title:'Turnit', text});
       return true;
     }
   }catch(e){ if(e && e.name==='AbortError') return true; }
@@ -4468,7 +4469,7 @@ async function _shareCardBlob(blob){
     if(Sh && Sh.share && window.LPCloud && window.LPCloud.uploadImage){
       try{
         const url=await window.LPCloud.uploadImage(blob,'png');   // 카드 이미지를 올려 링크로 공유
-        await Sh.share({ title:'My Vinyl', text, url, dialogTitle:isEN()?'Share taste card':'취향 카드 공유' });
+        await Sh.share({ title:'Turnit', text, url, dialogTitle:isEN()?'Share taste card':'취향 카드 공유' });
         return true;
       }catch(e){ console.error('native card share', e); }
     }
@@ -5624,7 +5625,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">My Vinyl Archive · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px"><span>미디어 브리지:</span> ${_lpDiag()}</div></div></div>
+      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px"><span>미디어 브리지:</span> ${_lpDiag()}</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
@@ -5853,7 +5854,7 @@ function shareCurrentCollection(){
   if(window.Kakao && window.Kakao.Share && window.Kakao.isInitialized && window.Kakao.isInitialized()){
     try{
       window.Kakao.Share.sendDefault({ objectType:'feed',
-        content:{ title:(c.name||'내 바이닐 컬렉션'), description:`${count}장의 LP · My Vinyl`, imageUrl:img, link:{ mobileWebUrl:url, webUrl:url } },
+        content:{ title:(c.name||'내 바이닐 컬렉션'), description:`${count}장의 LP · Turnit`, imageUrl:img, link:{ mobileWebUrl:url, webUrl:url } },
         buttons:[{ title:'컬렉션 보러가기', link:{ mobileWebUrl:url, webUrl:url } }] });
       return;
     }catch(e){ console.warn('kakao share fail → fallback', e); }
@@ -5904,7 +5905,7 @@ function renderCollPick(q){
    본 기록은 기기(localStorage)와 계정(meta/state.tourDone)에 함께 남겨 다시 뜨지 않는다.
    설정 > 앱 가이드 다시 보기 로 재실행. */
 const TOUR_STEPS=[
-  { title:'MY Vinyl Archive 에 오신 걸 환영해요',
+  { title:'Turnit 에 오신 걸 환영해요',
     desc:'내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
   { tab:'coll', target:'#fab', round:true, title:'LP 등록',
     desc:'+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
@@ -5914,9 +5915,12 @@ const TOUR_STEPS=[
     open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
     leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
     desc:'카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.' },
-  { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'커버 사진 바꾸기',
+  { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'앨범 커버 바꾸기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.' },
+  { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'LP판 커버 바꾸기',
+    open:()=>{ if(DATA.length){ openDetail(DATA[0].id); showEditForm(DATA[0]); } }, leave:()=>{ try{ hide('edit'); }catch(e){} try{ hide('detail'); }catch(e){} },
+    desc:'수정 화면의 컬러 팔레트 맨 끝 사진 칩을 누르면 LP판 자체에 사진을 넣을 수 있어요. 한 손가락으로 위치, 두 손가락으로 크기와 기울기를 조절해요.' },
   { tab:'coll', target:'#cf-mode-toggle', round:true, title:'LP판 보기',
     desc:'자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
   { tab:'cal', target:'#cal-grid', title:'달력',
@@ -6664,7 +6668,7 @@ function sharedViewHTML(d){
     const cov=(it.cover && /^(https?:|data:)/.test(it.cover)) ? `<img loading="lazy" src="${_shEsc(it.cover)}" alt="">` : `<span class="sh-ph">♪</span>`;
     return `<div class="sh-it"><div class="sh-art">${cov}</div><div class="sh-t">${_shEsc(it.album||it.artist||'')}</div><div class="sh-a">${_shEsc(it.artist||'')}</div></div>`;
   }).join('');
-  return `<div class="sh-topbar"><span class="sh-logo">My Vinyl</span><a class="sh-logo" style="color:var(--accent);text-decoration:none;font-size:13px" href="https://lp-archive.web.app/">앱 열기 →</a></div>
+  return `<div class="sh-topbar"><span class="sh-logo">Turnit</span><a class="sh-logo" style="color:var(--accent);text-decoration:none;font-size:13px" href="https://lp-archive.web.app/">앱 열기 →</a></div>
   <div class="sh-wrap">
     <div class="sh-head">
       <div class="sh-thumb" style="background:${_shEsc(d.color||'#8a6fd6')}"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg></div>
@@ -6686,7 +6690,7 @@ async function renderSharedCollection(db, id){
     if(!snap.exists()){ if(host) host.innerHTML=sharedErrorHTML('공유를 찾을 수 없어요','링크가 만료됐거나 삭제됐을 수 있어요.'); return; }
     const d=snap.data();
     if(host) host.innerHTML=sharedViewHTML(d);
-    try{ document.title=(d.name||'컬렉션')+' · My Vinyl'; }catch(e){}
+    try{ document.title=(d.name||'컬렉션')+' · Turnit'; }catch(e){}
   }catch(e){ console.error('shared load', e); if(host) host.innerHTML=sharedErrorHTML('불러오지 못했어요','잠시 후 다시 시도해 주세요.'); }
 }
 
