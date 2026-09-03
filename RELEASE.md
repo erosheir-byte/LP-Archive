@@ -1,4 +1,4 @@
-# 스토어 출시 가이드 — My Vinyl (LP 보관함)
+# 스토어 출시 가이드 — Turnit
 
 이 문서는 **구글 플레이**와 **애플 앱스토어**에 앱을 올리기 위한 단계별 안내입니다.
 앱 코드/설정 준비(로컬 번들 전환, 서명 워크플로, 개인정보처리방침)는 저장소에 이미 되어 있고,
@@ -15,7 +15,7 @@
 | 항목 | 내용 |
 |---|---|
 | 개인정보처리방침 URL | `https://lp-archive.web.app/privacy.html` (배포 후 접속 가능 — `firebase deploy --only hosting`) |
-| 앱 이름 | My Vinyl |
+| 앱 이름 | Turnit |
 | 패키지/번들 ID | `app.lparchive.vinyl` |
 | 스크린샷 | 폰 화면 캡처 (스토어별 규격, 아래 참고) |
 | 지원 이메일 | 33to45rpm@gmail.com |

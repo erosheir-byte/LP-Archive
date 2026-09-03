@@ -1,6 +1,6 @@
 {
   "appId": "app.lparchive.vinyl",
-  "appName": "My Vinyl",
+  "appName": "Turnit",
   "webDir": "www",
   "server": {
     "androidScheme": "https",

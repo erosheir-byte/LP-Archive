@@ -1,4 +1,4 @@
-# LP 보관함 · My Vinyl Archive
+# Turnit · 내 바이닐 컬렉션 (구 LP 보관함 / My Vinyl Archive)
 
 내 바이닐(LP) 컬렉션을 기록·관리하는 모바일 우선 웹앱입니다.
 Firebase(인증·Firestore·Storage) 기반의 회원별 저장을 지원하고, PWA라서 휴대폰에 설치하거나 APK로 패키징할 수 있습니다.
@@ -100,7 +100,7 @@ npm run ios         # www 번들 + cap sync + Xcode 열기 (macOS)
 > <uses-feature android:name="android.hardware.camera" android:required="false" />
 > ```
 > 추가 후 `npx cap sync` → 다시 빌드하면 스캔을 누를 때 카메라 권한 팝업이 뜹니다.
-> (한 번 "거부"했다면 폰 설정 → 앱 → My Vinyl → 권한 → 카메라 를 켜야 합니다.)
+> (한 번 "거부"했다면 폰 설정 → 앱 → Turnit → 권한 → 카메라 를 켜야 합니다.)
 
 ---
 

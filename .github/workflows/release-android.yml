@@ -65,8 +65,8 @@ jobs:
           if ! grep -q "server_client_id" "$STRINGS"; then
             sed -i "s#</resources>#    <string name=\"server_client_id\">$CID</string>\n</resources>#" "$STRINGS"
           fi
-          sed -i 's#<string name="app_name">[^<]*</string>#<string name="app_name">My Vinyl</string>#' "$STRINGS"
-          sed -i 's#<string name="title_activity_main">[^<]*</string>#<string name="title_activity_main">My Vinyl</string>#' "$STRINGS"
+          sed -i 's#<string name="app_name">[^<]*</string>#<string name="app_name">Turnit</string>#' "$STRINGS"
+          sed -i 's#<string name="title_activity_main">[^<]*</string>#<string name="title_activity_main">Turnit</string>#' "$STRINGS"
 
       - name: Add camera permission (바코드 스캔용)
         run: |

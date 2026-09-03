@@ -1,6 +1,6 @@
 {
-  "name": "My Vinyl",
-  "short_name": "My Vinyl",
+  "name": "Turnit",
+  "short_name": "Turnit",
   "description": "내 바이닐(LP) 컬렉션을 기록하고 관리하는 앱",
   "lang": "ko",
   "start_url": "./index.html",
