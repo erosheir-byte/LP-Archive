@@ -157,7 +157,7 @@ jobs:
           const src = 'icons/icon-512.png';
           (async () => {
             await sharp(src).resize(1024, 1024, { fit: 'cover' }).png().toFile('assets/icon-only.png');
-            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 14, g: 13, b: 17, alpha: 1 } } })
+            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 232, g: 100, b: 60, alpha: 1 } } })
               .png().toFile('assets/icon-background.png');
             const fg = await sharp(src).resize(760, 760, { fit: 'cover' }).png().toBuffer();
             await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })

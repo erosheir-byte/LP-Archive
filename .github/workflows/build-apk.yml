@@ -156,7 +156,7 @@ jobs:
             // 레거시 아이콘: LP 풀블리드
             await sharp(src).resize(1024, 1024, { fit: 'cover' }).png().toFile('assets/icon-only.png');
             // 적응형 배경: 앱 테마색(어두운 톤)
-            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 14, g: 13, b: 17, alpha: 1 } } })
+            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 232, g: 100, b: 60, alpha: 1 } } })
               .png().toFile('assets/icon-background.png');
             // 적응형 전경: LP를 세이프존 안에 들어오도록 중앙 배치(투명 여백)
             const fg = await sharp(src).resize(760, 760, { fit: 'cover' }).png().toBuffer();
