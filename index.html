@@ -162,10 +162,10 @@ body::before{content:'';position:fixed;inset:0;background:
 .wrap{position:relative;z-index:1}
 
 /* Header */
-header{padding:30px 20px 16px;position:relative}
+header{padding:22px 20px 10px;position:relative}
 h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:50px;line-height:.95;letter-spacing:-.03em}
 h1 .em{color:var(--accent)}
-.sub{color:var(--muted);font-size:13px;margin-top:12px;font-weight:500}
+.sub{color:var(--muted);font-size:13px;margin-top:0;padding-top:46px;font-weight:500;line-height:1.5}
 .sub b{color:var(--txt);font-weight:700}
 .sub .sep{color:var(--dim);margin:0 7px}
 
@@ -976,8 +976,8 @@ body.state-shared #shared-view{display:block}
   font-size:13px;font-weight:600;text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer}
 .acct-menu button:active{background:var(--card)}
 /* 언어 선택은 설정 시트(#set-lang)로 이동 */
-.cf-mode-toggle{top:98px}
-.acct{top:54px}
+.cf-mode-toggle{top:22px;right:20px}
+.acct{top:22px;right:64px}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:14px;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .share-card-btn:active{transform:scale(.98)}
 /* 취향 카드 미리보기 */
@@ -991,7 +991,7 @@ body.state-shared #shared-view{display:block}
 
 <div id="auth-screen">
   <div class="auth-card">
-    <div class="auth-logo">Turn<span class="em">it</span></div>
+    <div class="auth-logo">Turn<span class="em">-it</span></div>
     <div class="auth-tagline">내 바이닐 컬렉션을 어디서나</div>
     <div class="auth-tabs">
       <button class="auth-tab on" data-mode="login">로그인</button>
@@ -1027,7 +1027,6 @@ body.state-shared #shared-view{display:block}
       <button id="acct-logout">로그아웃</button>
     </div>
   </div>
-  <h1>Turn<span class="em">it</span></h1>
   <div class="sub" id="hsub">불러오는 중…</div>
 </header>
 
