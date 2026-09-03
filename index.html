@@ -37,7 +37,7 @@
   --blue:#6aa0e8;
 }
 /* ===== 첫 사용 가이드(코치마크): 어두운 막 + 점선 스포트라이트 + 안내 카드 ===== */
-.tour{position:fixed;inset:0;z-index:5000;display:none}
+.tour{position:fixed;inset:0;z-index:5000;display:none;touch-action:none;overscroll-behavior:contain}
 .tour.show{display:block}
 .tour-hl{position:absolute;border-radius:14px;
   box-shadow:0 0 0 200vmax rgba(0,0,0,.7),0 0 22px rgba(242,164,68,.16);pointer-events:none;
@@ -2017,7 +2017,9 @@ const I18N = {
   "내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
   "LP 등록":"Add a record",
   "+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
-  "판 돌려서 듣기":"Spin and listen",
+  "커버 탭해서 미리듣기":"Tap a cover to preview",
+  "LP판 직접 돌리기":"Spin the record yourself",
+  "카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
   "커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "커버 사진 바꾸기":"Change the cover photo",
   "상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.":"Tap the pencil on the cover in the detail view to pick a different cover or use your own photo. It shows on cards and the calendar too.",
@@ -5906,9 +5908,13 @@ const TOUR_STEPS=[
     desc:'내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
   { tab:'coll', target:'#fab', round:true, title:'LP 등록',
     desc:'+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
-  { tab:'coll', target:'#cf-stage', pad:4, title:'판 돌려서 듣기',
+  { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
     desc:'커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
-  { tab:'coll', target:'#dt-change', round:true, title:'커버 사진 바꾸기',
+  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'LP판 직접 돌리기',
+    open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
+    leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
+    desc:'카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.' },
+  { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'커버 사진 바꾸기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.' },
   { tab:'coll', target:'#cf-mode-toggle', round:true, title:'LP판 보기',
@@ -5977,7 +5983,7 @@ function tourGo(i){
   if(st.tab) _tourSwitchTab(st.tab);
   if(st.open){ try{ st.open(); }catch(e){} }
   const el=st.target?document.querySelector(st.target):null;
-  if(el && !st.open){ try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} } }
+  if(el && !st.noScroll){ try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} } }
   _tourRender();
   // 시트를 여는 단계는 슬라이드 전환이 끝난 뒤 위치를 잡는다
   if(st.open) setTimeout(_tourLayout, 380);
@@ -5989,8 +5995,8 @@ function startTour(){
   document.querySelectorAll('.sheet.show').forEach(sh=>{ try{ hide(sh.id.replace(/^sheet-/,'')); }catch(e){} });
   _tour.on=true;
   $('#tour').classList.add('show');
-  lockScroll();
   window.addEventListener('resize',_tourLayout);
+  window.addEventListener('scroll',_tourLayout,{passive:true});
   tourGo(0);
 }
 function endTour(){
@@ -5999,7 +6005,7 @@ function endTour(){
   _tour.on=false; _tour.i=-1;
   $('#tour').classList.remove('show');
   window.removeEventListener('resize',_tourLayout);
-  if(!document.querySelector('.sheet.show')) unlockScroll();
+  window.removeEventListener('scroll',_tourLayout);
   _tourSwitchTab('coll');
   try{ localStorage.setItem('lp_tour_done','1'); }catch(e){}
   try{ if(window.LPCloud&&LPCloud.markTourDone) LPCloud.markTourDone(); }catch(e){}
@@ -6012,6 +6018,8 @@ window.__maybeStartTour=function(cloudDone){
   setTimeout(startTour, 700);
 };
 window.__startTour=startTour;
+// 가이드 중에는 뒤 화면이 손가락/휠로 스크롤되지 않게 (스크롤은 단계 이동 때만 코드로)
+{ const tv=$('#tour'); if(tv){ tv.addEventListener('touchmove',e=>e.preventDefault(),{passive:false}); tv.addEventListener('wheel',e=>e.preventDefault(),{passive:false}); } }
 window.__endTour=endTour;
 window.__tourOn=()=>_tour.on;
 
