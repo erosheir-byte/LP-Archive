@@ -39,13 +39,15 @@
 /* ===== 첫 사용 가이드(코치마크): 어두운 막 + 점선 스포트라이트 + 안내 카드 ===== */
 .tour{position:fixed;inset:0;z-index:5000;display:none}
 .tour.show{display:block}
-.tour-hl{position:absolute;border:1.5px solid rgba(242,164,68,.85);border-radius:14px;
-  box-shadow:0 0 0 200vmax rgba(0,0,0,.7),0 0 0 3px rgba(242,164,68,.14),0 0 28px rgba(242,164,68,.28);pointer-events:none;
-  outline:2px solid rgba(242,164,68,.3);outline-offset:4px;
-  transition:top .35s cubic-bezier(.4,0,.2,1),left .35s cubic-bezier(.4,0,.2,1),width .35s cubic-bezier(.4,0,.2,1),height .35s cubic-bezier(.4,0,.2,1),border-radius .35s;
-  animation:tour-pulse 2s ease-in-out infinite}
-.tour-hl.none{border-color:transparent;outline-color:transparent;animation:none;box-shadow:0 0 0 200vmax rgba(0,0,0,.7)}
-@keyframes tour-pulse{0%,100%{outline-offset:4px;outline-color:rgba(242,164,68,.3)}50%{outline-offset:10px;outline-color:rgba(242,164,68,0)}}
+.tour-hl{position:absolute;border-radius:14px;
+  box-shadow:0 0 0 200vmax rgba(0,0,0,.7),0 0 22px rgba(242,164,68,.16);pointer-events:none;
+  transition:top .35s cubic-bezier(.4,0,.2,1),left .35s cubic-bezier(.4,0,.2,1),width .35s cubic-bezier(.4,0,.2,1),height .35s cubic-bezier(.4,0,.2,1),border-radius .35s}
+/* 점선은 SVG 로 그려 촘촘한 간격·얇은 두께를 정확히 제어 (CSS dashed 는 간격 조절 불가) */
+.tour-hl svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block}
+.tour-hl rect{fill:none;stroke:var(--accent2);stroke-width:1.2;stroke-dasharray:4 3;stroke-linecap:round;animation:tour-march 1.4s linear infinite}
+.tour-hl.none{box-shadow:0 0 0 200vmax rgba(0,0,0,.7)}
+.tour-hl.none svg{display:none}
+@keyframes tour-march{to{stroke-dashoffset:-7}}
 .tour-card{position:absolute;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:340px;
   background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px 18px 14px;
   box-shadow:0 20px 50px rgba(0,0,0,.5);transition:top .35s cubic-bezier(.4,0,.2,1),bottom .35s cubic-bezier(.4,0,.2,1)}
@@ -1219,7 +1221,7 @@ body.state-shared #shared-view{display:block}
 </div>
 
 <!-- FAB -->
-<div class="tour" id="tour" aria-live="polite"><div class="tour-hl none" id="tour-hl"></div><div class="tour-card center" id="tour-card"></div></div>
+<div class="tour" id="tour" aria-live="polite"><div class="tour-hl none" id="tour-hl"><svg aria-hidden="true"><rect id="tour-hl-rect"/></svg></div><div class="tour-card center" id="tour-card"></div></div>
 <button class="fab" id="fab" title="LP 추가">+</button>
 
 <!-- NAV -->
@@ -5933,6 +5935,8 @@ function _tourLayout(){
   const w=Math.min(window.innerWidth-left-4,r.width+pad*2), h=r.height+pad*2;
   hl.classList.remove('none');
   hl.style.cssText=`top:${top}px;left:${left}px;width:${w}px;height:${h}px;border-radius:${st.round?'50%':'14px'}`;
+  { const rc=$('#tour-hl-rect'); if(rc){ const rx=st.round?Math.min(w,h)/2:14;
+      rc.setAttribute('x',.6); rc.setAttribute('y',.6); rc.setAttribute('width',Math.max(0,w-1.2)); rc.setAttribute('height',Math.max(0,h-1.2)); rc.setAttribute('rx',rx); rc.setAttribute('ry',rx); } }
   // 카드는 대상 아래, 공간이 없으면 위
   const H=window.innerHeight, need=230;
   if(H-(top+h) >= need){ card.className='tour-card below'; card.style.bottom=''; card.style.top=(top+h+14)+'px'; }
