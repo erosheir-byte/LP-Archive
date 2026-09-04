@@ -17,6 +17,7 @@ on:
       - main
     paths:
       - "index.html"
+      - "app-ads.txt"
       - "sw.js"
       - "manifest.webmanifest"
       - "icons/**"
