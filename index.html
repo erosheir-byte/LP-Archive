@@ -449,9 +449,12 @@ h1 .em{color:var(--accent)}
 .nav{position:fixed;bottom:var(--adh,0px);left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(14,13,17,.85);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 18px calc(11px + env(safe-area-inset-bottom));z-index:40}
 .nav button{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s}
 .nav button.on{color:var(--accent2)}
-.fab{position:fixed;bottom:78px;right:max(18px,calc(50% - 262px));width:58px;height:58px;border-radius:50%;border:none;padding:0;box-shadow:0 8px 24px rgba(232,180,90,.5);z-index:45;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;background:none}
-.fab svg{width:100%;height:100%;display:block}
-.fab:active{transform:scale(.9) rotate(18deg)}
+/* 왼쪽 위 + (LP 추가) — 인스타그램식. LP판 보기 토글과 같은 모양 */
+.hdr-add{position:absolute;top:22px;left:20px;z-index:21;width:36px;height:36px;margin:0;padding:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--card);border:1px solid var(--line);color:rgba(255,255,255,.82);cursor:pointer;transition:background .15s,transform .15s}
+.hdr-add:active{transform:scale(.9)}
+html[data-theme="light"] .hdr-add{color:var(--txt)}
 
 /* Modal / sheet */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:.25s;touch-action:none;overscroll-behavior:none}
@@ -909,7 +912,6 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 body.state-boot #boot{display:flex}
 body.state-auth #auth-screen{display:flex}
 body:not(.state-app) .wrap,
-body:not(.state-app) .fab,
 body:not(.state-app) .nav{display:none!important}
 /* ===== 공유(읽기전용) 컬렉션 뷰 ===== */
 #shared-view{position:fixed;inset:0;z-index:200;display:none;overflow-y:auto;background:var(--bg)}
@@ -1026,6 +1028,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
 <div class="wrap">
 <header>
+  <button class="hdr-add" id="fab" type="button" aria-label="LP 추가" title="LP 추가"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/LP판 보기 전환" title="자켓 ↔ LP판 보기">
     <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">LP판 보기</span>
   </button>
@@ -1233,7 +1236,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
 <!-- FAB -->
 <div class="tour" id="tour" aria-live="polite"><div class="tour-hl none" id="tour-hl"><svg aria-hidden="true"><rect id="tour-hl-rect"/></svg></div><div class="tour-card center" id="tour-card"></div></div>
-<button class="fab" id="fab" title="LP 추가">+</button>
 
 <!-- NAV -->
 <nav class="nav">
@@ -1666,7 +1668,7 @@ const I18N = {
   "개봉 ":"Opened ",
   "미개봉 ":"Sealed ",
   "검색 결과가 없어요":"No results found",
-  "위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요":"Your wishlist is empty — add one with the + button at the bottom right",
+  "위시가 비어 있어요 — 왼쪽 위 + 버튼으로 추가하세요":"Your wishlist is empty — add one with the + button at the top left",
   "이 달에는 기록이 없어요":"No records this month",
   "표시할 LP가 없어요":"No records to show",
   /* --- FAB / add sheet --- */
@@ -2027,7 +2029,7 @@ const I18N = {
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
   "내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
   "LP 등록":"Add a record",
-  "+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
+  "왼쪽 위 + 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
   "LP판 직접 돌리기":"Spin the record yourself",
   "카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
@@ -2391,28 +2393,6 @@ function colorHexOf(inp){
 function heartSVG(filled){
   return `<svg class="heart-ic" viewBox="0 0 24 24" width="22" height="22" fill="${filled?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>`;
 }
-function fabVinylSVG(){
-  // 모든 탭에서 위시 버전(골드 라벨 + 금색 글로우)으로 통일
-  const label = '#e8a23c';
-  const label2 = '#f0cf8a';
-  return `<svg viewBox="0 0 58 58" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <radialGradient id="fab-vinyl" cx="40%" cy="35%" r="75%">
-        <stop offset="0%" stop-color="#3a3640"/><stop offset="55%" stop-color="#1a181f"/><stop offset="100%" stop-color="#0c0b0f"/>
-      </radialGradient>
-      <radialGradient id="fab-label" cx="40%" cy="38%" r="70%">
-        <stop offset="0%" stop-color="${label2}"/><stop offset="100%" stop-color="${label}"/>
-      </radialGradient>
-    </defs>
-    <circle cx="29" cy="29" r="28" fill="url(#fab-vinyl)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
-    <g fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1">
-      <circle cx="29" cy="29" r="23"/><circle cx="29" cy="29" r="20"/><circle cx="29" cy="29" r="17"/>
-    </g>
-    <circle cx="29" cy="29" r="13" fill="url(#fab-label)"/>
-    <path d="M29 22.5v13 M22.5 29h13" stroke="#1a0d06" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="29" cy="29" r="1.6" fill="#1a0d06"/>
-  </svg>`;
-}
 
 function discStyle(it){
   if(it.discPhoto){
@@ -2690,11 +2670,8 @@ function renderGrid(){
   const isWish=filter.chip==='위시';
   // FAB: 모양은 모든 탭 동일(위시 버전), 문구·동작만 컨텍스트 반영
   const fab=$('#fab');
-  if(fab){
-    fab.innerHTML = fabVinylSVG();
-    fab.title = isWish ? '위시 추가' : 'LP 추가';
-  }
-  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 오른쪽 아래 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
+  if(fab){ fab.title = isWish ? '위시 추가' : 'LP 추가'; fab.setAttribute('aria-label', fab.title); }
+  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 왼쪽 위 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
   $('#grid').innerHTML=list.map((it,i)=>`
     <div class="lp" data-id="${it.id}" style="animation-delay:${Math.min(i*30,400)}ms">
       <div class="artwrap">
@@ -5924,7 +5901,7 @@ const TOUR_STEPS=[
   { title:'Turnit 에 오신 걸 환영해요',
     desc:'내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
   { tab:'coll', target:'#fab', round:true, title:'LP 등록',
-    desc:'+ 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
+    desc:'왼쪽 위 + 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
     desc:'커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
   { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'LP판 직접 돌리기',
