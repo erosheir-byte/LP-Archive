@@ -6633,9 +6633,9 @@ function handleAppBack(){
    ⚠️ 아래는 구글 공식 "테스트" 광고 ID 입니다. 실제 수익을 받으려면 애드몹 콘솔에서
    발급한 App ID(워크플로) 와 광고단위 ID(아래) 로 교체하세요. 개발 중 실광고 클릭은 계정 정지 위험. */
 const AD_IDS = {
-  banner:       'ca-app-pub-3940256099942544/6300978111',   // TODO: 실제 배너 광고단위 ID (통계 탭 전용)
-  interstitial: 'ca-app-pub-3940256099942544/1033173712',   // TODO: 실제 전면 광고단위 ID
-  reward:       'ca-app-pub-3940256099942544/5224354917'     // TODO: 실제 보상형 광고단위 ID
+  banner:       'ca-app-pub-5071878284765662/5792361610',   // 통계 탭 배너
+  interstitial: 'ca-app-pub-5071878284765662/7446178466',   // 등록 완료 후 전면
+  reward:       'ca-app-pub-5071878284765662/1697309139'     // 보상형(24h 광고 끄기)
 };
 function _admob(){ try{ const C=window.Capacitor; if(!C||!(C.isNativePlatform&&C.isNativePlatform())) return null; return (C.Plugins&&C.Plugins.AdMob)||null; }catch(e){ return null; } }
 function _adFree(){ return Date.now() < (+(localStorage.getItem('adFreeUntil')||0)); }
