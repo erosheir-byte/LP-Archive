@@ -2053,6 +2053,8 @@ const I18N = {
   "시작하기":"Get started",
   "앱 가이드 다시 보기":"Replay app guide",
   "주요 기능을 처음처럼 다시 안내해요":"Walk through the main features again",
+  "커버 점검":"Check covers",
+  "저장된 커버·판 사진 주소가 열리는지 확인하고 실패 원인을 보여줘요":"Checks whether saved cover and disc photo URLs still load and reports why they fail",
   /* --- misc --- */
   "닫기":"Close"
 };
@@ -3038,6 +3040,27 @@ function _lpCall(method, data){   // 가장 확실한 경로부터 시도
     if(typeof C.nativeCallback==='function'){ C.nativeCallback('LPMedia', method, data||{}, function(){}); return; }
   }catch(e){}
 }
+// 커버/판 사진 저장 형태 요약: storage(Firebase) · data(내장 문자열) · 기타(외부 URL)
+function _coverKind(u){ u=String(u||''); if(!u) return ''; if(u.startsWith('data:')) return 'data'; if(u.includes('firebasestorage')) return 'storage'; if(/^https?:/.test(u)) return 'url'; return 'etc'; }
+function _coverDiag(){
+  const c={storage:0,data:0,url:0,etc:0}, d={storage:0,data:0,url:0,etc:0};
+  (typeof DATA!=='undefined'?DATA:[]).forEach(it=>{ const k=_coverKind(it._art||it.cover); if(k) c[k]++; const k2=_coverKind(it.discPhoto); if(k2) d[k2]++; });
+  return `커버 storage ${c.storage} · data ${c.data} · url ${c.url} / 판사진 storage ${d.storage} · data ${d.data}`;
+}
+// 저장된 커버·판 사진 주소를 실제로 열어 보고 실패 원인을 보고 (설정 > 커버 점검)
+async function checkCovers(){
+  const list=[]; (typeof DATA!=='undefined'?DATA:[]).forEach(it=>{ const a=it._art||it.cover; if(a&&/^https?:/.test(a)) list.push({kind:'커버',it,u:a}); if(it.discPhoto&&/^https?:/.test(it.discPhoto)) list.push({kind:'판사진',it,u:it.discPhoto}); });
+  if(!list.length){ appAlert('점검할 외부 주소 커버가 없어요.\n'+_coverDiag()); return; }
+  previewToast('커버 '+list.length+'개 점검 중…');
+  const load=u=>new Promise(res=>{ const im=new Image(); im.onload=()=>res(true); im.onerror=()=>res(false); im.src=u; setTimeout(()=>res(false),8000); });
+  const fails=[];
+  for(const x of list){ if(!(await load(x.u))) fails.push(x); }
+  if(!fails.length){ appAlert('저장된 커버 '+list.length+'개 모두 정상으로 열려요.\n'+_coverDiag()); return; }
+  const f=fails[0]; let status='?';
+  try{ const r=await fetch(f.u,{method:'GET',cache:'no-store'}); status=r.status; }catch(e){ status='네트워크/CORS 오류'; }
+  let host='?'; try{ host=new URL(f.u).host; }catch(e){}
+  appAlert(`${list.length}개 중 ${fails.length}개가 안 열려요.\n첫 실패: ${f.kind} · ${(f.it.album||f.it.artist||'')}\n호스트: ${host}\n응답: ${status}\n\n${_coverDiag()}`,{title:'커버 점검 결과'});
+}
 function _lpDiag(){   // 어떤 네이티브 브리지가 잡히는지 진단 문자열
   try{
     const C=window.Capacitor;
@@ -3270,7 +3293,7 @@ function openDetail(id, mode){
   detailId=id;
   const key=artKey(it.artist,it.album);
   const art=pickedArt[key]||it._art||artCache[key];
-  $('#dt-art').innerHTML = (art?`<img src="${art}">`:`<div class="ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div class="vinyl" style="width:80px;height:80px"></div></div>`)
+  $('#dt-art').innerHTML = (art?`<img src="${art}" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=ph style=&quot;position:absolute;inset:0;display:flex;align-items:center;justify-content:center&quot;><div class=vinyl style=&quot;width:80px;height:80px&quot;></div></div>')">`:`<div class="ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div class="vinyl" style="width:80px;height:80px"></div></div>`)
     + `<button class="dt-edit-btn" id="dt-change" aria-label="커버 수정"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><div class="picker" id="dt-picker"></div>`;
   const rows=[];
   const R=(k,v)=>{if(v||v===0)rows.push(`<div class="dt-row"><span class="k">${k}</span><span class="v">${v}</span></div>`)};
@@ -5617,7 +5640,8 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px"><span>미디어 브리지:</span> ${_lpDiag()}</div></div></div>
+      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px"><span>미디어 브리지:</span> ${_lpDiag()}</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:2px">${_coverDiag()}</div></div></div>
+      <div class="set-row tap" id="set-coverchk"><div class="set-l"><div class="set-t">커버 점검</div><div class="set-d">저장된 커버·판 사진 주소가 열리는지 확인하고 실패 원인을 보여줘요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
@@ -5662,6 +5686,7 @@ function renderSettings(){
   { const b=$('#set-imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
+  { const ck=$('#set-coverchk'); if(ck) ck.onclick=checkCovers; }
   { const tb=$('#set-tour'); if(tb) tb.onclick=()=>{ hide('settings'); startTour(); }; }
   // 광고 보고 배너 잠시 끄기 (보상형)
   { const af=$('#set-adfree'); if(af) af.onclick=()=>{ try{ watchRewardedAdFree(); }catch(e){} }; }
