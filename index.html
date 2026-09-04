@@ -450,9 +450,10 @@ h1 .em{color:var(--accent)}
 .nav button{background:none;border:none;color:var(--dim);font-family:inherit;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s}
 .nav button.on{color:var(--accent2)}
 /* 왼쪽 위 + (LP 추가) — 인스타그램식. LP판 보기 토글과 같은 모양 */
-.hdr-add{position:absolute;top:22px;left:20px;z-index:21;width:36px;height:36px;margin:0;padding:0;border-radius:50%;
+.hdr-add{position:absolute;top:22px;left:16px;z-index:21;width:36px;height:36px;margin:0;padding:0;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  background:var(--card);border:1px solid var(--line);color:rgba(255,255,255,.82);cursor:pointer;transition:background .15s,transform .15s}
+  background:none;border:none;color:rgba(255,255,255,.9);cursor:pointer;transition:transform .15s}
+.hdr-add svg{width:26px;height:26px}
 .hdr-add:active{transform:scale(.9)}
 html[data-theme="light"] .hdr-add{color:var(--txt)}
 
