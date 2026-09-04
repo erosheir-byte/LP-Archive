@@ -2,7 +2,7 @@
    - 앱 셸(아이콘/매니페스트)은 캐시 우선으로 빠르게
    - 화면(HTML/네비게이션)은 네트워크 우선 → 웹 배포 시 항상 최신 버전 표시
    - Firebase/gstatic 등 외부(cross-origin) 요청은 가로채지 않음 */
-const CACHE = 'lp-archive-v2';   // 아이콘·워드마크 교체 → 캐시 갱신
+const CACHE = 'lp-archive-v3';   // 아이콘·워드마크 교체 → 캐시 갱신
 const SHELL = [
   './manifest.webmanifest',
   './icons/icon-192.png',
