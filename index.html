@@ -1801,8 +1801,8 @@ const I18N = {
   "아직 좋아요한 앨범이 없어요.":"No liked albums yet.",
   "앨범 상세에서 ♥를 눌러보세요.":"Tap ♥ in an album's detail view.",
   "아직 데이터가 부족해요.":"Not enough data yet.",
-  "최애 아티스트":"Top artists",
-  "최애 장르":"Top genres",
+  "선호 아티스트":"Top artists",
+  "선호 장르":"Top genres",
   "바이닐 컬러 분포":"Vinyl color breakdown",
   "자주 간 구매처":"Frequent stores",
   "수집 히스토리":"Collection history",
@@ -5407,13 +5407,13 @@ function renderTaste(){
 
   // 최애 아티스트
   cards.push(`<div class="t-card">
-    <div class="t-head">최애 아티스트</div>
+    <div class="t-head">선호 아티스트</div>
     ${artistRank.map((r,i)=>`<div class="t-row t-tap" data-ta="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(r.a)}</span><span class="t-val">${r.cnt}${isEN()?'':'<span class="u">장</span>'}${r.avg?` · ★${r.avg.toFixed(1)}`:''}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
   // 최애 장르
   cards.push(`<div class="t-card">
-    <div class="t-head">최애 장르</div>
+    <div class="t-head">선호 장르</div>
     ${genreTop.map(([g,c],i)=>`<div class="t-bar-row t-tap" data-tg="${i}"><span class="t-bar-lab">${escapeHtml(g)}</span><span class="t-bar-track"><span class="t-bar-fill" style="width:${Math.round(c/genreMax*100)}%"></span></span><span class="t-bar-num">${c}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
   </div>`);
 
