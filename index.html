@@ -2513,7 +2513,8 @@ function loadSettings(){
   if(raw.crackleLevel===undefined && raw.vinylCrackle===false) SETTINGS.crackleLevel='off';
   applySettings(true);
 }
-function saveSettings(){ try{ localStorage.setItem('lp_settings', JSON.stringify(SETTINGS)); }catch(e){} }
+function saveSettings(){ try{ localStorage.setItem('lp_settings', JSON.stringify(SETTINGS)); }catch(e){}
+  try{ if(window.LPCloud&&window.LPCloud.saveSettings) window.LPCloud.saveSettings(SETTINGS); }catch(e){} }   // 계정에도 동기화(재설치·기기변경 대비)
 // 추가/수정 폼의 RPM·인치 필드 표시 — 각각의 설정으로 개별 on/off
 function applySpecRows(prefix){
   const rpmOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showRpm;
@@ -6302,6 +6303,20 @@ window.bootApp=function(items){
   // 로그인 후 저장된 환경설정·컬렉션을 로드한다.
   // (예전에는 loadLocal()이 담당했지만 더는 호출되지 않아, 여기서 직접 부른다)
   try{ loadSettings(); }catch(e){}
+  // 클라우드 환경설정: 있으면 이 기기 설정을 덮어쓰고, 없으면(첫 동기화) 이 기기 설정을 올린다.
+  try{
+    if(window.LPCloud && window.LPCloud.loadSettings){
+      window.LPCloud.loadSettings().then(cs=>{
+        if(cs){
+          SETTINGS=Object.assign({}, DEFAULT_SETTINGS, cs);
+          try{ localStorage.setItem('lp_settings', JSON.stringify(SETTINGS)); }catch(e){}
+          applySettings(true); renderChips(); renderGrid(); buildCoverFlow();
+        }else if(cs===null && window.LPCloud.saveSettings){
+          window.LPCloud.saveSettings(SETTINGS);
+        }
+      }).catch(()=>{});
+    }
+  }catch(e){}
   try{ loadCollections(); }catch(e){}
   renderChips();renderStats();renderGrid();buildCoverFlow();refreshGenreChips();
   // 앱이 재시작됐다면(다른 앱 갔다가 웹뷰가 죽은 경우) 작성 중이던 추가 폼을 복구
@@ -6934,6 +6949,24 @@ function start(){
         try{ await setDoc(doc(db,'users',currentUser.uid,'meta','collections'), { list: safe }); }
         catch(e){ console.error('컬렉션 저장 실패',e); }
       },400);
+    },
+    // 환경설정(테마·표시 옵션 등)도 계정에 저장 → 재설치·기기 변경에도 유지
+    saveSettings(obj){
+      if(!currentUser) return;
+      clearTimeout(saveTimers.__settings);
+      let safe={}; try{ safe=JSON.parse(JSON.stringify(obj||{})); }catch(e){ safe={}; }
+      saveTimers.__settings=setTimeout(async()=>{
+        try{ await setDoc(doc(db,'users',currentUser.uid,'meta','settings'), { v: safe }); }
+        catch(e){ console.error('설정 저장 실패',e); }
+      },400);
+    },
+    async loadSettings(){
+      if(!currentUser) return undefined;   // 미로그인/오류 → 아무것도 안 함
+      try{
+        const snap=await getDoc(doc(db,'users',currentUser.uid,'meta','settings'));
+        if(snap.exists()){ const d=snap.data(); return (d && d.v) ? d.v : null; }
+        return null;                        // 문서 없음 → 로컬 설정 1회 업로드 신호
+      }catch(e){ console.error('설정 로드 실패',e); return undefined; }
     },
     async loadCollections(){
       if(!currentUser) return null;   // 미로그인 → 로컬 유지
