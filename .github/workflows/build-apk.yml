@@ -155,7 +155,7 @@ jobs:
 
       - name: Generate launcher icon (분위기 있는 LP 이미지)
         run: |
-          # icons/icon-512.png (블랙 바이닐 + 오렌지 라벨, 분위기 있는 LP)를 소스로
+          # icons/icon-512.png (다크 그라데이션 + turn잇 로고)를 소스로
           # 안드로이드 런처 아이콘(레거시 + 적응형)을 생성한다.
           npm install --no-save @capacitor/assets
           mkdir -p assets
@@ -165,13 +165,19 @@ jobs:
           (async () => {
             // 레거시 아이콘: LP 풀블리드
             await sharp(src).resize(1024, 1024, { fit: 'cover' }).png().toFile('assets/icon-only.png');
-            // 적응형 배경: 앱 테마색(어두운 톤)
-            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 232, g: 100, b: 60, alpha: 1 } } })
-              .png().toFile('assets/icon-background.png');
-            // 적응형 전경: LP를 세이프존 안에 들어오도록 중앙 배치(투명 여백)
-            const fg = await sharp(src).resize(760, 760, { fit: 'cover' }).png().toBuffer();
-            await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
-              .composite([{ input: fg, gravity: 'center' }]).png().toFile('assets/icon-foreground.png');
+            // 적응형 배경/전경: 전용 레이어 파일이 있으면 그대로 사용 (배경 그라데이션 + 투명 로고, 세이프존 안)
+            const fs = require('fs');
+            if (fs.existsSync('icons/adaptive-bg-1024.png') && fs.existsSync('icons/adaptive-fg-1024.png')) {
+              await sharp('icons/adaptive-bg-1024.png').resize(1024, 1024).png().toFile('assets/icon-background.png');
+              await sharp('icons/adaptive-fg-1024.png').resize(1024, 1024).png().toFile('assets/icon-foreground.png');
+            } else {
+              // 폴백: 단색 배경 + 아이콘을 세이프존 안에 중앙 배치
+              await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 22, g: 20, b: 27, alpha: 1 } } })
+                .png().toFile('assets/icon-background.png');
+              const fg = await sharp(src).resize(760, 760, { fit: 'cover' }).png().toBuffer();
+              await sharp({ create: { width: 1024, height: 1024, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+                .composite([{ input: fg, gravity: 'center' }]).png().toFile('assets/icon-foreground.png');
+            }
             console.log('launcher icon assets ready');
           })();
           JS
