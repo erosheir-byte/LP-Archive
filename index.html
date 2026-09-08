@@ -567,6 +567,10 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .t-sec{font-size:11.5px;font-weight:700;color:var(--muted);margin:14px 0 4px}
 .t-head+.t-sec{margin-top:0}
 .t-val.money{color:var(--txt);font-weight:700;font-variant-numeric:tabular-nums}
+.t-sum{display:flex;align-items:baseline;gap:8px;margin:-4px 0 10px}
+.t-sum b{font-family:'Bricolage Grotesque';font-weight:800;font-size:28px;line-height:1}
+.t-sum span{color:var(--muted);font-size:12px}
+.t-val .t-pct{display:block;font-size:11px;font-weight:700;text-align:right}
 /* 장르 막대 */
 .t-bar-row{display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12.5px}
 .t-bar-lab{flex:0 0 64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1812,6 +1816,9 @@ const I18N = {
   "이 해에 구매한 앨범이 없어요.":"No albums purchased this year.",
   "소장 가치":"Collection value",
   "가격 TOP":"Price highlights",
+  "정가 비교":"List price check",
+  "가장 싸게 산 LP":"Best bargains",
+  "프리미엄 주고 산 LP":"Paid over list price",
   "가장 비싸게 산 LP":"Most expensive purchases",
   "가장 비싸게 판 LP":"Most expensive sales",
   "데이터 없음":"No data",
@@ -3312,7 +3319,8 @@ function openDetail(id, mode){
   if(it.year && (typeof SETTINGS==='undefined' || SETTINGS.showYear!==false)) R('발매년도', it.year+'년');
   R('구매처', it.store);
   R('구매가', won(it.price));
-  if(it.listPrice!=null && it.listPrice!=='') R('정가', won(it.listPrice));
+  { const lp=listPriceOf(it); if(lp){ const p=Number(it.price)>0?(it.price-lp)/lp*100:null;
+      R('정가', won(lp)+(p!=null&&Math.round(p)!==0?` <span style="font-size:11px;font-weight:700;color:${p<0?'#5ec27e':'#e0617a'}">${pctStr(p)}</span>`:'')); } }
   R('결제', it.pay);
   R('구매일', it.buy);
   if(statusGroup(it.status)==='배송전' && it.arrive){
@@ -5169,6 +5177,13 @@ function openListenPicker(dateStr){
 }
 
 /* ---------- stats ---------- */
+// 정가(비교용): listPrice 우선. 옛 데이터의 orig 는 구매가 복사본일 수 있어 구매가와 다를 때만 정가로 본다.
+function listPriceOf(d){
+  const lp=Number(d.listPrice); if(lp>0) return lp;
+  const o=Number(d.orig); if(o>0 && Number(d.price)>0 && o!==Number(d.price)) return o;
+  return null;
+}
+const pctStr=p=>(p>0?'+':'')+Math.round(p)+'%';
 function renderStats(){
   const real=DATA.filter(d=>statusGroup(d.status)!=='위시');   // 위시 제외
   const owned=DATA.filter(d=>statusGroup(d.status)==='보유중');
@@ -5245,7 +5260,15 @@ function renderStats(){
     // 가격 TOP: 가장 비싸게 산 / 판 LP (상위 3장)
     const buyTop=real.filter(d=>Number(d.price)>0).sort((a,b)=>b.price-a.price).slice(0,3);
     const sellTop=sold.filter(d=>Number(d.sellPrice)>0).sort((a,b)=>b.sellPrice-a.sellPrice).slice(0,3);
-    const priceRow=(d,i,amt,key)=>`<div class="t-row t-tap" data-${key}="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(d.album||'—')}<span class="t-sub">${escapeHtml(d.artist||'')}</span></span><span class="t-val money">${won(amt)}</span></div>`;
+    const priceRow=(d,i,amt,key)=>`<div class="t-row t-tap" data-${key}="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(d.album||'—')}${d.artist&&d.artist!=='-'?`<span class="t-sub">${escapeHtml(d.artist)}</span>`:''}</span><span class="t-val money">${won(amt)}</span></div>`;
+    // 정가 비교: 정가가 있는 판만 (위시 제외)
+    const lpAll=real.map(d=>({d, lp:listPriceOf(d)})).filter(x=>x.lp && Number(x.d.price)>0)
+      .map(x=>({...x, pct:(x.d.price-x.lp)/x.lp*100}));
+    const lpSumList=lpAll.reduce((s,x)=>s+x.lp,0), lpSumBuy=lpAll.reduce((s,x)=>s+x.d.price,0);
+    const lpDiff=lpSumBuy-lpSumList, lpPct=lpSumList?lpDiff/lpSumList*100:0;
+    const bargain=lpAll.filter(x=>x.pct<0).sort((a,b)=>a.pct-b.pct).slice(0,3);
+    const premium=lpAll.filter(x=>x.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
+    const lpRow=(x,i,key)=>`<div class="t-row t-tap" data-${key}="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(x.d.album||'—')}<span class="t-sub">${x.d.artist&&x.d.artist!=='-'?escapeHtml(x.d.artist)+' · ':''}${isEN()?'list':'정가'} ${won(x.lp)}</span></span><span class="t-val money">${won(x.d.price)}<span class="t-pct" style="color:${x.pct<0?'#5ec27e':'#e0617a'}">${pctStr(x.pct)}</span></span></div>`;
     st.innerHTML=`
       <div class="t-card">
         <div class="t-head">가격 TOP</div>
@@ -5254,6 +5277,15 @@ function renderStats(){
         <div class="t-sec">가장 비싸게 판 LP</div>
         ${sellTop.map((d,i)=>priceRow(d,i,d.sellPrice,'tsl')).join('')||'<div class="t-empty">데이터 없음</div>'}
       </div>
+      ${lpAll.length?`<div class="t-card">
+        <div class="t-head">정가 비교</div>
+        <div class="t-sum"><b class="${lpDiff<0?'pos':(lpDiff>0?'neg':'')}" style="color:${lpDiff<0?'#5ec27e':(lpDiff>0?'#e0617a':'var(--txt)')}">${pctStr(lpPct)}</b><span>${isEN()?`vs. list price · ${won(Math.abs(lpDiff))} ${lpDiff<=0?'saved':'over'}`:`정가 대비 · ${won(Math.abs(lpDiff))} ${lpDiff<=0?'절약':'더 냄'}`}</span></div>
+        <div class="t-note" style="margin:0 0 6px">${isEN()?`Based on ${lpAll.length} LPs with a list price · list ${won(lpSumList)} → paid ${won(lpSumBuy)}`:`정가 입력 ${lpAll.length}장 기준 · 정가 ${won(lpSumList)} → 구매가 ${won(lpSumBuy)}`}</div>
+        <div class="t-sec">가장 싸게 산 LP</div>
+        ${bargain.map((d,i)=>lpRow(d,i,'tbg')).join('')||'<div class="t-empty">데이터 없음</div>'}
+        <div class="t-sec">프리미엄 주고 산 LP</div>
+        ${premium.map((d,i)=>lpRow(d,i,'tpm')).join('')||'<div class="t-empty">데이터 없음</div>'}
+      </div>`:''}
       <div class="t-card">
         <div class="t-head">자주 간 구매처</div>
         ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s.name)}</span><span class="t-val">${s.cnt}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
@@ -5265,6 +5297,8 @@ function renderStats(){
     st.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
     st.querySelectorAll('[data-tb]').forEach(el=>el.onclick=()=>{ const d=buyTop[+el.dataset.tb]; if(d) openDetail(d.id); });
     st.querySelectorAll('[data-tsl]').forEach(el=>el.onclick=()=>{ const d=sellTop[+el.dataset.tsl]; if(d) openDetail(d.id); });
+    st.querySelectorAll('[data-tbg]').forEach(el=>el.onclick=()=>{ const x=bargain[+el.dataset.tbg]; if(x) openDetail(x.d.id); });
+    st.querySelectorAll('[data-tpm]').forEach(el=>el.onclick=()=>{ const x=premium[+el.dataset.tpm]; if(x) openDetail(x.d.id); });
     const dShort=s=>String(s||'').slice(2,10).replace(/-/g,'.');
     st.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
       const s=storeTop[+el.dataset.ts]; if(!s) return;
