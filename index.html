@@ -2046,6 +2046,8 @@ const I18N = {
   "상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.":"Tap the pencil on the cover in the detail view to pick a different cover or use your own photo. It shows on cards and the calendar too.",
   "자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
   "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
+  "달력 대표 이미지 정하기":"Pick the calendar image",
+  "한 날짜에 기록이 여러 개면 날짜를 눌렀을 때 핀 버튼이 보여요. 핀을 누르면 그 앨범 커버가 달력 칸의 대표 이미지가 돼요. 다시 누르면 자동 선택으로 돌아가요.":"When a day has several entries, tapping it shows a pin button next to each one. Tap a pin to make that album's cover the image for that day on the calendar. Tap it again to go back to automatic.",
   "얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.":"See how much you have collected, where you buy most, and which albums you play the most.",
   "컬렉션과 공유":"Collections and sharing",
   "테마별 컬렉션을 만들고 링크로 공유할 수 있어요. 마이페이지에서는 취향 카드도 만들 수 있어요.":"Build themed collections and share them by link. You can also make a taste card from My page.",
@@ -5977,6 +5979,16 @@ const TOUR_STEPS=[
     desc:'자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
   { tab:'cal', target:'#cal-grid', title:'달력',
     desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
+  { tab:'cal', target:'#daylist .dl-row .dl-pin', round:true, pad:6, noScroll:true, title:'달력 대표 이미지 정하기',
+    open:()=>{ const by={}; calEvents().forEach(e=>{ (by[e.date]=by[e.date]||[]).push(e); });
+      const day=Object.keys(by).filter(k=>by[k].length>1).sort().pop();
+      if(day){ openDayList(day, by[day]); return; }
+      // 기록이 2건 이상인 날이 없으면(새 계정) 샘플 항목으로 시연용 목록을 띄운다 (저장 안 함)
+      const it=DATA[0]; if(!it) return;
+      const today=new Date(); const ds=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      openDayList(ds, [{date:ds, kind:'arrive', it},{date:ds, kind:'listen', it, note:isEN()?'First listen':'첫 청음'}]); },
+    leave:()=>{ try{ hide('daylist'); }catch(e){} },
+    desc:'한 날짜에 기록이 여러 개면 날짜를 눌렀을 때 핀 버튼이 보여요. 핀을 누르면 그 앨범 커버가 달력 칸의 대표 이미지가 돼요. 다시 누르면 자동 선택으로 돌아가요.' },
   { tab:'stats', target:'#stats2', title:'통계',
     desc:'얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.' },
   { tab:'my', target:'#coll-new', title:'컬렉션과 공유',
