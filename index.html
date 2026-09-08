@@ -564,6 +564,9 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .t-val.pos{color:#5ec27e}.t-val.neg{color:#e0617a}
 .t-empty{color:var(--dim);font-size:12.5px;padding:4px 0}
 .t-note{color:var(--dim);font-size:11px;margin-top:8px}
+.t-sec{font-size:11.5px;font-weight:700;color:var(--muted);margin:14px 0 4px}
+.t-head+.t-sec{margin-top:0}
+.t-val.money{color:var(--txt);font-weight:700;font-variant-numeric:tabular-nums}
 /* 장르 막대 */
 .t-bar-row{display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12.5px}
 .t-bar-lab{flex:0 0 64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1808,6 +1811,9 @@ const I18N = {
   "아직 청음 기록이 없어요":"No listening records yet",
   "이 해에 구매한 앨범이 없어요.":"No albums purchased this year.",
   "소장 가치":"Collection value",
+  "가격 TOP":"Price highlights",
+  "가장 비싸게 산 LP":"Most expensive purchases",
+  "가장 비싸게 판 LP":"Most expensive sales",
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
   "판매 차익":"Sale profit",
@@ -5236,7 +5242,18 @@ function renderStats(){
     real.forEach(d=>{ if(!d.buy)return; const y=String(d.buy).slice(0,4); if(!/^\d{4}$/.test(y))return; byYear[y]=(byYear[y]||0)+1; });
     const years=Object.keys(byYear).sort();
     const yearMax=Math.max(1,...Object.values(byYear));
+    // 가격 TOP: 가장 비싸게 산 / 판 LP (상위 3장)
+    const buyTop=real.filter(d=>Number(d.price)>0).sort((a,b)=>b.price-a.price).slice(0,3);
+    const sellTop=sold.filter(d=>Number(d.sellPrice)>0).sort((a,b)=>b.sellPrice-a.sellPrice).slice(0,3);
+    const priceRow=(d,i,amt,key)=>`<div class="t-row t-tap" data-${key}="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(d.album||'—')}<span class="t-sub">${escapeHtml(d.artist||'')}</span></span><span class="t-val money">${won(amt)}</span></div>`;
     st.innerHTML=`
+      <div class="t-card">
+        <div class="t-head">가격 TOP</div>
+        <div class="t-sec">가장 비싸게 산 LP</div>
+        ${buyTop.map((d,i)=>priceRow(d,i,d.price,'tb')).join('')||'<div class="t-empty">데이터 없음</div>'}
+        <div class="t-sec">가장 비싸게 판 LP</div>
+        ${sellTop.map((d,i)=>priceRow(d,i,d.sellPrice,'tsl')).join('')||'<div class="t-empty">데이터 없음</div>'}
+      </div>
       <div class="t-card">
         <div class="t-head">자주 간 구매처</div>
         ${storeTop.map((s,i)=>`<div class="t-row t-tap" data-ts="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(s.name)}</span><span class="t-val">${s.cnt}${isEN()?'':'장'}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}
@@ -5246,6 +5263,8 @@ function renderStats(){
         <div class="t-years">${years.map(y=>`<div class="t-year" data-year="${y}" role="button" tabindex="0" title="${y}년 구매 앨범 보기"><span class="t-ybar" style="height:${Math.round(byYear[y]/yearMax*100)}%"></span><span class="t-ynum">${byYear[y]}</span><span class="t-ylab">'${y.slice(2)}</span></div>`).join('')||'<div class="t-empty">데이터 없음</div>'}</div>
       </div>`;
     st.querySelectorAll('.t-year[data-year]').forEach(el=>el.onclick=()=>openYearList(el.dataset.year));
+    st.querySelectorAll('[data-tb]').forEach(el=>el.onclick=()=>{ const d=buyTop[+el.dataset.tb]; if(d) openDetail(d.id); });
+    st.querySelectorAll('[data-tsl]').forEach(el=>el.onclick=()=>{ const d=sellTop[+el.dataset.tsl]; if(d) openDetail(d.id); });
     const dShort=s=>String(s||'').slice(2,10).replace(/-/g,'.');
     st.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{
       const s=storeTop[+el.dataset.ts]; if(!s) return;
