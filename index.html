@@ -5981,7 +5981,12 @@ const TOUR_STEPS=[
     desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
   { tab:'cal', target:'#daylist .dl-row .dl-pin', round:true, pad:6, noScroll:true, title:'달력 대표 이미지 정하기',
     open:()=>{ const by={}; calEvents().forEach(e=>{ (by[e.date]=by[e.date]||[]).push(e); });
-      const day=Object.keys(by).filter(k=>by[k].length>1).sort().pop(); if(day) openDayList(day, by[day]); },
+      const day=Object.keys(by).filter(k=>by[k].length>1).sort().pop();
+      if(day){ openDayList(day, by[day]); return; }
+      // 기록이 2건 이상인 날이 없으면(새 계정) 샘플 항목으로 시연용 목록을 띄운다 (저장 안 함)
+      const it=DATA[0]; if(!it) return;
+      const today=new Date(); const ds=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      openDayList(ds, [{date:ds, kind:'arrive', it},{date:ds, kind:'listen', it, note:isEN()?'First listen':'첫 청음'}]); },
     leave:()=>{ try{ hide('daylist'); }catch(e){} },
     desc:'한 날짜에 기록이 여러 개면 날짜를 눌렀을 때 핀 버튼이 보여요. 핀을 누르면 그 앨범 커버가 달력 칸의 대표 이미지가 돼요. 다시 누르면 자동 선택으로 돌아가요.' },
   { tab:'stats', target:'#stats2', title:'통계',
