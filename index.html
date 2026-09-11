@@ -567,9 +567,6 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .t-sec{font-size:11.5px;font-weight:700;color:var(--muted);margin:14px 0 4px}
 .t-head+.t-sec{margin-top:0}
 .t-val.money{color:var(--txt);font-weight:700;font-variant-numeric:tabular-nums}
-.t-sum{display:flex;align-items:baseline;gap:8px;margin:-4px 0 10px}
-.t-sum b{font-family:'Bricolage Grotesque';font-weight:800;font-size:28px;line-height:1}
-.t-sum span{color:var(--muted);font-size:12px}
 .t-val .t-pct{display:block;font-size:11px;font-weight:700;text-align:right}
 /* 장르 막대 */
 .t-bar-row{display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12.5px}
@@ -5266,8 +5263,6 @@ function renderStats(){
     // 정가 비교: 정가가 있는 판만 (위시 제외)
     const lpAll=real.map(d=>({d, lp:listPriceOf(d)})).filter(x=>x.lp && Number(x.d.price)>0)
       .map(x=>({...x, pct:(x.d.price-x.lp)/x.lp*100}));
-    const lpSumList=lpAll.reduce((s,x)=>s+x.lp,0), lpSumBuy=lpAll.reduce((s,x)=>s+x.d.price,0);
-    const lpDiff=lpSumBuy-lpSumList, lpPct=lpSumList?lpDiff/lpSumList*100:0;
     const bargain=lpAll.filter(x=>x.pct<0).sort((a,b)=>a.pct-b.pct).slice(0,3);
     const premium=lpAll.filter(x=>x.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,3);
     const lpRow=(x,i,key)=>`<div class="t-row t-tap" data-${key}="${i}"><span class="t-rank">${i+1}</span><span class="t-name">${escapeHtml(x.d.album||'—')}<span class="t-sub">${x.d.artist&&x.d.artist!=='-'?escapeHtml(x.d.artist)+' · ':''}${isEN()?'list':'정가'} ${won(x.lp)}</span></span><span class="t-val money">${won(x.d.price)}<span class="t-pct" style="color:${x.pct<0?'#5ec27e':'#e0617a'}">${pctStr(x.pct)}</span></span></div>`;
@@ -5281,8 +5276,6 @@ function renderStats(){
       </div>
       ${lpAll.length?`<div class="t-card">
         <div class="t-head">정가 비교</div>
-        <div class="t-sum"><b class="${lpDiff<0?'pos':(lpDiff>0?'neg':'')}" style="color:${lpDiff<0?'#5ec27e':(lpDiff>0?'#e0617a':'var(--txt)')}">${pctStr(lpPct)}</b><span>${isEN()?`vs. list price · ${won(Math.abs(lpDiff))} ${lpDiff<=0?'saved':'over'}`:`정가 대비 · ${won(Math.abs(lpDiff))} ${lpDiff<=0?'절약':'더 냄'}`}</span></div>
-        <div class="t-note" style="margin:0 0 6px">${isEN()?`Based on ${lpAll.length} LPs with a list price · list ${won(lpSumList)} → paid ${won(lpSumBuy)}`:`정가 입력 ${lpAll.length}장 기준 · 정가 ${won(lpSumList)} → 구매가 ${won(lpSumBuy)}`}</div>
         <div class="t-sec">가장 싸게 산 LP</div>
         ${bargain.map((d,i)=>lpRow(d,i,'tbg')).join('')||'<div class="t-empty">데이터 없음</div>'}
         <div class="t-sec">프리미엄 주고 산 LP</div>
