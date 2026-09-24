@@ -1030,8 +1030,8 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 <div class="wrap">
 <header>
   <button class="hdr-add" id="fab" type="button" aria-label="LP 추가" title="LP 추가"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-  <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/LP판 보기 전환" title="자켓 ↔ LP판 보기">
-    <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">LP판 보기</span>
+  <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/바이닐 보기 전환" title="자켓 ↔ 바이닐 보기">
+    <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">바이닐 보기</span>
   </button>
   <div class="hdr-logo"><img class="wm-dark" src="icons/wordmark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"><img class="wm-light" src="icons/wordmark-dark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"></div>
   <div class="acct" id="acct">
@@ -1333,7 +1333,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>음반 상태 <span class="grade-help" title="LP판 컨디션 (Discogs 기준)">ⓘ</span></label>
+        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션 (Discogs 기준)">ⓘ</span></label>
           <select id="f-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1476,7 +1476,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>음반 상태 <span class="grade-help" title="LP판 컨디션 (Discogs 기준)">ⓘ</span></label>
+        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션 (Discogs 기준)">ⓘ</span></label>
           <select id="e-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1577,8 +1577,8 @@ const I18N = {
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
   "앱 표시 언어를 선택해요":"Choose the app display language",
   "테마":"Theme",
-  "자켓 ↔ LP판 보기":"Jacket ↔ Vinyl view",
-  "자켓/LP판 보기 전환":"Toggle jacket/vinyl view",
+  "자켓 ↔ 바이닐 보기":"Jacket ↔ Vinyl view",
+  "자켓/바이닐 보기 전환":"Toggle jacket/vinyl view",
   "화면 밝기 모드를 선택해요":"Choose light or dark mode",
   "다크":"Dark",
   "브라이트":"Bright",
@@ -1614,11 +1614,11 @@ const I18N = {
   "이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)":"This domain isn't authorized for auth. (Console → Authentication → Settings → Authorized domains)",
   "비밀번호가 서로 달라요.":"Passwords don't match.",
   /* --- header / nav --- */
-  "자켓/LP판 보기 전환":"Toggle cover / disc view",
-  "자켓 ↔ LP판 보기":"Cover ↔ disc view",
-  "LP판 보기":"Disc view",
+  "자켓/바이닐 보기 전환":"Toggle cover / disc view",
+  "자켓 ↔ 바이닐 보기":"Cover ↔ disc view",
+  "바이닐 보기":"Disc view",
   "자켓 보기":"Cover view",
-  "LP판 보기로 전환":"Switch to disc view",
+  "바이닐 보기로 전환":"Switch to disc view",
   "자켓 보기로 전환":"Switch to cover view",
   "보관함":"Library",
   "달력":"Calendar",
@@ -2021,7 +2021,7 @@ const I18N = {
   "재생/일시정지":"Play / pause",
   "다음 곡":"Next track",
   "자켓/커버 컨디션 (Discogs 기준)":"Sleeve condition (Discogs grading)",
-  "LP판 컨디션 (Discogs 기준)":"Record condition (Discogs grading)",
+  "바이닐 컨디션 (Discogs 기준)":"Record condition (Discogs grading)",
   "예: 2018":"e.g. 2018",
   "그날의 느낌이나 한마디":"How it felt, or a quick note",
   "가수명":"Artist",
@@ -2034,12 +2034,12 @@ const I18N = {
   "LP 등록":"Add a record",
   "왼쪽 위 + 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
-  "LP판 직접 돌리기":"Spin the record yourself",
-  "카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
+  "바이닐 직접 돌리기":"Spin the record yourself",
+  "카드 위로 살짝 보이는 바이닐을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
   "커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "앨범 커버 바꾸기":"Change the album cover",
-  "LP판 커버 바꾸기":"Change the disc cover",
-  "수정 화면의 컬러 팔레트 맨 끝 사진 칩을 누르면 LP판 자체에 사진을 넣을 수 있어요. 한 손가락으로 위치, 두 손가락으로 크기와 기울기를 조절해요.":"Tap the photo chip at the end of the color palette on the edit screen to put a photo on the disc itself. Drag with one finger to move it, and use two fingers to resize and tilt.",
+  "바이닐 커버 바꾸기":"Change the disc cover",
+  "수정 화면의 컬러 팔레트 맨 끝 사진 칩을 누르면 바이닐 자체에 사진을 넣을 수 있어요. 한 손가락으로 위치, 두 손가락으로 크기와 기울기를 조절해요.":"Tap the photo chip at the end of the color palette on the edit screen to put a photo on the disc itself. Drag with one finger to move it, and use two fingers to resize and tilt.",
   "상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.":"Tap the pencil on the cover in the detail view to pick a different cover or use your own photo. It shows on cards and the calendar too.",
   "자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
   "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
@@ -5958,17 +5958,17 @@ const TOUR_STEPS=[
     desc:'왼쪽 위 + 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
     desc:'커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
-  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'LP판 직접 돌리기',
+  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'바이닐 직접 돌리기',
     open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
     leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
-    desc:'카드 위로 살짝 보이는 LP판을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.' },
+    desc:'카드 위로 살짝 보이는 바이닐을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.' },
   { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'앨범 커버 바꾸기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 연필 버튼을 누르면 다른 커버를 고르거나 내가 찍은 사진으로 바꿀 수 있어요. 카드와 달력에도 그 사진이 보여요.' },
-  { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'LP판 커버 바꾸기',
+  { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'바이닐 커버 바꾸기',
     open:()=>{ if(DATA.length){ openDetail(DATA[0].id); showEditForm(DATA[0]); } }, leave:()=>{ try{ hide('edit'); }catch(e){} try{ hide('detail'); }catch(e){} },
-    desc:'수정 화면의 컬러 팔레트 맨 끝 사진 칩을 누르면 LP판 자체에 사진을 넣을 수 있어요. 한 손가락으로 위치, 두 손가락으로 크기와 기울기를 조절해요.' },
-  { tab:'coll', target:'#cf-mode-toggle', round:true, title:'LP판 보기',
+    desc:'수정 화면의 컬러 팔레트 맨 끝 사진 칩을 누르면 바이닐 자체에 사진을 넣을 수 있어요. 한 손가락으로 위치, 두 손가락으로 크기와 기울기를 조절해요.' },
+  { tab:'coll', target:'#cf-mode-toggle', round:true, title:'바이닐 보기',
     desc:'자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
   { tab:'cal', target:'#cal-grid', title:'달력',
     desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
@@ -6140,8 +6140,8 @@ function refreshGenreChips(){
 let cfItems=[], cfIndex=0, cfCards=[], cfMode='cover';   // 'cover' | 'vinyl'
 function applyCfMode(){
   const stage=$('#cf-stage'); if(stage) stage.classList.toggle('vinyl-mode', cfMode==='vinyl');
-  const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '자켓 보기로 전환' : 'LP판 보기로 전환'; }
-  const lab=$('#cf-mode-lab'); if(lab) lab.textContent = cfMode==='vinyl' ? '자켓 보기' : 'LP판 보기';
+  const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '자켓 보기로 전환' : '바이닐 보기로 전환'; }
+  const lab=$('#cf-mode-lab'); if(lab) lab.textContent = cfMode==='vinyl' ? '자켓 보기' : '바이닐 보기';
 }
 function buildCoverFlow(){
   cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
