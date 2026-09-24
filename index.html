@@ -6043,11 +6043,19 @@ function tourGo(i){
   const st=TOUR_STEPS[i];
   if(st.tab) _tourSwitchTab(st.tab);
   if(st.open){ try{ st.open(); }catch(e){} }
-  const el=st.target?document.querySelector(st.target):null;
-  if(el && !st.noScroll){ try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} } }
+  const scrollToTarget=()=>{
+    if(st.noScroll || _tour.i!==i) return;
+    const el=st.target?document.querySelector(st.target):null; if(!el) return;
+    try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} }
+  };
+  scrollToTarget();
   _tourRender();
-  // 시트를 여는 단계는 슬라이드 전환이 끝난 뒤 위치를 잡는다
-  if(st.open) setTimeout(_tourLayout, 380);
+  // 시트를 여는 단계는 슬라이드 전환이 끝난 뒤 위치를 잡는다.
+  // 이전 단계가 시트를 닫았다면, 시트가 닫히며 복원한 스크롤 위치가 늦게 적용되는 기기(안드로이드 웹뷰)가 있어
+  // 전환이 끝난 뒤 대상 위치로 한 번 더 스크롤한다.
+  const prevClosed = !!(prev && prev.leave && prev!==st);
+  if(st.open || prevClosed) setTimeout(()=>{ scrollToTarget(); _tourLayout(); }, 380);
+  if(prevClosed) setTimeout(()=>{ scrollToTarget(); _tourLayout(); }, 700);
   requestAnimationFrame(()=>requestAnimationFrame(_tourLayout));
 }
 function startTour(){
