@@ -2044,7 +2044,7 @@ const I18N = {
   "자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
   "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
   "달력 대표 이미지 정하기":"Pick the calendar image",
-  "한 날짜에 바이닐 기록이 여러 개일땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정 할 수 있어요.":"When a day has several vinyl entries, pin the one you want to set it as that day's image.",
+  "한 날짜에 바이닐 기록이 여러 개일 땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정할 수 있어요.":"When a day has several vinyl entries, pin the one you want to set it as that day's image.",
   "얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.":"See how much you have collected, where you buy most, and which albums you play the most.",
   "컬렉션과 공유":"Collections and sharing",
   "테마별 컬렉션을 만들고 링크로 공유할 수 있어요. 마이페이지에서는 취향 카드도 만들 수 있어요.":"Build themed collections and share them by link. You can also make a taste card from My page.",
@@ -5981,7 +5981,7 @@ const TOUR_STEPS=[
       const today=new Date(); const ds=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       openDayList(ds, [{date:ds, kind:'arrive', it},{date:ds, kind:'listen', it, note:isEN()?'First listen':'첫 청음'}]); },
     leave:()=>{ try{ hide('daylist'); }catch(e){} },
-    desc:'한 날짜에 바이닐 기록이 여러 개일땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정 할 수 있어요.' },
+    desc:'한 날짜에 바이닐 기록이 여러 개일 땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정할 수 있어요.' },
   { tab:'stats', target:'#stats2', title:'통계',
     desc:'얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.' },
   { tab:'my', target:'#coll-new', title:'컬렉션과 공유',
