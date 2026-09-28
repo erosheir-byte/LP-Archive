@@ -36,6 +36,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # 기본값('tools platform-tools')의 'tools' 패키지는 최신 cmdline-tools 에서 제거되어 설치 실패함
+          packages: "platform-tools"
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
