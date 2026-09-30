@@ -36,6 +36,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # 기본값 'tools platform-tools' 중 구식 'tools' 패키지가 SDK 저장소에서 빠져 설치가 실패함
+          packages: 'platform-tools'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
