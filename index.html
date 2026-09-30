@@ -1324,7 +1324,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     </div>
     <div id="f-grade-fld" class="buyonly gradewrap" style="display:none">
       <div class="row2">
-        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션 (Discogs 기준)">ⓘ</span></label>
+        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션">ⓘ</span></label>
           <select id="f-sleeve" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1333,7 +1333,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션 (Discogs 기준)">ⓘ</span></label>
+        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
           <select id="f-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1467,7 +1467,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     </div>
     <div id="e-grade-fld" class="gradewrap" style="display:none">
       <div class="row2">
-        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션 (Discogs 기준)">ⓘ</span></label>
+        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션">ⓘ</span></label>
           <select id="e-sleeve" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1476,7 +1476,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션 (Discogs 기준)">ⓘ</span></label>
+        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
           <select id="e-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1577,8 +1577,6 @@ const I18N = {
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
   "앱 표시 언어를 선택해요":"Choose the app display language",
   "테마":"Theme",
-  "자켓 ↔ 바이닐 보기":"Jacket ↔ Vinyl view",
-  "자켓/바이닐 보기 전환":"Toggle jacket/vinyl view",
   "화면 밝기 모드를 선택해요":"Choose light or dark mode",
   "다크":"Dark",
   "브라이트":"Bright",
@@ -1974,7 +1972,6 @@ const I18N = {
   "카드와 상세에 LP 발매년도를 표시해요":"Show the release year on cards and detail",
   "Discogs 연동":"Discogs",
   "컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)":"Used for importing a collection (barcode scanning needs no setup)",
-  "미디어 브리지:":"Media bridge:",
   "이 계정의 LP 전체 삭제":"Delete every record in this account",
   "이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)":"Empties the account by deleting every record saved to it (cannot be undone)",
   "회원 탈퇴":"Delete account",
@@ -2020,8 +2017,8 @@ const I18N = {
   "이전 곡":"Previous track",
   "재생/일시정지":"Play / pause",
   "다음 곡":"Next track",
-  "자켓/커버 컨디션 (Discogs 기준)":"Sleeve condition (Discogs grading)",
-  "바이닐 컨디션 (Discogs 기준)":"Record condition (Discogs grading)",
+  "자켓/커버 컨디션":"Sleeve condition",
+  "바이닐 컨디션":"Record condition",
   "예: 2018":"e.g. 2018",
   "그날의 느낌이나 한마디":"How it felt, or a quick note",
   "가수명":"Artist",
@@ -3042,21 +3039,6 @@ function _lpCall(method, data){   // 가장 확실한 경로부터 시도
     if(typeof C.nativePromise==='function'){ C.nativePromise('LPMedia', method, data||{}); return; }
     if(typeof C.nativeCallback==='function'){ C.nativeCallback('LPMedia', method, data||{}, function(){}); return; }
   }catch(e){}
-}
-function _lpDiag(){   // 어떤 네이티브 브리지가 잡히는지 진단 문자열
-  try{
-    const C=window.Capacitor;
-    const out=[];
-    out.push('jsi='+(window.LPMediaNative?'y':'n'));
-    out.push('cap='+(C?'y':'n'));
-    try{ out.push('plat='+(C&&C.getPlatform?C.getPlatform():'-')); }catch(_){ out.push('plat=?'); }
-    out.push('plug='+(_lpPlugin()?'y':'n'));
-    out.push('np='+(C&&typeof C.nativePromise==='function'?'y':'n'));
-    out.push('nc='+(C&&typeof C.nativeCallback==='function'?'y':'n'));
-    let s=out.join(' ');
-    if(window.__lpDbg) s+=' | last: '+window.__lpDbg;
-    return s;
-  }catch(e){ return 'diag err'; }
 }
 let _lpNativeListenerReady=false;
 function _lpSetupNativeListener(){
@@ -5651,7 +5633,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div><div class="set-d" style="font-family:monospace;font-size:10.5px;opacity:.7;margin-top:4px"><span>미디어 브리지:</span> ${_lpDiag()}</div></div></div>
+      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
