@@ -1687,7 +1687,7 @@ const I18N = {
   "위시 추가":"Add to Wishlist",
   "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
   "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
-  "📷 사진에서 직접 올리기":"📷 Upload from a photo",
+  "📷 앨범에서 올리기":"📷 Choose from album",
   "앨범아트가 안 찾아지면 — 직접 올리기":"Cover art not found? — Upload manually",
   "📷 앨범아트 사진 올리기":"📷 Upload cover photo",
   "또는 이미지 주소(URL) 붙여넣기":"Or paste an image address (URL)",
@@ -3821,7 +3821,7 @@ async function openCoverPicker(it){
     </div>`;
   const manual=`
     <div class="pk-manual">
-      <label class="pk-up">📷 사진에서 직접 올리기
+      <label class="pk-up">📷 앨범에서 올리기
         <input type="file" accept="image/*" id="pk-file" hidden>
       </label>
       <div class="pk-url">
