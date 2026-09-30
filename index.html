@@ -681,6 +681,18 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 #f-cands.show{display:grid}
 .pk-item{cursor:pointer;border-radius:9px;overflow:hidden;border:2px solid transparent;background:var(--card);transition:.12s}
 .pk-item.sel{border-color:var(--accent)}
+/* 커버 선택기: 고른 후보에 체크 표시 + 하단 취소/변경 완료 */
+#dt-picker .pk-item{position:relative}
+#dt-picker .pk-item.sel::after{content:'✓';position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pk-actions{display:flex;gap:8px;margin-top:14px}
+/* 커버 위에 겹쳐 뜨는 선택기는 스크롤 영역이라, 버튼 줄을 아래에 고정해 항상 보이게 */
+.dt-art .picker .pk-actions{position:sticky;bottom:-14px;margin:14px -14px -14px;padding:10px 14px 14px;background:rgba(12,11,15,.97);border-top:1px solid var(--line);z-index:2}
+html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255,.98)}
+.pk-actions button{flex:1;height:46px;border-radius:12px;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.pk-cancel{background:var(--card2);border:1px solid var(--line);color:var(--txt)}
+.pk-done{flex:2 !important;background:linear-gradient(150deg,var(--accent2),var(--accent));border:none;color:#160d09}
+.pk-done:disabled{opacity:.4;cursor:default}
+.pk-actions button:not(:disabled):active{transform:scale(.97)}
 .pk-item:active{transform:scale(.95)}
 .pk-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .pk-cap{font-size:9px;color:var(--muted);padding:3px 4px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1675,7 +1687,7 @@ const I18N = {
   "위시 추가":"Add to Wishlist",
   "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
   "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
-  "📷 사진에서 직접 올리기":"📷 Upload from a photo",
+  "📷 앨범에서 올리기":"📷 Choose from album",
   "앨범아트가 안 찾아지면 — 직접 올리기":"Cover art not found? — Upload manually",
   "📷 앨범아트 사진 올리기":"📷 Upload cover photo",
   "또는 이미지 주소(URL) 붙여넣기":"Or paste an image address (URL)",
@@ -1749,6 +1761,13 @@ const I18N = {
   "보유중으로 이동":"Move to Owned",
   "구매완료 처리":"Mark as purchased",
   /* --- cover picker --- */
+  "커버를 고른 뒤 변경 완료를 눌러주세요":"Pick a cover, then tap Done",
+  "변경 완료":"Done",
+  "불러오기":"Load",
+  "내 사진":"My photo",
+  "이미지 주소":"Image URL",
+  "저장 중…":"Saving…",
+  "커버를 변경했어요":"Cover updated",
   "맞는 커버를 선택하거나, 직접 올리세요":"Pick a matching cover, or upload your own",
   "검색 결과가 없어요 — 직접 올려보세요":"No results — try uploading your own",
   /* --- vinyl decorate (Pro) --- */
@@ -3790,6 +3809,10 @@ function fileToDataURL(file, max=600){
 async function openCoverPicker(it){
   const box=$('#dt-picker');
   box.classList.add('show');
+  // 후보를 누르면 바로 바꾸지 않고 '선택'만 한다 → 아래 '변경 완료'로 확정, '취소'로 닫기
+  let cands=[];            // 검색 결과
+  let extras=[];           // 내가 올린 사진·붙여넣은 주소 (검색을 다시 해도 유지)
+  let selKey=null;         // 'e0'(extras) 또는 'c0'(cands)
   const search=`
     <div class="pk-search">
       <div class="pk-field"><label>가수</label><input id="pk-q-artist" placeholder="가수명" value="${escapeHtml(it.artist||'')}"></div>
@@ -3798,32 +3821,47 @@ async function openCoverPicker(it){
     </div>`;
   const manual=`
     <div class="pk-manual">
-      <label class="pk-up">📷 사진에서 직접 올리기
+      <label class="pk-up">📷 앨범에서 올리기
         <input type="file" accept="image/*" id="pk-file" hidden>
       </label>
       <div class="pk-url">
         <input id="pk-urlin" placeholder="또는 이미지 주소(URL) 붙여넣기">
-        <button id="pk-urlbtn">적용</button>
+        <button id="pk-urlbtn" type="button">불러오기</button>
       </div>
     </div>`;
-  box.innerHTML=search+'<div class="pk-title" id="pk-status">앨범아트 검색 중…</div><div id="pk-results"></div>'+manual;
+  const actions=`
+    <div class="pk-actions">
+      <button type="button" class="pk-cancel" id="pk-cancel">취소</button>
+      <button type="button" class="pk-done" id="pk-done" disabled>변경 완료</button>
+    </div>`;
+  box.innerHTML=search+'<div class="pk-title" id="pk-status">앨범아트 검색 중…</div><div id="pk-results"></div>'+manual+actions;
+
+  const close=()=>{ box.classList.remove('show'); box.innerHTML=''; };
+  const selected=()=>{ if(!selKey) return null; const i=+selKey.slice(1); return (selKey[0]==='e'?extras:cands)[i]||null; };
+  function render(){
+    const res=$('#pk-results'); if(!res) return;
+    const tile=(c,key)=>`<div class="pk-item${selKey===key?' sel':''}" data-k="${key}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${escapeHtml(c.album||'')}${c.src?' · '+escapeHtml(c.src):''}</div></div>`;
+    const all=extras.map((c,i)=>tile(c,'e'+i)).concat(cands.map((c,i)=>tile(c,'c'+i)));
+    res.innerHTML = all.length ? '<div class="pk-grid">'+all.join('')+'</div>' : '';
+    res.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
+      selKey = (selKey===el.dataset.k) ? null : el.dataset.k;   // 같은 걸 다시 누르면 선택 해제
+      render();
+    });
+    const done=$('#pk-done'); if(done) done.disabled=!selKey;
+  }
+  const addExtra=(img,label)=>{ extras.unshift({img,album:label}); selKey='e0'; render(); };
 
   // 검색어(가수·앨범)로 후보를 다시 불러와 그리드 갱신
   async function runSearch(artist, album){
-    const status=$('#pk-status'), res=$('#pk-results');
+    const status=$('#pk-status');
     if(status) status.textContent='앨범아트 검색 중…';
-    if(res) res.innerHTML='';
-    const cands=await fetchCandidates(artist, album);
-    if(status) status.textContent = cands.length ? '맞는 커버를 선택하거나, 직접 올리세요'
+    if(selKey && selKey[0]==='c') selKey=null;   // 검색 결과가 바뀌면 이전 결과의 선택은 해제
+    cands=[]; render();
+    cands=await fetchCandidates(artist, album);
+    if(!box.classList.contains('show')) return;   // 그사이 닫혔으면 무시
+    if(status) status.textContent = cands.length ? '커버를 고른 뒤 변경 완료를 눌러주세요'
                                                   : '검색 결과가 없어요 — 검색어를 바꾸거나 직접 올려보세요';
-    if(res){
-      res.innerHTML = cands.length ? '<div class="pk-grid">'+
-        cands.map((c,i)=>`<div class="pk-item" data-i="${i}"><img src="${c.img}" loading="lazy" onerror="this.closest('.pk-item').style.display='none'"><div class="pk-cap">${c.album||''}${c.src?' · '+c.src:''}</div></div>`).join('')+'</div>' : '';
-      res.querySelectorAll('.pk-item').forEach(el=>el.onclick=()=>{
-        applyCover(it, cands[+el.dataset.i].img);
-        box.classList.remove('show'); box.innerHTML='';
-      });
-    }
+    render();
   }
   const doSearch=()=>runSearch(($('#pk-q-artist').value||'').trim(), ($('#pk-q-album').value||'').trim());
   { const bt=$('#pk-q-btn'); if(bt) bt.onclick=doSearch; }
@@ -3831,16 +3869,23 @@ async function openCoverPicker(it){
 
   $('#pk-file').onchange=async e=>{
     const f=e.target.files[0]; if(!f)return;
-    try{
-      const u=await fileToDataURL(f);
-      let url=u; try{ url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); }catch(up){}
-      applyCover(it,url); box.classList.remove('show'); box.innerHTML='';
-    }catch(err){appAlert('이미지를 불러오지 못했어요');}
+    try{ addExtra(await fileToDataURL(f), '내 사진'); }
+    catch(err){ appAlert('이미지를 불러오지 못했어요'); }
+    finally{ try{ e.target.value=''; }catch(_){} }
   };
-  $('#pk-urlbtn').onclick=()=>{
-    const u=$('#pk-urlin').value.trim();
-    if(!u){return;}
-    applyCover(it,u); box.classList.remove('show'); box.innerHTML='';
+  const addUrl=()=>{ const u=$('#pk-urlin').value.trim(); if(!u) return; addExtra(u, '이미지 주소'); $('#pk-urlin').value=''; };
+  $('#pk-urlbtn').onclick=addUrl;
+  $('#pk-urlin').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addUrl(); } });
+
+  $('#pk-cancel').onclick=close;
+  $('#pk-done').onclick=async()=>{
+    const c=selected(); if(!c) return;
+    const btn=$('#pk-done'); btn.disabled=true; btn.textContent='저장 중…';
+    let url=c.img;
+    if(/^data:/.test(url)){ try{ url=await window.LPCloud.uploadImage(dataURLToBlob(url),'jpg'); }catch(up){} }   // 내 사진은 완료할 때 업로드
+    applyCover(it,url);
+    close();
+    previewToast('커버를 변경했어요');
   };
 
   // 최초 로드: 저장된 가수·앨범으로 검색
