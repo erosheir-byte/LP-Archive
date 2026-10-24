@@ -192,6 +192,12 @@ h1 .em{color:var(--accent)}
 .pl-bar .pl-arrow{color:var(--accent2);margin-left:2px}
 .pl-bar .pl-cmp.on{background:linear-gradient(150deg,var(--accent2),var(--accent));border-color:transparent;color:#160d09}
 .pl-sum{font-size:12.5px;color:var(--muted);margin:0 2px 10px}
+.pl-wrap{flex-wrap:wrap}
+.pl-bar .pl-chip{font-weight:600;color:var(--muted)}
+.pl-bar .pl-chip span{color:var(--txt);font-weight:700}
+.pl-bar .pl-chip.on{background:linear-gradient(150deg,var(--accent2),var(--accent));border-color:transparent;color:#160d09}
+.pl-bar .pl-chip.on span{color:#160d09}
+.pl-date{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
 .pl-sum b{color:var(--txt)}
 .pl-val{flex:0 0 auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums}
 .pl-val b{font-size:14px;color:var(--txt)}
@@ -1851,6 +1857,10 @@ const I18N = {
   "정가를 입력한 판만 보여요":"Only records with a list price",
   "구매가를 입력한 판만 보여요":"Only records with a purchase price",
   "합계":"Total",
+  "최근 구매순":"Newest purchase",
+  "오래된 구매순":"Oldest purchase",
+  "최근 거래순":"Newest first",
+  "오래된 거래순":"Oldest first",
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
   "판매 차익":"Sale profit",
@@ -5258,6 +5268,47 @@ function openPriceList(kind, keep){
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   if(!keep) show('daylist');
 }
+/* 보유 중 / 판매·교환 → 목록 (상태별 칩 + 날짜순 정렬) */
+let _slist={kind:'own', f:'', desc:true};
+function openStatusList(kind, keep){
+  if(!keep) _slist={kind, f:'', desc:true};
+  const st=_slist, own=st.kind==='own';
+  const wrap=$('#daylist'); if(!wrap) return;
+  const pool = DATA.filter(d=>statusGroup(d.status)===(own?'보유중':'판매·교환'));
+  const kinds = own ? ['개봉','미개봉','확인필요'] : ['판매','교환','선물'];
+  const cnt = k => pool.filter(d=>d.status===k).length;
+  const dateOf = d => String((own ? d.buy : (d.sellDate||d.buy)) || '');
+  let rows = st.f ? pool.filter(d=>d.status===st.f) : pool.slice();
+  rows.sort((a,b)=>{ const x=dateOf(a), y=dateOf(b);
+    if(!x!==!y) return x?-1:1;                       // 날짜 없는 판은 항상 맨 아래
+    return st.desc ? y.localeCompare(x) : x.localeCompare(y); });
+  $('#daylist-title').textContent = isEN() ? `${own?'Owned':'Sold/Exchanged'} · ${rows.length}` : `${own?'보유 중':'판매·교환'} · ${rows.length}장`;
+  const stLab = k => (isEN() && k==='판매') ? 'Sold' : k;   // 전역 번역 '판매'='Sell'(버튼용)이라 상태 표시는 따로
+  const chip=(k,lab,n)=>`<button type="button" class="pl-chip${st.f===k?' on':''}" data-f="${k}"><span>${lab}</span> ${n}</button>`;
+  const head = `
+    <div class="pl-bar pl-wrap">
+      ${chip('', '전체', pool.length)}${kinds.filter(k=>cnt(k)).map(k=>chip(k,stLab(k),cnt(k))).join('')}
+    </div>
+    <div class="pl-bar">
+      <button type="button" class="pl-sort" id="sl-sort"><span>${own?(st.desc?'최근 구매순':'오래된 구매순'):(st.desc?'최근 거래순':'오래된 거래순')}</span> <span class="pl-arrow">${st.desc?'↓':'↑'}</span></button>
+    </div>`;
+  const kcls={개봉:'dl-open',미개봉:'dl-arrive',확인필요:'',판매:'dl-sold',교환:'dl-buy',선물:'dl-listen'};
+  const row = it => {
+    const art=artFor(it);
+    const thumb = art?`<img src="${art}" alt="">`:`<div class="dl-ph" style="background:${it.colorHex||discColor(it.color)}"></div>`;
+    const dt=dateOf(it);
+    return `<button type="button" class="dl-item" data-id="${it.id}">
+      <div class="dl-thumb">${thumb}</div>
+      <div class="dl-info"><div class="dl-al">${escapeHtml(it.album||'제목 없음')}</div><div class="dl-ar">${escapeHtml(it.artist&&it.artist!=='-'?it.artist:'')}</div></div>
+      <div class="pl-val"><span class="dl-kind ${kcls[it.status]||''}">${escapeHtml(stLab(it.status||''))}</span><span class="pl-date">${dt?dt.slice(2,10).replace(/-/g,'.'):''}</span></div>
+    </button>`;
+  };
+  wrap.innerHTML = head + (rows.length ? rows.map(row).join('') : `<div class="dl-emptyday">해당하는 앨범이 없어요.</div>`);
+  wrap.querySelectorAll('.pl-chip').forEach(b=>b.onclick=()=>{ st.f=b.dataset.f; openStatusList(st.kind,true); });
+  $('#sl-sort').onclick=()=>{ st.desc=!st.desc; openStatusList(st.kind,true); };
+  wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
+  if(!keep) show('daylist');
+}
 function renderStats(){
   const real=DATA.filter(d=>statusGroup(d.status)!=='위시');   // 위시 제외
   const owned=DATA.filter(d=>statusGroup(d.status)==='보유중');
@@ -5270,12 +5321,13 @@ function renderStats(){
   const totalBuy=real.reduce((s,d)=>s+(d.price||0),0);                 // 총 구매가(위시 제외)
   const totalSell=sold.reduce((s,d)=>s+(d.sellPrice||0),0);            // 총 판매가
   $('#stats2').innerHTML=`
-    <div class="stat"><div class="lab">보유 중</div><div class="val">${owned.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">♪</div></div>
-    <div class="stat"><div class="lab">판매·교환</div><div class="val">${soldExch.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">↻</div></div>
+    <div class="stat tap" data-slist="own" role="button" tabindex="0"><div class="lab">보유 중 <span class="stat-more">›</span></div><div class="val">${owned.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">♪</div></div>
+    <div class="stat tap" data-slist="deal" role="button" tabindex="0"><div class="lab">판매·교환 <span class="stat-more">›</span></div><div class="val">${soldExch.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">↻</div></div>
     <div class="stat tap" data-plist="buy" role="button" tabindex="0"><div class="lab">총 구매가 <span class="stat-more">›</span></div><div class="val sm">${won(totalBuy)}</div></div>
     <div class="stat tap" data-plist="sell" role="button" tabindex="0"><div class="lab">총 판매가 <span class="stat-more">›</span></div><div class="val sm">${won(totalSell)}</div></div>
 `;
   $('#stats2').querySelectorAll('[data-plist]').forEach(el=>el.onclick=()=>openPriceList(el.dataset.plist));
+  $('#stats2').querySelectorAll('[data-slist]').forEach(el=>el.onclick=()=>openStatusList(el.dataset.slist));
   $('#hsub').innerHTML = isEN()
     ? `Total <b>${real.length}</b><span class="sep">·</span>Owned <b>${owned.length}</b><span class="sep">·</span>Opened <b>${opened}</b><span class="sep">·</span>Sealed <b>${sealed}</b>`
     : `총 <b>${real.length}</b>장<span class="sep">·</span>보유 <b>${owned.length}</b><span class="sep">·</span>개봉 <b>${opened}</b><span class="sep">·</span>미개봉 <b>${sealed}</b>`;
