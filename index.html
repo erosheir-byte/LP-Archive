@@ -652,13 +652,23 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 #sheet-colldetail .cd-edit{display:none}
 #sheet-colldetail.editing .cd-normal{display:none}
 #sheet-colldetail.editing .cd-edit{display:inline-flex}
+#sheet-colldetail .cd-colors,#sheet-colldetail .cd-inputs{display:none}
+#sheet-colldetail.editing .cd-colors,#sheet-colldetail.editing .cd-inputs{display:flex}
+#sheet-colldetail.editing .cd-tools{display:flex}
+#sheet-colldetail .cd-head{margin-top:32px}
+.cd-inputs{flex:1;min-width:0;flex-direction:column;gap:6px}
+.cd-inputs input{width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 11px;color:var(--txt);font-family:inherit;outline:none}
+.cd-inputs input:focus{border-color:var(--accent)}
+.cd-inputs .cd-in-nm{font-size:16px;font-weight:800}
+.cd-inputs .cd-in-ds{font-size:12.5px}
+.cd-colors{gap:9px;margin:-2px 0 12px}
+.cd-colors .cc{width:26px;height:26px}
 /* 컬렉션 상세 툴바 — 작은 칩 버튼 */
-.cd-tools{display:flex;align-items:center;gap:7px;margin-top:2px}
+.cd-tools{align-items:center;gap:7px;margin-top:2px}
 .cd-chip{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:16px;border:1px solid var(--line);background:var(--card2);color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .cd-chip svg{flex:none;opacity:.9}
 .cd-chip:active{background:var(--card);color:var(--accent2)}
 .cd-chip.danger{color:#e0617a;border-color:rgba(224,97,122,.3)}
-.cd-tools .ms-share{margin-left:auto}
 .cd-chip.primary{margin-left:auto;border-color:transparent;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06}
 #sheet-colldetail:not(.editing) .ci-rm{display:none}
 .collpick-search{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:12px 14px;color:var(--txt);font-family:inherit;font-size:14px;margin-bottom:12px;box-sizing:border-box}
@@ -680,6 +690,9 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .sheet-x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:15px;line-height:1;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
 .sheet-x:active{opacity:.7}
 .sheet-x.sx-edit{right:56px;font-size:14px}
+.sheet-x.sx-share{right:98px}
+.sheet-x.busy{color:var(--accent2);pointer-events:none}
+.sheet-x.busy svg{animation:scspin .9s linear infinite}
 /* 상세 별점 줄 우측 '수정' 버튼 — 항상 노출되는 수정 진입점 */
 .dt-editfab{flex:none;height:34px;padding:0 13px;border-radius:18px;
   display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card2);
@@ -1243,13 +1256,12 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 <div class="sheet" id="sheet-colldetail">
   <div class="grab" id="grab-colldetail"></div>
   <button class="sheet-x" data-close="colldetail" aria-label="닫기">✕</button>
-  <button class="sheet-x sx-edit" id="coll-edit" type="button" aria-label="컬렉션 수정" title="수정">✎</button>
+  <button class="sheet-x sx-edit cd-normal" id="coll-edit" type="button" aria-label="컬렉션 편집" title="편집"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+  <button class="sheet-x sx-share cd-normal" id="cd-share" type="button" aria-label="컬렉션 카드 공유" title="컬렉션 카드 공유"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>
   <div class="form">
     <div class="cd-head" id="cd-collhead"></div>
-    <div class="cd-tools">
-      <button class="cd-chip cd-normal" id="coll-share" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg><span>링크 공유</span></button>
-      <button class="cd-chip cd-normal" id="coll-editmode" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span>편집</span></button>
-      <button type="button" class="ms-share cd-normal" id="cd-share" aria-label="컬렉션 카드 공유" title="컬렉션 카드 공유"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>
+    <div class="coll-colors cd-colors" id="cd-colors"></div>
+    <div class="cd-tools cd-edit">
       <button class="cd-chip cd-edit" id="coll-addlp" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span>LP 담기</span></button>
       <button class="cd-chip danger cd-edit" id="coll-del" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg><span>삭제</span></button>
       <button class="cd-chip primary cd-edit" id="coll-editdone" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg><span>완료</span></button>
@@ -1884,7 +1896,11 @@ const I18N = {
   "삭제":"Delete",
   "수정":"Edit",
   "담긴 LP가 없어요.":"No records added.",
-  "‘+ LP 담기’로 추가해보세요.":"Add some with '+ Add records'.",
+  "‘LP 담기’로 추가해보세요.":"Add some with 'Add records'.",
+  "연필 버튼을 눌러 LP를 담아보세요.":"Tap the pencil to add records.",
+  "컬렉션 편집":"Edit collection",
+  "편집":"Edit",
+  "설명 (선택)":"Description (optional)",
   "빼기":"Remove",
   "LP 담기":"Add records",
   "완료":"Done",
@@ -2010,8 +2026,6 @@ const I18N = {
   "이 달의 기록":"This month",
   "이 달에는 구매·판매·교환·청음 기록이 없어요.":"No purchases, sales, trades or listens this month.",
   /* --- 컬렉션 / 공유 --- */
-  "링크 공유":"Share link",
-  "편집":"Edit",
   "📤 컬렉션 카드":"📤 Collection card",
   "카드 만드는 중…":"Making your card…",
   "공유 카드":"Share card",
@@ -3997,6 +4011,7 @@ function show(name){
   lockScroll();}
 function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
   if(name==='add') clearAddDraft();   // 추가 폼을 직접 닫으면(저장 완료·취소) 임시저장도 함께 지운다
+  if(name==='colldetail' && typeof commitCollHead==='function') commitCollHead();   // 편집 중에 닫아도 입력한 이름·설명 저장
   const s=$('#sheet-'+name); s.style.transform='';
   if(s.classList.contains('fs')) document.body.classList.remove('fs-open');
   if(!document.querySelector('.sheet.show')) unlockScroll();}   // 열린 시트가 더 없을 때만 잠금 해제
@@ -4021,10 +4036,9 @@ function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCo
 { const b=$('#coll-save'); if(b) b.onclick=saveCollFromForm; }
 { const b=$('#coll-addlp'); if(b) b.onclick=openCollPick; }
 { const b=$('#coll-del'); if(b) b.onclick=deleteColl; }
-{ const b=$('#coll-share'); if(b) b.onclick=shareCurrentCollection; }
 { const b=$('#cd-share'); if(b) b.onclick=()=>shareCollCard(); }
-{ const b=$('#coll-editmode'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.add('editing'); }; }
-{ const b=$('#coll-editdone'); if(b) b.onclick=()=>{ const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }; }
+{ const b=$('#coll-edit'); if(b) b.onclick=()=>setCollEditing(true); }
+{ const b=$('#coll-editdone'); if(b) b.onclick=()=>setCollEditing(false); }
 { const q=$('#collpick-q'); if(q) q.oninput=e=>renderCollPick(e.target.value); }
 // swipe-down to dismiss (drag from the grab handle / top area)
 function enableSwipeClose(name, opts){
@@ -6050,28 +6064,59 @@ function saveCollFromForm(){
   else if(_collOpenId){ renderCollItems(); }
 }
 
-// 컬렉션 상세
+// 컬렉션 상세 — ✎ 를 누르면 같은 시트에서 이름·설명·색과 담긴 LP를 함께 편집
 function openCollDetail(id){
   _collOpenId=id;
   const c=COLLECTIONS.find(x=>x.id===id); if(!c) return;
+  { const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }   // 항상 일반 보기로 시작
+  renderCollHead();
+  renderCollItems();
+  show('colldetail');
+}
+function renderCollHead(){
+  const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
   $('#cd-collhead').innerHTML=`
     <div class="coll-thumb" style="background:${c.color||COLL_COLORS[0]}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>
     </div>
-    <div style="flex:1;min-width:0">
+    <div class="cd-normal" style="flex:1;min-width:0">
       <div class="nm">${escapeHtml(c.name)}</div>
       ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
+    </div>
+    <div class="cd-inputs">
+      <input class="cd-in-nm" id="cd-name" maxlength="40" value="${escapeHtml(c.name)}" aria-label="${isEN()?'Collection name':'컬렉션 이름'}">
+      <input class="cd-in-ds" id="cd-desc" maxlength="80" value="${escapeHtml(c.desc||'')}" placeholder="${isEN()?'Description (optional)':'설명 (선택)'}">
     </div>`;
+  ['#cd-name','#cd-desc'].forEach(q=>{ const el=$(q); if(el) el.onchange=commitCollHead; });
+  const cur=c.color||COLL_COLORS[0], cw=$('#cd-colors');
+  cw.innerHTML=COLL_COLORS.map(col=>`<span class="cc${col===cur?' on':''}" data-c="${col}" style="background:${col}"></span>`).join('');
+  cw.querySelectorAll('.cc').forEach(el=>el.onclick=()=>{
+    c.color=el.dataset.c; cw.querySelectorAll('.cc').forEach(x=>x.classList.toggle('on',x===el));
+    const th=$('#cd-collhead .coll-thumb'); if(th) th.style.background=c.color;
+    saveCollections(); renderCollections();
+  });
+}
+// 입력한 이름(비어 있으면 원래 이름 유지)·설명을 저장 — 완료를 누르거나 입력칸을 벗어날 때
+function commitCollHead(){
+  const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
+  const nm=$('#cd-name'), ds=$('#cd-desc'); if(!nm||!ds) return;
+  const name=nm.value.trim()||c.name, desc=ds.value.trim();
+  if(name===c.name && desc===(c.desc||'')) return;
+  c.name=name; c.desc=desc; saveCollections(); renderCollections();
+}
+// 편집 모드 전환
+function setCollEditing(on){
+  const s=$('#sheet-colldetail'); if(!s) return;
+  if(!on){ commitCollHead(); renderCollHead(); }
+  s.classList.toggle('editing', !!on);
   renderCollItems();
-  { const s=$('#sheet-colldetail'); if(s) s.classList.remove('editing'); }   // 항상 일반 보기로 시작
-  show('colldetail');
-  const eb=$('#coll-edit'); if(eb) eb.onclick=()=>{ hide('colldetail'); openCollNew(id); };
 }
 function renderCollItems(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
   const wrap=$('#coll-items');
   const items=(c.ids||[]).map(id=>DATA.find(x=>x.id===id)).filter(Boolean);
-  if(!items.length){ wrap.innerHTML=`<div class="coll-items-empty">담긴 LP가 없어요.<br>‘+ LP 담기’로 추가해보세요.</div>`; return; }
+  if(!items.length){ const ed=$('#sheet-colldetail').classList.contains('editing');
+    wrap.innerHTML=`<div class="coll-items-empty">담긴 LP가 없어요.<br>${ed?'‘LP 담기’로 추가해보세요.':'연필 버튼을 눌러 LP를 담아보세요.'}</div>`; return; }
   wrap.innerHTML=items.map(it=>`
     <div class="coll-it" data-id="${it.id}">
       <button class="ci-rm" data-rm="${it.id}" title="빼기">−</button>
