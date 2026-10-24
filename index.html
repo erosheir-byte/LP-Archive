@@ -4347,16 +4347,6 @@ function _tasteCardStats(){
   return { total:real.length, owned, opened, sealed, rated:rated.length, avg, bands,
            artists, genres, byYear, years:Object.keys(byYear).sort(), listens, albums };
 }
-// 평균 별점에 따른 한 줄 문구 (별명 대신 듣는 성향을 담백하게)
-function _ratingCopy(s, en){
-  if(!s.rated) return en?'No ratings yet — rate a record to fill this in.':'아직 별점을 남긴 판이 없어요.';
-  if(s.avg>=4.5) return en?'Almost every record you keep is one you love.':'들인 판 대부분이 마음에 쏙 들었어요.';
-  if(s.avg>=4.0) return en?'You have a good eye for records you will love.':'좋아할 판을 잘 알아보는 편이에요.';
-  if(s.avg>=3.5) return en?'You clearly know your hits from your misses.':'좋은 판과 아쉬운 판을 분명하게 가려 들어요.';
-  if(s.avg>=3.0) return en?'You listen closely before giving stars.':'꼼꼼히 들어보고 별을 주는 편이에요.';
-  if(s.avg>=2.5) return en?'Stars are hard-earned on your turntable.':'별 하나도 쉽게 주지 않는 편이에요.';
-  return en?'Only a few records meet your high bar.':'아주 높은 기준으로 듣고 있어요.';
-}
 // 청음 횟수에 따른 한 줄 문구
 function _listenCopy(n, en){
   if(!n)      return en?'Time to drop the needle!':'이제 바늘을 올려볼 시간이에요.';
@@ -4415,7 +4405,7 @@ function buildShareCardCanvas(){
   });
   y+=80; line();
 
-  // ── 별점 (평균 + 5점~1점 가로 막대 + 한 줄 문구)
+  // ── 별점 (평균 + 5점~1점 가로 막대)
   sec(en?'My ratings':'나의 별점');
   if(s.rated){
     // 평균 점수 + 별 5개(평균만큼 채움) + 평가 장수
@@ -4445,13 +4435,10 @@ function buildShareCardCanvas(){
       x.textAlign='right'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 26px sans-serif';
       x.fillText(String(bd.n), W-M, y);
     });
-    y+=64;
-    x.textAlign='left'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 28px sans-serif';
-    x.fillText(_ratingCopy(s,en), M, y);
-    y+=34;
+    y+=40;
   } else {
     y+=58; x.textAlign='left'; x.fillStyle='rgba(255,255,255,.45)'; x.font='600 28px sans-serif';
-    x.fillText(_ratingCopy(s,en), M, y); y+=40;
+    x.fillText(en?'No ratings yet':'아직 별점을 남긴 판이 없어요.', M, y); y+=40;
   }
   line();
 
