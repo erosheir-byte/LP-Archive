@@ -514,15 +514,20 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .my-sec-head h3{font-size:14px;font-weight:800;margin:0}
 .coll-new-btn{background:var(--card2);background:color-mix(in srgb,var(--accent) 14%,transparent);border:1px solid var(--line);border-color:color-mix(in srgb,var(--accent) 38%,transparent);color:var(--accent2);font-family:inherit;font-size:12px;font-weight:700;padding:7px 13px;border-radius:100px;cursor:pointer}
 .coll-new-btn:active{transform:scale(.95)}
-.coll-list{display:flex;flex-direction:column;gap:11px;padding:0 2px 20px}
-.coll-card{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;transition:.15s}
-.coll-card:active{transform:scale(.985);border-color:var(--accent)}
+.coll-list{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;padding:0 2px 20px}
+.coll-list .coll-empty{grid-column:1/-1}
+/* 컬렉션 타일: 커버 2×2 + 아래쪽 어둡게 깔고 이름·장 수 (공유 카드와 같은 느낌) */
+.coll-card{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;cursor:pointer;background:var(--card2);transition:transform .15s}
+.coll-card:active{transform:scale(.97)}
+.coll-card .cm-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;width:100%;height:100%}
+.coll-card .cm-grid img,.coll-card .cm-one{width:100%;height:100%;object-fit:cover;display:block}
+.coll-card .cm-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85)}
+.coll-card .cm-empty svg{width:34%;height:34%;opacity:.9}
+.coll-card .cm-cap{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 11px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.82))}
+.coll-card .cm-cap .nm{color:#fff;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coll-card .cm-cap .ct{font-size:12px;font-weight:700;margin-top:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
 .coll-thumb{width:50px;height:50px;border-radius:11px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);position:relative;overflow:hidden}
 .coll-thumb svg{width:24px;height:24px;opacity:.92}
-.coll-meta{flex:1;min-width:0}
-.coll-meta .nm{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.coll-meta .ds{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.coll-meta .ct{font-size:11px;color:var(--dim);margin-top:3px}
 .coll-empty{text-align:center;color:var(--dim);font-size:13px;padding:38px 20px;line-height:1.6}
 /* 좋아요한 앨범 그리드 */
 .like-count{font-size:12px;color:var(--muted)}
@@ -530,9 +535,12 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .like-it{cursor:pointer}
 .like-it .li-art{position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center}
 .like-it .li-art img{width:100%;height:100%;object-fit:cover}
-.like-it .li-heart{position:absolute;top:6px;right:6px;color:#e85c6a;line-height:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
+.like-it .li-heart{position:absolute;top:6px;right:6px;color:#e85c6a;line-height:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));z-index:1}
+.like-it .li-ph{width:100%;height:100%}
+.like-it .li-cap{position:absolute;left:0;right:0;bottom:0;padding:22px 8px 7px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.8))}
+.like-it .li-al{color:#fff;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.like-it .li-ar{color:rgba(255,255,255,.72);font-size:10px;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .like-it .li-heart .heart-ic{width:15px;height:15px}
-.like-it .ci-nm{font-size:10.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
 /* 달력 하루 앨범 목록 */
 .daylist{display:flex;flex-direction:column;gap:9px;margin-top:16px;padding-bottom:10px}
 .dl-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px;border-radius:11px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:background .15s}
@@ -4476,7 +4484,7 @@ async function _drawStoryCard(o){
   // 한 줄
   const fit=(t,max)=>{ let v=t; while(x.measureText(v).width>max && v.length>2) v=v.slice(0,-2)+'…'; return v; };
   let y=gy+gridH+110;
-  x.textAlign='left'; x.fillStyle='rgba(255,255,255,.62)'; x.font='600 44px sans-serif';
+  x.textAlign='left'; x.fillStyle=accent2; x.font='700 40px sans-serif';
   x.fillText(o.lead||'', M, y);
   if(o.headline){ y+=110; x.fillStyle='#fff'; x.font='800 104px sans-serif'; x.fillText(fit(o.headline, W-2*M), M, y); }
 
@@ -4486,11 +4494,14 @@ async function _drawStoryCard(o){
   const nStat=Math.max(1,(o.stats||[]).length), colW=(W-2*M)/nStat;
   (o.stats||[]).forEach((cl,i)=>{
     const cxx=M+colW*i+colW/2;
-    x.textAlign='center'; x.fillStyle='#fff';
+    if(i){ x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=2; x.beginPath(); x.moveTo(M+colW*i, y-56); x.lineTo(M+colW*i, y+56); x.stroke(); }   // 칸 사이 얇은 구분선
+    x.textAlign='center';
     let fs=64; x.font=`800 ${fs}px sans-serif`;
-    while(x.measureText(String(cl[0])).width>colW-20 && fs>38){ fs-=4; x.font=`800 ${fs}px sans-serif`; }   // 길면 글자를 줄이고, 그래도 넘치면 말줄임
-    x.fillText(fit(String(cl[0]), colW-20), cxx, y);
-    x.fillStyle='rgba(255,255,255,.5)'; x.font='600 28px sans-serif'; x.fillText(cl[1], cxx, y+52);
+    while(x.measureText(String(cl[0])).width>colW-24 && fs>38){ fs-=4; x.font=`800 ${fs}px sans-serif`; }   // 길면 글자를 줄이고, 그래도 넘치면 말줄임
+    const v=fit(String(cl[0]), colW-24), vw=x.measureText(v).width;
+    const vg=x.createLinearGradient(cxx-vw/2, y-fs, cxx+vw/2, y); vg.addColorStop(0,accent2); vg.addColorStop(1,'#e8643c');
+    x.fillStyle=vg; x.fillText(v, cxx, y);   // 숫자: 브랜드 그라데이션
+    x.fillStyle='rgba(255,255,255,.5)'; x.font='600 26px sans-serif'; x.fillText(cl[1], cxx, y+50);
   });
 
   return c;
@@ -4503,11 +4514,11 @@ async function buildShareCardCanvas(){
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items:picks, fixed9:true, preferLoaded:true,
-    lead: top ? (en?'Top of my turntable':'내 턴테이블 1순위는') : (en?'My vinyl collection':'나의 바이닐 컬렉션'),
+    lead: top ? (en?'Most collected genre':'가장 많이 모은 장르') : (en?'My vinyl collection':'나의 바이닐 컬렉션'),
     headline: top,
     stats:[
       [s.total+(en?'':'장'), en?'Records':'컬렉션'],
-      s.rated ? ['★'+s.avg.toFixed(1), en?'Avg rating':'평균 별점'] : [s.owned+(en?'':'장'), en?'Owned':'보유'],
+      (s.years && s.years.length) ? [en?`${new Date().getFullYear()-parseInt(s.years[0],10)+1} yrs`:`${new Date().getFullYear()-parseInt(s.years[0],10)+1}년째`, en?`Collecting since ${s.years[0]}`:`${s.years[0]}년부터`] : [s.owned+(en?'':'장'), en?'Owned':'보유'],
       [s.artists.length ? s.artists[0].name : '–', en?'Fav artist':'최애 아티스트'],
     ],
   });
@@ -4531,8 +4542,8 @@ async function buildMonthCardCanvas(m){
   stats.push([topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르']);
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
-    lead: en ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1]} ${yy}` : `${yy}년 ${mon}월`,
-    headline: en?'Vinyl of the month':'이달의 바이닐',
+    lead: yy,
+    headline: en ? `${['January','February','March','April','May','June','July','August','September','October','November','December'][mon-1]} vinyl` : `${mon}월의 바이닐`,
     stats,
   });
 }
@@ -4612,7 +4623,8 @@ function _showShareSheet(blob, title){
   show('sharecard');
 }
 function shareCollectionCard(){ return _openShareCard(buildShareCardCanvas, isEN()?'📤 Collection card':'📤 컬렉션 카드', null, $('#share-card-btn')); }
-function shareMonthCard(m){ return _openShareCard(()=>buildMonthCardCanvas(m), isEN()?'📤 Vinyl of the month':'📤 이달의 바이닐', isEN()?'Vinyl of the month 🎵':'이달의 바이닐 🎵', $('#ms-share')); }
+function shareMonthCard(m){ const mon=parseInt(m.slice(5,7),10), t=isEN()?'Vinyl of the month':`${mon}월의 바이닐`;
+  return _openShareCard(()=>buildMonthCardCanvas(m), '📤 '+t, t+' 🎵', $('#ms-share')); }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
 // 공유 아이콘이 보일 때 커버를 미리 받아 둔다 (탭하면 바로 나오게)
 function _prefetchCardCovers(items, px){
@@ -5589,16 +5601,18 @@ function renderCollections(){
     return;
   }
   wrap.innerHTML=COLLECTIONS.map(c=>{
-    const cover = c.color||COLL_COLORS[0];
-    const first = (c.ids||[]).map(id=>DATA.find(x=>x.id===id)).filter(Boolean)[0];
-    const inner = first && artFor(first) ? `<img src="${artFor(first)}" style="width:100%;height:100%;object-fit:cover" alt="">`
-      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>`;
+    const items=(c.ids||[]).map(id=>DATA.find(x=>x.id===id)).filter(Boolean);
+    const arts=items.map(artFor).filter(Boolean).slice(0,4);
+    const n=(c.ids||[]).length;
+    // 커버 4장 → 2×2, 1~3장 → 첫 커버 한 장, 없으면 컬렉션 색 + 원판
+    const mosaic = arts.length>=4 ? `<div class="cm-grid">${arts.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</div>`
+      : arts.length ? `<img class="cm-one" src="${arts[0]}" alt="" loading="lazy">`
+      : `<div class="cm-empty" style="background:${c.color||COLL_COLORS[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg></div>`;
     return `<div class="coll-card" data-id="${c.id}">
-      <div class="coll-thumb" style="background:${cover}">${inner}</div>
-      <div class="coll-meta">
+      ${mosaic}
+      <div class="cm-cap">
         <div class="nm">${escapeHtml(c.name||'제목 없음')}</div>
-        ${c.desc?`<div class="ds">${escapeHtml(c.desc)}</div>`:''}
-        <div class="ct">LP ${ (c.ids||[]).length }${isEN()?'':'<span>장</span>'}</div>
+        <div class="ct">${n}${isEN()?' records':'장'}</div>
       </div>
     </div>`;
   }).join('');
@@ -5615,9 +5629,12 @@ function renderLikes(){
   }
   wrap.innerHTML=liked.map(it=>{
     const url=artFor(it);
+    const ar=(it.artist&&it.artist!=='-')?it.artist:'';
     return `<div class="like-it" data-id="${it.id}">
-      <div class="li-art">${url?`<img src="${url}" alt="">`:`<div class="ci-ph">${escapeHtml(it.artist||'?')}</div>`}<span class="li-heart">${heartSVG(true)}</span></div>
-      <div class="ci-nm">${escapeHtml(it.album||it.artist||'')}</div>
+      <div class="li-art">${url?`<img src="${url}" alt="" loading="lazy">`:`<div class="li-ph" style="background:${it.colorHex||discColor(it.color)}"></div>`}
+        <span class="li-heart">${heartSVG(true)}</span>
+        <div class="li-cap"><div class="li-al">${escapeHtml(it.album||'')}</div>${ar?`<div class="li-ar">${escapeHtml(ar)}</div>`:''}</div>
+      </div>
     </div>`;
   }).join('');
   wrap.querySelectorAll('.like-it').forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
