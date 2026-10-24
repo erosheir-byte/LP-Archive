@@ -1025,12 +1025,10 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .sharecard-wrap{display:flex;justify-content:center;border-radius:14px;border:1px solid var(--line);background:#121016;overflow:hidden}
 .sharecard-wrap img{display:block;width:auto;max-width:100%;max-height:60vh}
 .sharecard-wrap img[hidden]{display:none}
-.sharecard-wrap .sc-loading{display:none}
-.sharecard-wrap.loading{min-height:46vh;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-.sharecard-wrap.loading::before{content:'';width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:var(--accent2);animation:scspin .8s linear infinite}
-.sharecard-wrap.loading .sc-loading{display:block;font-size:13px;color:var(--muted)}
+/* 공유 아이콘: 카드 만드는 동안 빙글 */
+.ms-share.busy{color:var(--accent2);pointer-events:none}
+.ms-share.busy svg{animation:scspin .9s linear infinite}
 @keyframes scspin{to{transform:rotate(360deg)}}
-#sharecard-share:disabled{opacity:.45}
 </style>
 </head>
 <body class="state-boot">
@@ -1434,7 +1432,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <button class="sheet-x" data-close="sharecard" aria-label="닫기">✕</button>
   <div class="form">
     <h2 id="sharecard-title">📤 컬렉션 카드</h2>
-    <div class="sharecard-wrap"><img id="sharecard-img" alt="공유 카드"><div class="sc-loading">카드 만드는 중…</div></div>
+    <div class="sharecard-wrap"><img id="sharecard-img" alt="공유 카드"></div>
     <div class="btnrow">
       <button class="btn ghost" data-close="sharecard">닫기</button>
       <button class="btn primary" id="sharecard-share">공유하기</button>
@@ -4400,7 +4398,7 @@ function _drawCardDisc(x, cx, cy, size, color){
   x.beginPath(); x.arc(mx,my,r*0.05,0,Math.PI*2); x.fillStyle='#1d1a22'; x.fill();
 }
 // 9:16 공유 카드 공통 그리기 (인스타 스토리 1080×1920)
-//  o = { stamp, items, fixed9, preferLoaded, lead, headline, stats:[[값,라벨],…], tagOf:(d)=>'구매' }
+//  o = { stamp, items, fixed9, preferLoaded, lead, headline, stats:[[값,라벨],…] }
 async function _drawStoryCard(o){
   const W=1080, H=1920, M=90;
   const c=document.createElement('canvas'); c.width=W; c.height=H;
@@ -4434,7 +4432,7 @@ async function _drawStoryCard(o){
     const loaded=await Promise.all(nine.map(d=>_loadCardImg(_cardSrc(artFor(d),px))));
     tiles=nine.map((d,i)=>({d,im:loaded[i]}));
   }
-  const extra=Math.max(0, items.length-9);
+  const extra=o.fixed9 ? 0 : Math.max(0, items.length-9);   // 월별 카드만 '+N' (컬렉션 카드는 9장 꽉 채움)
 
   // 배치: 고정 3×3, 또는 장 수에 따라 1장 / 2장 / 2×2 / 3×3
   const n = o.fixed9 ? 9 : Math.max(1, tiles.length);
@@ -4457,12 +4455,16 @@ async function _drawStoryCard(o){
       x.drawImage(im, cx+(cell-w)/2, cy+(cell-h)/2, w, h); }
     else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color));
     else { x.fillStyle='rgba(255,255,255,.04)'; x.fillRect(cx,cy,cell,cell); }
-    if(t && o.tagOf && !(extra && i===cellsToDraw-1)){   // 우측 상단 작은 표시 (구매/청음)
-      const tag=o.tagOf(t.d);
-      if(tag){ const fsz=Math.round(Math.max(24, Math.min(34, cell*0.075)));
-        x.font=`700 ${fsz}px sans-serif`; const tw=x.measureText(tag).width, ph=fsz+16, pw=tw+28, px=cx+cell-pw-14, py=cy+14;
-        x.fillStyle='rgba(18,16,22,.72)'; x.beginPath(); if(x.roundRect) x.roundRect(px,py,pw,ph,ph/2); else x.rect(px,py,pw,ph); x.fill();
-        x.textAlign='center'; x.fillStyle='#fff'; x.fillText(tag, px+pw/2, py+ph/2+fsz*0.36); }
+    if(t && !(extra && i===cellsToDraw-1)){   // 커버 아래쪽: 앨범명 · 아티스트
+      const gh=cell*0.44, gg=x.createLinearGradient(0,cy+cell-gh,0,cy+cell);
+      gg.addColorStop(0,'rgba(0,0,0,0)'); gg.addColorStop(1,'rgba(0,0,0,.8)');
+      x.fillStyle=gg; x.fillRect(cx,cy+cell-gh,cell,gh);
+      const pad=Math.round(cell*0.07), f1=Math.round(Math.max(22,Math.min(40,cell*0.08))), f2=Math.round(f1*0.8);
+      const cut=(v,mx)=>{ while(x.measureText(v).width>mx && v.length>2) v=v.slice(0,-2)+'…'; return v; };
+      const ar=(t.d.artist&&t.d.artist!=='-')?t.d.artist:'';
+      x.textAlign='left'; x.fillStyle='#fff'; x.font=`700 ${f1}px sans-serif`;
+      x.fillText(cut(t.d.album||'',cell-2*pad), cx+pad, ar ? cy+cell-pad-f2-8 : cy+cell-pad);
+      if(ar){ x.fillStyle='rgba(255,255,255,.72)'; x.font=`600 ${f2}px sans-serif`; x.fillText(cut(ar,cell-2*pad), cx+pad, cy+cell-pad); }
     }
     if(extra && i===cellsToDraw-1){   // 9장 넘으면 마지막 칸에 +N
       x.fillStyle='rgba(18,16,22,.62)'; x.fillRect(cx,cy,cell,cell);
@@ -4491,8 +4493,6 @@ async function _drawStoryCard(o){
     x.fillStyle='rgba(255,255,255,.5)'; x.font='600 28px sans-serif'; x.fillText(cl[1], cxx, y+52);
   });
 
-  x.textAlign='center'; x.fillStyle=accent2; x.font='700 28px sans-serif';
-  x.fillText('lp-archive.web.app', W/2, H-90);
   return c;
 }
 // 전체 컬렉션 카드 (마이페이지)
@@ -4512,7 +4512,7 @@ async function buildShareCardCanvas(){
     ],
   });
 }
-// 월별 카드 (달력): 그 달에 구매한 판 + 들은 판 (커버마다 구매/청음 표시)
+// 월별 카드 (달력): 그 달에 구매한 판 + 들은 판
 async function buildMonthCardCanvas(m){
   const en=isEN(), [yy,mm]=m.split('-'), mon=parseInt(mm,10);
   const inM=v=>v && String(v).slice(0,7)===m;
@@ -4522,7 +4522,7 @@ async function buildMonthCardCanvas(m){
   const listenEv=calEvents().filter(e=>e.kind==='listen' && inM(e.date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   const listenedAll=[]; { const ls=new Set(); listenEv.forEach(e=>{ const k=artKey(e.it.artist,e.it.album); if(!ls.has(k)){ ls.add(k); listenedAll.push(e.it); } }); }
   const buyTiles=uniq(buys), listenTiles=uniq(listenedAll);   // 구매한 앨범은 '구매'로만 한 번
-  const items=buyTiles.concat(listenTiles), buySet=new Set(buyTiles);
+  const items=buyTiles.concat(listenTiles);
   const gm={}; items.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
   const topG=Object.entries(gm).sort((a,b)=>b[1]-a[1])[0];
   const stats=[];
@@ -4531,69 +4531,88 @@ async function buildMonthCardCanvas(m){
   stats.push([topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르']);
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
-    tagOf: d => buySet.has(d) ? (en?'Bought':'구매') : (en?'Played':'청음'),
     lead: en ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1]} ${yy}` : `${yy}년 ${mon}월`,
     headline: en?'Vinyl of the month':'이달의 바이닐',
     stats,
   });
 }
 // 공유: 웹/PWA는 파일 공유 → 앱(웹뷰)은 카드 업로드 후 OS 공유시트 → 마지막 폴백은 다운로드
+function _blobToBase64(blob){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]||''); r.onerror=rej; r.readAsDataURL(blob); });
+}
+// 카드 이미지를 휴대폰 공유창으로 (인스타 스토리·카톡·저장 등)
+//  반환: true(공유창 열림/다운로드) · 'gesture'(웹이 공유창을 막음 → 버튼을 한 번 더 눌러야 함) · false(실패)
 async function _shareCardBlob(blob){
   if(!blob) return false;
   const ext=(blob.type==='image/jpeg')?'jpg':'png';
-  const file=new File([blob],'turnit-card.'+ext,{type:blob.type||'image/png'});
+  const name='turnit-card-'+Date.now()+'.'+ext;
   const text=window.__shareCardText || (isEN()?'My vinyl collection 🎵':'나의 바이닐 컬렉션 🎵');
-  try{
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title:'Turnit', text});
-      return true;
-    }
-  }catch(e){ if(e && e.name==='AbortError') return true; }
-  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
-    const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
-    if(Sh && Sh.share && window.LPCloud && window.LPCloud.uploadImage){
+  const C=window.Capacitor;
+  if(C && C.isNativePlatform && C.isNativePlatform()){
+    const P=C.Plugins||{}, FS=P.Filesystem, Sh=P.Share;
+    if(FS && FS.writeFile && Sh && Sh.share){
       try{
-        const url=await window.LPCloud.uploadImage(blob,ext);   // 카드 이미지를 올려 링크로 공유
-        await Sh.share({ title:'Turnit', text, url, dialogTitle:isEN()?'Share taste card':'취향 카드 공유' });
+        const w=await FS.writeFile({ path:name, data:await _blobToBase64(blob), directory:'CACHE' });   // 임시 폴더에 이미지 파일로 저장
+        await Sh.share({ title:'Turnit', text, files:[w.uri], dialogTitle:isEN()?'Share card':'카드 공유' });
         return true;
-      }catch(e){ console.error('native card share', e); }
+      }catch(e){
+        if(/cancel/i.test(String((e&&e.message)||e))) return true;   // 사용자가 공유창을 닫음
+        console.error('native card share', e);
+      }
+    }
+    // (파일 저장 기능이 없는 예전 앱) 카드를 올려 링크로 공유
+    if(Sh && Sh.share && window.LPCloud && window.LPCloud.uploadImage){
+      try{ const url=await window.LPCloud.uploadImage(blob,ext); await Sh.share({ title:'Turnit', text, url }); return true; }
+      catch(e){ console.error('native card share (link)', e); }
+    }
+    return false;
+  }
+  const file=new File([blob],name,{type:blob.type||'image/png'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:'Turnit', text}); return true; }
+    catch(e){
+      if(e && e.name==='AbortError') return true;
+      if(e && e.name==='NotAllowedError') return 'gesture';   // 카드 만드는 사이 탭 효력이 끝남
     }
   }
-  try{
+  try{   // 공유를 못 쓰는 PC 브라우저: 이미지 내려받기
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='turnit-card.'+ext; document.body.appendChild(a); a.click(); a.remove();
+    const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),3000);
     return true;
   }catch(e){ return false; }
 }
-// 공유 시트를 먼저 열고(만드는 중 표시), 카드가 준비되면 이미지를 채운다
-let _shareCardUrl=null, _shareCardSeq=0;
-async function _openShareCard(build, title, text){
-  const seq=++_shareCardSeq;
-  window.__shareCardText=text; window.__shareCardBlob=null;
-  { const h=$('#sharecard-title'); if(h) h.textContent=title; }
-  const img=$('#sharecard-img'), wrap=img&&img.parentElement, btn=$('#sharecard-share');
-  if(img){ img.removeAttribute('src'); img.hidden=true; }
-  if(wrap) wrap.classList.add('loading');
-  if(btn) btn.disabled=true;
-  show('sharecard');
+// 아이콘 탭 → 카드 만들기 → 바로 휴대폰 공유창. 웹이 공유창을 막으면 미리보기 시트(공유하기 버튼)로 대신 연다
+let _shareCardUrl=null, _shareBusy=false;
+async function _openShareCard(build, title, text, btn){
+  if(_shareBusy) return;
+  _shareBusy=true; window.__shareCardText=text; window.__shareCardBlob=null;
+  if(btn) btn.classList.add('busy');
+  previewToast(isEN()?'Making your card…':'카드 만드는 중…');
   try{
     const canvas=await build();
     const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
-    if(seq!==_shareCardSeq) return;   // 그사이 다른 카드를 열었으면 버림
     window.__shareCardBlob=blob;
-    if(_shareCardUrl) URL.revokeObjectURL(_shareCardUrl);
-    _shareCardUrl=URL.createObjectURL(blob);
-    if(img){ img.src=_shareCardUrl; img.hidden=false; }
+    const r=await _shareCardBlob(blob);
+    if(r!==true) _showShareSheet(blob, title);
   }catch(e){
-    console.error('share card', e); hide('sharecard');
+    console.error('share card', e);
     appAlert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 발생했어요.');
   }finally{
-    if(seq===_shareCardSeq){ if(wrap) wrap.classList.remove('loading'); if(btn) btn.disabled=false; }
+    _shareBusy=false; if(btn) btn.classList.remove('busy');
+    { const t=document.getElementById('preview-toast'); if(t) t.classList.remove('show'); }
   }
 }
-function shareCollectionCard(){ return _openShareCard(buildShareCardCanvas, isEN()?'📤 Collection card':'📤 컬렉션 카드', null); }
-function shareMonthCard(m){ return _openShareCard(()=>buildMonthCardCanvas(m), isEN()?'📤 Vinyl of the month':'📤 이달의 바이닐', isEN()?'Vinyl of the month 🎵':'이달의 바이닐 🎵'); }
+function _showShareSheet(blob, title){
+  { const h=$('#sharecard-title'); if(h) h.textContent=title; }
+  const img=$('#sharecard-img');
+  if(_shareCardUrl) URL.revokeObjectURL(_shareCardUrl);
+  _shareCardUrl=URL.createObjectURL(blob);
+  if(img){ img.src=_shareCardUrl; img.hidden=false; }
+  show('sharecard');
+}
+function shareCollectionCard(){ return _openShareCard(buildShareCardCanvas, isEN()?'📤 Collection card':'📤 컬렉션 카드', null, $('#share-card-btn')); }
+function shareMonthCard(m){ return _openShareCard(()=>buildMonthCardCanvas(m), isEN()?'📤 Vinyl of the month':'📤 이달의 바이닐', isEN()?'Vinyl of the month 🎵':'이달의 바이닐 🎵', $('#ms-share')); }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
 // 공유 아이콘이 보일 때 커버를 미리 받아 둔다 (탭하면 바로 나오게)
 function _prefetchCardCovers(items, px){
@@ -4608,7 +4627,7 @@ function _collectionCardPicks(){
 }
 { const b=$('#sharecard-share'); if(b) b.onclick=async()=>{
     const ok=await _shareCardBlob(window.__shareCardBlob);
-    if(!ok) previewToast(isEN()?'Sharing is not available here':'이 환경에서는 공유할 수 없어요');
+    if(ok!==true) previewToast(isEN()?'Sharing is not available here':'이 환경에서는 공유할 수 없어요');
 }; }
 { const ov=$('#ov-sharecard'); if(ov) ov.onclick=()=>hide('sharecard'); }
 
