@@ -183,6 +183,19 @@ h1 .em{color:var(--accent)}
 .stat .val.sm{font-size:21px}
 .stat.pos .val{color:var(--green)}
 .stat .deco{position:absolute;right:-8px;bottom:-10px;font-size:54px;opacity:.07;font-family:'Bricolage Grotesque'}
+.stat.tap{cursor:pointer;transition:transform .12s}
+.stat.tap:active{transform:scale(.97)}
+.stat-more{color:var(--dim);font-weight:700;margin-left:2px}
+/* 총 구매가·총 판매가 목록 */
+.pl-bar{display:flex;gap:8px;margin:-4px 0 10px}
+.pl-bar button{font-family:inherit;font-size:13px;font-weight:700;height:36px;padding:0 14px;border-radius:100px;border:1px solid var(--line);background:var(--card2);color:var(--txt);cursor:pointer}
+.pl-bar .pl-arrow{color:var(--accent2);margin-left:2px}
+.pl-bar .pl-cmp.on{background:linear-gradient(150deg,var(--accent2),var(--accent));border-color:transparent;color:#160d09}
+.pl-sum{font-size:12.5px;color:var(--muted);margin:0 2px 10px}
+.pl-sum b{color:var(--txt)}
+.pl-val{flex:0 0 auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums}
+.pl-val b{font-size:14px;color:var(--txt)}
+.pl-val span{font-size:11.5px;font-weight:700}
 
 /* Cover Flow */
 .cf-wrap{padding:6px 0 2px;margin-bottom:14px}
@@ -1830,6 +1843,17 @@ const I18N = {
   "이 해에 구매한 앨범이 없어요.":"No albums purchased this year.",
   "소장 가치":"Collection value",
   "가격 TOP":"Price highlights",
+  "정가 대비":"vs. list price",
+  "구매가 대비":"vs. purchase price",
+  "높은 금액순":"Highest first",
+  "낮은 금액순":"Lowest first",
+  "비싸게 산 순":"Most over list",
+  "싸게 산 순":"Biggest bargains",
+  "많이 남긴 순":"Most profit",
+  "적게 남긴 순":"Least profit",
+  "정가를 입력한 판만 보여요":"Only records with a list price",
+  "구매가를 입력한 판만 보여요":"Only records with a purchase price",
+  "합계":"Total",
   "정가 비교":"List price check",
   "가장 싸게 산 LP":"Best bargains",
   "프리미엄 주고 산 LP":"Paid over list price",
@@ -5187,6 +5211,61 @@ function listPriceOf(d){
   return null;
 }
 const pctStr=p=>(p>0?'+':'')+Math.round(p)+'%';
+/* 총 구매가 / 총 판매가 → 전체 목록 (금액순 정렬 + 정가·구매가 대비 보기) */
+let _plist={kind:'buy', desc:true, cmp:false};
+function openPriceList(kind, keep){
+  if(!keep) _plist={kind, desc:true, cmp:false};
+  const st=_plist, buy=st.kind==='buy';
+  const wrap=$('#daylist'); if(!wrap) return;
+  // 구매: 위시 제외 전체 / 판매: 판매 완료
+  const pool = buy ? DATA.filter(d=>statusGroup(d.status)!=='위시') : DATA.filter(d=>d.status==='판매');
+  const amt = d => Number(buy ? d.price : d.sellPrice) || 0;
+  // 비교 기준: 구매 → 정가 대비, 판매 → 구매가 대비(수익)
+  const base = d => buy ? listPriceOf(d) : (Number(d.price)>0 ? Number(d.price) : null);
+  let rows = pool.map(d=>{ const a=amt(d), b=base(d); return {d, a, b, pct:(a>0&&b)?(a-b)/b*100:null}; });
+  if(st.cmp) rows=rows.filter(r=>r.pct!=null);
+  const key = r => st.cmp ? r.pct : r.a;
+  rows.sort((x,y)=>{
+    const vx=key(x), vy=key(y), mx=!(st.cmp||x.a>0), my=!(st.cmp||y.a>0);
+    if(mx!==my) return mx?1:-1;                     // 금액 없는 판은 항상 맨 아래
+    return st.desc ? vy-vx : vx-vy;
+  });
+  const total = rows.reduce((s,r)=>s+r.a,0);
+  $('#daylist-title').textContent = isEN() ? `${buy?'Total spent':'Total sales'} · ${rows.length}` : `${buy?'총 구매가':'총 판매가'} · ${rows.length}장`;
+  const cmpLab = buy ? '정가 대비' : '구매가 대비';
+  const sortLab = st.cmp ? (st.desc ? (buy?'비싸게 산 순':'많이 남긴 순') : (buy?'싸게 산 순':'적게 남긴 순'))
+                         : (st.desc ? '높은 금액순' : '낮은 금액순');
+  const head = `
+    <div class="pl-bar">
+      <button type="button" class="pl-sort" id="pl-sort">${sortLab} <span class="pl-arrow">${st.desc?'↓':'↑'}</span></button>
+      <button type="button" class="pl-cmp${st.cmp?' on':''}" id="pl-cmp">${cmpLab}</button>
+    </div>
+    <div class="pl-sum">${st.cmp
+      ? (buy ? '정가를 입력한 판만 보여요' : '구매가를 입력한 판만 보여요')
+      : `<span>합계</span> <b>${won(total)}</b>`}</div>`;
+  const row = r => {
+    const it=r.d, art=artFor(it);
+    const thumb = art?`<img src="${art}" alt="">`:`<div class="dl-ph" style="background:${it.colorHex||discColor(it.color)}"></div>`;
+    let right;
+    if(st.cmp){
+      const up=r.pct>0, diff=r.a-r.b;
+      const col = buy ? (up?'#e0617a':'#5ec27e') : (up?'#5ec27e':'#e0617a');   // 구매: 싸게=초록 / 판매: 남김=초록
+      right=`<div class="pl-val"><b>${won(r.a)}</b><span style="color:${Math.round(r.pct)===0?'var(--muted)':col}">${pctStr(r.pct)}${buy?'':` · ${diff>=0?'+':'−'}${won(Math.abs(diff))}`}</span></div>`;
+    } else {
+      right=`<div class="pl-val"><b>${r.a>0?won(r.a):'–'}</b></div>`;
+    }
+    const sub = st.cmp ? `${it.artist&&it.artist!=='-'?escapeHtml(it.artist)+' · ':''}${isEN()?(buy?'list':'paid'):(buy?'정가':'구매가')} ${won(r.b)}` : escapeHtml(it.artist&&it.artist!=='-'?it.artist:'');
+    return `<button type="button" class="dl-item" data-id="${it.id}">
+      <div class="dl-thumb">${thumb}</div>
+      <div class="dl-info"><div class="dl-al">${escapeHtml(it.album||'제목 없음')}</div><div class="dl-ar">${sub}</div></div>
+      ${right}</button>`;
+  };
+  wrap.innerHTML = head + (rows.length ? rows.map(row).join('') : `<div class="dl-emptyday">해당하는 앨범이 없어요.</div>`);
+  $('#pl-sort').onclick=()=>{ st.desc=!st.desc; openPriceList(st.kind,true); };
+  $('#pl-cmp').onclick=()=>{ st.cmp=!st.cmp; st.desc=true; openPriceList(st.kind,true); };
+  wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
+  if(!keep) show('daylist');
+}
 function renderStats(){
   const real=DATA.filter(d=>statusGroup(d.status)!=='위시');   // 위시 제외
   const owned=DATA.filter(d=>statusGroup(d.status)==='보유중');
@@ -5201,9 +5280,10 @@ function renderStats(){
   $('#stats2').innerHTML=`
     <div class="stat"><div class="lab">보유 중</div><div class="val">${owned.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">♪</div></div>
     <div class="stat"><div class="lab">판매·교환</div><div class="val">${soldExch.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">↻</div></div>
-    <div class="stat"><div class="lab">총 구매가</div><div class="val sm">${won(totalBuy)}</div></div>
-    <div class="stat"><div class="lab">총 판매가</div><div class="val sm">${won(totalSell)}</div></div>
+    <div class="stat tap" data-plist="buy" role="button" tabindex="0"><div class="lab">총 구매가 <span class="stat-more">›</span></div><div class="val sm">${won(totalBuy)}</div></div>
+    <div class="stat tap" data-plist="sell" role="button" tabindex="0"><div class="lab">총 판매가 <span class="stat-more">›</span></div><div class="val sm">${won(totalSell)}</div></div>
 `;
+  $('#stats2').querySelectorAll('[data-plist]').forEach(el=>el.onclick=()=>openPriceList(el.dataset.plist));
   $('#hsub').innerHTML = isEN()
     ? `Total <b>${real.length}</b><span class="sep">·</span>Owned <b>${owned.length}</b><span class="sep">·</span>Opened <b>${opened}</b><span class="sep">·</span>Sealed <b>${sealed}</b>`
     : `총 <b>${real.length}</b>장<span class="sep">·</span>보유 <b>${owned.length}</b><span class="sep">·</span>개봉 <b>${opened}</b><span class="sep">·</span>미개봉 <b>${sealed}</b>`;
