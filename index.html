@@ -1021,6 +1021,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .acct{display:none}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:14px;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .share-card-btn:active{transform:scale(.98)}
+.ms-share{margin:14px 0 4px}
 /* 취향 카드 미리보기 */
 .sharecard-wrap{display:flex;justify-content:center;border-radius:14px;border:1px solid var(--line);background:#121016;overflow:hidden}
 .sharecard-wrap img{display:block;width:auto;max-width:100%;max-height:60vh}
@@ -1426,7 +1427,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <div class="grab" id="grab-sharecard"></div>
   <button class="sheet-x" data-close="sharecard" aria-label="닫기">✕</button>
   <div class="form">
-    <h2>📤 취향 카드</h2>
+    <h2 id="sharecard-title">📤 컬렉션 카드</h2>
     <div class="sharecard-wrap"><img id="sharecard-img" alt="취향 분석 카드"></div>
     <div class="btnrow">
       <button class="btn ghost" data-close="sharecard">닫기</button>
@@ -2003,7 +2004,7 @@ const I18N = {
   /* --- 컬렉션 / 공유 --- */
   "📤 공유":"📤 Share",
   "✏️ 편집":"✏️ Edit",
-  "📤 취향 카드":"📤 Taste card",
+  "📤 컬렉션 카드":"📤 Collection card",
   "공유하기":"Share",
   "공유할 LP가 없어요. 먼저 컬렉션에 LP를 담아주세요.":"No records to share. Add some to the collection first.",
   "앱 열기 →":"Open the app →",
@@ -4373,14 +4374,13 @@ function _drawCardDisc(x, cx, cy, size, color){
   x.beginPath(); x.arc(mx,my,r*0.3,0,Math.PI*2); x.fillStyle='#e8643c'; x.fill();
   x.beginPath(); x.arc(mx,my,r*0.05,0,Math.PI*2); x.fillStyle='#1d1a22'; x.fill();
 }
-// 9:16 공유 카드 (인스타 스토리 크기): 커버 3×3 + 한 줄 + 숫자 3개
-async function buildShareCardCanvas(){
-  const s=_tasteCardStats(), en=isEN();
+// 9:16 공유 카드 공통 그리기 (인스타 스토리 1080×1920)
+//  o = { stamp, items, fixed9, preferLoaded, lead, headline, stats:[[값,라벨],…] }
+async function _drawStoryCard(o){
   const W=1080, H=1920, M=90;
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const x=c.getContext('2d');
-  const accent='#e8643c', accent2='#f2a444';
-  // 배경 + 은은한 오렌지 빛
+  const accent2='#f2a444';
   x.fillStyle='#121016'; x.fillRect(0,0,W,H);
   let g=x.createRadialGradient(140,120,0,140,120,900); g.addColorStop(0,'rgba(232,100,60,.30)'); g.addColorStop(1,'rgba(232,100,60,0)');
   x.fillStyle=g; x.fillRect(0,0,W,H);
@@ -4391,71 +4391,128 @@ async function buildShareCardCanvas(){
   const wm=await _loadCardImg('icons/wordmark.png?v=4', 3000);
   if(wm){ const h=64, w=wm.naturalWidth*h/wm.naturalHeight; x.drawImage(wm, M, 96, w, h); }
   else { x.fillStyle='#fff'; x.font='800 56px "Bricolage Grotesque",sans-serif'; x.textAlign='left'; x.fillText('Turnit', M, 148); }
-  const now=new Date();
   x.textAlign='right'; x.fillStyle='rgba(255,255,255,.5)'; x.font='600 30px sans-serif';
-  x.fillText(`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`, W-M, 142);
+  x.fillText(o.stamp||'', W-M, 142);
 
-  // 커버 9장: 별점 높은 순 → 최근 구매 순, 같은 앨범은 한 번만
-  const real=DATA.filter(d=>statusGroup(d.status)!=='위시');
-  const seen=new Set();
-  const picks=real.slice().sort((a,b)=>(b.rating||0)-(a.rating||0) || String(b.buy||'').localeCompare(String(a.buy||'')))
-    .filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; });
-  // 커버 후보를 18장까지 불러와 열린 커버를 먼저 채우고, 모자라면 원판 그림으로
-  const cand=picks.filter(d=>artFor(d)).slice(0,18);
-  const loaded=await Promise.all(cand.map(d=>_loadCardImg(artFor(d))));
-  const ok=cand.map((d,i)=>({d,im:loaded[i]})).filter(o=>o.im);
-  const okSet=new Set(ok.map(o=>o.d));
-  const rest=picks.filter(d=>!okSet.has(d)).map(d=>({d,im:null}));
-  const tiles=ok.concat(rest).slice(0,9);
-  const nine=tiles.map(t=>t.d), imgs=tiles.map(t=>t.im);
-  const gap=18, cell=(W-2*M-2*gap)/3, gy=230;
-  for(let i=0;i<9;i++){
-    const cx=M+(i%3)*(cell+gap), cy=gy+Math.floor(i/3)*(cell+gap), d=nine[i];
+  // 커버 고르기: preferLoaded 면 열린 커버 먼저(후보 18장까지), 아니면 순서대로 + 실패 칸은 원판
+  const items=o.items||[];
+  let tiles;
+  if(o.preferLoaded){
+    const cand=items.filter(d=>artFor(d)).slice(0,18);
+    const loaded=await Promise.all(cand.map(d=>_loadCardImg(artFor(d))));
+    const ok=cand.map((d,i)=>({d,im:loaded[i]})).filter(t=>t.im);
+    const okSet=new Set(ok.map(t=>t.d));
+    tiles=ok.concat(items.filter(d=>!okSet.has(d)).map(d=>({d,im:null}))).slice(0,9);
+  } else {
+    const nine=items.slice(0,9);
+    const loaded=await Promise.all(nine.map(d=>_loadCardImg(artFor(d))));
+    tiles=nine.map((d,i)=>({d,im:loaded[i]}));
+  }
+  const extra=Math.max(0, items.length-9);
+
+  // 배치: 고정 3×3, 또는 장 수에 따라 1장 / 2장 / 2×2 / 3×3
+  const n = o.fixed9 ? 9 : Math.max(1, tiles.length);
+  const cols = o.fixed9 ? 3 : (n===1 ? 1 : n<=4 ? 2 : 3);
+  const rows = Math.ceil((o.fixed9?9:n)/cols);
+  const gap=18, areaW=W-2*M;
+  const cell = n===1 ? 760 : (areaW-(cols-1)*gap)/cols;
+  const gridW = cols*cell+(cols-1)*gap, gridH = rows*cell+(rows-1)*gap;
+  // 커버+문구 묶음을 머리글과 숫자 줄 사이 가운데에
+  const headBlock = 64 + (o.headline?110:0) + 40;
+  const top=210, bottom=H-420;
+  const gy = Math.max(top, top + ((bottom-top) - (gridH + 110 + headBlock))/2);
+  const gx = M + (areaW-gridW)/2;
+  const cellsToDraw = o.fixed9 ? 9 : tiles.length;
+  for(let i=0;i<cellsToDraw;i++){
+    const cx=gx+(i%cols)*(cell+gap), cy=gy+Math.floor(i/cols)*(cell+gap), t=tiles[i];
     x.save();
     x.beginPath(); if(x.roundRect) x.roundRect(cx,cy,cell,cell,20); else x.rect(cx,cy,cell,cell); x.clip();
-    if(d && imgs[i]){ const im=imgs[i], sc=Math.max(cell/im.naturalWidth, cell/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
+    if(t && t.im){ const im=t.im, sc=Math.max(cell/im.naturalWidth, cell/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
       x.drawImage(im, cx+(cell-w)/2, cy+(cell-h)/2, w, h); }
-    else if(d) _drawCardDisc(x, cx, cy, cell, d.colorHex||discColor(d.color));
+    else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color));
     else { x.fillStyle='rgba(255,255,255,.04)'; x.fillRect(cx,cy,cell,cell); }
+    if(extra && i===cellsToDraw-1){   // 9장 넘으면 마지막 칸에 +N
+      x.fillStyle='rgba(18,16,22,.62)'; x.fillRect(cx,cy,cell,cell);
+      x.textAlign='center'; x.fillStyle='#fff'; x.font='800 76px sans-serif'; x.fillText('+'+extra, cx+cell/2, cy+cell/2+26);
+    }
     x.restore();
   }
 
-  // 한 줄: 내 턴테이블 1순위 (장르 → 없으면 아티스트)
-  const fit=(t,max)=>{ let o=t; while(x.measureText(o).width>max && o.length>2) o=o.slice(0,-2)+'…'; return o; };
-  const top = s.genres.length ? s.genres[0][0] : (s.artists.length ? s.artists[0].name : '');
-  let y=gy+3*cell+2*gap+120;
+  // 한 줄
+  const fit=(t,max)=>{ let v=t; while(x.measureText(v).width>max && v.length>2) v=v.slice(0,-2)+'…'; return v; };
+  let y=gy+gridH+110;
   x.textAlign='left'; x.fillStyle='rgba(255,255,255,.62)'; x.font='600 44px sans-serif';
-  x.fillText(top ? (en?'Top of my turntable':'내 턴테이블 1순위는') : (en?'My vinyl collection':'나의 바이닐 컬렉션'), M, y);
-  if(top){ y+=110; x.fillStyle='#fff'; x.font='800 104px sans-serif'; x.fillText(fit(top, W-2*M), M, y); }
+  x.fillText(o.lead||'', M, y);
+  if(o.headline){ y+=110; x.fillStyle='#fff'; x.font='800 104px sans-serif'; x.fillText(fit(o.headline, W-2*M), M, y); }
 
   // 숫자 3개
   y=H-300;
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=2; x.beginPath(); x.moveTo(M,y-90); x.lineTo(W-M,y-90); x.stroke();
-  const favArtist = s.artists.length ? s.artists[0].name : '–';
-  const cols=[
-    [String(s.total), en?'Records':'컬렉션', en?'':'장'],
-    s.rated ? ['★'+s.avg.toFixed(1), en?'Avg rating':'평균 별점', ''] : [String(s.owned), en?'Owned':'보유', en?'':'장'],
-    [favArtist, en?'Fav artist':'최애 아티스트', ''],
-  ];
   const colW=(W-2*M)/3;
-  cols.forEach((cl,i)=>{
+  (o.stats||[]).forEach((cl,i)=>{
     const cxx=M+colW*i+colW/2;
-    x.textAlign='center'; x.fillStyle='#fff'; x.font = i===2 ? '800 46px sans-serif' : '800 64px sans-serif';
-    let v=cl[0]+cl[2]; v=fit(v, colW-20);
-    x.fillText(v, cxx, y);
+    x.textAlign='center'; x.fillStyle='#fff';
+    let fs=64; x.font=`800 ${fs}px sans-serif`;
+    while(x.measureText(String(cl[0])).width>colW-20 && fs>38){ fs-=4; x.font=`800 ${fs}px sans-serif`; }   // 길면 글자를 줄이고, 그래도 넘치면 말줄임
+    x.fillText(fit(String(cl[0]), colW-20), cxx, y);
     x.fillStyle='rgba(255,255,255,.5)'; x.font='600 28px sans-serif'; x.fillText(cl[1], cxx, y+52);
   });
 
-  // 푸터
   x.textAlign='center'; x.fillStyle=accent2; x.font='700 28px sans-serif';
   x.fillText('lp-archive.web.app', W/2, H-90);
   return c;
+}
+// 전체 컬렉션 카드 (마이페이지)
+async function buildShareCardCanvas(){
+  const s=_tasteCardStats(), en=isEN(), now=new Date();
+  const real=DATA.filter(d=>statusGroup(d.status)!=='위시');
+  const seen=new Set();
+  const picks=real.slice().sort((a,b)=>(b.rating||0)-(a.rating||0) || String(b.buy||'').localeCompare(String(a.buy||'')))
+    .filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; });
+  const top = s.genres.length ? s.genres[0][0] : (s.artists.length ? s.artists[0].name : '');
+  return _drawStoryCard({
+    stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
+    items:picks, fixed9:true, preferLoaded:true,
+    lead: top ? (en?'Top of my turntable':'내 턴테이블 1순위는') : (en?'My vinyl collection':'나의 바이닐 컬렉션'),
+    headline: top,
+    stats:[
+      [s.total+(en?'':'장'), en?'Records':'컬렉션'],
+      s.rated ? ['★'+s.avg.toFixed(1), en?'Avg rating':'평균 별점'] : [s.owned+(en?'':'장'), en?'Owned':'보유'],
+      [s.artists.length ? s.artists[0].name : '–', en?'Fav artist':'최애 아티스트'],
+    ],
+  });
+}
+// 월별 카드 (달력): 그 달에 데려온 판 — 없으면 그 달 턴테이블에 올린 판
+async function buildMonthCardCanvas(m){
+  const en=isEN(), [yy,mm]=m.split('-'), mon=parseInt(mm,10);
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1];
+  const inM=v=>v && String(v).slice(0,7)===m;
+  const uniq=arr=>{ const seen=new Set(); return arr.filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; }); };
+  const buys=DATA.filter(d=>inM(d.buy) && statusGroup(d.status)!=='위시').sort((a,b)=>String(a.buy).localeCompare(String(b.buy)));
+  const ev=calEvents().filter(e=>inM(e.date));
+  const opened=uniq(ev.filter(e=>e.kind==='open').map(e=>e.it));
+  const listened=uniq(ev.filter(e=>e.kind==='listen').sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(e=>e.it));
+  const listenMode=!buys.length;
+  const items = listenMode ? listened : uniq(buys);
+  const gm={}; items.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
+  const topG=Object.entries(gm).sort((a,b)=>b[1]-a[1])[0];
+  const count = listenMode ? listened.length : buys.length;
+  return _drawStoryCard({
+    stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
+    lead: listenMode ? (en?`On my turntable in ${MON}`:`${mon}월 턴테이블에 올린 판`) : (en?`New in ${MON} ${yy}`:`${mon}월에 데려온 바이닐`),
+    headline: en ? `${count} record${count===1?'':'s'}` : `${count}장`,
+    stats:[
+      listenMode ? [listened.length+(en?'':'장'), en?'Played':'들은 판'] : [buys.length+(en?'':'장'), en?'New':'데려온 판'],
+      [opened.length+(en?'':'장'), en?'Opened':'개봉한 판'],
+      [topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르'],
+    ],
+  });
 }
 // 공유: 웹/PWA는 파일 공유 → 앱(웹뷰)은 카드 업로드 후 OS 공유시트 → 마지막 폴백은 다운로드
 async function _shareCardBlob(blob){
   if(!blob) return false;
   const file=new File([blob],'my-vinyl-taste.png',{type:'image/png'});
-  const text=isEN()?'My vinyl taste report 🎵':'내 바이닐 취향 분석 🎵';
+  const text=window.__shareCardText || (isEN()?'My vinyl collection 🎵':'나의 바이닐 컬렉션 🎵');
   try{
     if(navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file], title:'Turnit', text});
@@ -4482,12 +4539,25 @@ async function _shareCardBlob(blob){
 async function shareCollectionCard(){
   try{
     const canvas=await buildShareCardCanvas();
+    window.__shareCardText=null;
+    { const h=$('#sharecard-title'); if(h) h.textContent='📤 컬렉션 카드'; }
     window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
     show('sharecard');
   }catch(e){ console.error('share card', e); appAlert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 발생했어요.'); }
 }
 { const b=$('#share-card-btn'); if(b) b.onclick=shareCollectionCard; }
+async function shareMonthCard(m){
+  try{
+    const canvas=await buildMonthCardCanvas(m);
+    const mon=parseInt(m.slice(5,7),10);
+    window.__shareCardText = isEN() ? 'My vinyl this month 🎵' : `${mon}월의 바이닐 🎵`;
+    { const h=$('#sharecard-title'); if(h) h.textContent = isEN() ? '📤 Monthly card' : `📤 ${mon}월 카드`; }
+    window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+    const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
+    show('sharecard');
+  }catch(e){ console.error('month card', e); appAlert(isEN()?'Could not build the card.':'카드를 만드는 중 오류가 발생했어요.'); }
+}
 { const b=$('#sharecard-share'); if(b) b.onclick=async()=>{
     const ok=await _shareCardBlob(window.__shareCardBlob);
     if(!ok) previewToast(isEN()?'Sharing is not available here':'이 환경에서는 공유할 수 없어요');
@@ -5395,7 +5465,9 @@ function renderMonthStat(m){
           ${arr.length?`<div class="mstat-more" id="ms-more-${key}">▾</div>`:''}
         </button>`).join('')}
     </div>
-    <div class="ms-detail" id="ms-detail"></div>`;
+    <div class="ms-detail" id="ms-detail"></div>
+    ${(buy.length||listenEv.length)?`<button type="button" class="share-card-btn ms-share" id="ms-share">📤 <span>${isEN()?'Share this month':parseInt(m.slice(5,7),10)+'월 카드 공유'}</span></button>`:''}`;
+  { const sb=$('#ms-share'); if(sb) sb.onclick=()=>shareMonthCard(m); }
   const lists={ buy, deal:soldM.concat(exchM), listen:listenEv };
   let openKey=null;
   body.querySelectorAll('.mstat-card.tappable').forEach(btn=>btn.onclick=()=>{
