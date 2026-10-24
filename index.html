@@ -818,7 +818,9 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .e-star:active{transform:scale(.85)}
 /* 월별 요약 (달력 아래) */
 .cal-monthstat{padding:8px 14px 26px}
-.ms-head{font-weight:700;color:var(--txt);font-size:14px;margin:6px 2px 12px}
+.ms-head{font-weight:700;color:var(--txt);font-size:14px;margin:6px 2px 12px;display:flex;align-items:center;justify-content:space-between;min-height:32px}
+.ms-share{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:none;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer;padding:0}
+.ms-share:active{background:var(--card2);color:var(--accent2)}
 .mstat-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
 .mstat-card{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 10px;text-align:center;position:relative;font-family:inherit;color:inherit;display:block;width:100%}
 .mstat-dot{width:8px;height:8px;border-radius:50%;margin:0 auto 7px}
@@ -1021,7 +1023,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .acct{display:none}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:14px;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .share-card-btn:active{transform:scale(.98)}
-.ms-share{margin:14px 0 4px}
 /* 취향 카드 미리보기 */
 .sharecard-wrap{display:flex;justify-content:center;border-radius:14px;border:1px solid var(--line);background:#121016;overflow:hidden}
 .sharecard-wrap img{display:block;width:auto;max-width:100%;max-height:60vh}
@@ -4375,7 +4376,7 @@ function _drawCardDisc(x, cx, cy, size, color){
   x.beginPath(); x.arc(mx,my,r*0.05,0,Math.PI*2); x.fillStyle='#1d1a22'; x.fill();
 }
 // 9:16 공유 카드 공통 그리기 (인스타 스토리 1080×1920)
-//  o = { stamp, items, fixed9, preferLoaded, lead, headline, stats:[[값,라벨],…] }
+//  o = { stamp, items, fixed9, preferLoaded, lead, headline, stats:[[값,라벨],…], tagOf:(d)=>'구매' }
 async function _drawStoryCard(o){
   const W=1080, H=1920, M=90;
   const c=document.createElement('canvas'); c.width=W; c.height=H;
@@ -4431,6 +4432,13 @@ async function _drawStoryCard(o){
       x.drawImage(im, cx+(cell-w)/2, cy+(cell-h)/2, w, h); }
     else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color));
     else { x.fillStyle='rgba(255,255,255,.04)'; x.fillRect(cx,cy,cell,cell); }
+    if(t && o.tagOf && !(extra && i===cellsToDraw-1)){   // 우측 상단 작은 표시 (구매/청음)
+      const tag=o.tagOf(t.d);
+      if(tag){ const fsz=Math.round(Math.max(24, Math.min(34, cell*0.075)));
+        x.font=`700 ${fsz}px sans-serif`; const tw=x.measureText(tag).width, ph=fsz+16, pw=tw+28, px=cx+cell-pw-14, py=cy+14;
+        x.fillStyle='rgba(18,16,22,.72)'; x.beginPath(); if(x.roundRect) x.roundRect(px,py,pw,ph,ph/2); else x.rect(px,py,pw,ph); x.fill();
+        x.textAlign='center'; x.fillStyle='#fff'; x.fillText(tag, px+pw/2, py+ph/2+fsz*0.36); }
+    }
     if(extra && i===cellsToDraw-1){   // 9장 넘으면 마지막 칸에 +N
       x.fillStyle='rgba(18,16,22,.62)'; x.fillRect(cx,cy,cell,cell);
       x.textAlign='center'; x.fillStyle='#fff'; x.font='800 76px sans-serif'; x.fillText('+'+extra, cx+cell/2, cy+cell/2+26);
@@ -4448,7 +4456,7 @@ async function _drawStoryCard(o){
   // 숫자 3개
   y=H-300;
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=2; x.beginPath(); x.moveTo(M,y-90); x.lineTo(W-M,y-90); x.stroke();
-  const colW=(W-2*M)/3;
+  const nStat=Math.max(1,(o.stats||[]).length), colW=(W-2*M)/nStat;
   (o.stats||[]).forEach((cl,i)=>{
     const cxx=M+colW*i+colW/2;
     x.textAlign='center'; x.fillStyle='#fff';
@@ -4482,30 +4490,30 @@ async function buildShareCardCanvas(){
     ],
   });
 }
-// 월별 카드 (달력): 그 달에 구매한 판 — 없으면 그 달 턴테이블에 올린 판
+// 월별 카드 (달력): 그 달에 구매한 판 + 들은 판 (커버마다 구매/청음 표시)
 async function buildMonthCardCanvas(m){
   const en=isEN(), [yy,mm]=m.split('-'), mon=parseInt(mm,10);
-  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1];
   const inM=v=>v && String(v).slice(0,7)===m;
-  const uniq=arr=>{ const seen=new Set(); return arr.filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; }); };
+  const seen=new Set();
+  const uniq=arr=>arr.filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; });
   const buys=DATA.filter(d=>inM(d.buy) && statusGroup(d.status)!=='위시').sort((a,b)=>String(a.buy).localeCompare(String(b.buy)));
-  const ev=calEvents().filter(e=>inM(e.date));
-  const opened=uniq(ev.filter(e=>e.kind==='open').map(e=>e.it));
-  const listened=uniq(ev.filter(e=>e.kind==='listen').sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(e=>e.it));
-  const listenMode=!buys.length;
-  const items = listenMode ? listened : uniq(buys);
+  const listenEv=calEvents().filter(e=>e.kind==='listen' && inM(e.date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const listenedAll=[]; { const ls=new Set(); listenEv.forEach(e=>{ const k=artKey(e.it.artist,e.it.album); if(!ls.has(k)){ ls.add(k); listenedAll.push(e.it); } }); }
+  const buyTiles=uniq(buys), listenTiles=uniq(listenedAll);   // 구매한 앨범은 '구매'로만 한 번
+  const items=buyTiles.concat(listenTiles), buySet=new Set(buyTiles);
   const gm={}; items.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
   const topG=Object.entries(gm).sort((a,b)=>b[1]-a[1])[0];
-  const count = listenMode ? listened.length : buys.length;
+  const listenOnly=!buys.length;
+  const stats=[];
+  if(buys.length) stats.push([buys.length+(en?'':'장'), en?'Bought':'구매']);
+  if(listenedAll.length) stats.push([listenedAll.length+(en?'':'장'), en?'Played':'청음']);
+  stats.push([topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르']);
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
-    lead: listenMode ? (en?`On my turntable in ${MON}`:`${mon}월 턴테이블에 올린 판`) : (en?`New in ${MON} ${yy}`:`${mon}월에 구매한 바이닐`),
-    headline: en ? `${count} record${count===1?'':'s'}` : `${count}장`,
-    stats:[
-      listenMode ? [listened.length+(en?'':'장'), en?'Played':'들은 판'] : [buys.length+(en?'':'장'), en?'Bought':'구매한 판'],
-      [opened.length+(en?'':'장'), en?'Opened':'개봉한 판'],
-      [topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르'],
-    ],
+    tagOf: d => buySet.has(d) ? (en?'Bought':'구매') : (en?'Played':'청음'),
+    lead: en ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1]} ${yy}` : `${yy}년 ${mon}월`,
+    headline: listenOnly ? (en?'Spins of the month':'이달의 청음') : (en?'Vinyl of the month':'이달의 바이닐'),
+    stats,
   });
 }
 // 공유: 웹/PWA는 파일 공유 → 앱(웹뷰)은 카드 업로드 후 OS 공유시트 → 마지막 폴백은 다운로드
@@ -5454,7 +5462,7 @@ function renderMonthStat(m){
     return;
   }
   body.innerHTML=`
-    <div class="ms-head">이 달의 기록</div>
+    <div class="ms-head"><span>이 달의 기록</span>${(buy.length||listenEv.length)?`<button type="button" class="ms-share" id="ms-share" aria-label="${isEN()?'Share this month':parseInt(m.slice(5,7),10)+'월 카드 공유'}" title="${isEN()?'Share this month':'이달의 바이닐 공유'}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>`:''}</div>
     <div class="mstat-cards">
       ${cards.map(([lab,arr,sub,c,key])=>`
         <button type="button" class="mstat-card${arr.length?' tappable':''}" data-key="${key}" ${arr.length?'':'disabled'}>
@@ -5465,8 +5473,7 @@ function renderMonthStat(m){
           ${arr.length?`<div class="mstat-more" id="ms-more-${key}">▾</div>`:''}
         </button>`).join('')}
     </div>
-    <div class="ms-detail" id="ms-detail"></div>
-    ${(buy.length||listenEv.length)?`<button type="button" class="share-card-btn ms-share" id="ms-share">📤 <span>${isEN()?'Share this month':parseInt(m.slice(5,7),10)+'월 카드 공유'}</span></button>`:''}`;
+    <div class="ms-detail" id="ms-detail"></div>`;
   { const sb=$('#ms-share'); if(sb) sb.onclick=()=>shareMonthCard(m); }
   const lists={ buy, deal:soldM.concat(exchM), listen:listenEv };
   let openKey=null;
