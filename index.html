@@ -1021,8 +1021,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 /* 언어 선택은 설정 시트(#set-lang)로 이동 */
 .cf-mode-toggle{top:22px;right:20px}
 .acct{display:none}
-.share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:14px;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
-.share-card-btn:active{transform:scale(.98)}
 /* 취향 카드 미리보기 */
 .sharecard-wrap{display:flex;justify-content:center;border-radius:14px;border:1px solid var(--line);background:#121016;overflow:hidden}
 .sharecard-wrap img{display:block;width:auto;max-width:100%;max-height:60vh}
@@ -1172,9 +1170,9 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
   <div class="my-sec-head" style="margin-top:22px">
     <h3>내 취향 요약</h3>
+    <button class="ms-share" id="share-card-btn" type="button" aria-label="컬렉션 카드 공유" title="컬렉션 카드 공유"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>
   </div>
   <div class="taste" id="taste"></div>
-  <button class="share-card-btn" id="share-card-btn" type="button">📤 컬렉션 카드 공유</button>
 </div>
 
 <!-- 환경설정 시트 -->
@@ -1601,7 +1599,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
    touching underlying data or program logic. User data (artist/album/notes/
    prices/dates) is never translated — only known UI strings in the dictionary. */
 const I18N = {
-  "📤 컬렉션 카드 공유":"📤 Share collection card",
+  "컬렉션 카드 공유":"Share collection card",
   "LP 지직거림 사운드":"Vinyl crackle sound",
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
   "앱 표시 언어를 선택해요":"Choose the app display language",
@@ -4503,7 +4501,6 @@ async function buildMonthCardCanvas(m){
   const items=buyTiles.concat(listenTiles), buySet=new Set(buyTiles);
   const gm={}; items.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
   const topG=Object.entries(gm).sort((a,b)=>b[1]-a[1])[0];
-  const listenOnly=!buys.length;
   const stats=[];
   if(buys.length) stats.push([buys.length+(en?'':'장'), en?'Bought':'구매']);
   if(listenedAll.length) stats.push([listenedAll.length+(en?'':'장'), en?'Played':'청음']);
@@ -4512,7 +4509,7 @@ async function buildMonthCardCanvas(m){
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
     tagOf: d => buySet.has(d) ? (en?'Bought':'구매') : (en?'Played':'청음'),
     lead: en ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1]} ${yy}` : `${yy}년 ${mon}월`,
-    headline: listenOnly ? (en?'Spins of the month':'이달의 청음') : (en?'Vinyl of the month':'이달의 바이닐'),
+    headline: en?'Vinyl of the month':'이달의 바이닐',
     stats,
   });
 }
@@ -4558,9 +4555,8 @@ async function shareCollectionCard(){
 async function shareMonthCard(m){
   try{
     const canvas=await buildMonthCardCanvas(m);
-    const mon=parseInt(m.slice(5,7),10);
-    window.__shareCardText = isEN() ? 'My vinyl this month 🎵' : `${mon}월의 바이닐 🎵`;
-    { const h=$('#sharecard-title'); if(h) h.textContent = isEN() ? '📤 Monthly card' : `📤 ${mon}월 카드`; }
+    window.__shareCardText = isEN() ? 'Vinyl of the month 🎵' : '이달의 바이닐 🎵';
+    { const h=$('#sharecard-title'); if(h) h.textContent = isEN() ? '📤 Vinyl of the month' : '📤 이달의 바이닐'; }
     window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
     show('sharecard');
