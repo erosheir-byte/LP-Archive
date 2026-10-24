@@ -1857,10 +1857,6 @@ const I18N = {
   "정가를 입력한 판만 보여요":"Only records with a list price",
   "구매가를 입력한 판만 보여요":"Only records with a purchase price",
   "합계":"Total",
-  "최근 구매순":"Newest purchase",
-  "오래된 구매순":"Oldest purchase",
-  "최근 거래순":"Newest first",
-  "오래된 거래순":"Oldest first",
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
   "판매 차익":"Sale profit",
@@ -5268,7 +5264,7 @@ function openPriceList(kind, keep){
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   if(!keep) show('daylist');
 }
-/* 보유 중 / 판매·교환 → 목록 (상태별 칩 + 날짜순 정렬) */
+/* 보유 중 / 판매·교환 → 목록 (상태별 칩, 최근 날짜순) */
 let _slist={kind:'own', f:'', desc:true};
 function openStatusList(kind, keep){
   if(!keep) _slist={kind, f:'', desc:true};
@@ -5288,9 +5284,6 @@ function openStatusList(kind, keep){
   const head = `
     <div class="pl-bar pl-wrap">
       ${chip('', '전체', pool.length)}${kinds.filter(k=>cnt(k)).map(k=>chip(k,stLab(k),cnt(k))).join('')}
-    </div>
-    <div class="pl-bar">
-      <button type="button" class="pl-sort" id="sl-sort"><span>${own?(st.desc?'최근 구매순':'오래된 구매순'):(st.desc?'최근 거래순':'오래된 거래순')}</span> <span class="pl-arrow">${st.desc?'↓':'↑'}</span></button>
     </div>`;
   const kcls={개봉:'dl-open',미개봉:'dl-arrive',확인필요:'',판매:'dl-sold',교환:'dl-buy',선물:'dl-listen'};
   const row = it => {
@@ -5305,7 +5298,6 @@ function openStatusList(kind, keep){
   };
   wrap.innerHTML = head + (rows.length ? rows.map(row).join('') : `<div class="dl-emptyday">해당하는 앨범이 없어요.</div>`);
   wrap.querySelectorAll('.pl-chip').forEach(b=>b.onclick=()=>{ st.f=b.dataset.f; openStatusList(st.kind,true); });
-  $('#sl-sort').onclick=()=>{ st.desc=!st.desc; openStatusList(st.kind,true); };
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   if(!keep) show('daylist');
 }
