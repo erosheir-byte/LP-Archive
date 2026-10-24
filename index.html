@@ -1845,12 +1845,14 @@ const I18N = {
   "가격 TOP":"Price highlights",
   "정가 대비":"vs. list price",
   "구매가 대비":"vs. purchase price",
-  "높은 금액순":"Highest first",
-  "낮은 금액순":"Lowest first",
-  "비싸게 산 순":"Most over list",
-  "싸게 산 순":"Biggest bargains",
-  "많이 남긴 순":"Most profit",
-  "적게 남긴 순":"Least profit",
+  "구매가격 높은 순":"Highest price paid",
+  "구매가격 낮은 순":"Lowest price paid",
+  "판매가격 높은 순":"Highest sale price",
+  "판매가격 낮은 순":"Lowest sale price",
+  "정가 대비 높은 순":"Highest vs. list",
+  "정가 대비 낮은 순":"Lowest vs. list",
+  "수익률 높은 순":"Highest return",
+  "수익률 낮은 순":"Lowest return",
   "정가를 입력한 판만 보여요":"Only records with a list price",
   "구매가를 입력한 판만 보여요":"Only records with a purchase price",
   "합계":"Total",
@@ -5233,8 +5235,8 @@ function openPriceList(kind, keep){
   const total = rows.reduce((s,r)=>s+r.a,0);
   $('#daylist-title').textContent = isEN() ? `${buy?'Total spent':'Total sales'} · ${rows.length}` : `${buy?'총 구매가':'총 판매가'} · ${rows.length}장`;
   const cmpLab = buy ? '정가 대비' : '구매가 대비';
-  const sortLab = st.cmp ? (st.desc ? (buy?'비싸게 산 순':'많이 남긴 순') : (buy?'싸게 산 순':'적게 남긴 순'))
-                         : (st.desc ? '높은 금액순' : '낮은 금액순');
+  const sortLab = st.cmp ? (buy ? (st.desc?'정가 대비 높은 순':'정가 대비 낮은 순') : (st.desc?'수익률 높은 순':'수익률 낮은 순'))
+                         : (buy ? (st.desc?'구매가격 높은 순':'구매가격 낮은 순') : (st.desc?'판매가격 높은 순':'판매가격 낮은 순'));
   const head = `
     <div class="pl-bar">
       <button type="button" class="pl-sort" id="pl-sort">${sortLab} <span class="pl-arrow">${st.desc?'↓':'↑'}</span></button>
