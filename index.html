@@ -4340,21 +4340,11 @@ function _tasteCardStats(){
   const gm={}; real.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
   const genres=Object.entries(gm).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const byYear={}; real.forEach(d=>{ if(!d.buy)return; const yy=String(d.buy).slice(0,4); if(/^\d{4}$/.test(yy)) byYear[yy]=(byYear[yy]||0)+1; });
-  const listens=DATA.reduce((s,d)=>s+(Array.isArray(d.listens)?d.listens.length:0),0);
   // 최애 앨범: 청음 횟수 기준 TOP3
   const albums=DATA.map(d=>({name:(d.album||'').trim()||(d.artist||''), artist:(d.artist||'').trim(), cnt:Array.isArray(d.listens)?d.listens.length:0}))
     .filter(a=>a.cnt>0).sort((p,q)=>q.cnt-p.cnt).slice(0,3);
   return { total:real.length, owned, opened, sealed, rated:rated.length, avg, bands,
-           artists, genres, byYear, years:Object.keys(byYear).sort(), listens, albums };
-}
-// 청음 횟수에 따른 한 줄 문구
-function _listenCopy(n, en){
-  if(!n)      return en?'Time to drop the needle!':'이제 바늘을 올려볼 시간이에요.';
-  if(n<10)    return en?'The needle is just getting started.':'이제 막 바늘을 올리기 시작했어요.';
-  if(n<30)    return en?'Getting closer to your turntable every day.':'턴테이블과 부쩍 친해지는 중이에요.';
-  if(n<70)    return en?'A devoted listener — the turntable rarely rests.':'턴테이블이 쉴 틈 없는 애청가시네요.';
-  if(n<150)   return en?'The needle has been busy. Well done.':'바늘이 닳도록 들었어요. 대단합니다.';
-  return en?'A true audiophile — records are your life.':'인생의 BGM이 전부 바이닐인 경지예요.';
+           artists, genres, byYear, years:Object.keys(byYear).sort(), albums };
 }
 function buildShareCardCanvas(){
   const s=_tasteCardStats(), en=isEN();
@@ -4474,16 +4464,8 @@ function buildShareCardCanvas(){
   } else noData();
   line();
 
-  // ── 청음
-  sec(en?'Listening':'청음');
-  y+=76; x.textAlign='center'; x.fillStyle='#fff'; x.font='800 58px sans-serif';
-  x.fillText(en?`${s.listens} plays`:`총 ${s.listens}회`, W/2, y);
-  y+=46; x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
-  x.fillText(_listenCopy(s.listens, en), W/2, y);
-  y+=26;
-
-  // ── 푸터
-  y+=36; line(); y+=58;
+  // ── 푸터 (바로 위 히스토리 구분선 아래)
+  y+=58;
   x.textAlign='center'; x.fillStyle='rgba(255,255,255,.4)'; x.font='600 26px sans-serif';
   x.fillText('lp-archive.web.app', W/2, y);
   y+=52;
