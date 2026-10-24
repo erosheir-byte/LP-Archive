@@ -525,22 +525,14 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .coll-card .cm-empty svg{width:34%;height:34%;opacity:.9}
 .coll-card .cm-cap{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 11px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.82))}
 .coll-card .cm-cap .nm{color:#fff;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coll-card .cm-heart{color:#ff6b7a;line-height:0;display:inline-block;vertical-align:-2px;margin-right:5px}
+.coll-card .cm-heart .heart-ic{width:14px;height:14px}
+.coll-card .cm-empty .heart-ic{width:34%;height:34%;color:#fff}
 .coll-card .cm-cap .ct{font-size:12px;font-weight:700;margin-top:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
 .coll-thumb{width:50px;height:50px;border-radius:11px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);position:relative;overflow:hidden}
 .coll-thumb svg{width:24px;height:24px;opacity:.92}
 .coll-empty{text-align:center;color:var(--dim);font-size:13px;padding:38px 20px;line-height:1.6}
 /* 좋아요한 앨범 그리드 */
-.like-count{font-size:12px;color:var(--muted)}
-.like-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;padding:0 2px 24px}
-.like-it{cursor:pointer}
-.like-it .li-art{position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center}
-.like-it .li-art img{width:100%;height:100%;object-fit:cover}
-.like-it .li-heart{position:absolute;top:6px;right:6px;color:#e85c6a;line-height:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));z-index:1}
-.like-it .li-ph{width:100%;height:100%}
-.like-it .li-cap{position:absolute;left:0;right:0;bottom:0;padding:22px 8px 7px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.8))}
-.like-it .li-al{color:#fff;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.like-it .li-ar{color:rgba(255,255,255,.72);font-size:10px;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.like-it .li-heart .heart-ic{width:15px;height:15px}
 /* 달력 하루 앨범 목록 */
 .daylist{display:flex;flex-direction:column;gap:9px;margin-top:16px;padding-bottom:10px}
 .dl-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px;border-radius:11px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:background .15s}
@@ -1173,11 +1165,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     <button class="coll-new-btn" id="coll-new">+ 새 컬렉션</button>
   </div>
   <div class="coll-list" id="coll-list"></div>
-  <div class="my-sec-head" style="margin-top:18px">
-    <h3>좋아요한 앨범</h3>
-    <span class="like-count" id="like-count"></span>
-  </div>
-  <div class="like-grid" id="like-grid"></div>
 
   <input type="file" id="imp-fileinput" accept=".xlsx,.xls,.csv,text/csv" hidden>
 
@@ -4510,15 +4497,16 @@ async function _drawStoryCard(o){
 async function buildShareCardCanvas(){
   const s=_tasteCardStats(), en=isEN(), now=new Date();
   const picks=_collectionCardPicks();
+  const artistCount=new Set(DATA.filter(d=>statusGroup(d.status)!=='위시').map(d=>(d.artist||'').trim()).filter(a=>a&&a!=='-')).size;
   const top = s.genres.length ? s.genres[0][0] : (s.artists.length ? s.artists[0].name : '');
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items:picks, fixed9:true, preferLoaded:true,
-    lead: top ? (en?'Most collected genre':'가장 많이 모은 장르') : (en?'My vinyl collection':'나의 바이닐 컬렉션'),
+    lead: top ? (en?'Favorite genre':'가장 선호하는 장르') : (en?'My vinyl collection':'나의 바이닐 컬렉션'),
     headline: top,
     stats:[
       [s.total+(en?'':'장'), en?'Records':'컬렉션'],
-      (s.years && s.years.length) ? [en?`${new Date().getFullYear()-parseInt(s.years[0],10)+1} yrs`:`${new Date().getFullYear()-parseInt(s.years[0],10)+1}년째`, en?`Collecting since ${s.years[0]}`:`${s.years[0]}년부터`] : [s.owned+(en?'':'장'), en?'Owned':'보유'],
+      [(en?'':'')+artistCount+(en?'':'명'), en?'Artists':'아티스트'],
       [s.artists.length ? s.artists[0].name : '–', en?'Fav artist':'최애 아티스트'],
     ],
   });
@@ -5596,49 +5584,46 @@ function collArtThumb(it){
 function renderCollections(){
   const wrap=$('#coll-list'); if(!wrap) return;
   const sub=$('#my-sub'); if(sub) sub.textContent = COLLECTIONS.length ? `${COLLECTIONS.length}개의 컬렉션` : '내 컬렉션을 만들어 보세요';
-  if(!COLLECTIONS.length){
-    wrap.innerHTML=`<div class="coll-empty">아직 컬렉션이 없어요.<br>나만의 플레이리스트처럼 LP를 모아보세요.</div>`;
-    return;
-  }
-  wrap.innerHTML=COLLECTIONS.map(c=>{
-    const items=(c.ids||[]).map(id=>DATA.find(x=>x.id===id)).filter(Boolean);
+  const discSVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>`;
+  // 커버 4장 → 2×2, 1~3장 → 첫 커버 한 장, 없으면 색 + 아이콘
+  const mosaic=(items, bg, icon)=>{
     const arts=items.map(artFor).filter(Boolean).slice(0,4);
-    const n=(c.ids||[]).length;
-    // 커버 4장 → 2×2, 1~3장 → 첫 커버 한 장, 없으면 컬렉션 색 + 원판
-    const mosaic = arts.length>=4 ? `<div class="cm-grid">${arts.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</div>`
+    return arts.length>=4 ? `<div class="cm-grid">${arts.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</div>`
       : arts.length ? `<img class="cm-one" src="${arts[0]}" alt="" loading="lazy">`
-      : `<div class="cm-empty" style="background:${c.color||COLL_COLORS[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg></div>`;
+      : `<div class="cm-empty" style="background:${bg}">${icon}</div>`;
+  };
+  // 맨 앞: 좋아요한 앨범 (항상 표시)
+  const liked=DATA.filter(it=>it.liked);
+  const likedTile=`<div class="coll-card liked-card" data-liked="1">
+      ${mosaic(liked, 'linear-gradient(150deg,#e85c6a,#8a2a46)', heartSVG(true))}
+      <div class="cm-cap">
+        <div class="nm"><span class="cm-heart">${heartSVG(true)}</span>좋아요한 앨범</div>
+        <div class="ct">${liked.length}${isEN()?' records':'장'}</div>
+      </div>
+    </div>`;
+  const tiles=COLLECTIONS.map(c=>{
+    const items=(c.ids||[]).map(id=>DATA.find(x=>x.id===id)).filter(Boolean);
+    const n=(c.ids||[]).length;
     return `<div class="coll-card" data-id="${c.id}">
-      ${mosaic}
+      ${mosaic(items, c.color||COLL_COLORS[0], discSVG)}
       <div class="cm-cap">
         <div class="nm">${escapeHtml(c.name||'제목 없음')}</div>
         <div class="ct">${n}${isEN()?' records':'장'}</div>
       </div>
     </div>`;
   }).join('');
-  wrap.querySelectorAll('.coll-card').forEach(el=>el.onclick=()=>openCollDetail(el.dataset.id));
+  wrap.innerHTML = likedTile + tiles;
+  wrap.querySelectorAll('.coll-card[data-id]').forEach(el=>el.onclick=()=>openCollDetail(el.dataset.id));
+  { const lt=wrap.querySelector('.liked-card'); if(lt) lt.onclick=openLikedList; }
 }
-// 좋아요한 앨범 모아보기
-function renderLikes(){
-  const wrap=$('#like-grid'); if(!wrap) return;
+// 좋아요한 앨범 목록 (내 컬렉션 맨 앞 타일)
+function openLikedList(){
   const liked=DATA.filter(it=>it.liked);
-  const cnt=$('#like-count'); if(cnt) cnt.textContent = liked.length ? `${liked.length}장` : '';
-  if(!liked.length){
-    wrap.innerHTML=`<div class="coll-empty" style="grid-column:1/-1">아직 좋아요한 앨범이 없어요.<br>앨범 상세에서 ♥를 눌러보세요.</div>`;
-    return;
-  }
-  wrap.innerHTML=liked.map(it=>{
-    const url=artFor(it);
-    const ar=(it.artist&&it.artist!=='-')?it.artist:'';
-    return `<div class="like-it" data-id="${it.id}">
-      <div class="li-art">${url?`<img src="${url}" alt="" loading="lazy">`:`<div class="li-ph" style="background:${it.colorHex||discColor(it.color)}"></div>`}
-        <span class="li-heart">${heartSVG(true)}</span>
-        <div class="li-cap"><div class="li-al">${escapeHtml(it.album||'')}</div>${ar?`<div class="li-ar">${escapeHtml(ar)}</div>`:''}</div>
-      </div>
-    </div>`;
-  }).join('');
-  wrap.querySelectorAll('.like-it').forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
+  if(!liked.length){ previewToast(isEN()?'Tap ♥ on an album to collect it here':'앨범 상세에서 ♥를 누르면 여기에 모여요'); return; }
+  openTasteList(isEN()?`Liked albums · ${liked.length}`:`좋아요한 앨범 · ${liked.length}장`, liked.map(it=>({it})));
 }
+// 좋아요는 이제 '내 컬렉션' 맨 앞 타일로 보여준다 (예전 호출부 호환)
+function renderLikes(){ renderCollections(); }
 
 /* ===== 내 취향 요약 (LP 데이터 기반) ===== */
 function renderTaste(){
