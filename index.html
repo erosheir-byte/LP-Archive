@@ -4329,8 +4329,8 @@ function _tasteCardStats(){
   const sealed=real.filter(d=>d.status==='미개봉').length;
   const rated=DATA.filter(d=>d.rating>0);
   const avg=rated.length?rated.reduce((s,d)=>s+d.rating,0)/rated.length:0;
-  const hist=[]; for(let v=0.5;v<=5;v+=0.5) hist.push({v, n:rated.filter(d=>d.rating===v).length});
-  const most=rated.length?hist.slice().sort((a,b)=>b.n-a.n||b.v-a.v)[0].v:0;
+  // 별점 구간: 5·4·3·2·1점 (0.5 단위 점수는 내림해서 그 점수대에 포함)
+  const bands=[5,4,3,2,1].map(v=>({v, n:rated.filter(d=>Math.max(1,Math.floor(d.rating))===v).length}));
   const byArtist={};
   real.forEach(d=>{ const a=(d.artist||'').trim(); if(!a||a==='-')return; (byArtist[a]=byArtist[a]||[]).push(d); });
   const artists=Object.entries(byArtist).map(([a,arr])=>{
@@ -4339,27 +4339,23 @@ function _tasteCardStats(){
   }).sort((p,q)=>q.cnt-p.cnt||q.avg-p.avg).slice(0,3);
   const gm={}; real.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
   const genres=Object.entries(gm).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const sm={}; real.forEach(d=>{ const raw=(d.store||'').trim(); if(!raw||raw==='-')return;
-    const low=raw.toLowerCase(); const e=(sm[low]=sm[low]||{cnt:0,names:{}}); e.cnt++; e.names[raw]=(e.names[raw]||0)+1; });
-  const stores=Object.entries(sm).filter(([l])=>l!=='선물'&&l!=='교환').sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,3)
-    .map(([l,e])=>({name:Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0], cnt:e.cnt}));
   const byYear={}; real.forEach(d=>{ if(!d.buy)return; const yy=String(d.buy).slice(0,4); if(/^\d{4}$/.test(yy)) byYear[yy]=(byYear[yy]||0)+1; });
   const listens=DATA.reduce((s,d)=>s+(Array.isArray(d.listens)?d.listens.length:0),0);
   // 최애 앨범: 청음 횟수 기준 TOP3
   const albums=DATA.map(d=>({name:(d.album||'').trim()||(d.artist||''), artist:(d.artist||'').trim(), cnt:Array.isArray(d.listens)?d.listens.length:0}))
     .filter(a=>a.cnt>0).sort((p,q)=>q.cnt-p.cnt).slice(0,3);
-  return { total:real.length, owned, opened, sealed, rated:rated.length, avg, hist, most,
-           artists, genres, stores, byYear, years:Object.keys(byYear).sort(), listens, albums };
+  return { total:real.length, owned, opened, sealed, rated:rated.length, avg, bands,
+           artists, genres, byYear, years:Object.keys(byYear).sort(), listens, albums };
 }
-// 평균 별점에 따른 한 줄 페르소나 (왓챠피디아 '지조파' 느낌)
-function _ratingPersona(s, en){
-  if(!s.rated) return en?'Your rating journey starts now':'이제 막 별점 여정을 시작했어요';
-  if(s.avg>=4.7) return en?"Five stars aren't enough — a perfect-score machine":"별 다섯 개로는 부족한 '만점 제조기'";
-  if(s.avg>=4.3) return en?"A generous ear — every record is loved":"판마다 애정이 넘치는 '후한 귀'";
-  if(s.avg>=3.8) return en?"Warm but discerning — praise with reasons":"칭찬에도 이유가 있는 '따뜻한 감별사'";
-  if(s.avg>=3.2) return en?"Steady taste, not swayed by hype":"유행에 휘둘리지 않는 '지조파'";
-  if(s.avg>=2.5) return en?"A balanced, honest listener":"냉정하게 듣는 '균형파'";
-  return en?"A critic with a sharp needle":"깐깐한 바늘의 '평론가'";
+// 평균 별점에 따른 한 줄 문구 (별명 대신 듣는 성향을 담백하게)
+function _ratingCopy(s, en){
+  if(!s.rated) return en?'No ratings yet — rate a record to fill this in.':'아직 별점을 남긴 판이 없어요.';
+  if(s.avg>=4.5) return en?'Almost every record you keep is one you love.':'들인 판 대부분이 마음에 쏙 들었어요.';
+  if(s.avg>=4.0) return en?'You have a good eye for records you will love.':'좋아할 판을 잘 알아보는 편이에요.';
+  if(s.avg>=3.5) return en?'You clearly know your hits from your misses.':'좋은 판과 아쉬운 판을 분명하게 가려 들어요.';
+  if(s.avg>=3.0) return en?'You listen closely before giving stars.':'꼼꼼히 들어보고 별을 주는 편이에요.';
+  if(s.avg>=2.5) return en?'Stars are hard-earned on your turntable.':'별 하나도 쉽게 주지 않는 편이에요.';
+  return en?'Only a few records meet your high bar.':'아주 높은 기준으로 듣고 있어요.';
 }
 // 청음 횟수에 따른 한 줄 문구
 function _listenCopy(n, en){
@@ -4419,29 +4415,44 @@ function buildShareCardCanvas(){
   });
   y+=80; line();
 
-  // ── 별점 분포 (페르소나 + 히스토그램 + 3지표)
-  sec(en?'Ratings':'별점 분포');
-  y+=52;
-  x.textAlign='center'; x.fillStyle=accent2; x.font='700 32px sans-serif';
-  x.fillText(_ratingPersona(s,en), W/2, y);
+  // ── 별점 (평균 + 5점~1점 가로 막대 + 한 줄 문구)
+  sec(en?'My ratings':'나의 별점');
   if(s.rated){
-    y+=44; const bh=170, gap=14, bw=(W-2*M-9*gap)/10, base=y+bh;
-    const maxN=Math.max(...s.hist.map(h=>h.n),1);
-    s.hist.forEach((h,i)=>{ const bx=M+i*(bw+gap); const hh=h.n?Math.max(12,Math.round(h.n/maxN*bh)):6;
-      x.fillStyle=h.v===s.most?accent:'rgba(255,255,255,.14)';
-      x.fillRect(bx, base-hh, bw, hh);
-      if(h.v===s.most){ x.textAlign='center'; x.fillStyle='#fff'; x.font='700 26px sans-serif'; x.fillText(String(h.v), bx+bw/2, base-hh-12); }
+    // 평균 점수 + 별 5개(평균만큼 채움) + 평가 장수
+    y+=96;
+    x.textAlign='left'; x.fillStyle='#fff'; x.font='800 92px "Bricolage Grotesque",sans-serif';
+    const avgT=s.avg.toFixed(1); x.fillText(avgT, M, y);
+    const ax=M+x.measureText(avgT).width+28;
+    x.font='700 44px sans-serif';
+    const starW=x.measureText('★').width+6;
+    for(let k=0;k<5;k++){
+      const sx=ax+k*starW, fill=Math.max(0,Math.min(1,s.avg-k));
+      x.fillStyle='rgba(255,255,255,.16)'; x.fillText('★', sx, y-30);
+      if(fill>0){ x.save(); x.beginPath(); x.rect(sx, y-80, starW*fill, 70); x.clip(); x.fillStyle=accent2; x.fillText('★', sx, y-30); x.restore(); }
+    }
+    x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
+    x.fillText(en?`${s.rated} records rated`:`${s.rated}장 평가`, ax, y+4);
+    // 5점 → 1점 가로 막대
+    y+=40;
+    const maxN=Math.max(...s.bands.map(bd=>bd.n),1), labW=96, cntW=80, barX=M+labW, barW=W-2*M-labW-cntW;
+    s.bands.forEach(bd=>{
+      y+=58;
+      x.textAlign='left'; x.fillStyle='rgba(255,255,255,.75)'; x.font='700 28px sans-serif';
+      x.fillText(`${bd.v}${en?'':'점'}`, M, y);
+      x.fillStyle='rgba(255,255,255,.08)'; x.fillRect(barX, y-22, barW, 20);
+      if(bd.n){ const g=x.createLinearGradient(barX,0,barX+barW,0); g.addColorStop(0,accent2); g.addColorStop(1,accent);
+        x.fillStyle=g; x.fillRect(barX, y-22, Math.max(14, Math.round(bd.n/maxN*barW)), 20); }
+      x.textAlign='right'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 26px sans-serif';
+      x.fillText(String(bd.n), W-M, y);
     });
-    x.textAlign='left'; x.fillStyle='rgba(255,255,255,.4)'; x.font='600 24px sans-serif'; x.fillText('0.5',M,base+34);
-    x.textAlign='right'; x.fillText('5',W-M,base+34);
-    y=base+96;
-    [[s.avg.toFixed(1),en?'Average':'별점 평균'],[String(s.rated),en?'Rated':'평가한 앨범'],[String(s.most),en?'Most given':'많이 준 별점']].forEach((t,i)=>{
-      const cxx=M+(W-2*M)*(i+0.5)/3;
-      x.textAlign='center'; x.fillStyle='#fff'; x.font='800 46px sans-serif'; x.fillText(t[0],cxx,y);
-      x.fillStyle='rgba(255,255,255,.5)'; x.font='600 25px sans-serif'; x.fillText(t[1],cxx,y+38);
-    });
-    y+=76;
-  } else { y+=44; }
+    y+=64;
+    x.textAlign='left'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 28px sans-serif';
+    x.fillText(_ratingCopy(s,en), M, y);
+    y+=34;
+  } else {
+    y+=58; x.textAlign='left'; x.fillStyle='rgba(255,255,255,.45)'; x.font='600 28px sans-serif';
+    x.fillText(_ratingCopy(s,en), M, y); y+=40;
+  }
   line();
 
   // ── 순위 섹션들
@@ -4454,12 +4465,9 @@ function buildShareCardCanvas(){
   sec(en?'Top genres':'선호하는 장르');
   rankRows(s.genres.map(([g,n])=>({name:g, right:`${n}${en?'':'장'} · ${Math.round(n/Math.max(1,s.total)*100)}%`})));
   line();
-  sec(en?'Favorite stores':'자주 간 구매처');
-  rankRows(s.stores.map(st=>({name:st.name, right:`${st.cnt}${en?'':'장'}`})));
-  line();
 
-  // ── 수집 히스토리 (연도 바 + 수집 연차 문구)
-  sec(en?'Collecting history':'수집 히스토리');
+  // ── 히스토리 (연도 바 + 수집 연차 문구)
+  sec(en?'History':'히스토리');
   if(s.years.length){
     y+=44; const bh=150, base=y+bh, n=s.years.length, gap=24;
     const bw=Math.min(90,(W-2*M-(n-1)*gap)/n);
