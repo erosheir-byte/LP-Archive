@@ -4482,7 +4482,7 @@ async function buildShareCardCanvas(){
     ],
   });
 }
-// 월별 카드 (달력): 그 달에 데려온 판 — 없으면 그 달 턴테이블에 올린 판
+// 월별 카드 (달력): 그 달에 구매한 판 — 없으면 그 달 턴테이블에 올린 판
 async function buildMonthCardCanvas(m){
   const en=isEN(), [yy,mm]=m.split('-'), mon=parseInt(mm,10);
   const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mon-1];
@@ -4499,10 +4499,10 @@ async function buildMonthCardCanvas(m){
   const count = listenMode ? listened.length : buys.length;
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
-    lead: listenMode ? (en?`On my turntable in ${MON}`:`${mon}월 턴테이블에 올린 판`) : (en?`New in ${MON} ${yy}`:`${mon}월에 데려온 바이닐`),
+    lead: listenMode ? (en?`On my turntable in ${MON}`:`${mon}월 턴테이블에 올린 판`) : (en?`New in ${MON} ${yy}`:`${mon}월에 구매한 바이닐`),
     headline: en ? `${count} record${count===1?'':'s'}` : `${count}장`,
     stats:[
-      listenMode ? [listened.length+(en?'':'장'), en?'Played':'들은 판'] : [buys.length+(en?'':'장'), en?'New':'데려온 판'],
+      listenMode ? [listened.length+(en?'':'장'), en?'Played':'들은 판'] : [buys.length+(en?'':'장'), en?'Bought':'구매한 판'],
       [opened.length+(en?'':'장'), en?'Opened':'개봉한 판'],
       [topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르'],
     ],
