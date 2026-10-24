@@ -1022,8 +1022,8 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .share-card-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:20px 0 10px;padding:15px;border:none;border-radius:14px;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#1a0d06;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;transition:.12s;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .share-card-btn:active{transform:scale(.98)}
 /* 취향 카드 미리보기 */
-.sharecard-wrap{max-height:52vh;overflow-y:auto;border-radius:14px;border:1px solid var(--line);background:#121016}
-.sharecard-wrap img{display:block;width:100%}
+.sharecard-wrap{display:flex;justify-content:center;border-radius:14px;border:1px solid var(--line);background:#121016;overflow:hidden}
+.sharecard-wrap img{display:block;width:auto;max-width:100%;max-height:60vh}
 </style>
 </head>
 <body class="state-boot">
@@ -4346,133 +4346,110 @@ function _tasteCardStats(){
   return { total:real.length, owned, opened, sealed, rated:rated.length, avg, bands,
            artists, genres, byYear, years:Object.keys(byYear).sort(), albums };
 }
-function buildShareCardCanvas(){
-  const s=_tasteCardStats(), en=isEN();
-  const W=1080, M=70, BUF=3400;
-  const c=document.createElement('canvas'); c.width=W; c.height=BUF;
-  const x=c.getContext('2d');
-  const accent='#e8643c', accent2='#f2a444';   // 브랜드 오렌지 고정
-  x.fillStyle='#121016'; x.fillRect(0,0,W,BUF);
-
-  // ── 헤더 밴드 (브랜드 컬러 + LP 장식)
-  const hb=x.createLinearGradient(0,0,W,260); hb.addColorStop(0,accent); hb.addColorStop(1,accent2);
-  x.fillStyle=hb; x.fillRect(0,0,W,260);
-  x.save(); x.globalAlpha=.22;
-  x.beginPath(); x.arc(W-80,130,160,0,7); x.fillStyle='#000'; x.fill();
-  x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=2;
-  for(let r=60;r<160;r+=16){ x.beginPath(); x.arc(W-80,130,r,0,7); x.stroke(); }
-  x.restore();
-  x.textAlign='left'; x.fillStyle='#fff';
-  x.font='800 62px "Bricolage Grotesque",sans-serif';
-  x.fillText('TURNIT', M, 120);
-  x.font='700 34px sans-serif'; x.fillStyle='rgba(255,255,255,.92)';
-  x.fillText(en?'Taste Report':'취향 분석', M, 180);
-  let y=260;
-
-  const line=()=>{ x.strokeStyle='rgba(255,255,255,.08)'; x.lineWidth=2; x.beginPath(); x.moveTo(M,y); x.lineTo(W-M,y); x.stroke(); };
-  const sec=(t)=>{ y+=82; x.textAlign='left'; x.fillStyle='#fff'; x.font='800 42px sans-serif'; x.fillText(t,M,y); y+=12; };
-  const noData=()=>{ y+=58; x.textAlign='left'; x.fillStyle='rgba(255,255,255,.35)'; x.font='600 28px sans-serif'; x.fillText(en?'No data yet':'데이터 없음', M, y); y+=40; };
-  const rankRows=(rows)=>{
-    if(!rows.length){ noData(); return; }
-    rows.forEach((r,i)=>{ y+=64;
-      x.textAlign='left';
-      x.fillStyle=accent2; x.font='800 30px sans-serif'; x.fillText(String(i+1), M, y);
-      x.fillStyle='#fff'; x.font='700 32px sans-serif';
-      let nm=r.name; while(x.measureText(nm).width>W-2*M-260 && nm.length>2) nm=nm.slice(0,-2)+'…';
-      x.fillText(nm, M+52, y);
-      x.textAlign='right'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 28px sans-serif'; x.fillText(r.right, W-M, y);
-    });
-    y+=44;
-  };
-
-  // ── 컬렉션 요약 (전체·보유·개봉·미개봉)
-  sec(en?'Collection':'컬렉션');
-  y+=84;
-  [[s.total,en?'Total':'전체'],[s.owned,en?'Owned':'보유'],[s.opened,en?'Opened':'개봉'],[s.sealed,en?'Sealed':'미개봉']].forEach((cl,i)=>{
-    const cxx=M+(W-2*M)*(i+0.5)/4;
-    x.textAlign='center'; x.fillStyle='#fff'; x.font='800 60px sans-serif'; x.fillText(String(cl[0]),cxx,y);
-    x.fillStyle='rgba(255,255,255,.5)'; x.font='600 26px sans-serif'; x.fillText(cl[1],cxx,y+42);
+// 이미지 로드 (커버는 합성 허용(CORS)일 때만 사용 → 실패하면 null 로 두고 원판 그림으로 대체해 캔버스가 막히지 않게)
+function _loadCardImg(src, timeout=6000){
+  return new Promise(res=>{
+    if(!src){ res(null); return; }
+    const im=new Image(); let done=false;
+    const fin=v=>{ if(done) return; done=true; res(v); };
+    if(!/^data:|^blob:/.test(src) && !src.startsWith(location.origin) && /^https?:/.test(src)) im.crossOrigin='anonymous';
+    im.onload=()=>fin(im); im.onerror=()=>fin(null);
+    setTimeout(()=>fin(null), timeout);
+    im.src=src;
   });
-  y+=80; line();
+}
+// 커버가 없거나 못 불러온 칸: 그 판의 바이닐 색으로 원판을 그린다
+function _drawCardDisc(x, cx, cy, size, color){
+  x.fillStyle='#1d1a22'; x.fillRect(cx, cy, size, size);
+  const r=size*0.42, mx=cx+size/2, my=cy+size/2;
+  x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.fillStyle=color||'#222'; x.fill();
+  // 광택 + 테두리: 검은 판도 어두운 배경에서 보이게
+  const sh=x.createLinearGradient(mx-r,my-r,mx+r,my+r);
+  sh.addColorStop(0,'rgba(255,255,255,.16)'); sh.addColorStop(.45,'rgba(255,255,255,0)'); sh.addColorStop(.55,'rgba(255,255,255,0)'); sh.addColorStop(1,'rgba(255,255,255,.10)');
+  x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.fillStyle=sh; x.fill();
+  x.strokeStyle='rgba(255,255,255,.22)'; x.lineWidth=2; x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.stroke();
+  x.strokeStyle='rgba(255,255,255,.09)'; x.lineWidth=1.5;
+  for(let rr=r*0.45; rr<r; rr+=r*0.09){ x.beginPath(); x.arc(mx,my,rr,0,Math.PI*2); x.stroke(); }
+  x.beginPath(); x.arc(mx,my,r*0.3,0,Math.PI*2); x.fillStyle='#e8643c'; x.fill();
+  x.beginPath(); x.arc(mx,my,r*0.05,0,Math.PI*2); x.fillStyle='#1d1a22'; x.fill();
+}
+// 9:16 공유 카드 (인스타 스토리 크기): 커버 3×3 + 한 줄 + 숫자 3개
+async function buildShareCardCanvas(){
+  const s=_tasteCardStats(), en=isEN();
+  const W=1080, H=1920, M=90;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d');
+  const accent='#e8643c', accent2='#f2a444';
+  // 배경 + 은은한 오렌지 빛
+  x.fillStyle='#121016'; x.fillRect(0,0,W,H);
+  let g=x.createRadialGradient(140,120,0,140,120,900); g.addColorStop(0,'rgba(232,100,60,.30)'); g.addColorStop(1,'rgba(232,100,60,0)');
+  x.fillStyle=g; x.fillRect(0,0,W,H);
+  g=x.createRadialGradient(W-60,H-160,0,W-60,H-160,800); g.addColorStop(0,'rgba(242,164,68,.18)'); g.addColorStop(1,'rgba(242,164,68,0)');
+  x.fillStyle=g; x.fillRect(0,0,W,H);
 
-  // ── 별점 (평균 + 5점~1점 가로 막대)
-  sec(en?'My ratings':'나의 별점');
-  if(s.rated){
-    // 평균 점수 + 별 5개(평균만큼 채움) + 평가 장수
-    y+=96;
-    x.textAlign='left'; x.fillStyle='#fff'; x.font='800 92px "Bricolage Grotesque",sans-serif';
-    const avgT=s.avg.toFixed(1); x.fillText(avgT, M, y);
-    const ax=M+x.measureText(avgT).width+28;
-    x.font='700 44px sans-serif';
-    const starW=x.measureText('★').width+6;
-    for(let k=0;k<5;k++){
-      const sx=ax+k*starW, fill=Math.max(0,Math.min(1,s.avg-k));
-      x.fillStyle='rgba(255,255,255,.16)'; x.fillText('★', sx, y-30);
-      if(fill>0){ x.save(); x.beginPath(); x.rect(sx, y-80, starW*fill, 70); x.clip(); x.fillStyle=accent2; x.fillText('★', sx, y-30); x.restore(); }
-    }
-    x.fillStyle='rgba(255,255,255,.55)'; x.font='600 27px sans-serif';
-    x.fillText(en?`${s.rated} records rated`:`${s.rated}장 평가`, ax, y+4);
-    // 5점 → 1점 가로 막대
-    y+=40;
-    const maxN=Math.max(...s.bands.map(bd=>bd.n),1), labW=96, cntW=80, barX=M+labW, barW=W-2*M-labW-cntW;
-    s.bands.forEach(bd=>{
-      y+=58;
-      x.textAlign='left'; x.fillStyle='rgba(255,255,255,.75)'; x.font='700 28px sans-serif';
-      x.fillText(`${bd.v}${en?'':'점'}`, M, y);
-      x.fillStyle='rgba(255,255,255,.08)'; x.fillRect(barX, y-22, barW, 20);
-      if(bd.n){ const g=x.createLinearGradient(barX,0,barX+barW,0); g.addColorStop(0,accent2); g.addColorStop(1,accent);
-        x.fillStyle=g; x.fillRect(barX, y-22, Math.max(14, Math.round(bd.n/maxN*barW)), 20); }
-      x.textAlign='right'; x.fillStyle='rgba(255,255,255,.6)'; x.font='600 26px sans-serif';
-      x.fillText(String(bd.n), W-M, y);
-    });
-    y+=40;
-  } else {
-    y+=58; x.textAlign='left'; x.fillStyle='rgba(255,255,255,.45)'; x.font='600 28px sans-serif';
-    x.fillText(en?'No ratings yet':'아직 별점을 남긴 판이 없어요.', M, y); y+=40;
+  // 상단: 워드마크 + 날짜
+  const wm=await _loadCardImg('icons/wordmark.png?v=4', 3000);
+  if(wm){ const h=64, w=wm.naturalWidth*h/wm.naturalHeight; x.drawImage(wm, M, 96, w, h); }
+  else { x.fillStyle='#fff'; x.font='800 56px "Bricolage Grotesque",sans-serif'; x.textAlign='left'; x.fillText('Turnit', M, 148); }
+  const now=new Date();
+  x.textAlign='right'; x.fillStyle='rgba(255,255,255,.5)'; x.font='600 30px sans-serif';
+  x.fillText(`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`, W-M, 142);
+
+  // 커버 9장: 별점 높은 순 → 최근 구매 순, 같은 앨범은 한 번만
+  const real=DATA.filter(d=>statusGroup(d.status)!=='위시');
+  const seen=new Set();
+  const picks=real.slice().sort((a,b)=>(b.rating||0)-(a.rating||0) || String(b.buy||'').localeCompare(String(a.buy||'')))
+    .filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; });
+  // 커버 후보를 18장까지 불러와 열린 커버를 먼저 채우고, 모자라면 원판 그림으로
+  const cand=picks.filter(d=>artFor(d)).slice(0,18);
+  const loaded=await Promise.all(cand.map(d=>_loadCardImg(artFor(d))));
+  const ok=cand.map((d,i)=>({d,im:loaded[i]})).filter(o=>o.im);
+  const okSet=new Set(ok.map(o=>o.d));
+  const rest=picks.filter(d=>!okSet.has(d)).map(d=>({d,im:null}));
+  const tiles=ok.concat(rest).slice(0,9);
+  const nine=tiles.map(t=>t.d), imgs=tiles.map(t=>t.im);
+  const gap=18, cell=(W-2*M-2*gap)/3, gy=230;
+  for(let i=0;i<9;i++){
+    const cx=M+(i%3)*(cell+gap), cy=gy+Math.floor(i/3)*(cell+gap), d=nine[i];
+    x.save();
+    x.beginPath(); if(x.roundRect) x.roundRect(cx,cy,cell,cell,20); else x.rect(cx,cy,cell,cell); x.clip();
+    if(d && imgs[i]){ const im=imgs[i], sc=Math.max(cell/im.naturalWidth, cell/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
+      x.drawImage(im, cx+(cell-w)/2, cy+(cell-h)/2, w, h); }
+    else if(d) _drawCardDisc(x, cx, cy, cell, d.colorHex||discColor(d.color));
+    else { x.fillStyle='rgba(255,255,255,.04)'; x.fillRect(cx,cy,cell,cell); }
+    x.restore();
   }
-  line();
 
-  // ── 순위 섹션들
-  sec(en?'Top albums':'선호하는 앨범');   // 청음 횟수 기준
-  rankRows(s.albums.map(a=>({name:a.artist?`${a.name} · ${a.artist}`:a.name, right:`${a.cnt}${en?' plays':'회'} 🎧`})));
-  line();
-  sec(en?'Top artists':'선호하는 아티스트');
-  rankRows(s.artists.map(a=>({name:a.name, right:`${a.cnt}${en?'':'장'}${a.avg?` · ★${a.avg.toFixed(1)}`:''}`})));
-  line();
-  sec(en?'Top genres':'선호하는 장르');
-  rankRows(s.genres.map(([g,n])=>({name:g, right:`${n}${en?'':'장'} · ${Math.round(n/Math.max(1,s.total)*100)}%`})));
-  line();
+  // 한 줄: 내 턴테이블 1순위 (장르 → 없으면 아티스트)
+  const fit=(t,max)=>{ let o=t; while(x.measureText(o).width>max && o.length>2) o=o.slice(0,-2)+'…'; return o; };
+  const top = s.genres.length ? s.genres[0][0] : (s.artists.length ? s.artists[0].name : '');
+  let y=gy+3*cell+2*gap+120;
+  x.textAlign='left'; x.fillStyle='rgba(255,255,255,.62)'; x.font='600 44px sans-serif';
+  x.fillText(top ? (en?'Top of my turntable':'내 턴테이블 1순위는') : (en?'My vinyl collection':'나의 바이닐 컬렉션'), M, y);
+  if(top){ y+=110; x.fillStyle='#fff'; x.font='800 104px sans-serif'; x.fillText(fit(top, W-2*M), M, y); }
 
-  // ── 히스토리 (연도 바 + 수집 연차 문구)
-  sec(en?'History':'히스토리');
-  if(s.years.length){
-    y+=44; const bh=150, base=y+bh, n=s.years.length, gap=24;
-    const bw=Math.min(90,(W-2*M-(n-1)*gap)/n);
-    const maxY=Math.max(...s.years.map(yy=>s.byYear[yy]),1);
-    const startX=M+((W-2*M)-(n*bw+(n-1)*gap))/2;
-    s.years.forEach((yy,i)=>{ const bx=startX+i*(bw+gap); const hh=Math.max(8,Math.round(s.byYear[yy]/maxY*bh));
-      const g2=x.createLinearGradient(0,base-hh,0,base); g2.addColorStop(0,accent2); g2.addColorStop(1,accent);
-      x.fillStyle=g2; x.fillRect(bx,base-hh,bw,hh);
-      x.textAlign='center'; x.fillStyle='#fff'; x.font='700 26px sans-serif'; x.fillText(String(s.byYear[yy]),bx+bw/2,base-hh-10);
-      x.fillStyle='rgba(255,255,255,.45)'; x.font='600 24px sans-serif'; x.fillText("'"+yy.slice(2),bx+bw/2,base+34);
-    });
-    y=base+92;
-    const fy=s.years[0], nY=(new Date().getFullYear()-parseInt(fy,10))+1;
-    x.textAlign='center'; x.fillStyle=accent2; x.font='700 30px sans-serif';
-    x.fillText(en?`Collecting since ${fy}`:`${fy}년부터 ${nY}년째 수집 중`, W/2, y);
-    y+=18;
-  } else noData();
-  line();
+  // 숫자 3개
+  y=H-300;
+  x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=2; x.beginPath(); x.moveTo(M,y-90); x.lineTo(W-M,y-90); x.stroke();
+  const favArtist = s.artists.length ? s.artists[0].name : '–';
+  const cols=[
+    [String(s.total), en?'Records':'컬렉션', en?'':'장'],
+    s.rated ? ['★'+s.avg.toFixed(1), en?'Avg rating':'평균 별점', ''] : [String(s.owned), en?'Owned':'보유', en?'':'장'],
+    [favArtist, en?'Fav artist':'최애 아티스트', ''],
+  ];
+  const colW=(W-2*M)/3;
+  cols.forEach((cl,i)=>{
+    const cxx=M+colW*i+colW/2;
+    x.textAlign='center'; x.fillStyle='#fff'; x.font = i===2 ? '800 46px sans-serif' : '800 64px sans-serif';
+    let v=cl[0]+cl[2]; v=fit(v, colW-20);
+    x.fillText(v, cxx, y);
+    x.fillStyle='rgba(255,255,255,.5)'; x.font='600 28px sans-serif'; x.fillText(cl[1], cxx, y+52);
+  });
 
-  // ── 푸터 (바로 위 히스토리 구분선 아래)
-  y+=58;
-  x.textAlign='center'; x.fillStyle='rgba(255,255,255,.4)'; x.font='600 26px sans-serif';
-  x.fillText('lp-archive.web.app', W/2, y);
-  y+=52;
-
-  const out=document.createElement('canvas'); out.width=W; out.height=Math.min(y,BUF);
-  out.getContext('2d').drawImage(c,0,0,W,out.height,0,0,W,out.height);
-  return out;
+  // 푸터
+  x.textAlign='center'; x.fillStyle=accent2; x.font='700 28px sans-serif';
+  x.fillText('lp-archive.web.app', W/2, H-90);
+  return c;
 }
 // 공유: 웹/PWA는 파일 공유 → 앱(웹뷰)은 카드 업로드 후 OS 공유시트 → 마지막 폴백은 다운로드
 async function _shareCardBlob(blob){
@@ -4504,7 +4481,7 @@ async function _shareCardBlob(blob){
 }
 async function shareCollectionCard(){
   try{
-    const canvas=buildShareCardCanvas();
+    const canvas=await buildShareCardCanvas();
     window.__shareCardBlob=await new Promise(res=>canvas.toBlob(res,'image/png'));
     const img=$('#sharecard-img'); if(img) img.src=canvas.toDataURL('image/png');
     show('sharecard');
