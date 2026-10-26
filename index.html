@@ -4396,15 +4396,35 @@ function _cardSrc(src, px){
 }
 // 한 번 불러온 커버는 기억해 두고 다시 쓴다 (실패하면 다음에 다시 시도)
 const _cardImgCache=new Map(), _cardImgDone=new Map(), _cardImgSlow=new Set();
-function _cardImgFetch(src){
-  if(_cardImgCache.has(src)) return _cardImgCache.get(src);
-  const p=new Promise(res=>{
+// 합성 허용(CORS)을 안 주는 곳(직접 올린 사진 저장소, 일부 커버 사이트)의 커버는 앱에서는 네이티브로 받아 data URL 로 바꾼다
+async function _nativeImgDataUrl(src){
+  const C=window.Capacitor, H=C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.CapacitorHttp;
+  if(!H || !/^https?:/.test(src)) return null;
+  try{
+    const r=await H.get({ url:src, responseType:'blob', connectTimeout:8000, readTimeout:8000 });
+    if(!r || r.status>=400 || typeof r.data!=='string' || !r.data) return null;
+    const h=r.headers||{}, ct=String(h['Content-Type']||h['content-type']||'image/jpeg').split(';')[0];
+    return /^data:/.test(r.data) ? r.data : `data:${/^image\//.test(ct)?ct:'image/jpeg'};base64,${r.data}`;
+  }catch(e){ return null; }
+}
+function _imgLoad(src, cors){
+  return new Promise(res=>{
     const im=new Image();
-    if(!/^data:|^blob:/.test(src) && !src.startsWith(location.origin) && /^https?:/.test(src)) im.crossOrigin='anonymous';
-    im.onload=()=>{ _cardImgDone.set(src, im); _cardImgSlow.delete(src); res(im); };
-    im.onerror=()=>{ _cardImgCache.delete(src); _cardImgSlow.delete(src); res(null); };
+    if(cors) im.crossOrigin='anonymous';
+    im.onload=()=>res(im); im.onerror=()=>res(null);
     im.src=src;
   });
+}
+function _cardImgFetch(src){
+  if(_cardImgCache.has(src)) return _cardImgCache.get(src);
+  const p=(async()=>{
+    const cors=!/^data:|^blob:/.test(src) && !src.startsWith(location.origin) && /^https?:/.test(src);
+    let im=await _imgLoad(src, cors);
+    if(!im && cors){ const d=await _nativeImgDataUrl(src); if(d) im=await _imgLoad(d, false); }
+    if(im){ _cardImgDone.set(src, im); _cardImgSlow.delete(src); }
+    else { _cardImgCache.delete(src); _cardImgSlow.delete(src); }
+    return im;
+  })();
   _cardImgCache.set(src, p);
   return p;
 }
