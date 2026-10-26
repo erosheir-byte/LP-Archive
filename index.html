@@ -22,6 +22,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
+  /* 상단 안전 영역: 시스템 값(env)이 0 으로 오는 안드로이드 엣지투엣지에서도 상태바만큼은 비운다(--sat-min 은 스크립트가 설정) */
+  --sat:max(env(safe-area-inset-top,0px),var(--sat-min,0px));
   --bg:#0e0d11;
   --bg2:#16141b;
   --card:#1b1922;
@@ -162,7 +164,7 @@ body::before{content:'';position:fixed;inset:0;background:
 .wrap{position:relative;z-index:1}
 
 /* Header */
-header{padding:14px 20px 10px;position:relative}
+header{padding:14px 20px 10px;margin-top:var(--sat);position:relative}
 /* 홈 상단: 작은 워드마크(가운데) + 요약 줄(가운데). 계정 칩은 숨김(로그아웃은 설정에) */
 .hdr-logo{display:flex;justify-content:center;height:52px;align-items:center}
 .hdr-logo img{height:32px;width:auto;display:block}
@@ -485,11 +487,11 @@ body.scroll-lock{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 /* 풀스크린 레이어: 시트 위에 시트가 얹히는 뎁스 대신 화면 전체를 부드럽게 덮는다.
    바텀시트식 슬라이드업 대신 제자리 페이드+살짝 상승으로 '덮는' 느낌을 준다. */
 .sheet.fs{top:0;height:calc(100% - var(--adh,0px));max-height:none;border-radius:0;border-top:none;z-index:60;
-  padding-top:calc(10px + env(safe-area-inset-top,0px));
+  padding-top:calc(10px + var(--sat));
   opacity:0;pointer-events:none;transform:translateX(-50%) translateY(16px);
   transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .24s ease}
 .sheet.fs.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
-.sheet.fs .sheet-x{top:calc(14px + env(safe-area-inset-top,0px))}
+.sheet.fs .sheet-x{top:calc(14px + var(--sat))}
 /* 풀스크린이 열려 있는 동안 뒤의 바텀시트·오버레이를 숨겨 단일 레이어로 유지 */
 body.fs-open .sheet:not(.fs){visibility:hidden}
 body.fs-open .ov{opacity:0!important;pointer-events:none}
@@ -1064,6 +1066,11 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .ms-share.busy svg{animation:scspin .9s linear infinite}
 @keyframes scspin{to{transform:rotate(360deg)}}
 </style>
+<script>
+// 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
+(function(){ function f(){ try{ var C=window.Capacitor; if(C&&C.getPlatform&&C.getPlatform()==='android') document.documentElement.style.setProperty('--sat-min','32px'); }catch(e){} }
+  f(); document.addEventListener('DOMContentLoaded', f); })();
+</script>
 </head>
 <body class="state-boot">
 <div id="boot">
