@@ -986,8 +986,15 @@ body.state-shared #shared-view{display:block}
 .sh-brand{text-align:center;color:var(--dim);font-size:12px;margin-top:20px}
 .sh-load,.sh-err{text-align:center;color:var(--muted);padding:90px 24px}
 .sh-err .sh-et{font-size:17px;font-weight:700;color:var(--txt);margin-bottom:8px}
-.boot-spin{width:46px;height:46px;border-radius:50%;border:3px solid var(--line);
-  border-top-color:var(--accent);animation:spin .8s linear infinite}
+/* 로딩 화면: 33⅓ rpm(1.8초에 한 바퀴)으로 도는 바이닐 + 워드마크 */
+.boot-vinyl{width:176px;height:auto;overflow:visible;filter:drop-shadow(0 18px 30px rgba(0,0,0,.45));animation:bootin .5s ease-out both}
+.boot-vinyl .bv-disc{transform-origin:100px 100px;transform-box:view-box;animation:spin 1.8s linear infinite}
+.boot-wm{width:128px;height:auto;margin-top:26px;opacity:.92;animation:bootin .6s .1s ease-out both}
+.boot-wm.wm-light{display:none}
+html[data-theme="light"] .boot-wm.wm-dark{display:none}
+html[data-theme="light"] .boot-wm.wm-light{display:block}
+@keyframes bootin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.boot-vinyl .bv-disc{animation-duration:6s}}
 @keyframes spin{to{transform:rotate(360deg)}}
 #auth-screen{padding:24px}
 .auth-card{width:100%;max-width:360px;background:linear-gradient(165deg,var(--card2),var(--card));
@@ -1053,7 +1060,30 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 </style>
 </head>
 <body class="state-boot">
-<div id="boot"><div class="boot-spin"></div></div>
+<div id="boot">
+  <svg class="boot-vinyl" viewBox="0 0 220 200" aria-hidden="true">
+    <defs>
+      <linearGradient id="bv-lbl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2a444"/><stop offset="1" stop-color="#e8643c"/></linearGradient>
+      <linearGradient id="bv-shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    </defs>
+    <!-- 도는 판: 홈·라벨·라벨 위 무늬(회전이 보이도록) -->
+    <g class="bv-disc">
+      <circle cx="100" cy="100" r="88" fill="#16151a" stroke="#2c2a31" stroke-width="1.5"/>
+      <g fill="none" stroke="#fff" stroke-opacity=".06" stroke-width="1"><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="73"/><circle cx="100" cy="100" r="66"/><circle cx="100" cy="100" r="59"/><circle cx="100" cy="100" r="52"/><circle cx="100" cy="100" r="45"/><circle cx="100" cy="100" r="39"/></g>
+      <circle cx="100" cy="100" r="31" fill="url(#bv-lbl)"/>
+      <path d="M100 77a23 23 0 0 1 21.6 15.1" fill="none" stroke="#fff6ec" stroke-opacity=".85" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M100 123a23 23 0 0 1-21.6-15.1" fill="none" stroke="#1a0d06" stroke-opacity=".35" stroke-width="3.2" stroke-linecap="round"/>
+      <circle cx="100" cy="100" r="3.2" fill="#0e0d11"/>
+    </g>
+    <!-- 고정된 반사광 -->
+    <path d="M100 100 L38 38 A88 88 0 0 1 72 17 Z M100 100 L162 162 A88 88 0 0 1 128 183 Z" fill="url(#bv-shine)"/>
+    <!-- 톤암 -->
+    <circle cx="196" cy="22" r="9" fill="#2e2c33" stroke="#4a4750" stroke-width="1.5"/>
+    <path d="M196 22 L186 96 L158 134" fill="none" stroke="#cfc8bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="148" y="128" width="16" height="10" rx="2" fill="#cfc8bf" transform="rotate(-36 156 133)"/>
+  </svg>
+  <img class="boot-wm wm-dark" src="icons/wordmark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"><img class="boot-wm wm-light" src="icons/wordmark-dark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520">
+</div>
 <div id="shared-view"></div>
 
 <div id="auth-screen">
