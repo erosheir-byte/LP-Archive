@@ -693,6 +693,9 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .sheet-x:active{opacity:.7}
 .sheet-x.sx-edit{right:56px;font-size:14px}
 .sheet-x.sx-share{right:98px}
+#dl-share{display:none}
+#sheet-daylist.liked #dl-share{display:flex}
+#sheet-daylist.liked #daylist-title{padding-right:84px}
 .sheet-x.busy{color:var(--accent2);pointer-events:none}
 .sheet-x.busy svg{animation:scspin .9s linear infinite}
 /* 상세 별점 줄 우측 '수정' 버튼 — 항상 노출되는 수정 진입점 */
@@ -1245,6 +1248,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 <div class="sheet" id="sheet-daylist">
   <div class="grab" id="grab-daylist"></div>
   <button class="sheet-x" data-close="daylist" aria-label="닫기">✕</button>
+  <button class="sheet-x sx-edit" id="dl-share" type="button" aria-label="좋아요한 앨범 카드 공유" title="좋아요한 앨범 카드 공유"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>
   <div class="form">
     <h2 id="daylist-title">앨범 목록</h2>
     <div class="daylist" id="daylist"></div>
@@ -1921,6 +1925,7 @@ const I18N = {
   "‘바이닐 담기’로 추가해보세요.":"Add some with 'Add records'.",
   "연필 버튼을 눌러 바이닐을 담아보세요.":"Tap the pencil to add records.",
   "컬렉션 편집":"Edit collection",
+  "좋아요한 앨범 카드 공유":"Share liked albums card",
   "편집":"Edit",
   "빼기":"Remove",
   "바이닐 담기":"Add records",
@@ -4032,7 +4037,8 @@ function show(name){
   lockScroll();}
 function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
   if(name==='add') clearAddDraft();   // 추가 폼을 직접 닫으면(저장 완료·취소) 임시저장도 함께 지운다
-  if(name==='colldetail' && typeof commitCollHead==='function') commitCollHead();   // 편집 중에 닫아도 입력한 이름·설명 저장
+  if(name==='colldetail' && typeof commitCollHead==='function') commitCollHead();
+  if(name==='daylist') s0Liked(false);   // 편집 중에 닫아도 입력한 이름·설명 저장
   const s=$('#sheet-'+name); s.style.transform='';
   if(s.classList.contains('fs')) document.body.classList.remove('fs-open');
   if(!document.querySelector('.sheet.show')) unlockScroll();}   // 열린 시트가 더 없을 때만 잠금 해제
@@ -4058,6 +4064,7 @@ function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCo
 { const b=$('#coll-addlp'); if(b) b.onclick=openCollPick; }
 { const b=$('#coll-del'); if(b) b.onclick=deleteColl; }
 { const b=$('#cd-share'); if(b) b.onclick=()=>shareCollCard(); }
+{ const b=$('#dl-share'); if(b) b.onclick=()=>shareLikedCard(); }
 { const b=$('#coll-edit'); if(b) b.onclick=()=>setCollEditing(true); }
 { const b=$('#coll-editdone'); if(b) b.onclick=()=>setCollEditing(false); }
 { const q=$('#collpick-q'); if(q) q.oninput=e=>renderCollPick(e.target.value); }
@@ -4611,6 +4618,30 @@ async function buildCollCardCanvas(c){
     ],
   });
 }
+// 좋아요한 앨범 카드: 많이 들은 순, 같은 앨범은 한 칸
+function _likedCardPicks(){
+  const seen=new Set();
+  return DATA.map((d,i)=>({d,i})).filter(o=>o.d.liked)
+    .sort((a,b)=>_listenCount(b.d)-_listenCount(a.d) || (b.d.rating||0)-(a.d.rating||0) || a.i-b.i).map(o=>o.d)
+    .filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; });
+}
+async function buildLikedCardCanvas(){
+  const en=isEN(), now=new Date();
+  const all=DATA.filter(d=>d.liked), items=_likedCardPicks();
+  const tally=key=>{ const m={}; all.forEach(d=>{ const k=(d[key]||'').trim(); if(k&&k!=='-') m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1])[0]; };
+  const g=tally('genre'), a=tally('artist');
+  return _drawStoryCard({
+    stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
+    items, fixed9:false, preferLoaded:false,
+    lead: en?'My collection':'나의 컬렉션',
+    headline: en?'Liked albums':'좋아요한 앨범',
+    stats:[
+      [items.length+(en?'':'장'), en?'Liked':'좋아요'],
+      [g ? g[0] : '–', en?'Main genre':'대표 장르'],
+      [a ? a[0] : '–', en?'Main artist':'대표 아티스트'],
+    ],
+  });
+}
 // 월별 카드 (달력): 그 달에 구매한 판 + 들은 판
 async function buildMonthCardCanvas(m){
   const en=isEN(), [yy,mm]=m.split('-'), mon=parseInt(mm,10);
@@ -4716,6 +4747,11 @@ function shareCollCard(){
   if(!(c.ids||[]).some(id=>DATA.find(x=>x.id===id))){ previewToast(isEN()?'Add records to this collection first':'컬렉션에 바이닐을 담으면 카드를 만들 수 있어요'); return; }
   const t=c.name||(isEN()?'Collection':'컬렉션');
   return _openShareCard(()=>buildCollCardCanvas(c), '📤 '+t, t+' 🎵', $('#cd-share'));
+}
+function shareLikedCard(){
+  if(!DATA.some(d=>d.liked)){ previewToast(isEN()?'Tap ♥ on an album to collect it here':'앨범 상세에서 ♥를 누르면 여기에 모여요'); return; }
+  const t=isEN()?'Liked albums':'좋아요한 앨범';
+  return _openShareCard(buildLikedCardCanvas, '📤 '+t, t+' 🎵', $('#dl-share'));
 }
 function shareMonthCard(m){ const mon=parseInt(m.slice(5,7),10), t=isEN()?'Vinyl of the month':`${mon}월의 바이닐`;
   return _openShareCard(()=>buildMonthCardCanvas(m), '📤 '+t, t+' 🎵', $('#ms-share')); }
@@ -5728,7 +5764,11 @@ function openLikedList(){
   const liked=DATA.filter(it=>it.liked);
   if(!liked.length){ previewToast(isEN()?'Tap ♥ on an album to collect it here':'앨범 상세에서 ♥를 누르면 여기에 모여요'); return; }
   openTasteList(isEN()?`Liked albums · ${liked.length}`:`좋아요한 앨범 · ${liked.length}장`, liked.map(it=>({it})));
+  s0Liked(true);
+  try{ const n=_likedCardPicks().length; _prefetchCardCovers(_likedCardPicks(), n===1?600:n<=4?500:300); }catch(e){}
 }
+// 같은 목록 시트(#sheet-daylist)를 여러 곳이 같이 쓰므로, 좋아요 목록일 때만 공유 아이콘을 보인다
+function s0Liked(on){ const s=$('#sheet-daylist'); if(s) s.classList.toggle('liked', !!on); }
 // 좋아요는 이제 '내 컬렉션' 맨 앞 타일로 보여준다 (예전 호출부 호환)
 function renderLikes(){ renderCollections(); }
 
@@ -5804,6 +5844,7 @@ function renderTaste(){
 // 취향 요약 순위 클릭 → 해당 앨범 목록 팝업 (daylist 시트 재사용)
 function openTasteList(title, rows){
   const wrap=$('#daylist'); if(!wrap) return;
+  s0Liked(false);
   $('#daylist-title').textContent=title;
   wrap.innerHTML=(rows&&rows.length)?rows.map(r=>{
     const it=r.it; const art=artFor(it);
