@@ -154,7 +154,7 @@ html[data-theme="light"] .cal-cell .dnum{color:var(--muted);text-shadow:none}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;overscroll-behavior:none}
 body{padding-bottom:calc(90px + var(--adh,0px));max-width:560px;margin:0 auto;position:relative;min-height:100vh}
-body.has-adbanner{--adh:56px}   /* 통계 탭 하단 배너 높이 확보 (네이티브에서만) */
+body.has-adbanner{--adh:var(--adsz,56px)}   /* 하단 배너 높이 확보 (네이티브에서만) */
 body::before{content:'';position:fixed;inset:0;background:
   radial-gradient(900px 500px at 80% -10%, rgba(232,100,60,.14), transparent 60%),
   radial-gradient(700px 500px at 0% 100%, rgba(106,160,232,.10), transparent 55%);
@@ -361,7 +361,7 @@ h1 .em{color:var(--accent)}
 .lp.pulled .disc.playing{transition:box-shadow .4s;
   transform:translate(-50%,-50%) rotate(var(--spin,0deg));
   animation:lp-discplay 2.4s linear infinite}
-#preview-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(18px);
+#preview-toast{position:fixed;left:50%;bottom:calc(92px + var(--adh,0px));transform:translateX(-50%) translateY(18px);
   background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:13px;font-weight:600;
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap;
   box-shadow:0 6px 20px rgba(0,0,0,.4)}
@@ -478,13 +478,13 @@ html[data-theme="light"] .hdr-add{color:var(--txt)}
 /* Modal / sheet */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:.25s;touch-action:none;overscroll-behavior:none}
 .ov.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(100%);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+.sheet{position:fixed;left:50%;bottom:var(--adh,0px);transform:translateX(-50%) translateY(calc(100% + var(--adh,0px)));width:100%;max-width:560px;max-height:calc(92vh - var(--adh,0px));overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-radius:26px 26px 0 0;border-top:1px solid var(--line);z-index:55;transition:transform .3s cubic-bezier(.22,1,.36,1);padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 .sheet.show{transform:translateX(-50%) translateY(0)}
 body.scroll-lock{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 #sheet-colldetail,#sheet-collnew,#sheet-collpick{touch-action:pan-y}
 /* 풀스크린 레이어: 시트 위에 시트가 얹히는 뎁스 대신 화면 전체를 부드럽게 덮는다.
    바텀시트식 슬라이드업 대신 제자리 페이드+살짝 상승으로 '덮는' 느낌을 준다. */
-.sheet.fs{top:0;height:100%;max-height:none;border-radius:0;border-top:none;z-index:60;
+.sheet.fs{top:0;height:calc(100% - var(--adh,0px));max-height:none;border-radius:0;border-top:none;z-index:60;
   padding-top:calc(10px + env(safe-area-inset-top,0px));
   opacity:0;pointer-events:none;transform:translateX(-50%) translateY(16px);
   transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .24s ease}
@@ -7018,11 +7018,9 @@ function handleAppBack(){
 })();
 
 /* ===== 광고 (Google AdMob) — 네이티브(APK)에서만 동작, 웹/PWA 에서는 전부 no-op =====
-   하단 배너 + 보상형(광고 시청 시 배너 1시간 숨김).
-   ⚠️ 아래는 구글 공식 "테스트" 광고 ID 입니다. 실제 수익을 받으려면 애드몹 콘솔에서
-   발급한 App ID(워크플로) 와 광고단위 ID(아래) 로 교체하세요. 개발 중 실광고 클릭은 계정 정지 위험. */
+   전 화면 하단 배너 + 등록 후 전면 + 보상형(24시간 광고 끄기). 개발 중 실광고 클릭은 계정 정지 위험. */
 const AD_IDS = {
-  banner:       'ca-app-pub-5071878284765662/5792361610',   // 통계 탭 배너
+  banner:       'ca-app-pub-5071878284765662/5792361610',   // 전 화면 하단 배너
   interstitial: 'ca-app-pub-5071878284765662/7446178466',   // 등록 완료 후 전면
   reward:       'ca-app-pub-5071878284765662/1697309139'     // 보상형(24h 광고 끄기)
 };
@@ -7031,25 +7029,32 @@ function _adFree(){ return Date.now() < (+(localStorage.getItem('adFreeUntil')||
 async function initAds(){
   const A=_admob(); if(!A) return;
   try{ await A.initialize({}); }catch(e){ console.warn('ad init', e); }
-  // 통계 탭 전용 배너: 뷰 전환을 어디서 하든 감지되도록 클래스 변화를 관찰
+  // 실제 적응형 배너 높이만큼 하단 UI 를 띄운다 (기본 56px)
+  try{ A.addListener('bannerAdSizeChanged', s=>{ const h=+(s&&s.height)||0;
+    if(h>0) document.documentElement.style.setProperty('--adsz', Math.ceil(h)+'px'); }); }catch(e){}
+  // 로그인 상태(state-app) 변화를 감지. setState 가 body.className 을 통째로 바꾸므로 has-adbanner 도 복구.
   try{
-    const sv=document.getElementById('view-stats');
-    if(sv){ new MutationObserver(()=>{ try{ updateStatsBanner(); }catch(e){} })
-              .observe(sv,{attributes:true,attributeFilter:['class']}); }
-    updateStatsBanner();
+    new MutationObserver(()=>{ try{ updateBanner(); }catch(e){} })
+      .observe(document.body,{attributes:true,attributeFilter:['class']});
+    updateBanner();
   }catch(e){}
 }
-/* 배너는 '통계 탭'에서만. 다른 탭·24시간 광고 끄기 중에는 제거. 웹에서는 no-op. */
+/* 하단 배너는 로그인 후 모든 화면에 동일하게. 24시간 광고 끄기 중에는 제거. 웹에서는 no-op. */
 let _bannerOn=false;
-async function updateStatsBanner(){
+async function updateBanner(){
   const A=_admob(); if(!A) return;
-  const sv=document.getElementById('view-stats');
-  const want = !!(sv && sv.classList.contains('on')) && !_adFree();
-  if(want===_bannerOn) return;
+  const b=document.body;
+  const want = b.classList.contains('state-app') && !_adFree();
+  if(want===_bannerOn){
+    if(want && !b.classList.contains('has-adbanner')) b.classList.add('has-adbanner');
+    return;
+  }
   _bannerOn=want;
   if(want){
     try{ await A.showBanner({ adId:AD_IDS.banner, adSize:'ADAPTIVE_BANNER', position:'BOTTOM_CENTER', margin:0 });
-         document.body.classList.add('has-adbanner'); }catch(e){ _bannerOn=false; }
+         if(_bannerOn) b.classList.add('has-adbanner');
+         else { try{ await A.hideBanner(); await A.removeBanner(); }catch(e){} }   // 표시 중에 로그아웃 등으로 취소됨
+    }catch(e){ _bannerOn=false; }
   }else{
     document.body.classList.remove('has-adbanner');
     try{ await A.hideBanner(); }catch(e){}
@@ -7078,7 +7083,7 @@ async function watchRewardedAdFree(){
     await A.prepareRewardVideoAd({ adId:AD_IDS.reward });
     await A.showRewardVideoAd();
     localStorage.setItem('adFreeUntil', String(Date.now()+24*60*60*1000));   // 24시간 (배너+전면 모두)
-    try{ updateStatsBanner(); }catch(e){}
+    try{ updateBanner(); }catch(e){}
     alert('감사합니다! 24시간 동안 광고(배너·전면)가 나오지 않아요.');
   }catch(e){ console.warn('reward', e); alert('지금은 볼 수 있는 광고가 없어요. 잠시 후 다시 시도해 주세요.'); }
 }
