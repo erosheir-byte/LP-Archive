@@ -1098,7 +1098,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
 <div class="wrap">
 <header>
-  <button class="hdr-add" id="fab" type="button" aria-label="LP 추가" title="LP 추가"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="hdr-add" id="fab" type="button" aria-label="바이닐 추가" title="바이닐 추가"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/바이닐 보기 전환" title="자켓 ↔ 바이닐 보기">
     <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">바이닐 보기</span>
   </button>
@@ -1255,7 +1255,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <button class="sheet-x" data-close="collnew" aria-label="닫기">✕</button>
   <div class="form">
     <h2 id="collnew-title">새 컬렉션</h2>
-    <div class="fld"><label>컬렉션 이름</label><input id="coll-name" placeholder="예) 비 오는 날 듣는 LP" maxlength="40"></div>
+    <div class="fld"><label>컬렉션 이름</label><input id="coll-name" placeholder="예) 비 오는 날 듣는 바이닐" maxlength="40"></div>
     <div class="fld"><label>설명 (선택)</label><input id="coll-desc" placeholder="간단한 메모" maxlength="80"></div>
     <div class="fld"><label>커버 색</label>
       <div class="coll-colors" id="coll-colors"></div>
@@ -1278,7 +1278,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     <div class="cd-head" id="cd-collhead"></div>
     <div class="coll-colors cd-colors" id="cd-colors"></div>
     <div class="cd-tools cd-edit">
-      <button class="cd-chip cd-edit" id="coll-addlp" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span>LP 담기</span></button>
+      <button class="cd-chip cd-edit" id="coll-addlp" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span>바이닐 담기</span></button>
       <button class="cd-chip danger cd-edit" id="coll-del" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/></svg><span>삭제</span></button>
       <button class="cd-chip primary cd-edit" id="coll-editdone" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg><span>완료</span></button>
     </div>
@@ -1292,7 +1292,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <div class="grab" id="grab-collpick"></div>
   <button class="sheet-x" data-close="collpick" aria-label="닫기">✕</button>
   <div class="form">
-    <h2>LP 담기</h2>
+    <h2>바이닐 담기</h2>
     <input id="collpick-q" class="collpick-search" placeholder="가수·앨범 검색">
     <div class="collpick-list" id="collpick-list"></div>
     <div class="btnrow"><button class="btn primary" data-close="collpick">완료</button></div>
@@ -1325,7 +1325,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <div class="grab" id="grab-add"></div>
   <button class="sheet-x" data-close="add" aria-label="닫기">✕</button>
   <div class="form">
-    <h2>LP 추가</h2>
+    <h2>바이닐 추가</h2>
     <div class="fhint">가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.</div>
     <div class="row2">
       <div class="fld"><label class="req">가수 <b class="star">*</b></label><input id="f-artist" placeholder="예: Tom Misch"></div>
@@ -1397,7 +1397,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
+        <div class="fld"><label>바이닐 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
           <select id="f-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1540,7 +1540,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>음반 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
+        <div class="fld"><label>바이닐 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
           <select id="e-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1596,7 +1596,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <button type="button" class="sx-segbtn" data-mode="교환">교환</button>
     </div>
 
-    <div class="fld" style="margin-top:14px"><label>어떤 LP를 내보내나요? (보관함에서 선택)</label></div>
+    <div class="fld" style="margin-top:14px"><label>어떤 바이닐을 내보내나요? (보관함에서 선택)</label></div>
     <input id="sx-q" class="collpick-search" placeholder="가수·앨범 검색">
     <div class="sx-pick" id="sx-pick"></div>
 
@@ -1637,7 +1637,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
    prices/dates) is never translated — only known UI strings in the dictionary. */
 const I18N = {
   "컬렉션 카드 공유":"Share collection card",
-  "LP 지직거림 사운드":"Vinyl crackle sound",
+  "바이닐 지직거림 사운드":"Vinyl crackle sound",
   "미리듣기 재생 중 깔리는 아날로그 잡음":"Warm analog noise layered under previews",
   "앱 표시 언어를 선택해요":"Choose the app display language",
   "테마":"Theme",
@@ -1733,9 +1733,9 @@ const I18N = {
   "검색 결과가 없어요":"No results found",
   "위시가 비어 있어요 — 왼쪽 위 + 버튼으로 추가하세요":"Your wishlist is empty — add one with the + button at the top left",
   "이 달에는 기록이 없어요":"No records this month",
-  "표시할 LP가 없어요":"No records to show",
+  "표시할 바이닐이 없어요":"No records to show",
   /* --- FAB / add sheet --- */
-  "LP 추가":"Add Vinyl",
+  "바이닐 추가":"Add Vinyl",
   "위시 추가":"Add to Wishlist",
   "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
   "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
@@ -1758,7 +1758,7 @@ const I18N = {
   "팔레트 열기":"Open palette",
   "구매처":"Store",
   "슬리브 상태":"Sleeve grade",
-  "음반 상태":"Media grade",
+  "바이닐 상태":"Media grade",
   "선택 안 함":"None",
   "구매일자":"Purchase date",
   "개봉일자":"Opened date",
@@ -1834,7 +1834,7 @@ const I18N = {
   "판 색상":"Disc color",
   "투명도 ":"Opacity ",
   "기본값으로 되돌리기":"Reset to default",
-  "레코드판 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.":"Your photo fits inside the record-shaped guide. Drag with one finger to move, pinch with two to resize/tilt.",
+  "바이닐 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.":"Your photo fits inside the record-shaped guide. Drag with one finger to move, pinch with two to resize/tilt.",
   "사진을 올려주세요":"Please add a photo",
   "📷 사진 올리기":"📷 Add photo",
   "크기 ":"Size ",
@@ -1845,7 +1845,7 @@ const I18N = {
   /* --- sell / exchange sheet --- */
   "판매 / 교환":"Sell / Exchange",
   "판매":"Sell",
-  "어떤 LP를 내보내나요? (보관함에서 선택)":"Which record are you parting with? (pick from Library)",
+  "어떤 바이닐을 내보내나요? (보관함에서 선택)":"Which record are you parting with? (pick from Library)",
   "가수·앨범 검색":"Search artist · album",
   "판매가 (원)":"Sale price (KRW)",
   "교환으로 받은 앨범":"Album received in exchange",
@@ -1854,8 +1854,8 @@ const I18N = {
   "예: 당근에서 교환":"e.g. exchanged on Karrot",
   "등록":"Register",
   "(제목 없음)":"(no title)",
-  "판매/교환할 LP를 보관함에서 선택해주세요":"Please pick a record from your Library to sell/exchange",
-  "선택한 LP를 찾을 수 없어요":"Couldn't find the selected record",
+  "판매/교환할 바이닐을 보관함에서 선택해주세요":"Please pick a record from your Library to sell/exchange",
+  "선택한 바이닐을 찾을 수 없어요":"Couldn't find the selected record",
   "판매가를 입력해주세요":"Please enter a sale price",
   "교환으로 받은 앨범의 가수 또는 앨범명을 입력해주세요":"Please enter the artist or album of the record you received",
   /* --- my page / collections --- */
@@ -1866,7 +1866,7 @@ const I18N = {
   "좋아요한 앨범":"Liked albums",
   "취향 요약":"Taste summary",
   "아직 컬렉션이 없어요.":"No collections yet.",
-  "나만의 플레이리스트처럼 LP를 모아보세요.":"Gather records like your own playlists.",
+  "나만의 플레이리스트처럼 바이닐을 모아보세요.":"Gather records like your own playlists.",
   "제목 없음":"Untitled",
   "아직 좋아요한 앨범이 없어요.":"No liked albums yet.",
   "앨범 상세에서 ♥를 눌러보세요.":"Tap ♥ in an album's detail view.",
@@ -1897,28 +1897,26 @@ const I18N = {
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
   "판매 차익":"Sale profit",
-  "가장 잘 판 LP":"Best sale",
+  "가장 잘 판 바이닐":"Best sale",
   "현재가는 판매 기록 기준 추정값이에요.":"Current value is estimated from sale records.",
   /* --- collection sheets --- */
   "새 컬렉션":"New collection",
   "컬렉션 수정":"Edit collection",
   "컬렉션 이름":"Collection name",
-  "예) 비 오는 날 듣는 LP":"e.g. Records for rainy days",
+  "예) 비 오는 날 듣는 바이닐":"e.g. Records for rainy days",
   "설명 (선택)":"Description (optional)",
   "간단한 메모":"A short note",
   "커버 색":"Cover color",
   "컬렉션 이름을 입력해주세요":"Please enter a collection name",
-  "+ LP 담기":"+ Add records",
-  "삭제":"Delete",
+    "삭제":"Delete",
   "수정":"Edit",
-  "담긴 LP가 없어요.":"No records added.",
-  "‘LP 담기’로 추가해보세요.":"Add some with 'Add records'.",
-  "연필 버튼을 눌러 LP를 담아보세요.":"Tap the pencil to add records.",
+  "담긴 바이닐이 없어요.":"No records added.",
+  "‘바이닐 담기’로 추가해보세요.":"Add some with 'Add records'.",
+  "연필 버튼을 눌러 바이닐을 담아보세요.":"Tap the pencil to add records.",
   "컬렉션 편집":"Edit collection",
   "편집":"Edit",
-  "설명 (선택)":"Description (optional)",
   "빼기":"Remove",
-  "LP 담기":"Add records",
+  "바이닐 담기":"Add records",
   "완료":"Done",
   /* --- stats --- */
   "보유 중":"Owned",
@@ -1956,7 +1954,7 @@ const I18N = {
   "장르 표기":"Show genre",
   "카드에 장르 태그를 표시해요":"Show a genre tag on each card",
   "상태 등급 선택":"Condition grading",
-  "개봉 LP에 슬리브·음반 컨디션 등급을 기록해요":"Record sleeve & media condition grades on opened records",
+  "개봉한 바이닐의 슬리브·판 컨디션 등급을 기록해요":"Record sleeve & media condition grades on opened records",
   "모아보기 중복 앨범 한 장만":"One card per album in Cover Flow",
   "커버플로우에서 같은 앨범이 여러 장이어도 하나만 보여요":"Show duplicates of the same album as a single card",
   "RPM·인치 선택":"RPM & size",
@@ -1971,7 +1969,7 @@ const I18N = {
   "기본 보기 모드":"Default view",
   "보관함을 열 때 기본 레이아웃":"Default layout when opening the Library",
   "Discogs 토큰":"Discogs token",
-  "바코드 스캔으로 음반 정보를 불러올 때 사용해요":"Used to fetch record info when scanning a barcode",
+  "바코드 스캔으로 앨범 정보를 불러올 때 사용해요":"Used to fetch record info when scanning a barcode",
   "데이터 내보내기 / 백업":"Export data / Backup",
   "전체 기록을 JSON 파일로 저장":"Save your entire collection as a JSON file",
   "앱 정보":"About",
@@ -1988,7 +1986,7 @@ const I18N = {
   "카메라를 열 수 없어요. 아래에 번호를 직접 입력하세요.":"Couldn't open the camera. Enter the number manually below.",
   "바코드 번호를 인식하지 못했어요.":"Couldn't read a barcode number.",
   "Discogs 토큰이 없어요. 마이페이지 환경설정에서 입력하세요.":"No Discogs token. Add one in My Page → Settings.",
-  "이 바코드로 음반을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.":"No record found for this barcode. Check the number or enter it manually.",
+  "이 바코드로 앨범을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.":"No record found for this barcode. Check the number or enter it manually.",
   "조회 중 오류가 발생했어요. 네트워크를 확인하세요.":"An error occurred during lookup. Please check your network.",
   "Discogs 커버로 저장돼요 ✓":"Discogs cover will be saved ✓",
   /* --- condition grade --- */
@@ -2046,24 +2044,24 @@ const I18N = {
   "카드 만드는 중…":"Making your card…",
   "공유 카드":"Share card",
   "공유하기":"Share",
-  "공유할 LP가 없어요. 먼저 컬렉션에 LP를 담아주세요.":"No records to share. Add some to the collection first.",
+  "공유할 바이닐이 없어요. 먼저 컬렉션에 바이닐을 담아주세요.":"No records to share. Add some to the collection first.",
   "앱 열기 →":"Open the app →",
   "나도 내 바이닐 컬렉션 만들기 →":"Start my own vinyl collection →",
   /* --- 설정 --- */
   "발매년도 표기":"Show release year",
-  "카드와 상세에 LP 발매년도를 표시해요":"Show the release year on cards and detail",
+  "카드와 상세에 발매년도를 표시해요":"Show the release year on cards and detail",
   "Discogs 연동":"Discogs",
   "컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)":"Used for importing a collection (barcode scanning needs no setup)",
-  "이 계정의 LP 전체 삭제":"Delete every record in this account",
-  "이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)":"Empties the account by deleting every record saved to it (cannot be undone)",
+  "이 계정의 바이닐 전체 삭제":"Delete every record in this account",
+  "이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)":"Empties the account by deleting every record saved to it (cannot be undone)",
   "회원 탈퇴":"Delete account",
-  "계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)":"Permanently deletes the account and all data — records, collections, photo logs (cannot be undone)",
+  "계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)":"Permanently deletes the account and all data — records, collections, photo logs (cannot be undone)",
   "미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.":"This does not work in preview. Use it in the real app.",
   "정말 전부 삭제합니다. 계속할까요?":"This deletes everything. Continue?",
   "삭제 중…":"Deleting…",
   "이 계정을 비웠어요.":"This account is now empty.",
   "삭제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.":"Something went wrong while deleting. Please try again in a moment.",
-  "회원 탈퇴 시 계정과 모든 데이터(LP·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?":"Deleting your account permanently removes it and all data — records, collections, photo logs. This cannot be undone.\nContinue?",
+  "회원 탈퇴 시 계정과 모든 데이터(바이닐·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?":"Deleting your account permanently removes it and all data — records, collections, photo logs. This cannot be undone.\nContinue?",
   "정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.":"Are you sure? This cannot be undone.",
   "탈퇴 처리 중…":"Deleting your account…",
   "탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.":"Your account has been deleted. Thank you for using the app.",
@@ -2109,13 +2107,13 @@ const I18N = {
   "· 공유된 컬렉션":"· shared collection",
   /* --- 첫 사용 가이드 --- */
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
-  "내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
-  "LP 등록":"Add a record",
-  "왼쪽 위 + 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
+  "내 바이닐을 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
+  "바이닐 등록":"Add a record",
+  "왼쪽 위 + 버튼으로 바이닐을 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
   "바이닐 직접 돌리기":"Spin the record yourself",
   "카드 위로 살짝 보이는 바이닐을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
-  "커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
+  "커버를 탭하면 판이 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "앨범 커버 변경하기":"Change the album cover",
   "바이닐 이미지 변경하기":"Change the vinyl image",
   "수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 바이닐 이미지를 변경할 수 있어요.":"Tap the edit button at the end of the color palette on the edit screen to change the vinyl image.",
@@ -2755,7 +2753,7 @@ function renderGrid(){
   const isWish=filter.chip==='위시';
   // FAB: 모양은 모든 탭 동일(위시 버전), 문구·동작만 컨텍스트 반영
   const fab=$('#fab');
-  if(fab){ fab.title = isWish ? '위시 추가' : 'LP 추가'; fab.setAttribute('aria-label', fab.title); }
+  if(fab){ fab.title = isWish ? '위시 추가' : '바이닐 추가'; fab.setAttribute('aria-label', fab.title); }
   if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 왼쪽 위 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
   $('#grid').innerHTML=list.map((it,i)=>`
     <div class="lp" data-id="${it.id}" style="animation-delay:${Math.min(i*30,400)}ms">
@@ -3349,8 +3347,8 @@ function openDetail(id, mode){
   if(typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false){
     const gradeCell=g=>`<span class="grade-badge">${g}</span> <span style="color:var(--dim);font-size:11px">${(GRADE_DESC[g]||'').split(' — ')[0]}</span>`;
     if(it.sleeveGrade) R('슬리브 상태', gradeCell(it.sleeveGrade));
-    if(it.mediaGrade) R('음반 상태', gradeCell(it.mediaGrade));
-    if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('음반 상태', gradeCell(it.grade));  // 구 데이터 폴백
+    if(it.mediaGrade) R('바이닐 상태', gradeCell(it.mediaGrade));
+    if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('바이닐 상태', gradeCell(it.grade));  // 구 데이터 폴백
   }
   { const rpmOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showRpm, inchOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showInch;
     const parts=[rpmOn&&it.rpm?it.rpm+' RPM':'', inchOn?(it.inch||''):''].filter(Boolean);
@@ -3602,7 +3600,7 @@ function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,pr
   box.innerHTML=`
     <div class="inl-title">📷 판에 사진 넣기</div>
     <div class="vd-pane" id="vd-pane-photo">
-      <div class="vd-photodesc">레코드판 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.</div>
+      <div class="vd-photodesc">바이닐 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.</div>
       <div class="vd-stage" id="vd-stage">
         <div class="vd-imgwrap" id="vd-imgwrap"></div>
         <div class="vd-guide"></div>
@@ -4343,7 +4341,7 @@ async function lookupBarcode(code){
     bcStatus(bcT('Lookup error. Please check your network.','조회 중 오류가 발생했어요. 네트워크를 확인하세요.')); return;
   }
   if(!hit){
-    bcStatus(bcT('No record found for this barcode. Check the number or enter it manually.','이 바코드로 음반을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.'));
+    bcStatus(bcT('No record found for this barcode. Check the number or enter it manually.','이 바코드로 앨범을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.'));
     return;
   }
   applyBarcodeResult(hit);
@@ -4688,7 +4686,7 @@ function _showShareSheet(blob, title){
 function shareCollectionCard(){ return _openShareCard(buildShareCardCanvas, isEN()?'📤 Collection card':'📤 컬렉션 카드', null, $('#share-card-btn')); }
 function shareCollCard(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
-  if(!(c.ids||[]).some(id=>DATA.find(x=>x.id===id))){ previewToast(isEN()?'Add records to this collection first':'컬렉션에 LP를 담으면 카드를 만들 수 있어요'); return; }
+  if(!(c.ids||[]).some(id=>DATA.find(x=>x.id===id))){ previewToast(isEN()?'Add records to this collection first':'컬렉션에 바이닐을 담으면 카드를 만들 수 있어요'); return; }
   const t=c.name||(isEN()?'Collection':'컬렉션');
   return _openShareCard(()=>buildCollCardCanvas(c), '📤 '+t, t+' 🎵', $('#cd-share'));
 }
@@ -4786,7 +4784,7 @@ function paintGradeDesc(prefix){
   const s=$('#'+prefix+'-sleeve'), m=$('#'+prefix+'-media'), d=$('#'+prefix+'-grade-desc');
   if(!d) return;
   const lines=[];
-  if(m&&m.value) lines.push('💿 음반 '+m.value+' — '+gradeShort(m.value));
+  if(m&&m.value) lines.push('💿 바이닐 '+m.value+' — '+gradeShort(m.value));
   if(s&&s.value) lines.push('✉️ 슬리브 '+s.value+' — '+sleeveShort(s.value));
   d.innerHTML=lines.join('<br>');
 }
@@ -4864,7 +4862,7 @@ function openAdd(initStatus, presetDate){
   if($('#f-cat')) $('#f-cat').value=_cat;
   if($('#f-status')) $('#f-status').value=_sub;
   const wish=(_cat==='위시');
-  $('#sheet-add .form h2').textContent=wish?'위시 추가':'LP 추가';
+  $('#sheet-add .form h2').textContent=wish?'위시 추가':'바이닐 추가';
   $('#sheet-add .fhint').style.display=wish?'none':'';
   $('#f-buy').value=presetDate||new Date().toISOString().slice(0,10);
   $('#pa-prev').innerHTML='art';$('#pa-prev').dataset.url='';$('#pt-prev').textContent='가수·앨범 입력 후 미리보기';
@@ -4958,16 +4956,16 @@ function renderSxPick(q){
       <div class="pr-meta"><div class="a">${escapeHtml(it.album||'(제목 없음)')}</div><div class="b">${escapeHtml(it.artist||'')} · ${escapeHtml(it.status||'')}</div></div>
       <div class="pr-chk">${on?'✓':''}</div>
     </div>`;
-  }).join('') || `<div class="coll-items-empty">표시할 LP가 없어요</div>`;
+  }).join('') || `<div class="coll-items-empty">표시할 바이닐이 없어요</div>`;
   wrap.querySelectorAll('.collpick-row').forEach(row=>row.onclick=()=>{
     _sxPickId=row.dataset.id;
     wrap.querySelectorAll('.collpick-row').forEach(r=>{ r.classList.toggle('in', r===row); r.querySelector('.pr-chk').textContent = r===row?'✓':''; });
   });
 }
 function saveSellExchange(){
-  if(!_sxPickId){ appAlert('판매/교환할 LP를 보관함에서 선택해주세요'); return; }
+  if(!_sxPickId){ appAlert('판매/교환할 바이닐을 보관함에서 선택해주세요'); return; }
   const it=DATA.find(d=>d.id===_sxPickId);
-  if(!it){ appAlert('선택한 LP를 찾을 수 없어요'); return; }
+  if(!it){ appAlert('선택한 바이닐을 찾을 수 없어요'); return; }
   const note=$('#sx-note').value.trim();
   if(_sxMode==='판매'){
     const date=$('#sx-selldate').value;
@@ -5890,7 +5888,7 @@ function renderSettings(){
         ${tog(SETTINGS.showGenre)}
       </div>
       <div class="set-row col">
-        <div class="set-l"><div class="set-t">LP 지직거림 사운드</div><div class="set-d">미리듣기 재생 중 깔리는 아날로그 잡음</div></div>
+        <div class="set-l"><div class="set-t">바이닐 지직거림 사운드</div><div class="set-d">미리듣기 재생 중 깔리는 아날로그 잡음</div></div>
         <div class="set-seg" id="set-crackle">
           <button type="button" class="${SETTINGS.crackleLevel==='off'?'on':''}" data-crackle="off">끔</button>
           <button type="button" class="${(SETTINGS.crackleLevel==='low'||SETTINGS.crackleLevel==null)?'on':''}" data-crackle="low">약하게</button>
@@ -5898,11 +5896,11 @@ function renderSettings(){
         </div>
       </div>
       <div class="set-row" data-act="showYear">
-        <div class="set-l"><div class="set-t">발매년도 표기</div><div class="set-d">카드와 상세에 LP 발매년도를 표시해요</div></div>
+        <div class="set-l"><div class="set-t">발매년도 표기</div><div class="set-d">카드와 상세에 발매년도를 표시해요</div></div>
         ${tog(SETTINGS.showYear)}
       </div>
       <div class="set-row" data-act="showGrade">
-        <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉 LP에 슬리브·음반 컨디션 등급을 기록해요</div></div>
+        <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉한 바이닐의 슬리브·판 컨디션 등급을 기록해요</div></div>
         ${tog(SETTINGS.showGrade)}
       </div>
       <div class="set-row" data-act="dedupeFlow">
@@ -5944,8 +5942,8 @@ function renderSettings(){
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div></div></div>
-      <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 LP 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 LP를 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(LP·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 바이닐 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
     </div>`;
 
@@ -5992,7 +5990,7 @@ function renderSettings(){
   { const cl=$('#set-clear'); if(cl) cl.onclick=async()=>{
       if(!(window.LPCloud && window.LPCloud.clearAll)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
       const n=(typeof DATA!=='undefined'&&DATA)?DATA.length:0;
-      if(!(await appConfirm(`이 계정의 LP ${n}장을 모두 삭제할까요?\n되돌릴 수 없어요.`, {okText:'모두 삭제', danger:true}))) return;
+      if(!(await appConfirm(`이 계정의 바이닐 ${n}장을 모두 삭제할까요?\n되돌릴 수 없어요.`, {okText:'모두 삭제', danger:true}))) return;
       if(!(await appConfirm('정말 전부 삭제합니다. 계속할까요?', {okText:'삭제', danger:true}))) return;
       cl.style.pointerEvents='none';
       const t=cl.querySelector('.set-t'); const old=t?t.textContent:''; if(t) t.textContent='삭제 중…';
@@ -6006,7 +6004,7 @@ function renderSettings(){
   // 회원 탈퇴 (계정 + 모든 데이터 영구 삭제)
   { const dl=$('#set-delete'); if(dl) dl.onclick=async()=>{
       if(!(window.LPCloud && window.LPCloud.deleteAccount)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
-      if(!(await appConfirm('회원 탈퇴 시 계정과 모든 데이터(LP·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?', {okText:'계속', danger:true}))) return;
+      if(!(await appConfirm('회원 탈퇴 시 계정과 모든 데이터(바이닐·컬렉션·사진 기록)가 영구 삭제되며 되돌릴 수 없어요.\n계속할까요?', {okText:'계속', danger:true}))) return;
       if(!(await appConfirm('정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.', {okText:'탈퇴', danger:true}))) return;
       const t=dl.querySelector('.set-t'); const old=t?t.textContent:'';
       const run=async(pw)=>{
@@ -6132,7 +6130,7 @@ function renderCollItems(){
   const wrap=$('#coll-items');
   const items=(c.ids||[]).map(id=>DATA.find(x=>x.id===id)).filter(Boolean);
   if(!items.length){ const ed=$('#sheet-colldetail').classList.contains('editing');
-    wrap.innerHTML=`<div class="coll-items-empty">담긴 LP가 없어요.<br>${ed?'‘LP 담기’로 추가해보세요.':'연필 버튼을 눌러 LP를 담아보세요.'}</div>`; return; }
+    wrap.innerHTML=`<div class="coll-items-empty">담긴 바이닐이 없어요.<br>${ed?'‘바이닐 담기’로 추가해보세요.':'연필 버튼을 눌러 바이닐을 담아보세요.'}</div>`; return; }
   wrap.innerHTML=items.map(it=>`
     <div class="coll-it" data-id="${it.id}">
       <button class="ci-rm" data-rm="${it.id}" title="빼기">−</button>
@@ -6178,7 +6176,7 @@ function _copyShareUrl(url){
 function shareCurrentCollection(){
   const c=COLLECTIONS.find(x=>x.id===_collOpenId); if(!c) return;
   if(!(window.LPCloud && window.LPCloud.shareCollection)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
-  if(!(c.ids&&c.ids.length)){ appAlert('공유할 LP가 없어요. 먼저 컬렉션에 LP를 담아주세요.'); return; }
+  if(!(c.ids&&c.ids.length)){ appAlert('공유할 바이닐이 없어요. 먼저 컬렉션에 바이닐을 담아주세요.'); return; }
   const shareId = c.shareId || ((self.crypto&&crypto.randomUUID)?crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+Math.random().toString(36).slice(2,10)));
   if(c.shareId!==shareId){ c.shareId=shareId; saveCollections(); }
   const url='https://lp-archive.web.app/?c='+encodeURIComponent(shareId);
@@ -6199,7 +6197,7 @@ function shareCurrentCollection(){
   if(window.Kakao && window.Kakao.Share && window.Kakao.isInitialized && window.Kakao.isInitialized()){
     try{
       window.Kakao.Share.sendDefault({ objectType:'feed',
-        content:{ title:(c.name||'내 바이닐 컬렉션'), description:`${count}장의 LP · Turnit`, imageUrl:img, link:{ mobileWebUrl:url, webUrl:url } },
+        content:{ title:(c.name||'내 바이닐 컬렉션'), description:`${count}장의 바이닐 · Turnit`, imageUrl:img, link:{ mobileWebUrl:url, webUrl:url } },
         buttons:[{ title:'컬렉션 보러가기', link:{ mobileWebUrl:url, webUrl:url } }] });
       return;
     }catch(e){ console.warn('kakao share fail → fallback', e); }
@@ -6233,7 +6231,7 @@ function renderCollPick(q){
       <div class="pr-meta"><div class="a">${escapeHtml(it.album||'(제목 없음)')}</div><div class="b">${escapeHtml(it.artist||'')}</div></div>
       <div class="pr-chk">${inSet?'✓':''}</div>
     </div>`;
-  }).join('') || `<div class="coll-items-empty">표시할 LP가 없어요</div>`;
+  }).join('') || `<div class="coll-items-empty">표시할 바이닐이 없어요</div>`;
   wrap.querySelectorAll('.collpick-row').forEach(row=>row.onclick=()=>{
     const id=row.dataset.id;
     const has=(c.ids||[]).includes(id);
@@ -6251,11 +6249,11 @@ function renderCollPick(q){
    설정 > 앱 가이드 다시 보기 로 재실행. */
 const TOUR_STEPS=[
   { title:'Turnit 에 오신 걸 환영해요',
-    desc:'내 LP 를 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
-  { tab:'coll', target:'#fab', round:true, title:'LP 등록',
-    desc:'왼쪽 위 + 버튼으로 LP 를 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
+    desc:'내 바이닐을 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
+  { tab:'coll', target:'#fab', round:true, title:'바이닐 등록',
+    desc:'왼쪽 위 + 버튼으로 바이닐을 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
-    desc:'커버를 탭하면 LP 가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
+    desc:'커버를 탭하면 판이 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
   { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'바이닐 직접 돌리기',
     open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
     leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
@@ -6626,7 +6624,7 @@ function dataURLToBlob(dataURL){
   return new Blob([arr],{type:mime});
 }
 // 새(빈) 계정에 처음 한 번 넣어줄 샘플 LP 1장. (기존 90장 시드는 더 이상 자동 주입하지 않음)
-const SAMPLE_LP={ no:1, artist:"Tom Misch", album:"Geography", color:"그레이", store:"", orig:null, price:null, pay:"", buy:null, arrive:null, status:"개봉", sellDate:null, sellPrice:null, profit:null, note:"샘플 LP예요 🎵 눌러서 수정하거나 삭제하고, 나만의 컬렉션을 채워보세요.", genre:"R&B·소울" };
+const SAMPLE_LP={ no:1, artist:"Tom Misch", album:"Geography", color:"그레이", store:"", orig:null, price:null, pay:"", buy:null, arrive:null, status:"개봉", sellDate:null, sellPrice:null, profit:null, note:"샘플 바이닐이에요 🎵 눌러서 수정하거나 삭제하고, 나만의 컬렉션을 채워보세요.", genre:"R&B·소울" };
 // 최초 로그인 시 계정에 넣을 초기 데이터 — 신규 계정은 샘플 1장만 받는다.
 // (joyoy 등 이미 데이터가 있는 계정은 이 함수가 호출되지 않고 클라우드 데이터를 그대로 사용)
 window.buildInitialData=function(){
@@ -6874,7 +6872,7 @@ async function downloadImportTemplate(){
       previewToast('양식 파일 준비 중…');
       const url=await window.LPCloud.uploadImage(blob,'csv');
       const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
-      if(Sh && Sh.share){ await Sh.share({ title:'LP 등록 양식 (CSV)', text:'엑셀에서 열어 채운 뒤 앱에 업로드하세요', url, dialogTitle:'양식 받기' }); return; }
+      if(Sh && Sh.share){ await Sh.share({ title:'바이닐 등록 양식 (CSV)', text:'엑셀에서 열어 채운 뒤 앱에 업로드하세요', url, dialogTitle:'양식 받기' }); return; }
       window.open(url,'_blank'); return;
     }catch(e){ console.error('template share', e); appAlert('양식을 준비하지 못했어요. 로그인과 네트워크를 확인해주세요.'); return; }
   }
@@ -7120,7 +7118,7 @@ function sharedViewHTML(d){
       <div style="flex:1;min-width:0"><div class="sh-nm">${_shEsc(d.name||'컬렉션')}</div>${d.desc?`<div class="sh-ds">${_shEsc(d.desc)}</div>`:''}</div>
     </div>
     <div class="sh-meta">${d.owner?_shEsc(d.owner)+' · ':''}<span>${items.length}장</span> <span>· 공유된 컬렉션</span></div>
-    <div class="sh-grid">${cards||'<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:34px">담긴 LP가 없어요.</div>'}</div>
+    <div class="sh-grid">${cards||'<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:34px">담긴 바이닐이 없어요.</div>'}</div>
     <a class="sh-cta" href="https://lp-archive.web.app/">나도 내 바이닐 컬렉션 만들기 →</a>
     <div class="sh-brand">lp-archive.web.app</div>
   </div>`;
