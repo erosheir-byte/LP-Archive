@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "FocusTube - YouTube 알고리즘 커스터마이저",
+  "description": "유튜브 홈 피드를 원하는 주제(공부 자극 등)로 교체하고, 알고리즘 초기화·재학습을 도와줍니다.",
+  "version": "1.0.0",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.youtube.com/*"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["common/presets.js", "content/feed.js"],
+      "css": ["content/feed.css"],
+      "run_at": "document_start"
+    }
+  ]
+}
