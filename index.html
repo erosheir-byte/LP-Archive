@@ -2953,6 +2953,39 @@ const VinylNoise = (function(){
 function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
 const _preview = { audio:null, id:null, it:null, discEl:null, cache:{}, last:{}, urls:[], idx:0, paused:false };
+// 한국 앨범인데 트랙명이 영어로만 올 때(앨범 수록곡 조회가 lang=ko_kr 을 무시하는 경우) 한국어 트랙명으로 바꾼다.
+//  1) iTunes 검색(lang=ko_kr)의 같은 앨범 곡을 trackId 로 맞춤  2) MusicBrainz 원어 수록곡을 디스크·트랙 번호로 맞춤
+//  너무 오래 걸리면 영어로 먼저 재생하고, 바뀐 이름은 같은 배열에 채워 다음 곡부터 반영
+const _hasHangul=s=>/[\uAC00-\uD7A3]/.test(s||'');
+async function _koTitles(it, tracks, collectionId){
+  if(!tracks || !tracks.length || tracks.some(t=>_hasHangul(t.title))) return;
+  if(!(_hasHangul(it.artist) || _hasHangul(it.album) || _hasHangul(it._pvName))) return;
+  const work=(async()=>{
+    const term=((it.artist||'')+' '+(it.album||'')).trim();
+    try{
+      if(collectionId && term){
+        const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country=KR&lang=ko_kr&limit=200&term='+encodeURIComponent(term));
+        const j=await r.json(), m={};
+        (j.results||[]).forEach(x=>{ if(x.collectionId===collectionId && x.trackId && x.trackName) m[x.trackId]=String(x.trackName).trim(); });
+        if(Object.values(m).some(_hasHangul)){ tracks.forEach(t=>{ if(m[t.id]) t.title=m[t.id]; }); return; }
+      }
+    }catch(e){}
+    try{
+      const q=v=>String(v||'').replace(/["\\]/g,' ').trim();
+      if(!q(it.album)) return;
+      const sr=await fetch('https://musicbrainz.org/ws/2/release/?fmt=json&limit=5&query='+encodeURIComponent(`release:"${q(it.album)}"`+(q(it.artist)?` AND artist:"${q(it.artist)}"`:'')));
+      const sj=await sr.json();
+      for(const rel of (sj.releases||[]).slice(0,2)){
+        const rr=await fetch('https://musicbrainz.org/ws/2/release/'+rel.id+'?fmt=json&inc=recordings');
+        const rj=await rr.json(), m={};
+        (rj.media||[]).forEach((md,di)=>(md.tracks||[]).forEach(tr=>{ m[(md.position||di+1)+'-'+tr.position]=tr.title; }));
+        const titles=tracks.map(t=>m[(t.disc||1)+'-'+t.no]);
+        if(titles.every(Boolean) && titles.some(_hasHangul)){ tracks.forEach((t,i)=>{ t.title=titles[i]; }); return; }
+      }
+    }catch(e){}
+  })();
+  await Promise.race([work, new Promise(r=>setTimeout(r,2500))]);
+}
 async function _fetchPreviewUrl(it){
   // cache[it.id] = 수록곡 [{url,title}] 배열
   if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
@@ -2972,8 +3005,8 @@ async function _fetchPreviewUrl(it){
           const lj=await lr.json();
           const u=(lj.results||[])
             .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
-            .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url);
-          if(u.length){ it._pvName = it.previewAlbumName || '지정 앨범'; _preview.cache[it.id]=u; return u; }
+            .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim(), id:x.trackId, no:x.trackNumber, disc:x.discNumber})).filter(t=>t.url);
+          if(u.length){ it._pvName = it.previewAlbumName || '지정 앨범'; if(country==='KR') await _koTitles(it, u, +it.previewAlbumId); _preview.cache[it.id]=u; return u; }
         }catch(e){}
       }
     }
@@ -3001,12 +3034,13 @@ async function _fetchPreviewUrl(it){
             const lj=await lr.json();
             const res=(lj.results||[]);
             const u=res.filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
-              .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()}))
+              .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim(), id:x.trackId, no:x.trackNumber, disc:x.discNumber}))
               .filter(t=>t.url);
             if(u.length){
               urls=u;
               const colRes=res.find(x=>x.wrapperType==='collection');
               it._pvName=(colRes&&colRes.collectionName)||cand.collectionName||'';   // 조회한 스토어 언어의 앨범명
+              if(country==='KR') await _koTitles(it, urls, cand.collectionId);
               break;
             }
           }catch(e){}
@@ -3022,7 +3056,7 @@ async function _fetchPreviewUrl(it){
         let pool=(j.results||[]).filter(x=>x.previewUrl);
         if(al){ pool=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al)); }); }
         if(ar2){ pool=pool.filter(x=>{ const a=norm(x.artistName); return a && (a===ar2 || a.includes(ar2) || ar2.includes(a)); }); }
-        if(pool.length){ urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim()})).filter(t=>t.url); if(urls.length){ it._pvName=(pool[0].collectionName||''); break; } }
+        if(pool.length){ urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim(), id:x.trackId, no:x.trackNumber, disc:x.discNumber})).filter(t=>t.url); if(urls.length){ it._pvName=(pool[0].collectionName||''); break; } }
       }
     }
   }catch(e){}
