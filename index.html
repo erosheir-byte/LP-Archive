@@ -796,6 +796,8 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .pv-results .pk-item{background:var(--card)}
 /* 수정 폼의 음원 연결 필드 */
 .e-pv-row{display:flex;align-items:center;gap:10px}
+.fld .genre-custom{margin-top:8px}
+.fld .genre-custom[hidden]{display:none}
 .e-pv-name{flex:1;min-width:0;font-size:15px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .e-pv-name.dim{color:var(--dim)}
 .e-pv-btn{flex:0 0 auto;background:var(--card2);border:1px solid var(--line);border-radius:11px;color:var(--accent2);font-family:inherit;font-weight:700;font-size:13px;padding:10px 14px;cursor:pointer}
@@ -1437,7 +1439,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="fld"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르</label><input id="f-genre" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
+      <div class="fld"><label>장르</label><select id="f-genre"></select><input id="f-genre-custom" class="genre-custom" placeholder="장르 직접 입력" maxlength="20" hidden></div>
       <div class="fld"><label>발매년도</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
     <div class="fld"><label>비고</label><input id="f-note" placeholder="메모"></div>
@@ -1511,7 +1513,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="fld"><label>앨범명</label><input id="e-album" placeholder="예: 30"></div>
     </div>
     <div class="row2">
-      <div class="fld"><label>장르</label><input id="e-genre" placeholder="예: 가요, R&B/소울" autocomplete="off"></div>
+      <div class="fld"><label>장르</label><select id="e-genre"></select><input id="e-genre-custom" class="genre-custom" placeholder="장르 직접 입력" maxlength="20" hidden></div>
       <div class="fld"><label>발매년도</label><input id="e-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
     <div class="fld"><label>별점</label><div class="e-rate" id="e-rate"></div></div>
@@ -1959,6 +1961,10 @@ const I18N = {
   /* --- genres (common) --- */
   "팝":"Pop","록":"Rock","R&B·소울":"R&B/Soul","R&B/소울":"R&B/Soul","가요":"K-Pop",
   "힙합":"Hip-hop","클래식":"Classical","인디":"Indie","OST":"OST","재즈":"Jazz",
+  /* --- genres (애플 뮤직 기준 장르) --- */
+  "얼터너티브":"Alternative","힙합/랩":"Hip-Hop/Rap","일렉트로닉":"Electronic","댄스":"Dance","블루스":"Blues",
+  "사운드트랙":"Soundtrack","애니메이션":"Anime","싱어송라이터":"Singer/Songwriter","포크":"Folk","컨트리":"Country",
+  "뉴에이지":"New Age","월드":"World","라틴":"Latin","레게":"Reggae","홀리데이":"Holiday",
   /* --- settings sheet --- */
   "환경설정":"Settings",
   "금액 표시 숨기기":"Hide amounts",
@@ -2034,6 +2040,7 @@ const I18N = {
   "(미리듣기로 재생할 앨범)":"(album used for preview playback)",
   "앨범 선택":"Choose album",
   "앨범 찾기":"Find album",
+  "장르 직접 입력":"Type a genre",
   "검색":"Search",
   "↩︎ 자동 선택으로 되돌리기":"↩︎ Back to the automatic pick",
   "↩︎ 자동 선택으로 되돌렸어요":"↩︎ Back to the automatic pick",
@@ -2332,15 +2339,84 @@ async function searchItunes(term, limit){
   return out;
 }
 // normalize iTunes genre into a short Korean label
-function normGenre(g){
-  if(!g) return '';
-  const m={'K-Pop':'가요','Korean':'가요','J-Pop':'J-Pop','Pop':'팝','Rock':'록','Alternative':'얼터너티브',
-    'R&B/Soul':'R&B/소울','Hip-Hop/Rap':'힙합','Hip Hop/Rap':'힙합','Dance':'댄스','Electronic':'일렉트로닉',
-    'Jazz':'재즈','Classical':'클래식','Soundtrack':'OST','Singer/Songwriter':'싱어송라이터',
-    'Folk':'포크','Country':'컨트리','World':'월드뮤직','Indie':'인디','Indie Pop':'인디팝','Metal':'메탈',
-    'Blues':'블루스','Reggae':'레게','Funk':'펑크','Easy Listening':'이지리스닝','New Age':'뉴에이지'};
-  return m[g]||g;
+/* ===== 장르 기준: 애플 뮤직 장르 =====
+   앱이 앨범 정보를 가져오는 애플 뮤직(iTunes)의 공식 장르를 기준으로 한다. 이름은 자연스러운 한국어로
+   (Anime '일본 만화 영화' → 애니메이션, K-Pop 은 한국어 화면에선 '가요' · 영어 화면에선 'K-Pop'). 자주 안 쓰는 장르(어린이·종교·코미디 등)는 '기타'로 묶는다.
+   iTunes·Deezer·Discogs·AI 추출 등 어디서 온 이름이든 canonGenre() 로 이 목록에 맞추고,
+   목록에 없는 이름은 사용자가 직접 입력한 장르로 보고 그대로 둔다 (genreCustom 표시가 있으면 손대지 않음). */
+const GENRES=['가요','팝','록','얼터너티브','R&B/소울','힙합/랩','일렉트로닉','댄스','재즈','블루스','클래식','사운드트랙','애니메이션','싱어송라이터','포크','컨트리','J-Pop','뉴에이지','월드','라틴','레게','홀리데이','기타'];
+const _gKey=v=>String(v||'').toLowerCase().replace(/[\s·・\/&\-_.,+'’()]/g,'');
+const _GENRE_ALIAS=(()=>{
+  const t={
+    '가요':['kpop','케이팝','k팝','korean','한국','한국가요','한국음악','발라드','ballad','트로트','trot','asianmusic','아시아음악'],
+    '팝':['pop','팝','adultcontemporary','어덜트컨템퍼러리','easylistening','이지리스닝','vocal','보컬','citypop','시티팝','frenchpop','popfilm'],
+    '록':['rock','록','락','hardrock','하드록','metal','메탈','heavymetal','헤비메탈','punk','punkrock','펑크록','펑크','britpop','브릿팝','grunge','그런지'],
+    '얼터너티브':['alternative','얼터너티브','alternativerock','얼터너티브록','indie','인디','indierock','인디록','indiepop','인디팝','koreanindie','한국인디','인디음악','모던록','modernrock','shoegaze','슈게이징','dreampop','드림팝','lofi','로파이'],
+    'R&B/소울':['rb','rbsoul','rb소울','알앤비','soul','소울','funk','funksoul','soulfunk','neosoul','네오소울','contemporaryrb','어반'],
+    '힙합/랩':['hiphop','힙합','hiphoprap','raphiphop','rap','랩','힙합랩','국내힙합','trap','트랩'],
+    '일렉트로닉':['electronic','일렉트로닉','electronica','일렉트로니카','edm','house','하우스','techno','테크노','ambient','앰비언트','electro','idm'],
+    '댄스':['dance','댄스','disco','디스코','댄스가요'],
+    '재즈':['jazz','재즈','vocaljazz','보컬재즈','bossanova','보사노바','smoothjazz','퓨전재즈'],
+    '블루스':['blues','블루스'],
+    '클래식':['classical','classic','클래식','opera','오페라','클래식크로스오버','classicalcrossover','orchestral','오케스트라'],
+    '사운드트랙':['soundtrack','사운드트랙','ost','영화사운드트랙','tv사운드트랙','오리지널스코어','originalscore','score','뮤지컬','musical','musicals','게임음악','videogame','filmsgames','stagescreen','영화음악','드라마ost'],
+    '애니메이션':['anime','애니메이션','일본만화영화','animation','애니'],
+    '싱어송라이터':['singersongwriter','싱어송라이터'],
+    '포크':['folk','포크','acoustic','어쿠스틱','indiefolk','인디포크','folkworldcountry'],
+    '컨트리':['country','컨트리','americana'],
+    'J-Pop':['jpop','제이팝','japanesepop','jrock','제이록','일본가요','kayokyoku','enka','엔카'],
+    '뉴에이지':['newage','뉴에이지','instrumental','연주곡'],
+    '월드':['world','월드','월드뮤직','국악'],
+    '라틴':['latin','라틴','brazilian'],
+    '레게':['reggae','레게'],
+    '홀리데이':['holiday','홀리데이','christmas','크리스마스'],
+    '기타':['기타','other','children','childrensmusic','어린이','어린이음악','동요','religious','종교','gospel','가스펠','christian','christiangospel','ccm','spokenword','comedy','nonmusic','brassmilitary','fitnessworkout'],
+  };
+  const m={}; Object.entries(t).forEach(([g,arr])=>{ m[_gKey(g)]=g; arr.forEach(a=>{ m[_gKey(a)]=g; }); }); return m;
+})();
+// 정확히 맞는 이름이 없으면 들어 있는 단어로 판단 (예: 'Funk / Soul', 'Rap/Hip Hop', '인디 록/모던 록')
+const _GENRE_HINTS=[['사운드트랙',['ost','soundtrack','사운드트랙','film','영화','stage','뮤지컬']],['애니메이션',['anime','애니']],['힙합/랩',['hiphop','힙합','rap','랩']],
+  ['R&B/소울',['rb','soul','소울','알앤비','funk']],['J-Pop',['jpop','jrock','제이팝']],['가요',['kpop','케이팝','가요','발라드']],['재즈',['jazz','재즈']],['블루스',['blues','블루스']],
+  ['클래식',['classic','클래식']],['얼터너티브',['indie','인디','alternative','얼터너티브','모던록']],['록',['rock','록','metal','메탈','punk']],['댄스',['dance','댄스','disco']],
+  ['일렉트로닉',['electro','일렉','edm','house','techno']],['포크',['folk','포크','acoustic','어쿠스틱']],['컨트리',['country','컨트리']],['팝',['pop','팝']]];
+// 기준 장르 이름과 정확히 같은 뜻이면 그 이름, 아니면 ''
+const canonExact=g=>{ const raw=String(g||'').trim(); if(!raw) return ''; return GENRES.includes(raw) ? raw : (_GENRE_ALIAS[_gKey(raw)]||''); };
+function canonGenre(g){
+  const raw=String(g||'').trim(); if(!raw || raw==='-') return '';
+  const ex=canonExact(raw); if(ex) return ex;
+  const k=_gKey(raw);
+  for(const [gen,words] of _GENRE_HINTS){ if(words.some(w=>k.includes(_gKey(w)))) return gen; }
+  return raw;   // 모르는 이름은 직접 입력한 장르로 보고 그대로
 }
+// 장르 드롭다운: 선택 안 함 + 기준 장르 + (이미 쓰고 있는) 직접 입력한 장르 + '직접 입력…'
+function fillGenreSelect(sel, cur){
+  if(!sel) return;
+  const opt=g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`;
+  const custom=[...new Set(DATA.map(d=>String(d.genre||'').trim()).filter(g=>g && g!=='-' && !GENRES.includes(g)))];
+  if(cur && !GENRES.includes(cur) && !custom.includes(cur)) custom.push(cur);
+  custom.sort((a,b)=>a.localeCompare(b,'ko'));
+  sel.innerHTML='<option value="">선택 안 함</option>'+GENRES.map(opt).join('')
+    +(custom.length?`<optgroup label="${isEN()?'My genres':'직접 입력한 장르'}">${custom.map(opt).join('')}</optgroup>`:'')
+    +`<option value="__custom">${isEN()?'Type my own…':'직접 입력…'}</option>`;
+  sel.value=cur||'';
+  const inp=document.getElementById(sel.id+'-custom'); if(inp){ inp.hidden=true; inp.value=''; }
+}
+// '직접 입력…'을 고르면 아래 입력칸을 연다
+function bindGenreSelect(sel){
+  if(!sel || sel.dataset.bound) return; sel.dataset.bound='1';
+  sel.addEventListener('change',()=>{ const inp=document.getElementById(sel.id+'-custom'); if(!inp) return;
+    const c=sel.value==='__custom'; inp.hidden=!c; if(c){ inp.value=''; setTimeout(()=>inp.focus(),0); } });
+}
+// 폼에서 고른 장르 → { genre, custom } (직접 입력이 기준 장르와 같은 뜻이면 기준 이름으로)
+function readGenre(sel){
+  if(!sel) return { genre:'', custom:false };
+  if(sel.value==='__custom'){
+    const inp=document.getElementById(sel.id+'-custom'), v=String(inp&&inp.value||'').trim();
+    const ex=canonExact(v); return { genre: ex||v, custom: !!v && !ex };
+  }
+  const v=sel.value||''; return { genre:v, custom: !!v && !GENRES.includes(v) };
+}
+function normGenre(g){ return canonGenre(g); }   // 영어 장르명도 별칭표가 처리
 
 // 2) Deezer — no key; uses JSONP to avoid CORS
 function searchDeezer(term, limit){
@@ -3385,7 +3461,7 @@ async function loadArt(it){
   let fetched=false;
   if(!url){ url = await fetchArt(it.artist,it.album); fetched=true; }
   // auto-fill genre if we learned it during the search
-  if(!it.genre && genreCache[key]){ it.genre=genreCache[key]; saveGenre(it); refreshGenreChips(); }
+  if(!it.genre && genreCache[key]){ it.genre=canonGenre(genreCache[key]); saveGenre(it); refreshGenreChips(); }
   if(!url){ img.dataset.done=''; return; }   // no art found; keep placeholder, allow later retry
   it._art=url;
   // 자동으로 찾은 커버는 한 번 정해지면 계정에 고정 저장 → 이후 스스로 바뀌지 않음
@@ -3577,7 +3653,7 @@ function showEditForm(it){
   // 기본값 채우기
   $('#e-artist').value=it.artist||'';
   $('#e-album').value=it.album||'';
-  $('#e-genre').value=it.genre||'';
+  fillGenreSelect($('#e-genre'), it.genreCustom ? String(it.genre||'').trim() : canonGenre(it.genre));
   $('#e-year').value=(it.year!=null?it.year:'');
   $('#e-color').value=it.color||'';
   if($('#e-rpm')) $('#e-rpm').value=it.rpm||'33';
@@ -3646,7 +3722,7 @@ function showEditForm(it){
     const oldKey=artKey(it.artist,it.album);
     it.artist=$('#e-artist').value.trim();
     it.album=$('#e-album').value.trim();
-    it.genre=$('#e-genre').value.trim();
+    { const g=readGenre($('#e-genre')); it.genre=g.genre; if(g.custom) it.genreCustom=true; else delete it.genreCustom; }
     it.year=Number($('#e-year').value)||null;
     it.color=$('#e-color').value.trim();
     it.colorHex=colorHexOf($('#e-color'));
@@ -4137,6 +4213,7 @@ function closeCollNew(){ hide('collnew'); if(_collEditId && _collOpenId){ openCo
 { const b=$('#coll-del'); if(b) b.onclick=deleteColl; }
 { const b=$('#cd-share'); if(b) b.onclick=()=>shareCollCard(); }
 { const b=$('#dl-share'); if(b) b.onclick=()=>shareLikedCard(); }
+['#f-genre','#e-genre'].forEach(q=>{ const el=$(q); if(el){ fillGenreSelect(el,''); bindGenreSelect(el); } });
 { const b=$('#coll-edit'); if(b) b.onclick=()=>setCollEditing(true); }
 { const b=$('#coll-editdone'); if(b) b.onclick=()=>setCollEditing(false); }
 { const q=$('#collpick-q'); if(q) q.oninput=e=>renderCollPick(e.target.value); }
@@ -4202,7 +4279,7 @@ function schedulePreview(){
     // iTunes 후보엔 primaryGenreName이 있어 대개 채워지고, 없으면 목록 내 다른 후보의 장르로 폴백.
     const guessGenre=c=>(c&&c.genre)||(cands.find(x=>x.genre)||{}).genre||'';
     const autofillGenre=c=>{ const gf=$('#f-genre'); if(!gf) return;
-      const g=guessGenre(c); if(g && (!gf.value.trim() || gf.dataset.auto==='1')){ gf.value=g; gf.dataset.auto='1'; } };
+      const g=canonGenre(guessGenre(c)); if(g && (!gf.value || gf.dataset.auto==='1')){ fillGenreSelect(gf, g); gf.dataset.auto='1'; } };
     // 발매년도도 후보 데이터에서 자동 채움(iTunes/MusicBrainz는 연도 제공)
     const guessYear=c=>(c&&c.year)||(cands.find(x=>x.year)||{}).year||'';
     const autofillYear=c=>{ const yf=$('#f-year'); if(!yf) return;
@@ -4244,7 +4321,7 @@ function schedulePreview(){
 $('#f-artist').oninput=schedulePreview;
 $('#f-album').oninput=schedulePreview;
 // 장르를 직접 입력하면 자동 채움이 덮어쓰지 않도록 표시 해제
-{ const gf=$('#f-genre'); if(gf) gf.oninput=()=>{ gf.dataset.auto=''; }; }
+{ const gf=$('#f-genre'); if(gf) gf.onchange=()=>{ gf.dataset.auto=''; }; }   // 직접 고르면 자동 채움이 덮어쓰지 않게
 { const yf=$('#f-year'); if(yf) yf.oninput=()=>{ yf.dataset.auto=''; }; }
 
 function setPrevImg(url, msg){
@@ -4438,7 +4515,7 @@ function applyBarcodeResult(r){
   if(r.artist) $('#f-artist').value=r.artist;
   if(r.album) $('#f-album').value=r.album;
   if(r.year){ const yf=$('#f-year'); if(yf && !yf.value){ const y=parseInt(String(r.year).slice(0,4),10); if(y) yf.value=y; } }
-  if(r.genre){ const gf=$('#f-genre'); if(gf && !gf.value) gf.value=(typeof normGenre==='function'?normGenre(r.genre):r.genre); }
+  if(r.genre){ const gf=$('#f-genre'); if(gf && !gf.value) fillGenreSelect(gf, canonGenre(r.genre)); }
   if(r.cover) setPrevImg(r.cover, bcT('This cover will be saved ✓', (r.src||'')+' 커버로 저장돼요 ✓'));
 }
 { const b=$('#bc-scan'); if(b) b.onclick=()=>{ const box=$('#bc-box'); if(box.style.display==='none'){ startBarcodeScan(); } else { stopBarcodeScan(); box.style.display='none'; } }; }
@@ -4652,8 +4729,6 @@ async function _drawStoryCard(o){
 }
 // 전체 컬렉션 카드 (마이페이지)
 // 공유 카드용 장르 이름 다듬기: 애플 장르의 어색한 한국어 이름을 짧게 (같은 뜻은 하나로 합쳐 셈)
-const _GENRE_LABEL={'일본 만화 영화':'애니메이션','Anime':'애니메이션','사운드트랙':'OST','Soundtrack':'OST','영화 사운드트랙':'OST','TV 사운드트랙':'OST','오리지널 스코어':'OST'};
-const _genreLabel=g=>{ const k=String(g||'').trim(); return _GENRE_LABEL[k]||k; };
 // 확실한 1위만: 2장 이상이면서 2위보다 많을 때 [이름, 수]. 동점이거나 다 제각각이면 null → 카드에서 다른 정보로 대체
 function _clearTop(list, key, label){
   const m={}; list.forEach(d=>{ let k=String(d[key]||'').trim(); if(!k||k==='-') return; if(label) k=label(k); m[k]=(m[k]||0)+1; });
@@ -4662,10 +4737,10 @@ function _clearTop(list, key, label){
 }
 // 대표 장르·대표 아티스트 칸: 확실할 때만, 아니면 '아티스트 N명'으로 (같은 칸이 두 번 나오지 않게)
 function _repStats(all, en){
-  const g=_clearTop(all,'genre',_genreLabel), a=_clearTop(all,'artist');
+  const g=_clearTop(all,'genre'), a=_clearTop(all,'artist');
   const nArt=new Set(all.map(d=>String(d.artist||'').trim()).filter(x=>x&&x!=='-')).size;
   const out=[];
-  out.push(g ? [g[0], en?'Main genre':'대표 장르'] : [nArt+(en?'':'명'), en?'Artists':'아티스트']);
+  out.push(g ? [tr(g[0]), en?'Main genre':'대표 장르'] : [nArt+(en?'':'명'), en?'Artists':'아티스트']);
   if(a) out.push([a[0], en?'Main artist':'대표 아티스트']);
   else if(g) out.push([nArt+(en?'':'명'), en?'Artists':'아티스트']);
   return out;
@@ -4676,7 +4751,7 @@ async function buildShareCardCanvas(){
   const favAlbum = picks.length && _listenCount(picks[0]) ? picks[0] : null;   // 청음 기록이 가장 많은 앨범
   const owned=DATA.filter(d=>statusGroup(d.status)!=='위시');
   const artistCount=new Set(owned.map(d=>(d.artist||'').trim()).filter(a=>a&&a!=='-')).size;
-  const tg=_clearTop(owned,'genre',_genreLabel), top=tg ? tg[0] : '';
+  const tg=_clearTop(owned,'genre'), top=tg ? tr(tg[0]) : '';
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items:picks, fixed9:true, preferLoaded:true,
@@ -4734,12 +4809,12 @@ async function buildMonthCardCanvas(m){
   const buyTiles=uniq(buys), listenTiles=uniq(listenedAll);   // 구매한 앨범은 '구매'로만 한 번
   const items=buyTiles.concat(listenTiles);
   // 이달의 장르는 확실할 때만(2장 이상·단독 1위). 아니면 그 달까지 모은 누적 장수
-  const topG=_clearTop(items,'genre',_genreLabel);
+  const topG=_clearTop(items,'genre');
   const total=DATA.filter(d=>statusGroup(d.status)!=='위시' && d.buy && String(d.buy).slice(0,7)<=m).length;
   const stats=[];
   if(buys.length) stats.push([buys.length+(en?'':'장'), en?'Bought':'구매']);
   if(listenedAll.length) stats.push([listenedAll.length+(en?'':'장'), en?'Played':'청음']);
-  stats.push(topG ? [topG[0], en?'Genre of the month':'이달의 장르'] : [total+(en?'':'장'), en?'Total so far':'누적']);
+  stats.push(topG ? [tr(topG[0]), en?'Genre of the month':'이달의 장르'] : [total+(en?'':'장'), en?'Total so far':'누적']);
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
     lead: yy,
@@ -4942,12 +5017,6 @@ function _storeSuggestions(){
   return Object.values(sm).sort((a,b)=>b.cnt-a.cnt)
     .map(e=>Object.entries(e.names).sort((a,b)=>b[1]-a[1])[0][0]);
 }
-function _genreSuggestions(){
-  // 쉼표로 나눠 개별 장르 단위 (많이 쓴 순)
-  const gm={};
-  DATA.forEach(d=>{ String(d.genre||'').split(',').forEach(t=>{ const g=t.trim(); if(g&&g!=='-') gm[g]=(gm[g]||0)+1; }); });
-  return Object.entries(gm).sort((a,b)=>b[1]-a[1]).map(([g])=>g);
-}
 // 입력칸 아래에 후보 상자를 붙인다 (max-height 스크롤). multi=쉼표 구분 입력(장르)
 function attachSuggest(inputId, getItems, opts){
   const inp=document.getElementById(inputId); if(!inp||inp._sugWired) return;
@@ -4984,12 +5053,11 @@ function attachSuggest(inputId, getItems, opts){
 function refreshFieldSuggestions(){   // 폼 열 때 호출 — 최초 1회만 실제로 연결됨
   attachSuggest('f-store', _storeSuggestions);
   attachSuggest('e-store', _storeSuggestions);
-  attachSuggest('f-genre', _genreSuggestions, {multi:true});
-  attachSuggest('e-genre', _genreSuggestions, {multi:true});
 }
 function openAdd(initStatus, presetDate){
   refreshFieldSuggestions();
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
+  fillGenreSelect($('#f-genre'),'');   // 직접 입력한 장르 목록 갱신 + 입력칸 닫기
   { const fc=$('#f-color'); if(fc){ delete fc.dataset.hex; delete fc.dataset.photo; fc.dataset.camswatch='1'; } }
   window.__addDraft={discPhoto:null};   // 추가 폼의 판 사진 임시 보관 (저장 시 항목에 반영)
   window.__addPv=null;                  // 고른 앨범아트 후보의 iTunes 앨범 ID (저장 시 음원 연결로 사용)
@@ -5031,7 +5099,7 @@ function cloneToAdd(it){
   { const el=$('#f-store'); if(el) el.value=it.store||''; }
   { const el=$('#f-price'); if(el) el.value=it.price!=null?it.price:''; }
   { const el=$('#f-list'); if(el) el.value=it.listPrice!=null?it.listPrice:''; }
-  { const el=$('#f-genre'); if(el){ el.value=it.genre||''; el.dataset.auto=''; } }
+  { const el=$('#f-genre'); if(el){ fillGenreSelect(el, it.genreCustom ? String(it.genre||'').trim() : canonGenre(it.genre)); el.dataset.auto=''; } }
   { const el=$('#f-year'); if(el){ el.value=it.year||''; el.dataset.auto=''; } }
   { const el=$('#f-rpm'); if(el&&it.rpm) el.value=it.rpm; }
   { const el=$('#f-inch'); if(el&&it.inch) el.value=it.inch; }
@@ -5170,6 +5238,7 @@ $('#add-save').onclick=()=>{
   if(!al) missing.push('앨범명');
   if(!$('#f-color').value.trim()) missing.push('컬러');
   if(missing.length){ appAlert((isEN()?'Please fill in the required fields: ':'필수 항목을 입력해주세요: ')+missing.join(', ')); return; }
+  const _addGenre=readGenre($('#f-genre'));
   const it={
     id:'u'+Date.now(), no:DATA.length+1,
     artist:ar, album:al,
@@ -5192,7 +5261,7 @@ $('#add-save').onclick=()=>{
     previewAlbumId:(window.__addPv&&window.__addPv.id)||null,
     previewAlbumName:(window.__addPv&&window.__addPv.id&&window.__addPv.name)||null,
     rating:0, note:$('#f-note').value.trim(), _art:url,
-    genre: ($('#f-genre')&&$('#f-genre').value.trim())||'',
+    genre: _addGenre.genre, ...(_addGenre.custom?{genreCustom:true}:{}),
     year: ($('#f-year')&&Number($('#f-year').value))||null,
     rpm: (SETTINGS.showRpm&&$('#f-rpm')&&$('#f-rpm').value)||'',
     inch: (SETTINGS.showInch&&$('#f-inch')&&$('#f-inch').value)||''
@@ -5275,7 +5344,7 @@ function saveLiked(it){ cloudSaveItem(it); }
 function saveGenre(it){ cloudSaveItem(it); }
 function saveLocal(){ /* 클라우드 모드: 항목별 저장(cloudSaveItem)이 영속성을 담당 */ }
 // 변경된 LP 한 장을 Firebase에 저장 (로그인 모듈이 window.LPCloud를 제공)
-function cloudSaveItem(it){ if(window.LPCloud && window.LPCloud.saveItem) window.LPCloud.saveItem(it); }
+function cloudSaveItem(it){ if(it && it.genre && !it.genreCustom) it.genre=canonGenre(it.genre); if(window.LPCloud && window.LPCloud.saveItem) window.LPCloud.saveItem(it); }
 function cloudDeleteItem(id){ if(window.LPCloud && window.LPCloud.deleteItem) window.LPCloud.deleteItem(id); }
 function deleteRecord(id){
   const idx=DATA.findIndex(x=>String(x.id)===String(id));
@@ -6582,7 +6651,7 @@ function refreshGenreChips(){
   const sel=$('#genre'); if(!sel) return;
   const set=new Set();
   DATA.forEach(d=>{ if(d.genre) set.add(d.genre); });
-  const list=[...set].sort((a,b)=>a.localeCompare(b,'ko'));
+  const list=[...set].sort((a,b)=>{ const i=GENRES.indexOf(a), j=GENRES.indexOf(b); return (i<0?99:i)-(j<0?99:j) || a.localeCompare(b,'ko'); });
   const cur=filter.genre;
   sel.innerHTML='<option value="">전체 장르</option>'+list.map(g=>`<option value="${g}" ${g===cur?'selected':''}>${g}</option>`).join('');
   // if current filter genre no longer exists, reset
@@ -6693,7 +6762,7 @@ function layoutCoverFlow(){
     c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
   });
   const it=cfItems[cfIndex]; if(!it)return;
-  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 미리듣기 · 길게 누르면 상세</span>${it.genre?' · '+it.genre:''}${it.color?' · '+it.color:''}</div>`;
+  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 미리듣기 · 길게 누르면 상세</span>${it.genre?' · '+tr(it.genre):''}${it.color?' · '+it.color:''}</div>`;
 }
 function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow();
   if(_preview.id && (!cfItems[cfIndex] || _preview.id!==cfItems[cfIndex].id)) stopPreview();   // 다른 앨범으로 넘기면 정지
@@ -6784,6 +6853,7 @@ window.setAccount=function(email){ const e=$('#acct-email'); if(e) e.textContent
 // 로그인 + 데이터 로드 완료 후 앱을 그림
 window.bootApp=function(items){
   DATA=Array.isArray(items)?items:[];
+  DATA.forEach(it=>{ if(it && it.genre && !it.genreCustom) it.genre=canonGenre(it.genre); });   // 예전 장르 이름도 기준 장르로 (다음 저장 때 반영), 직접 입력은 그대로
   // 이전 사용자 흔적 제거 후, 저장된 커버를 캐시에 반영
   Object.keys(pickedArt).forEach(k=>delete pickedArt[k]);
   DATA.forEach(it=>{ if(it._art){ const k=artKey(it.artist,it.album); pickedArt[k]=it._art; artCache[k]=it._art; } });
@@ -7337,7 +7407,7 @@ function start(){
     '- price: 해당 상품의 "단가"(숫자만, 원 단위). 수량이 여러 개여도 1개 가격. 총액만 보이고 수량>1이면 총액/수량으로 계산.',
     '- qty: 수량(정수). 없으면 1.',
     '- buyDate: 주문일자를 YYYY-MM-DD로. 화면에 날짜가 없으면 "".',
-    '- genre: 한국어 장르로 추정(예: 가요, 팝, 록, R&B·소울, 힙합, OST, 재즈, 클래식, 인디). 모르면 "".',
+    '- genre: 다음 중 하나로 추정: '+GENRES.join(', ')+'. 모르면 "".',
     '- color: 컬러 바이닐 색상이 상품명에 있으면(예: GREEN, 투명, 레드) 한국어로. 없으면 "".',
     '음반 항목이 하나도 없으면 {"items":[]} 를 반환해.'
   ].join('\n');
@@ -7368,7 +7438,7 @@ function start(){
     'status','sellDate','sellPrice','profit','note','genre','rating','liked',
     'discColorCustom','discOpacity','discPhoto','colorHex',
     'listPrice','sleeveGrade','mediaGrade','openDate','listens','previewAlbumId','previewAlbumName',
-    'rpm','inch','year','repCover','discogsId'];
+    'rpm','inch','year','repCover','discogsId','genreCustom'];
   function serialize(it){
     const o={};
     FIELDS.forEach(f=>{ o[f]=(it[f]===undefined?null:it[f]); });
