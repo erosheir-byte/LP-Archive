@@ -4646,17 +4646,37 @@ async function _drawStoryCard(o){
   return c;
 }
 // 전체 컬렉션 카드 (마이페이지)
+// 공유 카드용 장르 이름 다듬기: 애플 장르의 어색한 한국어 이름을 짧게 (같은 뜻은 하나로 합쳐 셈)
+const _GENRE_LABEL={'일본 만화 영화':'애니메이션','Anime':'애니메이션','사운드트랙':'OST','Soundtrack':'OST','영화 사운드트랙':'OST','TV 사운드트랙':'OST','오리지널 스코어':'OST'};
+const _genreLabel=g=>{ const k=String(g||'').trim(); return _GENRE_LABEL[k]||k; };
+// 확실한 1위만: 2장 이상이면서 2위보다 많을 때 [이름, 수]. 동점이거나 다 제각각이면 null → 카드에서 다른 정보로 대체
+function _clearTop(list, key, label){
+  const m={}; list.forEach(d=>{ let k=String(d[key]||'').trim(); if(!k||k==='-') return; if(label) k=label(k); m[k]=(m[k]||0)+1; });
+  const e=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  return (e.length && e[0][1]>=2 && (!e[1] || e[0][1]>e[1][1])) ? e[0] : null;
+}
+// 대표 장르·대표 아티스트 칸: 확실할 때만, 아니면 '아티스트 N명'으로 (같은 칸이 두 번 나오지 않게)
+function _repStats(all, en){
+  const g=_clearTop(all,'genre',_genreLabel), a=_clearTop(all,'artist');
+  const nArt=new Set(all.map(d=>String(d.artist||'').trim()).filter(x=>x&&x!=='-')).size;
+  const out=[];
+  out.push(g ? [g[0], en?'Main genre':'대표 장르'] : [nArt+(en?'':'명'), en?'Artists':'아티스트']);
+  if(a) out.push([a[0], en?'Main artist':'대표 아티스트']);
+  else if(g) out.push([nArt+(en?'':'명'), en?'Artists':'아티스트']);
+  return out;
+}
 async function buildShareCardCanvas(){
   const s=_tasteCardStats(), en=isEN(), now=new Date();
   const picks=_collectionCardPicks();
   const favAlbum = picks.length && _listenCount(picks[0]) ? picks[0] : null;   // 청음 기록이 가장 많은 앨범
-  const artistCount=new Set(DATA.filter(d=>statusGroup(d.status)!=='위시').map(d=>(d.artist||'').trim()).filter(a=>a&&a!=='-')).size;
-  const top = s.genres.length ? s.genres[0][0] : (s.artists.length ? s.artists[0].name : '');
+  const owned=DATA.filter(d=>statusGroup(d.status)!=='위시');
+  const artistCount=new Set(owned.map(d=>(d.artist||'').trim()).filter(a=>a&&a!=='-')).size;
+  const tg=_clearTop(owned,'genre',_genreLabel), top=tg ? tg[0] : '';
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items:picks, fixed9:true, preferLoaded:true,
-    lead: top ? (en?'Favorite genre':'가장 선호하는 장르') : (en?'My vinyl collection':'나의 바이닐 컬렉션'),
-    headline: top,
+    lead: top ? (en?'Favorite genre':'가장 선호하는 장르') : (en?'My':'나의'),
+    headline: top || (en?'Vinyl collection':'바이닐 컬렉션'),
     stats:[
       [s.total+(en?'':'장'), en?'Records':'컬렉션'],
       favAlbum ? [favAlbum.album||'–', en?'Fav album':'최애 앨범'] : [artistCount+(en?'':'명'), en?'Artists':'아티스트'],
@@ -4671,18 +4691,12 @@ async function buildCollCardCanvas(c){
   const seen=new Set();
   const items=all.map((d,i)=>({d,i})).sort((a,b)=>_listenCount(b.d)-_listenCount(a.d) || a.i-b.i).map(o=>o.d)
     .filter(d=>{ const k=artKey(d.artist,d.album); if(seen.has(k)) return false; seen.add(k); return true; });
-  const tally=key=>{ const m={}; all.forEach(d=>{ const k=(d[key]||'').trim(); if(k&&k!=='-') m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1])[0]; };
-  const g=tally('genre'), a=tally('artist');
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items, fixed9:false, preferLoaded:false,
     lead: en?'My collection':'나의 컬렉션',
     headline: c.name || (en?'Untitled':'제목 없음'),
-    stats:[
-      [all.length+(en?'':'장'), en?'Records':'수록'],
-      [g ? g[0] : '–', en?'Main genre':'대표 장르'],
-      [a ? a[0] : '–', en?'Main artist':'대표 아티스트'],
-    ],
+    stats:[ [all.length+(en?'':'장'), en?'Records':'수록'], ..._repStats(all, en) ],
   });
 }
 // 좋아요한 앨범 카드: 많이 들은 순, 같은 앨범은 한 칸
@@ -4695,18 +4709,12 @@ function _likedCardPicks(){
 async function buildLikedCardCanvas(){
   const en=isEN(), now=new Date();
   const all=DATA.filter(d=>d.liked), items=_likedCardPicks();
-  const tally=key=>{ const m={}; all.forEach(d=>{ const k=(d[key]||'').trim(); if(k&&k!=='-') m[k]=(m[k]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1])[0]; };
-  const g=tally('genre'), a=tally('artist');
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items, fixed9:false, preferLoaded:false,
     lead: en?'My collection':'나의 컬렉션',
     headline: en?'Liked albums':'좋아요한 앨범',
-    stats:[
-      [items.length+(en?'':'장'), en?'Liked':'좋아요'],
-      [g ? g[0] : '–', en?'Main genre':'대표 장르'],
-      [a ? a[0] : '–', en?'Main artist':'대표 아티스트'],
-    ],
+    stats:[ [items.length+(en?'':'장'), en?'Liked':'좋아요'], ..._repStats(all, en) ],
   });
 }
 // 월별 카드 (달력): 그 달에 구매한 판 + 들은 판
@@ -4720,12 +4728,13 @@ async function buildMonthCardCanvas(m){
   const listenedAll=[]; { const ls=new Set(); listenEv.forEach(e=>{ const k=artKey(e.it.artist,e.it.album); if(!ls.has(k)){ ls.add(k); listenedAll.push(e.it); } }); }
   const buyTiles=uniq(buys), listenTiles=uniq(listenedAll);   // 구매한 앨범은 '구매'로만 한 번
   const items=buyTiles.concat(listenTiles);
-  const gm={}; items.forEach(d=>{ const k=(d.genre||'').trim(); if(k&&k!=='-') gm[k]=(gm[k]||0)+1; });
-  const topG=Object.entries(gm).sort((a,b)=>b[1]-a[1])[0];
+  // 이달의 장르는 확실할 때만(2장 이상·단독 1위). 아니면 그 달까지 모은 누적 장수
+  const topG=_clearTop(items,'genre',_genreLabel);
+  const total=DATA.filter(d=>statusGroup(d.status)!=='위시' && d.buy && String(d.buy).slice(0,7)<=m).length;
   const stats=[];
   if(buys.length) stats.push([buys.length+(en?'':'장'), en?'Bought':'구매']);
   if(listenedAll.length) stats.push([listenedAll.length+(en?'':'장'), en?'Played':'청음']);
-  stats.push([topG ? topG[0] : '–', en?'Genre of the month':'이달의 장르']);
+  stats.push(topG ? [topG[0], en?'Genre of the month':'이달의 장르'] : [total+(en?'':'장'), en?'Total so far':'누적']);
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
     lead: yy,
