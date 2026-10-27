@@ -2960,7 +2960,7 @@ const _preview = { audio:null, id:null, it:null, discEl:null, cache:{}, last:{},
 //  결과는 앨범별로 기억해(localStorage) 다음부터는 바로 적용 · 해외 앨범은 다시 묻지 않는다.
 //  등록 이름에 한글이 있으면 최대 2.5초 기다려 첫 곡부터 한국어로, 아니면 기다리지 않고 재생 → 바뀌면 지금 곡 이름을 다시 알림
 const _hasHangul=s=>/[\uAC00-\uD7A3]/.test(s||'');
-const _KO_KEY='lp_kotitles_v1';
+const _KO_KEY='lp_kotitles_v2';   // v2: 곡별 판단·느슨한 검색으로 바뀌어 예전 '없음' 기록은 버리고 다시 찾음
 function _koCache(k, v){
   try{
     const m=JSON.parse(localStorage.getItem(_KO_KEY)||'{}');
@@ -2975,17 +2975,22 @@ async function _mbKoTitles(it, tracks){
   const al=q(it.album); if(!al) return null;
   // 미리듣기 없는 곡은 목록에서 빠지므로 개수 대신 '가장 큰 트랙 번호'까지 담긴 음반을 후보로 (같은 개수면 우선)
   const want=Math.max(1, ...tracks.map(t=>t.no||0)), ar=String(it.artist||'').toLowerCase().trim();
-  let sj;
-  try{ const r=await fetch('https://musicbrainz.org/ws/2/release/?fmt=json&limit=15&query='+encodeURIComponent(`release:"${al}"`)); if(!r.ok) return undefined; sj=await r.json(); }
-  catch(e){ return undefined; }
   const names=r=>(r['artist-credit']||[]).flatMap(c=>{ const a=c.artist||{}; return [c.name, a.name, a['sort-name'], ...((a.aliases||[]).map(x=>x.name))]; }).filter(Boolean).map(x=>String(x).toLowerCase());
-  const scored=(sj.releases||[]).map(r=>{
+  const pick=list=>list.map(r=>{
     const n=names(r), artistHit=!!ar && n.some(x=>x===ar || x.includes(ar) || ar.includes(x));
     const cnt=r['track-count'] || (r.media||[]).reduce((t,m)=>t+(m['track-count']||0),0);
     return { r, artistHit, hangul:n.some(_hasHangul), cntOk:cnt>=want, exact:cnt===want };
   }).filter(o=>o.cntOk && (o.artistHit || o.hangul || !ar || _hasHangul(o.r.title) || _hasHangul(it.artist)))   // 가수 표기가 달라도(악뮤↔AKMU) 한국 앨범이면 후보
     .sort((x,y)=>(y.artistHit-x.artistHit) || (y.exact-x.exact) || (y.hangul-x.hangul));
-  for(const o of scored.slice(0,2)){
+  // 1) 앨범명 그대로  2) 못 찾으면 앨범명+가수로 느슨하게 (MB 에는 '사운드 오브 뮤직 pt.1'처럼 다르게 등록된 경우)
+  const queries=[`release:"${al}"`, `${al} ${q(it.artist)}`.trim()];
+  let cands=[];
+  for(const qq of queries){
+    try{ const r=await fetch('https://musicbrainz.org/ws/2/release/?fmt=json&limit=15&query='+encodeURIComponent(qq)); if(!r.ok) return undefined; cands=pick((await r.json()).releases||[]); }
+    catch(e){ return undefined; }
+    if(cands.length) break;
+  }
+  for(const o of cands.slice(0,2)){
     try{
       const rr=await fetch('https://musicbrainz.org/ws/2/release/'+o.r.id+'?fmt=json&inc=recordings');
       if(!rr.ok) return undefined;
@@ -2996,10 +3001,12 @@ async function _mbKoTitles(it, tracks){
   }
   return null;
 }
+// 곡마다 판단: iTunes 제목에 한글이 없고 MusicBrainz 제목에 한글이 있을 때만 바꾼다
+//  (잔나비처럼 한글 제목 곡과 영어 제목 곡이 섞인 앨범 — 'I WILL DIE FOR YOU♥x3' → '아월다이포유♥x3', 원래 영어인 곡은 그대로)
 async function _koTitles(it, tracks){
-  if(!tracks || !tracks.length || tracks.some(t=>_hasHangul(t.title))) return;
+  if(!tracks || !tracks.length || tracks.every(t=>_hasHangul(t.title))) return;
   const key=artKey(it.artist,it.album);
-  const apply=m=>{ let ch=false; tracks.forEach(t=>{ const v=m[(t.disc||1)+'-'+t.no]; if(v && v!==t.title){ t.title=v; ch=true; } }); return ch; };
+  const apply=m=>{ let ch=false; tracks.forEach(t=>{ const v=m[(t.disc||1)+'-'+t.no]; if(v && v!==t.title && !_hasHangul(t.title) && _hasHangul(v)){ t.title=v; ch=true; } }); return ch; };
   const saved=_koCache(key);
   if(saved===0) return;                       // 한국어 제목이 없는 앨범으로 확인됨
   if(saved && typeof saved==='object'){ apply(saved); return; }
