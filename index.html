@@ -1584,7 +1584,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <label>음원 연결 <span style="color:var(--dim);font-weight:500">(미리듣기로 재생할 앨범)</span></label>
       <div class="e-pv-row">
         <span class="e-pv-name" id="e-pv-name">연결된 앨범 없음</span>
-        <button type="button" class="e-pv-btn" id="e-pv-btn">앨범 선택</button>
+        <button type="button" class="e-pv-btn" id="e-pv-btn">앨범 찾기</button>
       </div>
       <div id="e-pv-inline"></div>
     </div>
@@ -2033,6 +2033,7 @@ const I18N = {
   /* --- 음원 연결 / 미리듣기 --- */
   "(미리듣기로 재생할 앨범)":"(album used for preview playback)",
   "앨범 선택":"Choose album",
+  "앨범 찾기":"Find album",
   "검색":"Search",
   "↩︎ 자동 선택으로 되돌리기":"↩︎ Back to the automatic pick",
   "↩︎ 자동 선택으로 되돌렸어요":"↩︎ Back to the automatic pick",
@@ -3593,13 +3594,17 @@ function showEditForm(it){
   $('#e-note').value=it.note||'';
   // 음원 연결: 현재 연결 표시 + '앨범 선택'으로 인라인 검색기 토글
   { const nm=$('#e-pv-name'), btn=$('#e-pv-btn'), box=$('#e-pv-inline');
-    const showName=()=>{ if(!nm)return; const c=it.previewAlbumId||it.previewAlbumName; nm.textContent=c?(it.previewAlbumName||'연결됨'):'연결된 앨범 없음'; nm.classList.toggle('dim',!c); };
+    // 버튼 글자: 닫힌 상태면 연결 여부에 따라 '앨범 찾기'/'변경', 열려 있으면 '닫기'
+    //  (예전엔 열어 둔 채 시트를 닫으면 다음에 열 때 검색기는 닫혀 있는데 '닫기'로 남아 있었음)
+    const paintBtn=()=>{ if(!btn) return; const open=box && box.dataset.open==='1', c=it.previewAlbumId||it.previewAlbumName;
+      btn.textContent = open ? (isEN()?'Close':'닫기') : (c ? (isEN()?'Change':'변경') : (isEN()?'Find album':'앨범 찾기')); };
+    const showName=()=>{ if(!nm)return; const c=it.previewAlbumId||it.previewAlbumName; nm.textContent=c?(it.previewAlbumName||'연결됨'):'연결된 앨범 없음'; nm.classList.toggle('dim',!c); paintBtn(); };
     if(box){ box.innerHTML=''; box.dataset.open=''; }
     showName();
     if(btn) btn.onclick=()=>{
       if(!box) return;
-      if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; btn.textContent='앨범 선택'; return; }
-      box.dataset.open='1'; btn.textContent='닫기';
+      if(box.dataset.open==='1'){ box.innerHTML=''; box.dataset.open=''; paintBtn(); return; }
+      box.dataset.open='1'; paintBtn();
       mountPreviewPicker(it, box, showName);
     };
   }
