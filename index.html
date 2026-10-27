@@ -2782,6 +2782,38 @@ async function _latinAliases(q, stale){
   return out;
 }
 
+/* 한글 앨범명 → 애플 뮤직 앨범 찾기 (예: 악뮤 '항해' → AKMU 'SAILING')
+   애플 뮤직엔 영문 제목으로만 등록된 한국 앨범이 많다. MusicBrainz 에서 한글 제목의 앨범(발매년도·가수)을 찾고,
+   그 가수의 애플 뮤직 앨범 중 같은 해 앨범을 맨 위로 올린다. 결과는 기기에 저장(lp_kalbum_v1). */
+const _KALB_KEY='lp_kalbum_v1';
+let _kalbMem=null;
+function _kalbStore(){ if(_kalbMem) return _kalbMem; try{ _kalbMem=JSON.parse(localStorage.getItem(_KALB_KEY)||'{}')||{}; }catch(e){ _kalbMem={}; } return _kalbMem; }
+async function _koAlbumHints(q, stale){
+  q=String(q||'').trim(); if(!/[가-힣]/.test(q) || q.length>40) return [];
+  const st=_kalbStore(); if(st[q]) return st[q];
+  const esc=v=>v.replace(/[+\-&|!(){}\[\]^"~*?:\\\/]/g,' ').trim();
+  const isLatin=v=>/[A-Za-z]/.test(v||'') && !/[가-힣ㄱ-ㅎぁ-んァ-ン一-龥]/.test(v||'');
+  const norm=v=>String(v||'').replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,'').toLowerCase();
+  const out=[];
+  try{
+    const r=await _mbFetch('https://musicbrainz.org/ws/2/release-group/?fmt=json&limit=8&query='+encodeURIComponent(`releasegroup:(${esc(q)})`), {skip:stale});
+    if(!r || !r.ok) return [];
+    const nq=norm(q);
+    for(const g of ((await r.json())['release-groups']||[])){
+      if((g.score||0)<70 || !/[가-힣]/.test(g.title||'')) continue;
+      const t=norm(g.title); if(!t || !(t===nq || nq.includes(t))) continue;   // 검색어에 이 앨범 제목이 들어 있어야
+      const ac=(g['artist-credit']||[])[0]||{}, a=ac.artist||{};
+      let lat=isLatin(ac.name)?ac.name : isLatin(a.name)?a.name : (isLatin(a['sort-name']) ? a['sort-name'].replace(/^([^,]+),\s*(.+)$/,'$2 $1') : '');
+      if(!lat && (a.name||ac.name)){ const x=await _latinAliases(a.name||ac.name, stale); lat=(x[0]||{}).latin||''; }
+      if(!lat || out.some(o=>o.latin===lat && o.title===g.title)) continue;
+      out.push({ title:g.title, year:String(g['first-release-date']||'').slice(0,4), latin:lat, ko:(!isLatin(ac.name)&&ac.name)||(!isLatin(a.name)&&a.name)||'' });
+      if(out.length>=2) break;
+    }
+  }catch(e){ return []; }
+  st[q]=out; try{ const ks=Object.keys(st); if(ks.length>300) delete st[ks[0]]; localStorage.setItem(_KALB_KEY, JSON.stringify(st)); }catch(e){}
+  return out;
+}
+
 // gather candidates from several query forms, merged & de-duped
 async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 직접 검색할 때만 한글→영문 가수명 보정 (자동 커버 불러오기엔 안 씀)
   const ar=(artist||'').replace(/[-]/g,'').trim();
@@ -2808,7 +2840,26 @@ async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 
     if(!r.length && t!==x.latin) r=await searchTerm(x.latin, 8);   // 앨범명이 한글이라 못 찾으면 가수 앨범 전체
     all=all.concat(r.map(c=>Object.assign({}, c, { _alias:x.latin })));
   }
-  const seen={}; all=all.filter(c=>{if(seen[c.img])return false;seen[c.img]=1;return true;});
+  // 한글 앨범명인데 제목이 똑같은 결과가 없으면: 한글 제목 앨범의 가수·발매년도로 찾기 (항해 → AKMU 2019 'SAILING')
+  if(opts && opts.alias && /[가-힣]/.test(al||ar)){
+    const nn=v=>String(v||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,'');
+    const exact=all.some(c=>nn(c.album) && nn(cleanAlbum(c.album))===nn(al));
+    if(!exact){
+      const hints=await Promise.race([_koAlbumHints(al || ar, opts.stale).catch(()=>[]), new Promise(r=>setTimeout(()=>r([]),6000))]);
+      for(const h of hints){
+        const r=await searchItunes(h.latin, 25);
+        // 애플이 가수명을 한글로 줄 수도 있어 영문·한글 이름 둘 다 비교
+        all=all.concat(r.filter(c=>{ const a=nn(c.artist); return a && [h.latin, h.ko].filter(Boolean).map(nn).some(n=>a===n || a.includes(n) || n.includes(a)); })
+          .map(c=>Object.assign({}, c, { _hint:h })));
+      }
+    }
+  }
+  // 같은 커버는 하나로 — 영문 표기·한글 제목 단서(_alias/_hint)는 합쳐서 남긴다 (캐시된 원본은 건드리지 않게 복사)
+  { const at={}, merged=[];
+    all.forEach(c=>{ const i=at[c.img];
+      if(i===undefined){ at[c.img]=merged.length; merged.push(c); return; }
+      const p=merged[i]; if((c._hint&&!p._hint) || (c._alias&&!p._alias)) merged[i]=Object.assign({}, p, { _hint:p._hint||c._hint, _alias:p._alias||c._alias }); });
+    all=merged; }
   // 관련도 점수: 앨범명·가수명이 일치할수록 상위. 무관한 결과는 아래로.
   const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();
   const wAl=norm(album), wAr=norm(ar);
@@ -2817,6 +2868,8 @@ async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 
     if(wAr&&a2){ if(a2===wAr)s+=3; else if(a2.includes(wAr)||wAr.includes(a2))s+=1.5; }
     // 영문 표기로 찾은 가수 앨범 = 가수 일치로 본다
     if(c._alias){ const la=norm(c._alias); if(a2 && (a2===la || a2.includes(la) || la.includes(a2))) s=Math.max(s,3); }
+    // 한글 제목 앨범의 가수 앨범: 같은 해면 제목 일치로, 아니면 가수 일치 정도로
+    if(c._hint){ s=Math.max(s, (c.year && c.year===c._hint.year) ? 4.5 : 2); }
     return s; };
   all.forEach((c,i)=>{ c._score=score(c); c._ord=i; });
   all.sort((x,y)=> (y._score-x._score) || (x._ord-y._ord));   // 점수 높은 순, 동점이면 원래 순서
