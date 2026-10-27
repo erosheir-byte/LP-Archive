@@ -2681,11 +2681,46 @@ function searchDeezer(term, limit){
   });
 }
 
+/* MusicBrainz 요청 줄 세우기
+   MB 는 초당 1회만 받는다(넘으면 503). 한국어 곡 제목·한글 가수명 보정·바코드 등이 짧은 사이에 여러 번 부르면
+   뒤 요청이 거절돼 기능이 조용히 실패하므로, 모든 MB 요청을 한 줄로 1.1초 간격으로 보내고 503 이면 잠시 뒤 다시 보낸다.
+   사람이 기다리는 요청(기본)이 먼저, 커버 자동 불러오기 같은 뒷일(opts.low)은 나중. 뒷일은 많이 밀리면 버린다.
+   opts.skip(): 차례가 왔을 때 true 면 보내지 않음(더 최근 검색이 있을 때). 실패하면 null. */
+const _mbQ={ hi:[], lo:[], busy:false, next:0 };
+function _mbFetch(url, opts){
+  opts=opts||{};
+  return new Promise(res=>{
+    const q=opts.low?_mbQ.lo:_mbQ.hi;
+    if(opts.low && q.length>=20){ res(null); return; }
+    q.push({ url, opts, res, tries:0 }); _mbPump();
+  });
+}
+async function _mbPump(){
+  if(_mbQ.busy) return; _mbQ.busy=true;
+  try{
+    while(_mbQ.hi.length || _mbQ.lo.length){
+      const job=_mbQ.hi.length ? _mbQ.hi.shift() : _mbQ.lo.shift();
+      if(job.opts.skip && job.opts.skip()){ job.res(null); continue; }
+      const wait=_mbQ.next-Date.now(); if(wait>0) await new Promise(r=>setTimeout(r,wait));
+      if(job.opts.low && _mbQ.hi.length){ _mbQ.lo.unshift(job); continue; }   // 기다리는 사이 급한 요청이 오면 양보
+      if(job.opts.skip && job.opts.skip()){ job.res(null); continue; }
+      _mbQ.next=Date.now()+1100;
+      const ac=new AbortController(), to=setTimeout(()=>ac.abort(), job.opts.timeout||8000);
+      let r=null; try{ r=await fetch(job.url,{headers:{'Accept':'application/json'}, signal:ac.signal}); }catch(e){ r=null; } finally{ clearTimeout(to); }
+      if(r && (r.status===503 || r.status===429) && ++job.tries<3){   // 너무 잦음 → 조금 더 쉬고 다시
+        _mbQ.next=Date.now()+2000; (job.opts.low?_mbQ.lo:_mbQ.hi).unshift(job); continue;
+      }
+      job.res(r);
+    }
+  }finally{ _mbQ.busy=false; }
+}
+
 // 3) MusicBrainz + Cover Art Archive — no key, CORS-friendly (slower, rate-limited)
 async function searchMusicBrainz(term, limit){
   try{
     const u='https://musicbrainz.org/ws/2/release-group/?fmt=json&limit='+limit+'&query='+encodeURIComponent(term);
-    const r=await fetch(u,{headers:{'Accept':'application/json'}});
+    const r=await _mbFetch(u, {low:true});   // 커버 찾기 마지막 수단 — 뒷일로
+    if(!r || !r.ok) return [];
     const j=await r.json();
     const groups=(j['release-groups']||[]).slice(0,limit);
     const out=[];
@@ -2718,7 +2753,7 @@ async function searchTerm(term, limit){
 const _KALIAS_KEY='lp_kalias_v1';
 let _kaliasMem=null;
 function _kaliasStore(){ if(_kaliasMem) return _kaliasMem; try{ _kaliasMem=JSON.parse(localStorage.getItem(_KALIAS_KEY)||'{}')||{}; }catch(e){ _kaliasMem={}; } return _kaliasMem; }
-async function _latinAliases(q){
+async function _latinAliases(q, stale){
   q=String(q||'').trim(); if(!/[가-힣]/.test(q) || q.length>40) return [];
   const st=_kaliasStore(); if(st[q]) return st[q];
   const esc=v=>v.replace(/[+\-&|!(){}\[\]^"~*?:\\\/]/g,' ').trim();
@@ -2727,9 +2762,8 @@ async function _latinAliases(q){
   let out=[];
   try{
     const qq=esc(q);
-    const ac=new AbortController(), to=setTimeout(()=>ac.abort(), 4000);   // 느리면 보정 없이 진행
-    const r=await fetch('https://musicbrainz.org/ws/2/artist/?fmt=json&limit=6&query='+encodeURIComponent(`artist:(${qq}) OR alias:(${qq})`), {signal:ac.signal}).finally(()=>clearTimeout(to));
-    if(!r.ok) return [];
+    const r=await _mbFetch('https://musicbrainz.org/ws/2/artist/?fmt=json&limit=6&query='+encodeURIComponent(`artist:(${qq}) OR alias:(${qq})`), {skip:stale});
+    if(!r || !r.ok) return [];
     const arts=((await r.json()).artists||[]).filter(a=>(a.score||0)>=70);
     const nq=norm(q);
     for(const a of arts){
@@ -2748,12 +2782,45 @@ async function _latinAliases(q){
   return out;
 }
 
+/* 한글 앨범명 → 애플 뮤직 앨범 찾기 (예: 악뮤 '항해' → AKMU 'SAILING')
+   애플 뮤직엔 영문 제목으로만 등록된 한국 앨범이 많다. MusicBrainz 에서 한글 제목의 앨범(발매년도·가수)을 찾고,
+   그 가수의 애플 뮤직 앨범 중 같은 해 앨범을 맨 위로 올린다. 결과는 기기에 저장(lp_kalbum_v1). */
+const _KALB_KEY='lp_kalbum_v1';
+let _kalbMem=null;
+function _kalbStore(){ if(_kalbMem) return _kalbMem; try{ _kalbMem=JSON.parse(localStorage.getItem(_KALB_KEY)||'{}')||{}; }catch(e){ _kalbMem={}; } return _kalbMem; }
+async function _koAlbumHints(q, stale){
+  q=String(q||'').trim(); if(!/[가-힣]/.test(q) || q.length>40) return [];
+  const st=_kalbStore(); if(st[q]) return st[q];
+  const esc=v=>v.replace(/[+\-&|!(){}\[\]^"~*?:\\\/]/g,' ').trim();
+  const isLatin=v=>/[A-Za-z]/.test(v||'') && !/[가-힣ㄱ-ㅎぁ-んァ-ン一-龥]/.test(v||'');
+  const norm=v=>String(v||'').replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,'').toLowerCase();
+  const out=[];
+  try{
+    const r=await _mbFetch('https://musicbrainz.org/ws/2/release-group/?fmt=json&limit=8&query='+encodeURIComponent(`releasegroup:(${esc(q)})`), {skip:stale});
+    if(!r || !r.ok) return [];
+    const nq=norm(q);
+    for(const g of ((await r.json())['release-groups']||[])){
+      if((g.score||0)<70 || !/[가-힣]/.test(g.title||'')) continue;
+      const t=norm(g.title); if(!t || !(t===nq || nq.includes(t))) continue;   // 검색어에 이 앨범 제목이 들어 있어야
+      const ac=(g['artist-credit']||[])[0]||{}, a=ac.artist||{};
+      let lat=isLatin(ac.name)?ac.name : isLatin(a.name)?a.name : (isLatin(a['sort-name']) ? a['sort-name'].replace(/^([^,]+),\s*(.+)$/,'$2 $1') : '');
+      if(!lat && (a.name||ac.name)){ const x=await _latinAliases(a.name||ac.name, stale); lat=(x[0]||{}).latin||''; }
+      if(!lat || out.some(o=>o.latin===lat && o.title===g.title)) continue;
+      out.push({ title:g.title, year:String(g['first-release-date']||'').slice(0,4), latin:lat, ko:(!isLatin(ac.name)&&ac.name)||(!isLatin(a.name)&&a.name)||'' });
+      if(out.length>=2) break;
+    }
+  }catch(e){ return []; }
+  st[q]=out; try{ const ks=Object.keys(st); if(ks.length>300) delete st[ks[0]]; localStorage.setItem(_KALB_KEY, JSON.stringify(st)); }catch(e){}
+  return out;
+}
+
 // gather candidates from several query forms, merged & de-duped
 async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 직접 검색할 때만 한글→영문 가수명 보정 (자동 커버 불러오기엔 안 씀)
   const ar=(artist||'').replace(/[-]/g,'').trim();
   const al=cleanAlbum(album);
   // 한글 가수명이면 영문 표기도 같이 찾아 둔다 (본 검색과 동시에)
-  const aliasP=(opts&&opts.alias) ? _latinAliases(ar || al).catch(()=>[]) : Promise.resolve([]);
+  // 다른 MB 요청이 줄 서 있으면 늦어질 수 있어 5초까지만 기다림 (늦게 온 결과는 저장돼 다음 검색에 쓰임)
+  const aliasP=(opts&&opts.alias) ? Promise.race([_latinAliases(ar || al, opts.stale).catch(()=>[]), new Promise(r=>setTimeout(()=>r([]),5000))]) : Promise.resolve([]);
   const terms=[];
   if(ar&&al) terms.push((ar+' '+al).trim());   // 가수+앨범 (가장 정확) 우선
   if(al) terms.push(al);
@@ -2773,7 +2840,26 @@ async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 
     if(!r.length && t!==x.latin) r=await searchTerm(x.latin, 8);   // 앨범명이 한글이라 못 찾으면 가수 앨범 전체
     all=all.concat(r.map(c=>Object.assign({}, c, { _alias:x.latin })));
   }
-  const seen={}; all=all.filter(c=>{if(seen[c.img])return false;seen[c.img]=1;return true;});
+  // 한글 앨범명인데 제목이 똑같은 결과가 없으면: 한글 제목 앨범의 가수·발매년도로 찾기 (항해 → AKMU 2019 'SAILING')
+  if(opts && opts.alias && /[가-힣]/.test(al||ar)){
+    const nn=v=>String(v||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,'');
+    const exact=all.some(c=>nn(c.album) && nn(cleanAlbum(c.album))===nn(al));
+    if(!exact){
+      const hints=await Promise.race([_koAlbumHints(al || ar, opts.stale).catch(()=>[]), new Promise(r=>setTimeout(()=>r([]),6000))]);
+      for(const h of hints){
+        const r=await searchItunes(h.latin, 25);
+        // 애플이 가수명을 한글로 줄 수도 있어 영문·한글 이름 둘 다 비교
+        all=all.concat(r.filter(c=>{ const a=nn(c.artist); return a && [h.latin, h.ko].filter(Boolean).map(nn).some(n=>a===n || a.includes(n) || n.includes(a)); })
+          .map(c=>Object.assign({}, c, { _hint:h })));
+      }
+    }
+  }
+  // 같은 커버는 하나로 — 영문 표기·한글 제목 단서(_alias/_hint)는 합쳐서 남긴다 (캐시된 원본은 건드리지 않게 복사)
+  { const at={}, merged=[];
+    all.forEach(c=>{ const i=at[c.img];
+      if(i===undefined){ at[c.img]=merged.length; merged.push(c); return; }
+      const p=merged[i]; if((c._hint&&!p._hint) || (c._alias&&!p._alias)) merged[i]=Object.assign({}, p, { _hint:p._hint||c._hint, _alias:p._alias||c._alias }); });
+    all=merged; }
   // 관련도 점수: 앨범명·가수명이 일치할수록 상위. 무관한 결과는 아래로.
   const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();
   const wAl=norm(album), wAr=norm(ar);
@@ -2782,6 +2868,8 @@ async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 
     if(wAr&&a2){ if(a2===wAr)s+=3; else if(a2.includes(wAr)||wAr.includes(a2))s+=1.5; }
     // 영문 표기로 찾은 가수 앨범 = 가수 일치로 본다
     if(c._alias){ const la=norm(c._alias); if(a2 && (a2===la || a2.includes(la) || la.includes(a2))) s=Math.max(s,3); }
+    // 한글 제목 앨범의 가수 앨범: 같은 해면 제목 일치로, 아니면 가수 일치 정도로
+    if(c._hint){ s=Math.max(s, (c.year && c.year===c._hint.year) ? 4.5 : 2); }
     return s; };
   all.forEach((c,i)=>{ c._score=score(c); c._ord=i; });
   all.sort((x,y)=> (y._score-x._score) || (x._ord-y._ord));   // 점수 높은 순, 동점이면 원래 순서
@@ -3355,14 +3443,14 @@ async function _mbKoTitles(it, tracks){
   const queries=[`release:"${al}"`, `${al} ${q(it.artist)}`.trim()];
   let cands=[];
   for(const qq of queries){
-    try{ const r=await fetch('https://musicbrainz.org/ws/2/release/?fmt=json&limit=15&query='+encodeURIComponent(qq)); if(!r.ok) return undefined; cands=pick((await r.json()).releases||[]); }
+    try{ const r=await _mbFetch('https://musicbrainz.org/ws/2/release/?fmt=json&limit=15&query='+encodeURIComponent(qq)); if(!r || !r.ok) return undefined; cands=pick((await r.json()).releases||[]); }
     catch(e){ return undefined; }
     if(cands.length) break;
   }
   for(const o of cands.slice(0,2)){
     try{
-      const rr=await fetch('https://musicbrainz.org/ws/2/release/'+o.r.id+'?fmt=json&inc=recordings');
-      if(!rr.ok) return undefined;
+      const rr=await _mbFetch('https://musicbrainz.org/ws/2/release/'+o.r.id+'?fmt=json&inc=recordings');
+      if(!rr || !rr.ok) return undefined;
       const rj=await rr.json(), m={};
       (rj.media||[]).forEach((md,di)=>(md.tracks||[]).forEach(tr=>{ m[(md.position||di+1)+'-'+tr.position]=tr.title; }));
       if(tracks.every(t=>m[(t.disc||1)+'-'+t.no]) && Object.values(m).some(_hasHangul)) return m;
@@ -4754,8 +4842,8 @@ function _dzUPC(code){
 async function _mbBarcode(code){
   try{
     const u='https://musicbrainz.org/ws/2/release/?fmt=json&limit=3&query=barcode:'+encodeURIComponent(code);
-    const r=await fetch(u,{headers:{'Accept':'application/json'}});
-    if(!r.ok) return null;
+    const r=await _mbFetch(u);
+    if(!r || !r.ok) return null;
     const j=await r.json();
     const rel=(j.releases||[])[0];
     if(!rel) return null;
@@ -5740,7 +5828,7 @@ async function wzSearch(q){
   const my=++WZ.seq;
   if(!q){ box.innerHTML=''; msg.textContent=''; return; }
   msg.textContent=isEN()?'Searching…':'찾는 중…';
-  let cands=[]; try{ cands=await fetchCandidates('', q, {alias:true}); }catch(e){}
+  let cands=[]; try{ cands=await fetchCandidates('', q, {alias:true, stale:()=>my!==WZ.seq}); }catch(e){}
   if(my!==WZ.seq) return;   // 더 최근 검색이 있으면 버림
   WZ.cands=cands.slice(0,10);
   msg.textContent = WZ.cands.length ? '' : (isEN()?'No albums found — try other words, or add it with a photo':'앨범을 찾지 못했어요 — 다른 검색어로 찾거나 사진으로 직접 등록해 보세요');
