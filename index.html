@@ -892,6 +892,9 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-shine{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from 25deg,transparent 0 7%,rgba(255,255,255,.16) 12%,transparent 18% 50%,rgba(255,255,255,.12) 62%,transparent 68%)}
 .wz-cname{text-align:center;margin-top:14px;font-weight:800;font-size:18px}
 .wz-cname small{display:block;color:var(--muted);font-weight:500;font-size:12.5px;margin-top:3px}
+.wz-cin{display:block;width:min(260px,80%);margin:0 auto;background:var(--card2);border:1px solid var(--line);border-radius:12px;color:var(--txt);font:inherit;font-size:17px;font-weight:800;text-align:center;padding:9px 12px;outline:none}
+.wz-cin:focus{border-color:var(--accent)}
+.wz-cin::placeholder{color:var(--dim);font-weight:600;font-size:14px}
 .wz-cname .fix{display:inline-block;margin-top:8px;background:none;border:1px solid var(--line);color:var(--accent2);border-radius:16px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
 .wz-colors{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .wz-colors .c{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.12);background:var(--sw);padding:0;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:transform .2s,box-shadow .2s}
@@ -5782,14 +5785,20 @@ function wzPaintDisc(){
   });
   const opRow=wz$('#wz-opa'); opRow.hidden=!!photo;
   if(op){ wz$('#wz-op').value=op.value; wz$('#wz-opv').textContent=op.value+'%'; }
-  wz$('#wz-cname').innerHTML = photo
-    ? `${isEN()?'Photo':'사진'}<small>${isEN()?'Using your own photo':'사진으로 직접 등록해요'}</small><button type="button" class="fix" id="wz-fix">${isEN()?'Adjust position & size':'위치·크기 조정'}</button>`
+  // 사진 판: 컬러 이름은 직접 입력 (예: 픽처 디스크, 스플래터). 입력 중엔 다시 그리지 않아 포커스 유지
+  const cin=wz$('#wz-cin');
+  if(!(photo && cin && document.activeElement===cin)) wz$('#wz-cname').innerHTML = photo
+    ? `<input class="wz-cin" id="wz-cin" value="${escapeHtml(fc.value||'')}" placeholder="${isEN()?'Color name (e.g. picture disc)':'컬러 이름 (예: 픽처 디스크)'}" autocomplete="off" enterkeyhint="done">`
+      +`<small>${isEN()?'Using your own photo · type the color name':'사진으로 직접 등록해요 · 컬러 이름을 적어 주세요'}</small><button type="button" class="fix" id="wz-fix">${isEN()?'Adjust position & size':'위치·크기 조정'}</button>`
     : `${escapeHtml(fc.value||'')}<small>${isEN()?'Pick a color':'컬러를 골라 주세요'}</small>`;
   { const fx=wz$('#wz-fix'); if(fx) fx.onclick=()=>{ if(window.__openDiscPhoto) window.__openDiscPhoto(); }; }
-  wz$('#wz-colors') && wz$('#wz-colors').querySelectorAll('.c').forEach(c=>{ if(c.classList.contains('ph')) c.classList.toggle('on', !!photo); });
+  { const ci=wz$('#wz-cin'); if(ci){ ci.oninput=()=>{ fc.value=ci.value; }; ci.onfocus=()=>ci.select(); ci.onkeydown=e=>{ if(e.key==='Enter') ci.blur(); }; } }
+  // 사진이면 사진 칩에만 표시 (컬러 칩과 동시에 선택돼 보이지 않게)
+  wz$('#wz-colors') && wz$('#wz-colors').querySelectorAll('.c').forEach(c=>{ if(c.classList.contains('ph')) c.classList.toggle('on', !!photo); else if(photo) c.classList.remove('on'); });
 }
 wz$('#wz-op').oninput=e=>{ const op=$('#f-op'); if(op){ op.value=e.target.value; } $('#f-color').oninput&&$('#f-color').oninput(); wzPaintDisc(); };
 wz$('#wz-to4').onclick=()=>{
+  if(!$('#f-color').value.trim()){ const ci=wz$('#wz-cin'); appAlert(isEN()?'Please enter the color name':'컬러 이름을 입력해 주세요'); if(ci) ci.focus(); return; }
   wzSetStep(4);
   const box=wz$('#wz-choices'), en=isEN();
   box.innerHTML=WZ_STATUS.map(o=>`<button type="button" class="wz-choice${(WZ.status||WZ.preset)===o.k?' on':''}" data-k="${o.k}"><span class="dot" style="background:${o.c}"></span><div><div class="t">${en?o.en:o.ko}</div><div class="d">${en?o.den:o.dko}</div></div></button>`).join('');
@@ -5841,7 +5850,7 @@ function wzFinal(){
   wz$('#wz-ft').textContent=$('#f-album').value; wz$('#wz-fa').textContent=$('#f-artist').value;
   const st=WZ_STATUS.find(o=>o.k===WZ.status), wish=WZ.status==='위시';
   const fc=$('#f-color'), price=_wzNum($('#f-price').value);
-  const tags=[ st && (en?st.en:st.ko), fc.dataset.photo ? (en?'Photo':'사진') : fc.value,
+  const tags=[ st && (en?st.en:st.ko), fc.value.trim() || (fc.dataset.photo ? (en?'Photo':'사진') : ''),
     (!wish && price && !(SETTINGS&&SETTINGS.hideMoney)) ? Number(price).toLocaleString('ko-KR')+(en?' KRW':'원') : '',
     !wish ? $('#f-store').value.trim() : '' ].filter(Boolean);
   wz$('#wz-tags').innerHTML=tags.map(t=>`<span>${escapeHtml(t)}</span>`).join('');
