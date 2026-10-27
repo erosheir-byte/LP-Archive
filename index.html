@@ -1961,6 +1961,10 @@ const I18N = {
   /* --- genres (common) --- */
   "팝":"Pop","록":"Rock","R&B·소울":"R&B/Soul","R&B/소울":"R&B/Soul","가요":"K-Pop",
   "힙합":"Hip-hop","클래식":"Classical","인디":"Indie","OST":"OST","재즈":"Jazz",
+  /* --- genres (애플 뮤직 기준 장르) --- */
+  "얼터너티브":"Alternative","힙합/랩":"Hip-Hop/Rap","일렉트로닉":"Electronic","댄스":"Dance","블루스":"Blues",
+  "사운드트랙":"Soundtrack","애니메이션":"Anime","싱어송라이터":"Singer/Songwriter","포크":"Folk","컨트리":"Country",
+  "뉴에이지":"New Age","월드":"World","라틴":"Latin","레게":"Reggae","홀리데이":"Holiday",
   /* --- settings sheet --- */
   "환경설정":"Settings",
   "금액 표시 숨기기":"Hide amounts",
@@ -2337,14 +2341,14 @@ async function searchItunes(term, limit){
 // normalize iTunes genre into a short Korean label
 /* ===== 장르 기준: 애플 뮤직 장르 =====
    앱이 앨범 정보를 가져오는 애플 뮤직(iTunes)의 공식 장르를 기준으로 한다. 이름은 자연스러운 한국어로
-   (Anime '일본 만화 영화' → 애니메이션). 자주 안 쓰는 장르(어린이·종교·코미디 등)는 '기타'로 묶는다.
+   (Anime '일본 만화 영화' → 애니메이션, K-Pop 은 한국어 화면에선 '가요' · 영어 화면에선 'K-Pop'). 자주 안 쓰는 장르(어린이·종교·코미디 등)는 '기타'로 묶는다.
    iTunes·Deezer·Discogs·AI 추출 등 어디서 온 이름이든 canonGenre() 로 이 목록에 맞추고,
    목록에 없는 이름은 사용자가 직접 입력한 장르로 보고 그대로 둔다 (genreCustom 표시가 있으면 손대지 않음). */
-const GENRES=['K-Pop','팝','록','얼터너티브','R&B/소울','힙합/랩','일렉트로닉','댄스','재즈','블루스','클래식','사운드트랙','애니메이션','싱어송라이터','포크','컨트리','J-Pop','뉴에이지','월드','라틴','레게','홀리데이','기타'];
+const GENRES=['가요','팝','록','얼터너티브','R&B/소울','힙합/랩','일렉트로닉','댄스','재즈','블루스','클래식','사운드트랙','애니메이션','싱어송라이터','포크','컨트리','J-Pop','뉴에이지','월드','라틴','레게','홀리데이','기타'];
 const _gKey=v=>String(v||'').toLowerCase().replace(/[\s·・\/&\-_.,+'’()]/g,'');
 const _GENRE_ALIAS=(()=>{
   const t={
-    'K-Pop':['kpop','케이팝','k팝','가요','korean','한국','한국가요','한국음악','발라드','ballad','트로트','trot','asianmusic','아시아음악'],
+    '가요':['kpop','케이팝','k팝','korean','한국','한국가요','한국음악','발라드','ballad','트로트','trot','asianmusic','아시아음악'],
     '팝':['pop','팝','adultcontemporary','어덜트컨템퍼러리','easylistening','이지리스닝','vocal','보컬','citypop','시티팝','frenchpop','popfilm'],
     '록':['rock','록','락','hardrock','하드록','metal','메탈','heavymetal','헤비메탈','punk','punkrock','펑크록','펑크','britpop','브릿팝','grunge','그런지'],
     '얼터너티브':['alternative','얼터너티브','alternativerock','얼터너티브록','indie','인디','indierock','인디록','indiepop','인디팝','koreanindie','한국인디','인디음악','모던록','modernrock','shoegaze','슈게이징','dreampop','드림팝','lofi','로파이'],
@@ -2372,7 +2376,7 @@ const _GENRE_ALIAS=(()=>{
 })();
 // 정확히 맞는 이름이 없으면 들어 있는 단어로 판단 (예: 'Funk / Soul', 'Rap/Hip Hop', '인디 록/모던 록')
 const _GENRE_HINTS=[['사운드트랙',['ost','soundtrack','사운드트랙','film','영화','stage','뮤지컬']],['애니메이션',['anime','애니']],['힙합/랩',['hiphop','힙합','rap','랩']],
-  ['R&B/소울',['rb','soul','소울','알앤비','funk']],['J-Pop',['jpop','jrock','제이팝']],['K-Pop',['kpop','케이팝','가요','발라드']],['재즈',['jazz','재즈']],['블루스',['blues','블루스']],
+  ['R&B/소울',['rb','soul','소울','알앤비','funk']],['J-Pop',['jpop','jrock','제이팝']],['가요',['kpop','케이팝','가요','발라드']],['재즈',['jazz','재즈']],['블루스',['blues','블루스']],
   ['클래식',['classic','클래식']],['얼터너티브',['indie','인디','alternative','얼터너티브','모던록']],['록',['rock','록','metal','메탈','punk']],['댄스',['dance','댄스','disco']],
   ['일렉트로닉',['electro','일렉','edm','house','techno']],['포크',['folk','포크','acoustic','어쿠스틱']],['컨트리',['country','컨트리']],['팝',['pop','팝']]];
 // 기준 장르 이름과 정확히 같은 뜻이면 그 이름, 아니면 ''
@@ -4736,7 +4740,7 @@ function _repStats(all, en){
   const g=_clearTop(all,'genre'), a=_clearTop(all,'artist');
   const nArt=new Set(all.map(d=>String(d.artist||'').trim()).filter(x=>x&&x!=='-')).size;
   const out=[];
-  out.push(g ? [g[0], en?'Main genre':'대표 장르'] : [nArt+(en?'':'명'), en?'Artists':'아티스트']);
+  out.push(g ? [tr(g[0]), en?'Main genre':'대표 장르'] : [nArt+(en?'':'명'), en?'Artists':'아티스트']);
   if(a) out.push([a[0], en?'Main artist':'대표 아티스트']);
   else if(g) out.push([nArt+(en?'':'명'), en?'Artists':'아티스트']);
   return out;
@@ -4747,7 +4751,7 @@ async function buildShareCardCanvas(){
   const favAlbum = picks.length && _listenCount(picks[0]) ? picks[0] : null;   // 청음 기록이 가장 많은 앨범
   const owned=DATA.filter(d=>statusGroup(d.status)!=='위시');
   const artistCount=new Set(owned.map(d=>(d.artist||'').trim()).filter(a=>a&&a!=='-')).size;
-  const tg=_clearTop(owned,'genre'), top=tg ? tg[0] : '';
+  const tg=_clearTop(owned,'genre'), top=tg ? tr(tg[0]) : '';
   return _drawStoryCard({
     stamp:`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`,
     items:picks, fixed9:true, preferLoaded:true,
@@ -4810,7 +4814,7 @@ async function buildMonthCardCanvas(m){
   const stats=[];
   if(buys.length) stats.push([buys.length+(en?'':'장'), en?'Bought':'구매']);
   if(listenedAll.length) stats.push([listenedAll.length+(en?'':'장'), en?'Played':'청음']);
-  stats.push(topG ? [topG[0], en?'Genre of the month':'이달의 장르'] : [total+(en?'':'장'), en?'Total so far':'누적']);
+  stats.push(topG ? [tr(topG[0]), en?'Genre of the month':'이달의 장르'] : [total+(en?'':'장'), en?'Total so far':'누적']);
   return _drawStoryCard({
     stamp:`${yy}.${mm}`, items, fixed9:false, preferLoaded:false,
     lead: yy,
@@ -6758,7 +6762,7 @@ function layoutCoverFlow(){
     c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
   });
   const it=cfItems[cfIndex]; if(!it)return;
-  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 미리듣기 · 길게 누르면 상세</span>${it.genre?' · '+it.genre:''}${it.color?' · '+it.color:''}</div>`;
+  $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 미리듣기 · 길게 누르면 상세</span>${it.genre?' · '+tr(it.genre):''}${it.color?' · '+it.color:''}</div>`;
 }
 function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow();
   if(_preview.id && (!cfItems[cfIndex] || _preview.id!==cfItems[cfIndex].id)) stopPreview();   // 다른 앨범으로 넘기면 정지
