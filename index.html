@@ -800,6 +800,151 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .fld .genre-custom[hidden]{display:none}
 .e-pv-name{flex:1;min-width:0;font-size:15px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .e-pv-name.dim{color:var(--dim)}
+/* ===== 바이닐 등록 단계 화면 (검색 → 자켓 → 판 → 상태 → 구매 → 완성) ===== */
+#sheet-wiz{padding:0!important;overflow:hidden;background:var(--bg)}
+#sheet-wiz .wz{position:absolute;inset:0;top:var(--sat);overflow:hidden;
+  background-image:radial-gradient(700px 420px at 85% -10%,rgba(232,100,60,.15),transparent 60%)}
+.wz-top{position:absolute;left:0;right:0;top:0;z-index:5;padding:14px 16px 0;display:flex;align-items:center;gap:12px}
+.wz-ic{width:36px;height:36px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.wz-prog{flex:1;display:flex;gap:5px}
+.wz-prog i{flex:1;height:4px;border-radius:4px;background:var(--line);overflow:hidden;position:relative}
+.wz-prog i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.wz-prog i.on::after{transform:scaleX(1)}
+.wz-full{flex:none;background:none;border:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 2px;white-space:nowrap}
+.wz-step{position:absolute;inset:0;padding:70px 22px 22px;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+  transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .45s ease}
+.wz-step::-webkit-scrollbar{display:none}
+.wz-step>*{flex-shrink:0}
+.wz-step.right{transform:translateX(100%);opacity:0;pointer-events:none}
+.wz-step.left{transform:translateX(-30%);opacity:0;pointer-events:none}
+.wz-q{font-size:26px;font-weight:900;line-height:1.28;letter-spacing:-.02em;margin:6px 0;word-break:keep-all}
+.wz-q em{font-style:normal;background:linear-gradient(120deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.wz-q.c{text-align:center}
+.wz-sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+.wz-step .wz-sp{flex:1 1 auto;min-height:6px}
+.wz-cta{flex:none;margin-top:24px;width:100%;height:56px;border-radius:16px;border:none;font:inherit;font-size:16.5px;font-weight:800;color:#1a0d06;
+  background:linear-gradient(150deg,var(--accent2),var(--accent));box-shadow:0 12px 30px rgba(232,100,60,.3);cursor:pointer;transition:transform .15s}
+.wz-cta:active{transform:scale(.98)}
+.wz-link{align-self:center;background:none;border:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;margin-top:10px;cursor:pointer;padding:6px}
+/* 1 검색 */
+.wz-search{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:0 14px;height:56px;transition:border-color .2s}
+.wz-search:focus-within{border-color:var(--accent)}
+.wz-search svg{flex:none;color:var(--muted)}
+.wz-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:17px;font-weight:500}
+.wz-ways{display:flex;gap:8px;margin-top:12px}
+.wz-way{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.wz-way svg{color:var(--accent2);flex:none}
+.wz-way:active{transform:scale(.98)}
+#wz-bcslot .bc-box{margin-top:12px}
+.wz-msg{color:var(--muted);font-size:13.5px;margin-top:18px;text-align:center;word-break:keep-all}
+.wz-msg:empty{display:none}
+.wz-results{margin:18px -22px 0;padding:6px 22px 16px;display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.wz-results::-webkit-scrollbar{display:none}
+.wz-res{flex:0 0 62%;scroll-snap-align:center;cursor:pointer;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .5s ease,transform .6s cubic-bezier(.22,1,.36,1)}
+.wz-res.in{opacity:1;transform:none}
+.wz-res .jk{aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--card2);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.wz-res .t{font-weight:800;font-size:15px;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wz-res .a{color:var(--muted);font-size:13px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sheet-wiz .jk img,.wz-hero img,.wz-sleeve img,.wz-lbl img,.wz-alt img,.wz-fly img{width:100%;height:100%;object-fit:cover;display:block}
+/* 2 자켓 */
+.wz-hero{position:relative;width:min(80vw,380px,40vh);aspect-ratio:1;margin:8px auto 0;border-radius:18px;overflow:hidden;background:var(--card2);
+  box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.wz-meta{text-align:center;margin-top:20px}
+.wz-meta .t{font-size:22px;font-weight:900;word-break:keep-all}
+.wz-meta .a{color:var(--accent2);font-weight:700;margin-top:4px}
+.wz-manual{display:flex;gap:8px;margin-top:16px}
+.wz-manual[hidden],.wz-meta[hidden]{display:none}
+.wz-manual input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font:inherit;font-size:15px;outline:none}
+.wz-manual input:focus{border-color:var(--accent)}
+.wz-auto{display:flex;justify-content:center;gap:7px;margin-top:14px;flex-wrap:wrap}
+.wz-auto .ch{font-size:12px;font-weight:700;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:20px;padding:5px 11px;display:inline-flex;align-items:center;gap:5px}
+.wz-auto .ch.solid{border-style:solid}
+.wz-auto select,.wz-auto input{background:none;border:none;color:var(--txt);font:inherit;font-weight:800;font-size:12px;padding:0;outline:none;-webkit-appearance:none;appearance:none}
+.wz-auto input{width:44px}
+.wz-auto input.gc{width:78px}
+.wz-alt{display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+.wz-alt .t{width:46px;height:46px;border-radius:9px;overflow:hidden;cursor:pointer;opacity:.6;outline:2px solid transparent;outline-offset:2px;background:var(--card2);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);padding:0;border:none}
+.wz-alt .t.on{opacity:1;outline-color:var(--accent)}
+.wz-alt .t.ph{opacity:1;border:1px dashed var(--line)}
+.wz-alt .t.ph.on{color:var(--accent2);border-color:transparent}
+.wz-altcap{text-align:center;font-size:12px;color:var(--dim);margin-top:8px}
+.wz-fly{position:fixed;z-index:100000;border-radius:14px;overflow:hidden;transition:all .6s cubic-bezier(.22,1,.36,1);pointer-events:none}
+/* 3 판 */
+.wz-stage{position:relative;height:min(78vw,340px)}
+.wz-sleeve{position:absolute;top:0;left:50%;width:min(68vw,300px);aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--card2);transform:translateX(-50%);
+  box-shadow:0 26px 60px rgba(0,0,0,.5);transition:transform .9s cubic-bezier(.22,1,.36,1),opacity .5s;z-index:2}
+.wz-disc{position:absolute;top:2%;left:50%;width:min(64vw,282px);aspect-ratio:1;border-radius:50%;transform:translateX(-50%);transition:transform 1s cubic-bezier(.22,1,.36,1);z-index:3}
+.wz-stage.out .wz-sleeve{transform:translateX(-50%) translateX(-34%) scale(.74) rotate(-4deg)}
+.wz-stage.out .wz-disc{transform:translateX(-50%) translateX(20%)}
+.wz-rot{position:absolute;inset:0;border-radius:50%;animation:wzspin 3.2s linear infinite;animation-play-state:paused}
+.wz-stage.out .wz-rot,.wz-final .wz-rot{animation-play-state:running}
+@keyframes wzspin{to{transform:rotate(360deg)}}
+.wz-vinyl{position:absolute;inset:0;border-radius:50%;background-color:var(--disc,#1c1c1c);
+  background-image:repeating-radial-gradient(circle at 50% 50%,rgba(0,0,0,.18) 0 1.2px,rgba(255,255,255,.035) 1.2px 2.6px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 22px 50px rgba(0,0,0,.5);transition:background-color .5s,opacity .3s}
+.wz-disc.photo .wz-vinyl{background-image:var(--photo);background-size:cover;background-position:center;opacity:1!important}
+.wz-lbl{position:absolute;inset:33%;border-radius:50%;overflow:hidden;background:var(--card2);box-shadow:0 0 0 3px rgba(0,0,0,.25)}
+.wz-hole{position:absolute;left:50%;top:50%;width:4%;height:4%;border-radius:50%;background:var(--bg);transform:translate(-50%,-50%)}
+.wz-disc.photo .wz-lbl,.wz-disc.photo .wz-hole{display:none}
+.wz-shine{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(from 25deg,transparent 0 7%,rgba(255,255,255,.16) 12%,transparent 18% 50%,rgba(255,255,255,.12) 62%,transparent 68%)}
+.wz-cname{text-align:center;margin-top:14px;font-weight:800;font-size:18px}
+.wz-cname small{display:block;color:var(--muted);font-weight:500;font-size:12.5px;margin-top:3px}
+.wz-cname .fix{display:inline-block;margin-top:8px;background:none;border:1px solid var(--line);color:var(--accent2);border-radius:16px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.wz-colors{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.wz-colors .c{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.12);background:var(--sw);padding:0;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:transform .2s,box-shadow .2s}
+.wz-colors .c.on{transform:scale(1.15);box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent)}
+.wz-colors .c.ph{background:var(--card2)}
+.wz-colors .c.ph.on{color:var(--accent2)}
+.wz-opa{display:flex;align-items:center;gap:12px;margin-top:16px;color:var(--muted);font-size:13px}
+.wz-opa input{flex:1;accent-color:var(--accent)}
+.wz-opa[hidden],.wz-spec[hidden]{display:none}
+.wz-spec{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.wz-chips{display:flex;gap:8px;flex-wrap:wrap}
+.wz-chips button{height:38px;padding:0 15px;border-radius:19px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.wz-chips.sm button{height:32px;padding:0 12px;font-size:13px}
+.wz-chips button.on{border-color:var(--accent);color:var(--accent2);background:rgba(232,100,60,.1)}
+.wz-chips[hidden]{display:none}
+/* 4 상태 */
+.wz-choices{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.wz-choice{display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;background:var(--card);border:1.5px solid var(--line);cursor:pointer;text-align:left;font:inherit;color:var(--txt);
+  opacity:0;transform:translateY(14px);transition:opacity .4s,transform .5s cubic-bezier(.22,1,.36,1),border-color .2s,background .2s}
+.wz-choice.in{opacity:1;transform:none}
+.wz-choice .dot{width:42px;height:42px;border-radius:50%;flex:none}
+.wz-choice .t{font-size:17px;font-weight:800}
+.wz-choice .d{font-size:13px;color:var(--muted);margin-top:2px}
+.wz-choice.on{border-color:var(--accent);background:rgba(232,100,60,.10)}
+/* 5 구매 */
+.wz-price{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--line);padding:6px 2px 10px;margin-top:6px;transition:border-color .2s}
+.wz-price:focus-within{border-color:var(--accent)}
+.wz-price input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:38px;font-weight:900;letter-spacing:-.02em}
+.wz-price input::placeholder{color:var(--dim)}
+.wz-price span{font-size:22px;font-weight:800;color:var(--muted)}
+.wz-mini{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:46px;color:var(--muted);font-size:13px;font-weight:600;margin-top:14px}
+.wz-mini input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:15px;font-weight:700;text-align:right}
+.wz-flab{font-size:13px;font-weight:700;color:var(--muted);margin:22px 0 10px}
+.wz-in{width:100%;height:48px;background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--txt);font:inherit;font-size:15px;padding:0 14px;outline:none;box-sizing:border-box}
+.wz-in:focus{border-color:var(--accent)}
+.wz-in[hidden]{display:none}
+#wz-store-in{margin-top:10px}
+/* 6 완성 */
+.wz-final{position:relative;height:min(62vw,280px);margin-top:10px}
+.wz-final .wz-sleeve{top:4%;left:0;transform:rotate(-3deg);width:min(52vw,236px)}
+.wz-final .wz-disc{top:2%;left:auto;right:0;transform:none;width:min(56vw,252px)}
+.wz-final.go{transition:transform .8s cubic-bezier(.6,0,.4,1),opacity .8s;transform:translateY(60vh) scale(.2);opacity:0}
+.wz-sum{text-align:center;margin-top:18px}
+.wz-sum .t{font-size:22px;font-weight:900;word-break:keep-all}
+.wz-sum .a{color:var(--accent2);font-weight:700;margin-top:3px}
+.wz-tags{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:14px}
+.wz-tags span{font-size:12.5px;font-weight:700;color:var(--txt);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 12px}
+.wz-more-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin:18px auto 0;background:var(--card);border:1px solid var(--line);color:var(--muted);font:inherit;font-size:13.5px;font-weight:700;border-radius:20px;height:38px;padding:0 16px;cursor:pointer}
+.wz-more-btn svg{transition:transform .3s}
+.wz-more.open .wz-more-btn svg{transform:rotate(180deg)}
+.wz-more-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.22,1,.36,1)}
+.wz-more.open .wz-more-body{grid-template-rows:1fr}
+.wz-more-body>div{overflow:hidden}
+#wz-more-in{padding-top:14px;display:flex;flex-direction:column;gap:4px}
+
 .e-pv-btn{flex:0 0 auto;background:var(--card2);border:1px solid var(--line);border-radius:11px;color:var(--accent2);font-family:inherit;font-weight:700;font-size:13px;padding:10px 14px;cursor:pointer}
 .e-pv-btn:active{transform:scale(.96)}
 #e-pv-inline:not(:empty){margin-top:10px}
@@ -1442,12 +1587,97 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="fld"><label>장르</label><select id="f-genre"></select><input id="f-genre-custom" class="genre-custom" placeholder="장르 직접 입력" maxlength="20" hidden></div>
       <div class="fld"><label>발매년도</label><input id="f-year" type="number" inputmode="numeric" placeholder="예: 2018"></div>
     </div>
-    <div class="fld"><label>비고</label><input id="f-note" placeholder="메모"></div>
+    <div class="fld" id="f-note-fld"><label>비고</label><input id="f-note" placeholder="메모"></div>
     <div class="btnrow">
       <button class="btn ghost" id="add-cancel">취소</button>
       <button class="btn primary" id="add-save">보관함에 추가</button>
     </div>
   </div>
+</div>
+
+<!-- 바이닐 등록 단계 화면: 검색 → 자켓 → 판 → 상태 → 구매 정보 → 완성 (값은 위 추가 폼 #f-* 에 채워 같은 저장 로직 사용) -->
+<div class="ov" id="ov-wiz"></div>
+<div class="sheet fs" id="sheet-wiz">
+ <div class="wz">
+  <div class="wz-top">
+    <button class="wz-ic" id="wz-back" type="button" aria-label="닫기"></button>
+    <div class="wz-prog" id="wz-prog"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <button class="wz-full" id="wz-full" type="button">한 번에 입력</button>
+  </div>
+
+  <section class="wz-step" id="wz-s1">
+    <div class="wz-q">어떤 <em>바이닐</em>을<br>등록할까요?</div>
+    <div class="wz-sub">가수나 앨범명을 입력해 주세요</div>
+    <div class="wz-search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="wz-q" placeholder="예) 검정치마 TEAM BABY" autocomplete="off" enterkeyhint="search">
+    </div>
+    <div class="wz-ways">
+      <button class="wz-way" id="wz-scan" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M16 8v8"/></svg><span>바코드 찍기</span></button>
+      <button class="wz-way" id="wz-direct" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg><span>사진으로 직접 등록</span></button>
+    </div>
+    <div id="wz-bcslot"></div>
+    <div class="wz-msg" id="wz-msg"></div>
+    <div class="wz-results" id="wz-results"></div>
+    <input type="file" accept="image/*" id="wz-file" hidden>
+  </section>
+
+  <section class="wz-step right" id="wz-s2">
+    <div class="wz-q c">이 앨범이 맞나요?</div>
+    <div class="wz-hero" id="wz-hero"></div>
+    <div class="wz-meta" id="wz-meta"><div class="t" id="wz-t"></div><div class="a" id="wz-a"></div></div>
+    <div class="wz-manual" id="wz-manual" hidden><input id="wz-ar" placeholder="가수"><input id="wz-al" placeholder="앨범명"></div>
+    <div class="wz-auto" id="wz-auto"></div>
+    <div class="wz-alt" id="wz-alt"></div>
+    <div class="wz-altcap" id="wz-altcap"></div>
+    <div class="wz-sp"></div>
+    <button class="wz-cta" id="wz-to3" type="button">이 자켓으로 할게요</button>
+  </section>
+
+  <section class="wz-step right" id="wz-s3">
+    <div class="wz-q c">어떤 <em>판</em>인가요?</div>
+    <div class="wz-stage" id="wz-stage"><div class="wz-disc"><div class="wz-rot"><div class="wz-vinyl"></div><div class="wz-lbl"></div><div class="wz-hole"></div></div><div class="wz-shine"></div></div><div class="wz-sleeve" id="wz-sleeve"></div></div>
+    <div class="wz-cname" id="wz-cname"></div>
+    <div class="wz-colors" id="wz-colors"></div>
+    <div class="wz-opa" id="wz-opa"><span>투명도</span><input type="range" id="wz-op" min="20" max="100" value="100"><span id="wz-opv">100%</span></div>
+    <div class="wz-spec" id="wz-spec"><div class="wz-chips sm" id="wz-rpm"></div><div class="wz-chips sm" id="wz-inch"></div></div>
+    <div class="wz-sp"></div>
+    <button class="wz-cta" id="wz-to4" type="button">다음</button>
+  </section>
+
+  <section class="wz-step right" id="wz-s4">
+    <div class="wz-q">이 바이닐은<br>지금 어떤 <em>상태</em>인가요?</div>
+    <div class="wz-sub">고르면 바로 다음으로 넘어가요</div>
+    <div class="wz-choices" id="wz-choices"></div>
+  </section>
+
+  <section class="wz-step right" id="wz-s5">
+    <div class="wz-q">얼마에 샀나요?</div>
+    <div class="wz-price"><input id="wz-price" inputmode="numeric" placeholder="0" autocomplete="off"><span>원</span></div>
+    <label class="wz-mini"><span>정가</span><input id="wz-list" inputmode="numeric" placeholder="선택" autocomplete="off"></label>
+    <div class="wz-flab">어디서 샀나요?</div>
+    <div class="wz-chips" id="wz-stores"></div>
+    <input class="wz-in" id="wz-store-in" placeholder="구매처 입력" hidden>
+    <div class="wz-flab" id="wz-date-lab">언제 샀나요?</div>
+    <input class="wz-in" type="date" id="wz-buy">
+    <div class="wz-sp"></div>
+    <button class="wz-cta" id="wz-to6" type="button">다음</button>
+    <button class="wz-link" id="wz-skip5" type="button">나중에 입력할게요</button>
+  </section>
+
+  <section class="wz-step right" id="wz-s6">
+    <div class="wz-q c">이렇게 <em>등록</em>할게요</div>
+    <div class="wz-final" id="wz-final"><div class="wz-disc"><div class="wz-rot"><div class="wz-vinyl"></div><div class="wz-lbl"></div><div class="wz-hole"></div></div><div class="wz-shine"></div></div><div class="wz-sleeve" id="wz-fsleeve"></div></div>
+    <div class="wz-sum"><div class="t" id="wz-ft"></div><div class="a" id="wz-fa"></div></div>
+    <div class="wz-tags" id="wz-tags"></div>
+    <div class="wz-more" id="wz-more">
+      <button class="wz-more-btn" id="wz-more-btn" type="button"><span>추가 입력하기</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="wz-more-body"><div><div id="wz-more-in"></div></div></div>
+    </div>
+    <div class="wz-sp"></div>
+    <button class="wz-cta" id="wz-save" type="button">보관함에 추가</button>
+  </section>
+ </div>
 </div>
 
 <!-- 일괄 가져오기 미리보기 시트 -->
@@ -3862,7 +4092,7 @@ function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,pr
   const prefix=(opts&&opts.prefix)||'e';
   const syncForm=()=>{
     const ec=$('#'+prefix+'-color');
-    const formOpen = prefix==='f' ? $('#sheet-add').classList.contains('show') : $('#sheet-edit').classList.contains('show');
+    const formOpen = prefix==='f' ? ($('#sheet-add').classList.contains('show') || $('#sheet-wiz').classList.contains('show')) : $('#sheet-edit').classList.contains('show');
     if(ec && formOpen){
       if(it.discPhoto) ec.dataset.photo=it.discPhoto; else delete ec.dataset.photo;
       if(ec.oninput) ec.oninput();   // 팔레트(사진 칩 상태)·미리보기 판 다시 그림
@@ -4186,7 +4416,8 @@ function show(name){
 function hide(name){$('#ov-'+name).classList.remove('show');$('#sheet-'+name).classList.remove('show');
   if(name==='add') clearAddDraft();   // 추가 폼을 직접 닫으면(저장 완료·취소) 임시저장도 함께 지운다
   if(name==='colldetail' && typeof commitCollHead==='function') commitCollHead();
-  if(name==='daylist') s0Liked(false);   // 편집 중에 닫아도 입력한 이름·설명 저장
+  if(name==='daylist') s0Liked(false);
+  if(name==='wiz' && typeof wzOnHide==='function') wzOnHide();   // 편집 중에 닫아도 입력한 이름·설명 저장
   const s=$('#sheet-'+name); s.style.transform='';
   if(s.classList.contains('fs')) document.body.classList.remove('fs-open');
   if(!document.querySelector('.sheet.show')) unlockScroll();}   // 열린 시트가 더 없을 때만 잠금 해제
@@ -4517,6 +4748,7 @@ function applyBarcodeResult(r){
   if(r.year){ const yf=$('#f-year'); if(yf && !yf.value){ const y=parseInt(String(r.year).slice(0,4),10); if(y) yf.value=y; } }
   if(r.genre){ const gf=$('#f-genre'); if(gf && !gf.value) fillGenreSelect(gf, canonGenre(r.genre)); }
   if(r.cover) setPrevImg(r.cover, bcT('This cover will be saved ✓', (r.src||'')+' 커버로 저장돼요 ✓'));
+  if($('#sheet-wiz').classList.contains('show') && typeof wzFromBarcode==='function') wzFromBarcode(r);
 }
 { const b=$('#bc-scan'); if(b) b.onclick=()=>{ const box=$('#bc-box'); if(box.style.display==='none'){ startBarcodeScan(); } else { stopBarcodeScan(); box.style.display='none'; } }; }
 { const l=$('#bc-lookup'); if(l) l.onclick=()=>{ stopBarcodeScan(); lookupBarcode($('#bc-num').value); }; }
@@ -5054,7 +5286,7 @@ function refreshFieldSuggestions(){   // 폼 열 때 호출 — 최초 1회만 �
   attachSuggest('f-store', _storeSuggestions);
   attachSuggest('e-store', _storeSuggestions);
 }
-function openAdd(initStatus, presetDate){
+function openAdd(initStatus, presetDate, opts){   // opts.silent: 칸만 초기화하고 시트는 열지 않음(단계 화면용)
   refreshFieldSuggestions();
   ['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-urlin','f-genre','f-year'].forEach(i=>{ const el=$('#'+i); if(el) el.value=''; });
   fillGenreSelect($('#f-genre'),'');   // 직접 입력한 장르 목록 갱신 + 입력칸 닫기
@@ -5083,7 +5315,7 @@ function openAdd(initStatus, presetDate){
   openUnknown=false; { const ub=$('#f-open-unknown'); if(ub) ub.classList.remove('on'); }
   setupColorField('f');
   toggleBuyFields();
-  show('add');
+  if(!(opts&&opts.silent)) show('add');
 }
 // 같은 앨범 한 장 더: 기존 항목 정보를 복사해 추가 폼을 미리 채운다 (구매일은 오늘)
 function cloneToAdd(it){
@@ -5121,11 +5353,11 @@ $('#f-status').onchange=toggleBuyFields;
 }; }
 { const s=$('#f-sleeve'), m=$('#f-media'); if(s) s.onchange=()=>paintGradeDesc('f'); if(m) m.onchange=()=>paintGradeDesc('f'); }
 $('#fab').onclick=()=>{
-  if(filter.chip==='위시') return openAdd('위시');
-  if(filter.chip==='배송전') return openAdd('배송전');
-  if(filter.chip==='보유중') return openAdd('보유중');
+  if(filter.chip==='위시') return openWizard('위시');
+  if(filter.chip==='배송전') return openWizard('배송전');
+  if(filter.chip==='보유중') return openWizard('보유중');
   if(filter.chip==='판매·교환') return openSellExchange();
-  openAdd();
+  openWizard();
 };
 
 
@@ -5280,6 +5512,361 @@ $('#add-save').onclick=()=>{
   renderChips();renderGrid();renderStats();buildCoverFlow();
   window.scrollTo(0,0);
 };
+
+/* ===== 바이닐 등록 단계 화면 =====
+   검색 → 자켓 → 판 → 상태 → 구매 정보 → 완성. 보이는 화면만 단계로 나누고 값은 위 추가 폼(#f-*)에 채운다.
+   저장·검증·장르/발매년도 자동 채움·음원 연결은 기존 '보관함에 추가'(#add-save) 로직을 그대로 쓴다.
+   바코드 상자·상태 등급·개봉일·도착일·비고 칸은 열려 있는 동안 단계 화면으로 빌려 오고, 닫을 때 돌려놓는다.
+   '한 번에 입력'을 누르면 지금까지 채운 값 그대로 기존 한 화면 폼으로 넘어간다. */
+const WZ={ step:1, hist:[], cands:[], cand:null, direct:false, status:null, preset:null, borrowed:[], seq:0, open:false };
+const wz$=q=>document.querySelector('#sheet-wiz '+q);
+const WZ_ICON_BACK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+const WZ_ICON_X='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const WZ_ICON_IMG='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>';
+const WZ_STATUS=[
+  {k:'미개봉', ko:'미개봉', en:'Sealed', dko:'비닐도 안 뜯은 새 판이에요', den:'Still in the shrink wrap', c:'linear-gradient(150deg,#6aa0e8,#3f6fd0)'},
+  {k:'개봉', ko:'개봉', en:'Opened', dko:'꺼내서 듣고 있어요', den:'Out of the sleeve and spinning', c:'linear-gradient(150deg,var(--accent2),var(--accent))'},
+  {k:'배송전', ko:'배송 전', en:'On the way', dko:'주문하고 기다리는 중이에요', den:'Ordered, waiting for delivery', c:'linear-gradient(150deg,#9d96aa,#5f5a6b)'},
+  {k:'위시', ko:'위시', en:'Wishlist', dko:'아직은 갖고 싶은 판이에요', den:'A record you want someday', c:'linear-gradient(150deg,#ec8fb3,#c2557f)'},
+];
+const WZ_STORES_DEFAULT=['yes24','알라딘','교보문고','중고거래'];
+function wzBorrow(id, target){
+  const el=document.getElementById(id); if(!el||!target) return;
+  const ph=document.createComment('wz:'+id); el.parentNode.insertBefore(ph, el); target.appendChild(el); WZ.borrowed.push([el,ph]);
+}
+function wzReturn(){ WZ.borrowed.forEach(([el,ph])=>{ if(ph.parentNode){ ph.parentNode.insertBefore(el, ph); ph.remove(); } }); WZ.borrowed=[]; }
+function wzOnHide(){
+  WZ.open=false;
+  try{ stopBarcodeScan(); }catch(e){}
+  const bx=$('#bc-box'); if(bx) bx.style.display='none';
+  wzReturn();
+}
+function wzSetStep(n, noPush){
+  if(!noPush && WZ.step!==n) WZ.hist.push(WZ.step);
+  for(let i=1;i<=6;i++){ const st=wz$('#wz-s'+i); st.classList.toggle('left',i<n); st.classList.toggle('right',i>n); }
+  WZ.step=n;
+  const b=wz$('#wz-back'); b.innerHTML = n>1 ? WZ_ICON_BACK : WZ_ICON_X; b.setAttribute('aria-label', n>1 ? (isEN()?'Back':'뒤로') : (isEN()?'Close':'닫기'));
+  wz$('#wz-prog').querySelectorAll('i').forEach((el,i)=>el.classList.toggle('on', i<n));
+  const cur=wz$('#wz-s'+n); if(cur) cur.scrollTop=0;
+}
+function wzBack(){
+  if(WZ.step===1 || !WZ.hist.length){ hide('wiz'); return; }
+  const prev=WZ.hist.pop();
+  if(prev===3) wz$('#wz-stage').classList.add('out');
+  wzSetStep(prev, true);
+}
+// 단계 화면 글자 (강조 <em> 이 섞인 제목은 자동 번역이 안 돼 언어별로 직접 넣는다)
+function wzTexts(){
+  const en=isEN(), q=(sel,ko,e)=>{ const el=wz$(sel); if(el) el.innerHTML=en?e:ko; }, t=(sel,ko,e)=>{ const el=wz$(sel); if(el) el.textContent=en?e:ko; }, ph=(sel,ko,e)=>{ const el=wz$(sel); if(el) el.placeholder=en?e:ko; };
+  q('#wz-s1 .wz-q','어떤 <em>바이닐</em>을<br>등록할까요?','Which <em>record</em><br>are you adding?');
+  t('#wz-s1 .wz-sub','가수나 앨범명을 입력해 주세요','Type an artist or album');
+  ph('#wz-q','예) 검정치마 TEAM BABY','e.g. The Black Skirts TEAM BABY');
+  t('#wz-scan span','바코드 찍기','Scan barcode'); t('#wz-direct span','사진으로 직접 등록','Add with a photo');
+  t('#wz-full','한 번에 입력','All on one page');
+  q('#wz-s2 .wz-q','이 앨범이 맞나요?','Is this the album?');
+  ph('#wz-ar','가수','Artist'); ph('#wz-al','앨범명','Album');
+  t('#wz-to3','이 자켓으로 할게요','Use this cover');
+  q('#wz-s3 .wz-q','어떤 <em>판</em>인가요?','What does the <em>disc</em> look like?');
+  t('#wz-opa span','투명도','Opacity'); t('#wz-to4','다음','Next');
+  q('#wz-s4 .wz-q','이 바이닐은<br>지금 어떤 <em>상태</em>인가요?','What <em>state</em> is<br>this record in?');
+  t('#wz-s4 .wz-sub','고르면 바로 다음으로 넘어가요','Tap one to continue');
+  q('#wz-s5 .wz-q','얼마에 샀나요?','How much was it?');
+  t('#wz-s5 .wz-mini span','정가','List price'); ph('#wz-list','선택','Optional');
+  t('#wz-s5 .wz-flab','어디서 샀나요?','Where did you buy it?'); ph('#wz-store-in','구매처 입력','Store name');
+  t('#wz-to6','다음','Next'); t('#wz-skip5','나중에 입력할게요','I’ll fill this in later');
+  q('#wz-s6 .wz-q','이렇게 <em>등록</em>할게요','Ready to <em>add</em>');
+  t('#wz-more-btn span','추가 입력하기','More details'); t('#wz-save','보관함에 추가','Add to library');
+}
+function openWizard(initStatus, presetDate){
+  openAdd(initStatus, presetDate, {silent:true});   // 추가 폼 칸 초기화 (구분·구매일 기본값 포함)
+  Object.assign(WZ,{ hist:[], cands:[], cand:null, direct:false, status:null, preset:initStatus||null, open:true });
+  wzReturn();
+  wzBorrow('bc-box', wz$('#wz-bcslot'));
+  ['f-grade-fld','f-open-fld','f-eta-row','f-note-fld'].forEach(id=>wzBorrow(id, wz$('#wz-more-in')));
+  // 판 사진 편집기가 저장되면(#f-color 의 oninput 호출) 큰 판도 다시 그림
+  { const fc=$('#f-color'); const base=fc.oninput; fc.oninput=function(){ if(base) base.apply(this, arguments); if(WZ.open) wzPaintDisc(); }; }
+  wzTexts();
+  wz$('#wz-q').value=''; wz$('#wz-results').innerHTML=''; wz$('#wz-msg').textContent='';
+  wz$('#wz-more').classList.remove('open');
+  wzSetStep(1, true);
+  show('wiz');
+}
+// ---- 1. 검색 ----
+let _wzTimer=null;
+wz$('#wz-q').addEventListener('input', e=>{ clearTimeout(_wzTimer); const v=e.target.value.trim(); _wzTimer=setTimeout(()=>wzSearch(v), 450); });
+wz$('#wz-q').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); clearTimeout(_wzTimer); wzSearch(e.target.value.trim()); e.target.blur(); } });
+async function wzSearch(q){
+  const box=wz$('#wz-results'), msg=wz$('#wz-msg');
+  const my=++WZ.seq;
+  if(!q){ box.innerHTML=''; msg.textContent=''; return; }
+  msg.textContent=isEN()?'Searching…':'찾는 중…';
+  let cands=[]; try{ cands=await fetchCandidates('', q); }catch(e){}
+  if(my!==WZ.seq) return;   // 더 최근 검색이 있으면 버림
+  WZ.cands=cands.slice(0,10);
+  msg.textContent = WZ.cands.length ? '' : (isEN()?'No albums found — try other words, or add it with a photo':'앨범을 찾지 못했어요 — 다른 검색어로 찾거나 사진으로 직접 등록해 보세요');
+  box.innerHTML=WZ.cands.map((c,i)=>`<div class="wz-res" data-i="${i}"><div class="jk"><img src="${escapeHtml(c.img)}" alt="" loading="lazy" onerror="this.closest('.wz-res').remove()"></div><div class="t">${escapeHtml(c.album||'')}</div><div class="a">${escapeHtml(c.artist||'')}${c.year?' · '+escapeHtml(String(c.year).slice(0,4)):''}</div></div>`).join('');
+  box.scrollLeft=0;
+  box.querySelectorAll('.wz-res').forEach((el,i)=>{ setTimeout(()=>el.classList.add('in'), 60+i*80); el.onclick=()=>wzChoose(WZ.cands[+el.dataset.i], el.querySelector('.jk')); });
+}
+// 후보를 추가 폼에 반영: 가수·앨범·커버·음원 연결·장르·발매년도
+function wzApplyCand(c){
+  WZ.cand=c; WZ.direct=false;
+  $('#f-artist').value=c.artist||''; $('#f-album').value=c.album||'';
+  setPrevImg(c.img, '이 커버로 저장돼요 ✓');
+  window.__addPv = c.collectionId ? {id:c.collectionId, name:c.album||''} : null;
+  const gf=$('#f-genre'); if(gf){ fillGenreSelect(gf, canonGenre(c.genre || (WZ.cands.find(x=>x.genre)||{}).genre || '')); gf.dataset.auto='1'; }
+  const yf=$('#f-year'); if(yf){ const y=parseInt(String(c.year || (WZ.cands.find(x=>x.year)||{}).year || '').slice(0,4),10); yf.value=y||''; yf.dataset.auto='1'; }
+}
+// 자켓을 고르면 그 자리에서 화면 가운데로 커지며 2단계로
+function wzChoose(c, fromEl){
+  wzApplyCand(c);
+  wzRenderJacket();
+  const hero=wz$('#wz-hero');
+  if(fromEl){
+    const a=fromEl.getBoundingClientRect();
+    const fly=document.createElement('div'); fly.className='wz-fly'; fly.innerHTML=`<img src="${escapeHtml(c.img)}" alt="">`;
+    Object.assign(fly.style,{left:a.left+'px',top:a.top+'px',width:a.width+'px',height:a.height+'px'}); document.body.appendChild(fly);
+    hero.style.visibility='hidden';
+    wzSetStep(2);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ const b=hero.getBoundingClientRect();
+      Object.assign(fly.style,{left:b.left+'px',top:b.top+'px',width:b.width+'px',height:b.height+'px',borderRadius:'18px'}); }));
+    setTimeout(()=>{ hero.style.visibility=''; fly.remove(); }, 640);
+  } else wzSetStep(2);
+}
+// ---- 2. 자켓 ----
+function wzJacketURL(){ return ($('#pa-prev')&&$('#pa-prev').dataset.url)||''; }
+function wzImgHTML(u){ return u ? `<img src="${escapeHtml(u)}" alt="">` : WZ_ICON_IMG; }
+function wzRenderJacket(){
+  const u=wzJacketURL();
+  wz$('#wz-hero').innerHTML=wzImgHTML(u);
+  const direct=WZ.direct;
+  wz$('#wz-s2 .wz-q').textContent = direct ? (isEN()?'Tell us about the album':'앨범 정보를 입력해 주세요') : (isEN()?'Is this the album?':'이 앨범이 맞나요?');
+  wz$('#wz-meta').hidden=direct; wz$('#wz-manual').hidden=!direct;
+  wz$('#wz-t').textContent=$('#f-album').value; wz$('#wz-a').textContent=$('#f-artist').value;
+  if(direct){ wz$('#wz-ar').value=$('#f-artist').value; wz$('#wz-al').value=$('#f-album').value; }
+  // 자동으로 채운 장르·발매년도 — 칩을 눌러 바로 고친다
+  const gf=$('#f-genre'), curG=readGenre(gf).genre, yv=$('#f-year').value;
+  const gOpts=GENRES.concat(curG && !GENRES.includes(curG) ? [curG] : []);
+  wz$('#wz-auto').innerHTML=
+    `<label class="ch"><span>${isEN()?'Genre':'장르'}</span><select id="wz-genre"><option value="">${isEN()?'None':'선택 안 함'}</option>${gOpts.map(g=>`<option value="${escapeHtml(g)}" ${g===curG?'selected':''}>${escapeHtml(tr(g))}</option>`).join('')}<option value="__custom">${isEN()?'Type my own…':'직접 입력…'}</option></select></label>`+
+    `<label class="ch"><span>${isEN()?'Year':'발매'}</span><input id="wz-year" inputmode="numeric" maxlength="4" value="${escapeHtml(yv)}" placeholder="—"></label>`+
+    (window.__addPv ? `<span class="ch solid">🎵 ${isEN()?'Preview linked':'미리듣기 연결됨'}</span>` : '');
+  wz$('#wz-genre').onchange=e=>{
+    let v=e.target.value;
+    if(v==='__custom'){ v=(prompt(isEN()?'Genre':'장르를 입력해 주세요')||'').trim(); if(!v){ e.target.value=curG; return; } }
+    fillGenreSelect(gf, canonExact(v)||v); gf.dataset.auto='';
+    wzRenderJacket();
+  };
+  wz$('#wz-year').oninput=e=>{ const v=e.target.value.replace(/\D/g,'').slice(0,4); e.target.value=v; $('#f-year').value=v; $('#f-year').dataset.auto=''; };
+  // 다른 커버 (검색 후보) + 사진으로 직접 등록
+  const alt=wz$('#wz-alt'); alt.innerHTML='';
+  if(!direct){
+    const seen=new Set(); const list=WZ.cands.filter(c=>c&&c.img&&!seen.has(c.img)&&seen.add(c.img)).slice(0,4);   // 순서 고정 (눌러도 자리 안 바뀜)
+    if(WZ.cand && WZ.cand.img && !list.some(c=>c.img===WZ.cand.img)) list.unshift(WZ.cand);   // 바코드 커버 등 목록 밖 자켓
+    list.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.className='t'+(c.img===u?' on':''); b.innerHTML=wzImgHTML(c.img);
+      b.onclick=()=>{ wzApplyCand(c); wzRenderJacket(); }; alt.appendChild(b); });
+  }
+  const ph=document.createElement('button'); ph.type='button'; ph.className='t ph'+((direct||(u && WZ.cand && u!==WZ.cand.img && !WZ.cands.some(c=>c.img===u)))?' on':''); ph.innerHTML=WZ_ICON_IMG;
+  ph.title=isEN()?'Use my own photo':'사진으로 직접 등록'; ph.onclick=()=>{ WZ.photoFor='jacket'; wz$('#wz-file').click(); }; alt.appendChild(ph);
+  wz$('#wz-altcap').textContent = ph.classList.contains('on') ? (isEN()?'Using your own photo':'사진으로 직접 등록해요') : (isEN()?'Pick another cover or use your own photo':'다른 커버를 고르거나 사진으로 직접 등록할 수 있어요');
+}
+wz$('#wz-ar').oninput=e=>{ $('#f-artist').value=e.target.value; };
+wz$('#wz-al').oninput=e=>{ $('#f-album').value=e.target.value; };
+// 사진으로 직접 등록: 1단계(검색에 없는 앨범) 또는 2단계(찾은 앨범의 자켓만 내 사진으로)
+wz$('#wz-direct').onclick=()=>{ WZ.photoFor='direct'; wz$('#wz-file').click(); };
+wz$('#wz-file').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  const keepPv=window.__addPv, mode=WZ.photoFor;
+  try{
+    const u=await fileToDataURL(f);
+    if(mode==='direct'){
+      WZ.direct=true; WZ.cand=null; WZ.cands=[];
+      $('#f-artist').value=''; $('#f-album').value='';
+      const gf=$('#f-genre'); if(gf) fillGenreSelect(gf,''); $('#f-year').value='';
+    }
+    setPrevImg(u, '업로드 중…');
+    if(mode!=='direct') window.__addPv=keepPv;   // 찾은 앨범의 자켓만 바꾼 거면 음원 연결은 유지
+    if(mode==='direct') wzSetStep(2);
+    wzRenderJacket();
+    try{ const url=await window.LPCloud.uploadImage(dataURLToBlob(u),'jpg'); setPrevImg(url,'올린 사진으로 저장돼요 ✓'); if(mode!=='direct') window.__addPv=keepPv; wzRenderJacket(); }catch(up){}
+    if(mode==='direct') setTimeout(()=>{ const a=wz$('#wz-ar'); if(a) a.focus(); }, 500);
+  }catch(err){ appAlert(isEN()?'Could not load the image':'이미지를 불러오지 못했어요'); }
+};
+// 바코드: 기존 스캐너(빌려 온 상자)로 찾고, 결과는 applyBarcodeResult → wzFromBarcode
+wz$('#wz-scan').onclick=()=>{ const box=$('#bc-box'); if(box.style.display==='none'){ startBarcodeScan(); } else { stopBarcodeScan(); box.style.display='none'; } };
+async function wzFromBarcode(r){
+  try{ stopBarcodeScan(); }catch(e){}
+  const bx=$('#bc-box'); if(bx) bx.style.display='none';
+  let cands=[]; try{ cands=await fetchCandidates(r.artist||'', r.album||''); }catch(e){}
+  WZ.cands=cands.slice(0,10);
+  const base = r.cover ? { artist:r.artist||'', album:r.album||'', img:r.cover, year:r.year||'', genre:r.genre||'', collectionId:(cands[0]&&cands[0].collectionId)||null } : (cands[0]||null);
+  if(!base){ wz$('#wz-msg').textContent=isEN()?'Found the album but no cover — add it with a photo':'앨범은 찾았지만 커버가 없어요 — 사진으로 직접 등록해 주세요'; return; }
+  wzChoose(base, null);
+}
+wz$('#wz-to3').onclick=()=>{
+  if(!$('#f-artist').value.trim() || !$('#f-album').value.trim()){ appAlert(isEN()?'Please enter the artist and album':'가수와 앨범명을 입력해 주세요'); return; }
+  wzEnterDisc();
+};
+// ---- 3. 판 ----
+function wzEnterDisc(){
+  const fc=$('#f-color');
+  if(!fc.value.trim() && !fc.dataset.photo){ fc.value='블랙'; fc.dataset.hex='#1c1c1c'; }
+  const u=wzJacketURL();
+  wz$('#wz-sleeve').innerHTML=wzImgHTML(u);
+  document.querySelectorAll('#sheet-wiz .wz-lbl').forEach(l=>l.innerHTML=u?`<img src="${escapeHtml(u)}" alt="">`:'');
+  wzRenderColors(); wzPaintDisc();
+  // 회전수·크기: 설정에서 켠 것만
+  const rpmOn=!!SETTINGS.showRpm, inchOn=!!SETTINGS.showInch;
+  wz$('#wz-spec').hidden=!(rpmOn||inchOn);
+  wzChipGroup('wz-rpm', rpmOn ? [['33','33⅓ RPM'],['45','45 RPM']] : [], $('#f-rpm'), ()=>wzSpin(true));
+  wzChipGroup('wz-inch', inchOn ? [['12"','12"'],['10"','10"'],['7"','7"']] : [], $('#f-inch'));
+  const st=wz$('#wz-stage'); st.classList.remove('out'); wzSetStep(3);
+  setTimeout(()=>{ st.classList.add('out'); wzSpin(); }, 450);
+}
+// 판 회전 속도 = 고른 RPM (33⅓ → 1.8초/바퀴, 45 → 1.33초/바퀴). RPM 칸을 안 쓰면 기본 3.2초.
+// animation-duration 을 바꾸면 각도가 튀므로 playbackRate 로 조절하고, 바꿀 땐 턴테이블처럼 서서히 가속/감속
+function wzSpinRate(){
+  if(!SETTINGS.showRpm) return 1;
+  const v=($('#f-rpm')||{}).value;
+  return v==='45' ? 3.2/(60/45) : v==='33' ? 3.2/(60/(100/3)) : 1;
+}
+function wzSpin(ramp){
+  const to=wzSpinRate();
+  document.querySelectorAll('#sheet-wiz .wz-rot').forEach(el=>{
+    const a=el.getAnimations&&el.getAnimations()[0]; if(!a) return;
+    cancelAnimationFrame(a._wzRaf);
+    const set=r=>a.updatePlaybackRate ? a.updatePlaybackRate(r) : (a.playbackRate=r);
+    if(!ramp || matchMedia('(prefers-reduced-motion: reduce)').matches){ set(to); return; }
+    const from=a.playbackRate, t0=performance.now(), dur=700;
+    const step=now=>{ const k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3);
+      set(from+(to-from)*e); if(k<1) a._wzRaf=requestAnimationFrame(step); };
+    a._wzRaf=requestAnimationFrame(step);
+  });
+}
+// 칩 묶음 ↔ 폼 칸(select/input) 값 연결
+function wzChipGroup(id, list, field, onPick){
+  const box=wz$('#'+id); box.innerHTML=''; box.hidden=!list.length;
+  list.forEach(([v,label])=>{ const b=document.createElement('button'); b.type='button'; b.textContent=label; if(field && field.value===v) b.classList.add('on');
+    b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); if(field) field.value=v; if(onPick) onPick(v); };
+    box.appendChild(b); });
+}
+function wzRenderColors(){
+  const fc=$('#f-color'), photo=fc.dataset.photo||'';
+  const eff=((fc.dataset.hex)||discColor(fc.value)||'').toLowerCase();
+  const box=wz$('#wz-colors');
+  box.innerHTML=PALETTE.map(([l,h])=>`<button type="button" class="c${(!photo && h.toLowerCase()===eff)?' on':''}" data-l="${l}" data-h="${h}" title="${l}" style="--sw:${h}"></button>`).join('')
+    +`<button type="button" class="c cu${(!photo && fc.dataset.hex && !PALETTE.some(([l,h])=>h.toLowerCase()===eff))?' on':''}" title="${isEN()?'Custom':'직접 선택'}" style="--sw:conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)"></button>`
+    +`<button type="button" class="c ph${photo?' on':''}" title="${isEN()?'Photo':'사진'}">${WZ_ICON_IMG}</button>`;
+  const clearPhoto=()=>{ if(window.__addDraft) window.__addDraft.discPhoto=null; delete fc.dataset.photo; };
+  box.querySelectorAll('.c[data-l]').forEach(b=>b.onclick=()=>{ clearPhoto(); fc.value=b.dataset.l; fc.dataset.hex=b.dataset.h; fc.oninput&&fc.oninput(); wzRenderColors(); wzPaintDisc(); });
+  box.querySelector('.cu').onclick=()=>{
+    let pick=document.getElementById('color-custom-pick');
+    if(!pick){ pick=document.createElement('input'); pick.type='color'; pick.id='color-custom-pick'; pick.style.cssText='position:fixed;left:-9999px;top:0'; document.body.appendChild(pick); }
+    pick.value=fc.dataset.hex||'#8a4fd6';
+    pick.oninput=()=>{ clearPhoto(); fc.dataset.hex=pick.value; const v=(fc.value||'').trim(); if(!v || PALETTE.some(([l])=>l===v) || /^#/.test(v)) fc.value=pick.value; fc.oninput&&fc.oninput(); wzRenderColors(); wzPaintDisc(); };
+    pick.click();
+  };
+  box.querySelector('.ph').onclick=()=>{ if(window.__openDiscPhoto) window.__openDiscPhoto(); };
+}
+// 큰 판(3단계·완성 화면) 그리기: 사진 > 색 + 투명도
+function wzPaintDisc(){
+  const fc=$('#f-color'), photo=fc.dataset.photo||'', op=$('#f-op');
+  const hex=fc.dataset.hex||discColor(fc.value);
+  document.querySelectorAll('#sheet-wiz .wz-disc').forEach(d=>{
+    d.classList.toggle('photo', !!photo);
+    if(photo) d.style.setProperty('--photo', `url("${photo}")`);
+    d.style.setProperty('--disc', hex);
+    const v=d.querySelector('.wz-vinyl'); if(v) v.style.opacity = photo ? 1 : (op ? op.value/100 : 1);
+  });
+  const opRow=wz$('#wz-opa'); opRow.hidden=!!photo;
+  if(op){ wz$('#wz-op').value=op.value; wz$('#wz-opv').textContent=op.value+'%'; }
+  wz$('#wz-cname').innerHTML = photo
+    ? `${isEN()?'Photo':'사진'}<small>${isEN()?'Using your own photo':'사진으로 직접 등록해요'}</small><button type="button" class="fix" id="wz-fix">${isEN()?'Adjust position & size':'위치·크기 조정'}</button>`
+    : `${escapeHtml(fc.value||'')}<small>${isEN()?'Pick a color':'컬러를 골라 주세요'}</small>`;
+  { const fx=wz$('#wz-fix'); if(fx) fx.onclick=()=>{ if(window.__openDiscPhoto) window.__openDiscPhoto(); }; }
+  wz$('#wz-colors') && wz$('#wz-colors').querySelectorAll('.c').forEach(c=>{ if(c.classList.contains('ph')) c.classList.toggle('on', !!photo); });
+}
+wz$('#wz-op').oninput=e=>{ const op=$('#f-op'); if(op){ op.value=e.target.value; } $('#f-color').oninput&&$('#f-color').oninput(); wzPaintDisc(); };
+wz$('#wz-to4').onclick=()=>{
+  wzSetStep(4);
+  const box=wz$('#wz-choices'), en=isEN();
+  box.innerHTML=WZ_STATUS.map(o=>`<button type="button" class="wz-choice${(WZ.status||WZ.preset)===o.k?' on':''}" data-k="${o.k}"><span class="dot" style="background:${o.c}"></span><div><div class="t">${en?o.en:o.ko}</div><div class="d">${en?o.den:o.dko}</div></div></button>`).join('');
+  box.querySelectorAll('.wz-choice').forEach((b,i)=>{ setTimeout(()=>b.classList.add('in'), 150+i*70); b.onclick=()=>wzPickStatus(b.dataset.k, b); });
+};
+// ---- 4. 상태 — 누르면 바로 다음 ----
+function wzPickStatus(k, btn){
+  WZ.status=k;
+  wz$('#wz-choices').querySelectorAll('.wz-choice').forEach(x=>x.classList.toggle('on', x===btn));
+  const cat=(k==='배송전'||k==='위시')?k:'보유중';
+  $('#f-cat').value=cat; if(cat==='보유중') $('#f-status').value=k;
+  toggleBuyFields();
+  setTimeout(()=>{ if(k==='위시') wzFinal(); else wzEnterBuy(); }, 360);
+}
+// ---- 5. 구매 정보 ----
+const _wzNum=v=>String(v||'').replace(/\D/g,'');
+const _wzFmt=v=>{ const n=_wzNum(v); return n?Number(n).toLocaleString('ko-KR'):''; };
+function wzEnterBuy(){
+  wz$('#wz-price').value=_wzFmt($('#f-price').value);
+  wz$('#wz-list').value=_wzFmt($('#f-list').value);
+  wz$('#wz-buy').value=$('#f-buy').value||'';
+  wz$('#wz-date-lab').textContent = WZ.status==='배송전' ? (isEN()?'When did you order it?':'언제 주문했나요?') : (isEN()?'When did you buy it?':'언제 샀나요?');
+  // 구매처: 내가 많이 쓴 곳 먼저 + 기본 목록, 6개까지 + 직접 입력
+  const seen=new Set(), names=[];
+  _storeSuggestions().concat(WZ_STORES_DEFAULT).forEach(n=>{ const k=String(n).toLowerCase(); if(n && !seen.has(k) && names.length<6){ seen.add(k); names.push(n); } });
+  const cur=$('#f-store').value.trim(), other=isEN()?'Other…':'직접 입력';
+  const inp=wz$('#wz-store-in');
+  const curIn=cur && !names.some(n=>n.toLowerCase()===cur.toLowerCase());
+  wzChipGroup('wz-stores', names.map(n=>[n,n]).concat([['__other',other]]), null, v=>{
+    if(v==='__other'){ inp.hidden=false; inp.value=$('#f-store').value; inp.focus(); }
+    else { inp.hidden=true; $('#f-store').value=v; }
+  });
+  wz$('#wz-stores').querySelectorAll('button').forEach(b=>{ const v=b.textContent; b.classList.toggle('on', curIn ? v===other : (!!cur && v.toLowerCase()===cur.toLowerCase())); });
+  inp.hidden=!curIn; if(curIn) inp.value=cur;
+  wzSetStep(5);
+}
+wz$('#wz-price').oninput=e=>{ e.target.value=_wzFmt(e.target.value); $('#f-price').value=_wzNum(e.target.value); };
+wz$('#wz-list').oninput=e=>{ e.target.value=_wzFmt(e.target.value); $('#f-list').value=_wzNum(e.target.value); };
+wz$('#wz-store-in').oninput=e=>{ $('#f-store').value=e.target.value; };
+wz$('#wz-buy').onchange=e=>{ $('#f-buy').value=e.target.value; };
+wz$('#wz-to6').onclick=()=>wzFinal();
+wz$('#wz-skip5').onclick=()=>{ ['f-price','f-list','f-store'].forEach(i=>{ $('#'+i).value=''; }); wzFinal(); };
+// ---- 6. 완성 ----
+function wzFinal(){
+  const u=wzJacketURL(), en=isEN();
+  wz$('#wz-fsleeve').innerHTML=wzImgHTML(u);
+  document.querySelectorAll('#sheet-wiz .wz-lbl').forEach(l=>l.innerHTML=u?`<img src="${escapeHtml(u)}" alt="">`:'');
+  wzPaintDisc(); requestAnimationFrame(()=>wzSpin());
+  wz$('#wz-ft').textContent=$('#f-album').value; wz$('#wz-fa').textContent=$('#f-artist').value;
+  const st=WZ_STATUS.find(o=>o.k===WZ.status), wish=WZ.status==='위시';
+  const fc=$('#f-color'), price=_wzNum($('#f-price').value);
+  const tags=[ st && (en?st.en:st.ko), fc.dataset.photo ? (en?'Photo':'사진') : fc.value,
+    (!wish && price && !(SETTINGS&&SETTINGS.hideMoney)) ? Number(price).toLocaleString('ko-KR')+(en?' KRW':'원') : '',
+    !wish ? $('#f-store').value.trim() : '' ].filter(Boolean);
+  wz$('#wz-tags').innerHTML=tags.map(t=>`<span>${escapeHtml(t)}</span>`).join('');
+  // 추가 입력: 상태 등급·개봉일은 '개봉', 도착일은 위시가 아닐 때 (toggleBuyFields 규칙)
+  toggleBuyFields();
+  const of=$('#f-open-fld'); if(of) of.style.display = WZ.status==='개봉' ? '' : 'none';
+  wz$('#wz-more').classList.remove('open');
+  wz$('#wz-final').classList.remove('go');
+  wzSetStep(6);
+}
+wz$('#wz-more-btn').onclick=()=>wz$('#wz-more').classList.toggle('open');
+wz$('#wz-save').onclick=()=>{
+  const n=DATA.length;
+  $('#add-save').onclick();   // 기존 저장(검증·음원 연결·클라우드 저장·보관함 이동)
+  if(DATA.length<=n) return;   // 검증에 걸리면 그대로 머묾
+  wz$('#wz-final').classList.add('go');
+  previewToast(isEN()?'Added to your library ✓':'보관함에 추가됐어요 ✓');
+  setTimeout(()=>hide('wiz'), 650);
+};
+// 한 번에 입력: 지금까지 채운 값 그대로 기존 한 화면 폼으로
+wz$('#wz-full').onclick=()=>{
+  hide('wiz');
+  setupColorField('f'); toggleBuyFields(); paintGradeDesc('f');
+  if(wzJacketURL()) $('#pt-prev').textContent='이 커버로 저장돼요 ✓';
+  show('add');
+};
+wz$('#wz-back').onclick=wzBack;
 
 /* ===== 추가 폼 임시저장 =====
    작성 중 다른 앱(카톡 등)으로 갔다가 웹뷰가 재시작돼도 이어서 쓸 수 있게,
@@ -5542,7 +6129,7 @@ function openDayList(dateStr, items){
     openDayList(dateStr, items);   // 팝업 다시 그려 선택 상태 갱신
   });
   $('#dl-addlisten').onclick=()=>{ hide('daylist'); openListenPicker(dateStr); };
-  $('#dl-addbuy').onclick=()=>{ hide('daylist'); openAdd(undefined, dateStr); };
+  $('#dl-addbuy').onclick=()=>{ hide('daylist'); openWizard(undefined, dateStr); };
   $('#dl-addsx').onclick=()=>{ hide('daylist'); openSellExchange(dateStr); };
   show('daylist');
 }
@@ -6608,7 +7195,7 @@ window.__tourOn=()=>_tour.on;
 
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v;
-  if(v==='add-trigger'){openAdd();return;}
+  if(v==='add-trigger'){openWizard();return;}
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
@@ -7131,6 +7718,7 @@ function handleAppBack(){
   if(ec){ ec.classList.remove('show'); setTimeout(()=>{ try{ec.remove();}catch(e){} },200); return; }
   // 1) 열린 시트(가장 위) 닫기
   const sheets=document.querySelectorAll('.sheet.show');
+  if(sheets.length && sheets[sheets.length-1].id==='sheet-wiz' && typeof wzBack==='function' && WZ.step>1){ wzBack(); return; }
   if(sheets.length){
     try{ if(typeof stopBarcodeScan==='function') stopBarcodeScan(); }catch(e){}
     const top=sheets[sheets.length-1];
