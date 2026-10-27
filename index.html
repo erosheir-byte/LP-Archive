@@ -5718,10 +5718,30 @@ function wzEnterDisc(){
   // 회전수·크기: 설정에서 켠 것만
   const rpmOn=!!SETTINGS.showRpm, inchOn=!!SETTINGS.showInch;
   wz$('#wz-spec').hidden=!(rpmOn||inchOn);
-  wzChipGroup('wz-rpm', rpmOn ? [['33','33⅓ RPM'],['45','45 RPM']] : [], $('#f-rpm'));
+  wzChipGroup('wz-rpm', rpmOn ? [['33','33⅓ RPM'],['45','45 RPM']] : [], $('#f-rpm'), ()=>wzSpin(true));
   wzChipGroup('wz-inch', inchOn ? [['12"','12"'],['10"','10"'],['7"','7"']] : [], $('#f-inch'));
   const st=wz$('#wz-stage'); st.classList.remove('out'); wzSetStep(3);
-  setTimeout(()=>st.classList.add('out'), 450);
+  setTimeout(()=>{ st.classList.add('out'); wzSpin(); }, 450);
+}
+// 판 회전 속도 = 고른 RPM (33⅓ → 1.8초/바퀴, 45 → 1.33초/바퀴). RPM 칸을 안 쓰면 기본 3.2초.
+// animation-duration 을 바꾸면 각도가 튀므로 playbackRate 로 조절하고, 바꿀 땐 턴테이블처럼 서서히 가속/감속
+function wzSpinRate(){
+  if(!SETTINGS.showRpm) return 1;
+  const v=($('#f-rpm')||{}).value;
+  return v==='45' ? 3.2/(60/45) : v==='33' ? 3.2/(60/(100/3)) : 1;
+}
+function wzSpin(ramp){
+  const to=wzSpinRate();
+  document.querySelectorAll('#sheet-wiz .wz-rot').forEach(el=>{
+    const a=el.getAnimations&&el.getAnimations()[0]; if(!a) return;
+    cancelAnimationFrame(a._wzRaf);
+    const set=r=>a.updatePlaybackRate ? a.updatePlaybackRate(r) : (a.playbackRate=r);
+    if(!ramp || matchMedia('(prefers-reduced-motion: reduce)').matches){ set(to); return; }
+    const from=a.playbackRate, t0=performance.now(), dur=700;
+    const step=now=>{ const k=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-k,3);
+      set(from+(to-from)*e); if(k<1) a._wzRaf=requestAnimationFrame(step); };
+    a._wzRaf=requestAnimationFrame(step);
+  });
 }
 // 칩 묶음 ↔ 폼 칸(select/input) 값 연결
 function wzChipGroup(id, list, field, onPick){
@@ -5815,7 +5835,7 @@ function wzFinal(){
   const u=wzJacketURL(), en=isEN();
   wz$('#wz-fsleeve').innerHTML=wzImgHTML(u);
   document.querySelectorAll('#sheet-wiz .wz-lbl').forEach(l=>l.innerHTML=u?`<img src="${escapeHtml(u)}" alt="">`:'');
-  wzPaintDisc();
+  wzPaintDisc(); requestAnimationFrame(()=>wzSpin());
   wz$('#wz-ft').textContent=$('#f-album').value; wz$('#wz-fa').textContent=$('#f-artist').value;
   const st=WZ_STATUS.find(o=>o.k===WZ.status), wish=WZ.status==='위시';
   const fc=$('#f-color'), price=_wzNum($('#f-price').value);
