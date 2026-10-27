@@ -2953,23 +2953,28 @@ const VinylNoise = (function(){
 function crackleLevel(){ const v=(typeof SETTINGS!=='undefined')?SETTINGS.crackleLevel:'low'; return (v==='off')?null:(v||'low'); }
 
 const _preview = { audio:null, id:null, it:null, discEl:null, cache:{}, last:{}, urls:[], idx:0, paused:false };
-// 한국 앨범인데 트랙명이 영어로만 올 때(앨범 수록곡 조회가 lang=ko_kr 을 무시하는 경우) 한국어 트랙명으로 바꾼다.
-//  1) iTunes 검색(lang=ko_kr)의 같은 앨범 곡을 trackId 로 맞춤  2) MusicBrainz 원어 수록곡을 디스크·트랙 번호로 맞춤
+// 한국어 UI에서 트랙명이 영어로만 올 때(앨범 수록곡 조회가 lang=ko_kr 을 무시하는 경우) 한국어 트랙명으로 바꾼다.
+//  가수·앨범명을 영어로 등록한 한국 앨범(예: The Black Skirts / TEAM BABY)도 있으므로 등록 이름이 아니라 결과로 판단한다.
+//  1) iTunes 검색(lang=ko_kr)의 같은 앨범 곡을 trackId 로 맞춤 — 요청 1번이라 항상 시도
+//  2) 한국 앨범으로 보일 때만(등록 이름·검색 결과의 가수/앨범명에 한글) MusicBrainz 원어 수록곡을 디스크·트랙 번호로 맞춤
 //  너무 오래 걸리면 영어로 먼저 재생하고, 바뀐 이름은 같은 배열에 채워 다음 곡부터 반영
 const _hasHangul=s=>/[\uAC00-\uD7A3]/.test(s||'');
 async function _koTitles(it, tracks, collectionId){
   if(!tracks || !tracks.length || tracks.some(t=>_hasHangul(t.title))) return;
-  if(!(_hasHangul(it.artist) || _hasHangul(it.album) || _hasHangul(it._pvName))) return;
+  let korean=_hasHangul(it.artist) || _hasHangul(it.album) || _hasHangul(it._pvName);
   const work=(async()=>{
     const term=((it.artist||'')+' '+(it.album||'')).trim();
     try{
       if(collectionId && term){
         const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country=KR&lang=ko_kr&limit=200&term='+encodeURIComponent(term));
         const j=await r.json(), m={};
-        (j.results||[]).forEach(x=>{ if(x.collectionId===collectionId && x.trackId && x.trackName) m[x.trackId]=String(x.trackName).trim(); });
+        (j.results||[]).forEach(x=>{ if(x.collectionId!==collectionId) return;
+          if(_hasHangul(x.artistName) || _hasHangul(x.collectionName)) korean=true;
+          if(x.trackId && x.trackName) m[x.trackId]=String(x.trackName).trim(); });
         if(Object.values(m).some(_hasHangul)){ tracks.forEach(t=>{ if(m[t.id]) t.title=m[t.id]; }); return; }
       }
     }catch(e){}
+    if(!korean) return;
     try{
       const q=v=>String(v||'').replace(/["\\]/g,' ').trim();
       if(!q(it.album)) return;
