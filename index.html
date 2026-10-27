@@ -807,6 +807,9 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-top{position:absolute;left:0;right:0;top:0;z-index:5;padding:14px 16px 0;display:flex;align-items:center;gap:12px}
 .wz-ic{width:36px;height:36px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .wz-prog{flex:1;display:flex;gap:5px}
+.wz-snd[hidden]{display:none}
+.wz-snd{color:var(--muted)}
+.wz-snd.on{color:var(--accent2);border-color:rgba(232,120,60,.45)}
 .wz-prog i{flex:1;height:4px;border-radius:4px;background:var(--line);overflow:hidden;position:relative}
 .wz-prog i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.22,1,.36,1)}
 .wz-prog i.on::after{transform:scaleX(1)}
@@ -1609,6 +1612,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <div class="wz-top">
     <button class="wz-ic" id="wz-back" type="button" aria-label="닫기"></button>
     <div class="wz-prog" id="wz-prog"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <button class="wz-ic wz-snd" id="wz-snd" type="button" aria-label="소리" hidden></button>
     <button class="wz-full" id="wz-full" type="button">한 번에 입력</button>
   </div>
 
@@ -5543,8 +5547,85 @@ function wzBorrow(id, target){
   const ph=document.createComment('wz:'+id); el.parentNode.insertBefore(ph, el); target.appendChild(el); WZ.borrowed.push([el,ph]);
 }
 function wzReturn(){ WZ.borrowed.forEach(([el,ph])=>{ if(ph.parentNode){ ph.parentNode.insertBefore(el, ph); ph.remove(); } }); WZ.borrowed=[]; }
+/* ===== 등록 중 배경 음악 =====
+   앨범을 고르면 그 앨범 미리듣기(iTunes 30초)를 단계를 넘겨도 계속 틀어 준다. 곡이 끝나면 다음 곡.
+   상단 🔊 로 끄고 켜며, 끈 상태는 기억(lp_wz_mute). 닫으면 멈추고, 저장하면 서서히 작아지며 멈춘다. */
+const WZ_BGM={ key:null, urls:[], idx:0, audio:null, gen:0, errs:0 };
+const WZ_ICON_SND='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+const WZ_ICON_MUTE='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 6 6M22 9l-6 6"/></svg>';
+function wzBgmMuted(){ try{ return localStorage.getItem('lp_wz_mute')==='1'; }catch(e){ return false; } }
+function _wzFade(a, to, ms, done){
+  if(!a){ if(done) done(); return; }
+  cancelAnimationFrame(a._wzFade);
+  const from=a.volume, t0=performance.now();
+  const step=now=>{ const k=ms?Math.min(1,(now-t0)/ms):1; try{ a.volume=Math.max(0,Math.min(1,from+(to-from)*k)); }catch(e){}
+    if(k<1) a._wzFade=requestAnimationFrame(step); else if(done) done(); };
+  a._wzFade=requestAnimationFrame(step);
+}
+function wzBgmBtn(){
+  const b=wz$('#wz-snd'); if(!b) return;
+  const muted=wzBgmMuted(), en=isEN();
+  b.hidden=!(WZ_BGM.key && WZ_BGM.urls.length);
+  b.innerHTML=muted?WZ_ICON_MUTE:WZ_ICON_SND;
+  b.classList.toggle('on', !muted);
+  b.setAttribute('aria-label', muted?(en?'Sound off':'소리 꺼짐'):(en?'Sound on':'소리 켜짐'));
+}
+function wzBgmStop(ms){
+  const a=WZ_BGM.audio;
+  WZ_BGM.gen++; WZ_BGM.audio=null; WZ_BGM.key=null; WZ_BGM.urls=[];
+  if(a) _wzFade(a, 0, ms||0, ()=>{ try{ a.pause(); a.removeAttribute('src'); a.load(); }catch(e){} });
+  wzBgmBtn();
+}
+function _wzBgmPlay(){
+  const gen=WZ_BGM.gen, t=WZ_BGM.urls[WZ_BGM.idx]; if(!t) return;
+  const a=new Audio(t.url); a.volume=0; WZ_BGM.audio=a;
+  const next=()=>{ if(gen!==WZ_BGM.gen || WZ_BGM.audio!==a) return;
+    if(++WZ_BGM.errs>WZ_BGM.urls.length) return;   // 전부 실패하면 그만
+    WZ_BGM.idx=(WZ_BGM.idx+1)%WZ_BGM.urls.length; _wzBgmPlay(); };
+  a.onended=()=>{ WZ_BGM.errs=0; next(); };
+  a.onerror=next;
+  a.play().then(()=>_wzFade(a, .85, 1000)).catch(()=>{});
+}
+// 고른 앨범(__addPv)이 바뀌면 그 앨범 수록곡으로 바꿔 튼다
+async function wzBgmSync(){
+  const pv=window.__addPv, key=(WZ.open && pv && pv.id) ? String(pv.id) : null;
+  if(key===WZ_BGM.key){ wzBgmBtn(); return; }
+  wzBgmStop(400);
+  if(!key) return;
+  WZ_BGM.key=key; WZ_BGM.errs=0;
+  const gen=WZ_BGM.gen;
+  try{ stopPreview(); }catch(e){}
+  let urls=[];
+  for(const st of (isEN()?['US','KR']:['KR','US'])){
+    try{
+      const j=await (await fetch('https://itunes.apple.com/lookup?id='+encodeURIComponent(key)+'&entity=song&country='+st+'&limit=80')).json();
+      urls=(j.results||[]).filter(x=>x.wrapperType==='track' && x.previewUrl).map(x=>({url:x.previewUrl}));
+      if(urls.length) break;
+    }catch(e){}
+  }
+  if(gen!==WZ_BGM.gen || !WZ.open) return;
+  WZ_BGM.urls=urls; WZ_BGM.idx=Math.floor(Math.random()*Math.max(1,urls.length));
+  wzBgmBtn();
+  if(urls.length && !wzBgmMuted()) _wzBgmPlay();
+}
+wz$('#wz-snd').onclick=()=>{
+  const mute=!wzBgmMuted();
+  try{ localStorage.setItem('lp_wz_mute', mute?'1':'0'); }catch(e){}
+  const a=WZ_BGM.audio;
+  if(mute){ if(a) _wzFade(a, 0, 300, ()=>{ try{ a.pause(); }catch(e){} }); }
+  else if(a){ a.play().then(()=>_wzFade(a, .85, 600)).catch(()=>{}); }
+  else if(WZ_BGM.urls.length) _wzBgmPlay();
+  wzBgmBtn();
+};
+// 앱이 가려지면 잠시 멈췄다가 돌아오면 이어서
+document.addEventListener('visibilitychange', ()=>{
+  const a=WZ_BGM.audio; if(!a) return;
+  if(document.hidden){ try{ a.pause(); }catch(e){} }
+  else if(WZ.open && !wzBgmMuted()){ a.play().catch(()=>{}); }
+});
 function wzOnHide(){
   WZ.open=false;
+  wzBgmStop(250);
   try{ stopBarcodeScan(); }catch(e){}
   const bx=$('#bc-box'); if(bx) bx.style.display='none';
   wzReturn();
@@ -5594,7 +5675,7 @@ function openWizard(initStatus, presetDate){
   ['f-grade-fld','f-open-fld','f-eta-row','f-note-fld'].forEach(id=>wzBorrow(id, wz$('#wz-more-in')));
   // 판 사진 편집기가 저장되면(#f-color 의 oninput 호출) 큰 판도 다시 그림
   { const fc=$('#f-color'); const base=fc.oninput; fc.oninput=function(){ if(base) base.apply(this, arguments); if(WZ.open) wzPaintDisc(); }; }
-  wzTexts();
+  wzTexts(); wzBgmBtn();
   wz$('#wz-q').value=''; wz$('#wz-results').innerHTML=''; wz$('#wz-msg').textContent='';
   wz$('#wz-more').classList.remove('open');
   wzSetStep(1, true);
@@ -5681,6 +5762,7 @@ function wzRenderJacket(){
   const ph=document.createElement('button'); ph.type='button'; ph.className='t ph'+((direct||(u && WZ.cand && u!==WZ.cand.img && !WZ.cands.some(c=>c.img===u)))?' on':''); ph.innerHTML=WZ_ICON_IMG;
   ph.title=isEN()?'Use my own photo':'사진으로 직접 등록'; ph.onclick=()=>{ WZ.photoFor='jacket'; wz$('#wz-file').click(); }; alt.appendChild(ph);
   wz$('#wz-altcap').textContent = ph.classList.contains('on') ? (isEN()?'Using your own photo':'사진으로 직접 등록해요') : (isEN()?'Pick another cover or use your own photo':'다른 커버를 고르거나 사진으로 직접 등록할 수 있어요');
+  wzBgmSync();
 }
 wz$('#wz-ar').oninput=e=>{ $('#f-artist').value=e.target.value; };
 wz$('#wz-edit').onclick=()=>{ WZ.editMeta=true; wzRenderJacket(); const a=wz$('#wz-al'); if(a){ a.focus(); try{ a.setSelectionRange(a.value.length,a.value.length); }catch(e){} } };
@@ -5887,6 +5969,7 @@ wz$('#wz-save').onclick=()=>{
   $('#add-save').onclick();   // 기존 저장(검증·음원 연결·클라우드 저장·보관함 이동)
   if(DATA.length<=n) return;   // 검증에 걸리면 그대로 머묾
   wz$('#wz-final').classList.add('go');
+  wzBgmStop(700);   // 판이 들어가며 소리도 서서히
   previewToast(isEN()?'Added to your library ✓':'보관함에 추가됐어요 ✓');
   setTimeout(()=>hide('wiz'), 650);
 };
