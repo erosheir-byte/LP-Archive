@@ -840,12 +840,14 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-msg:empty{display:none}
 .wz-results{margin:18px -22px 0;padding:6px 22px 16px;display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .wz-results::-webkit-scrollbar{display:none}
-.wz-res{flex:0 0 62%;scroll-snap-align:center;cursor:pointer;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .5s ease,transform .6s cubic-bezier(.22,1,.36,1)}
+.wz-res{flex:0 0 62%;min-width:0;max-width:62%;scroll-snap-align:center;cursor:pointer;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .5s ease,transform .6s cubic-bezier(.22,1,.36,1)}
 .wz-res.in{opacity:1;transform:none}
-.wz-res .jk{aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--card2);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.wz-res .jk{position:relative;width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--card2);box-shadow:0 18px 40px rgba(0,0,0,.45)}
 .wz-res .t{font-weight:800;font-size:15px;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wz-res .a{color:var(--muted);font-size:13px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#sheet-wiz .jk img,.wz-hero img,.wz-sleeve img,.wz-lbl img,.wz-alt img,.wz-fly img{width:100%;height:100%;object-fit:cover;display:block}
+/* 커버 이미지는 칸을 채우기만 하고 칸 크기에는 영향을 주지 않게(절대 위치) — 원본 비율·해상도가 제각각이어도 정사각형 유지 */
+#sheet-wiz .jk img,.wz-hero img,.wz-sleeve img,.wz-lbl img,.wz-alt img,.wz-fly img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.wz-alt .t{position:relative}
 /* 2 자켓 */
 .wz-hero{position:relative;width:min(80vw,380px,40vh);aspect-ratio:1;margin:8px auto 0;border-radius:18px;overflow:hidden;background:var(--card2);
   box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;color:var(--dim)}
@@ -2359,7 +2361,7 @@ const I18N = {
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
   "내 바이닐을 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
   "바이닐 등록":"Add a record",
-  "왼쪽 위 + 버튼으로 바이닐을 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Scan the barcode or type the artist and album, and the cover and audio are found for you.",
+  "왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Search the album or scan its barcode, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
   "바이닐 직접 돌리기":"Spin the record yourself",
   "카드 위로 살짝 보이는 바이닐을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
@@ -7056,7 +7058,7 @@ const TOUR_STEPS=[
   { title:'Turnit 에 오신 걸 환영해요',
     desc:'내 바이닐을 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
   { tab:'coll', target:'#fab', round:true, title:'바이닐 등록',
-    desc:'왼쪽 위 + 버튼으로 바이닐을 등록해요. 바코드를 찍거나 가수·앨범명만 적으면 커버와 음원을 자동으로 찾아줘요.' },
+    desc:'왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.' },
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
     desc:'커버를 탭하면 판이 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
   { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'바이닐 직접 돌리기',
