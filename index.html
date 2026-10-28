@@ -919,7 +919,24 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-choice{display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;background:var(--card);border:1.5px solid var(--line);cursor:pointer;text-align:left;font:inherit;color:var(--txt);
   opacity:0;transform:translateY(14px);transition:opacity .4s,transform .5s cubic-bezier(.22,1,.36,1),border-color .2s,background .2s}
 .wz-choice.in{opacity:1;transform:none}
-.wz-choice .dot{width:42px;height:42px;border-radius:50%;flex:none}
+/* 상태 그림: 고른 자켓·판으로 그린 작은 장면 (미개봉=비닐 반짝임, 개봉=판이 빼꼼, 배송 전=택배 상자, 위시=흐린 자켓+하트) */
+.wz-choice .sc{position:relative;width:62px;height:50px;flex:none}
+.wz-choice .sc i{position:absolute;display:block;font-style:normal}
+.wz-choice .sc .jk{left:0;top:4px;width:42px;height:42px;border-radius:5px;background:var(--card2) center/cover no-repeat;box-shadow:0 3px 8px rgba(0,0,0,.45);z-index:2}
+.wz-choice .sc .jk.none{border:1px solid var(--line)}
+.wz-choice .sc.sealed .jk::after{content:"";position:absolute;inset:-2px;border-radius:6px;border:1px solid rgba(255,255,255,.35);
+  background:linear-gradient(120deg,transparent 18%,rgba(255,255,255,.72) 26%,transparent 34%,transparent 58%,rgba(255,255,255,.38) 64%,transparent 70%)}
+.wz-choice .sc .dk{left:20px;top:4px;width:42px;height:42px;border-radius:50%;z-index:1;
+  background:repeating-radial-gradient(circle,rgba(0,0,0,.28) 0 1px,transparent 1px 2.4px),var(--disc,#1c1c1c);transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.wz-choice .sc .dk::after{content:"";position:absolute;inset:34%;border-radius:50%;background:var(--lbl,#ddd) center/cover no-repeat}
+.wz-choice .sc .dk.ph{background:var(--photo) center/cover no-repeat}
+.wz-choice .sc .dk.ph::after{display:none}
+.wz-choice.on .sc .dk{transform:translateX(5px) rotate(40deg)}
+.wz-choice .sc .box{left:4px;top:8px;width:50px;height:38px;border-radius:5px;background:linear-gradient(#c99a5e,#a87943);box-shadow:0 3px 8px rgba(0,0,0,.45)}
+.wz-choice .sc .box::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:9px;transform:translateX(-50%);background:rgba(240,222,184,.7)}
+.wz-choice .sc .box::after{content:"";position:absolute;right:5px;bottom:5px;width:14px;height:9px;background:#fff;border-radius:1px}
+.wz-choice .sc.wish .jk{filter:grayscale(.85) brightness(.6)}
+.wz-choice .sc .heart{left:29px;top:-4px;z-index:3;color:#ff6f9a;font-size:19px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
 .wz-choice .t{font-size:17px;font-weight:800}
 .wz-choice .d{font-size:13px;color:var(--muted);margin-top:2px}
 .wz-choice.on{border-color:var(--accent);background:rgba(232,100,60,.10)}
@@ -5676,10 +5693,10 @@ const WZ_ICON_BACK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
 const WZ_ICON_X='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const WZ_ICON_IMG='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>';
 const WZ_STATUS=[
-  {k:'미개봉', ko:'미개봉', en:'Sealed', dko:'비닐도 안 뜯은 새 판이에요', den:'Still in the shrink wrap', c:'linear-gradient(150deg,#6aa0e8,#3f6fd0)'},
-  {k:'개봉', ko:'개봉', en:'Opened', dko:'꺼내서 듣고 있어요', den:'Out of the sleeve and spinning', c:'linear-gradient(150deg,var(--accent2),var(--accent))'},
-  {k:'배송전', ko:'배송 전', en:'On the way', dko:'주문하고 기다리는 중이에요', den:'Ordered, waiting for delivery', c:'linear-gradient(150deg,#9d96aa,#5f5a6b)'},
-  {k:'위시', ko:'위시', en:'Wishlist', dko:'아직은 갖고 싶은 판이에요', den:'A record you want someday', c:'linear-gradient(150deg,#ec8fb3,#c2557f)'},
+  {k:'미개봉', ko:'미개봉', en:'Sealed', dko:'비닐도 안 뜯은 새 판이에요', den:'Still in the shrink wrap'},
+  {k:'개봉', ko:'개봉', en:'Opened', dko:'꺼내서 듣고 있어요', den:'Out of the sleeve and spinning'},
+  {k:'배송전', ko:'배송 전', en:'On the way', dko:'주문하고 기다리는 중이에요', den:'Ordered, waiting for delivery'},
+  {k:'위시', ko:'위시', en:'Wishlist', dko:'아직은 갖고 싶은 판이에요', den:'A record you want someday'},
 ];
 const WZ_STORES_DEFAULT=['yes24','알라딘','교보문고','중고거래'];
 function wzBorrow(id, target){
@@ -6041,11 +6058,21 @@ function wzPaintDisc(){
   wz$('#wz-colors') && wz$('#wz-colors').querySelectorAll('.c').forEach(c=>{ if(c.classList.contains('ph')) c.classList.toggle('on', !!photo); else if(photo) c.classList.remove('on'); });
 }
 wz$('#wz-op').oninput=e=>{ const op=$('#f-op'); if(op){ op.value=e.target.value; } $('#f-color').oninput&&$('#f-color').oninput(); wzPaintDisc(); };
+// 상태 카드 앞 그림 — 앞 단계에서 고른 자켓·판 컬러(또는 판 사진)로 그린다
+function wzStatusScene(k){
+  const u=wzJacketURL(), fc=$('#f-color'), photo=fc.dataset.photo||'', hex=fc.dataset.hex||discColor(fc.value)||'#1c1c1c';
+  const url=v=>`url('${String(v).replace(/'/g,'%27')}')`;
+  const jk=`<i class="jk${u?'':' none'}"${u?` style="background-image:${escapeHtml(url(u))}"`:''}></i>`;
+  if(k==='배송전') return `<span class="sc" aria-hidden="true"><i class="box"></i></span>`;
+  if(k==='개봉') return `<span class="sc open" aria-hidden="true"><i class="dk${photo?' ph':''}" style="--disc:${escapeHtml(hex)};${u?`--lbl:${escapeHtml(url(u))};`:''}${photo?`--photo:${escapeHtml(url(photo))};`:''}"></i>${jk}</span>`;
+  if(k==='위시') return `<span class="sc wish" aria-hidden="true">${jk}<i class="heart">♥</i></span>`;
+  return `<span class="sc sealed" aria-hidden="true">${jk}</span>`;
+}
 wz$('#wz-to4').onclick=()=>{
   if(!$('#f-color').value.trim()){ const ci=wz$('#wz-cin'); appAlert(isEN()?'Please enter the color name':'컬러 이름을 입력해 주세요'); if(ci) ci.focus(); return; }
   wzSetStep(4);
   const box=wz$('#wz-choices'), en=isEN();
-  box.innerHTML=WZ_STATUS.map(o=>`<button type="button" class="wz-choice${(WZ.status||WZ.preset)===o.k?' on':''}" data-k="${o.k}"><span class="dot" style="background:${o.c}"></span><div><div class="t">${en?o.en:o.ko}</div><div class="d">${en?o.den:o.dko}</div></div></button>`).join('');
+  box.innerHTML=WZ_STATUS.map(o=>`<button type="button" class="wz-choice${(WZ.status||WZ.preset)===o.k?' on':''}" data-k="${o.k}">${wzStatusScene(o.k)}<div><div class="t">${en?o.en:o.ko}</div><div class="d">${en?o.den:o.dko}</div></div></button>`).join('');
   box.querySelectorAll('.wz-choice').forEach((b,i)=>{ setTimeout(()=>b.classList.add('in'), 150+i*70); b.onclick=()=>wzPickStatus(b.dataset.k, b); });
 };
 // ---- 4. 상태 — 누르면 바로 다음 ----
