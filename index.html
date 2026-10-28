@@ -937,8 +937,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-choice .sc .box::after{content:"";position:absolute;right:5px;bottom:5px;width:14px;height:9px;background:#fff;border-radius:1px}
 .wz-choice .sc.wish .jk{filter:grayscale(.85) brightness(.6)}
 .wz-choice .sc .heart{left:29px;top:-4px;z-index:3;color:#ff6f9a;font-size:19px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
-.wz-choice .t{font-size:17px;font-weight:800}
-.wz-choice .d{font-size:13px;color:var(--muted);margin-top:2px}
+.wz-choice .t{font-size:18px;font-weight:800}
 .wz-choice.on{border-color:var(--accent);background:rgba(232,100,60,.10)}
 /* 5 구매 */
 .wz-price{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--line);padding:6px 2px 10px;margin-top:6px;transition:border-color .2s}
@@ -5693,10 +5692,10 @@ const WZ_ICON_BACK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
 const WZ_ICON_X='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const WZ_ICON_IMG='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>';
 const WZ_STATUS=[
-  {k:'미개봉', ko:'미개봉', en:'Sealed', dko:'아직 포장을 뜯지 않았어요', den:'Still in the shrink wrap'},
-  {k:'개봉', ko:'개봉', en:'Opened', dko:'꺼내서 듣고 있어요', den:'Out of the sleeve and spinning'},
-  {k:'배송전', ko:'배송 전', en:'On the way', dko:'주문하고 기다리는 중이에요', den:'Ordered, waiting for delivery'},
-  {k:'위시', ko:'위시', en:'Wishlist', dko:'아직은 갖고 싶은 판이에요', den:'A record you want someday'},
+  {k:'미개봉', ko:'미개봉', en:'Sealed'},
+  {k:'개봉', ko:'개봉', en:'Opened'},
+  {k:'배송전', ko:'배송 전', en:'On the way'},
+  {k:'위시', ko:'위시', en:'Wishlist'},
 ];
 const WZ_STORES_DEFAULT=['yes24','알라딘','교보문고','중고거래'];
 function wzBorrow(id, target){
@@ -6072,7 +6071,7 @@ wz$('#wz-to4').onclick=()=>{
   if(!$('#f-color').value.trim()){ const ci=wz$('#wz-cin'); appAlert(isEN()?'Please enter the color name':'컬러 이름을 입력해 주세요'); if(ci) ci.focus(); return; }
   wzSetStep(4);
   const box=wz$('#wz-choices'), en=isEN();
-  box.innerHTML=WZ_STATUS.map(o=>`<button type="button" class="wz-choice${(WZ.status||WZ.preset)===o.k?' on':''}" data-k="${o.k}">${wzStatusScene(o.k)}<div><div class="t">${en?o.en:o.ko}</div><div class="d">${en?o.den:o.dko}</div></div></button>`).join('');
+  box.innerHTML=WZ_STATUS.map(o=>`<button type="button" class="wz-choice${(WZ.status||WZ.preset)===o.k?' on':''}" data-k="${o.k}">${wzStatusScene(o.k)}<div class="t">${en?o.en:o.ko}</div></button>`).join('');
   box.querySelectorAll('.wz-choice').forEach((b,i)=>{ setTimeout(()=>b.classList.add('in'), 150+i*70); b.onclick=()=>wzPickStatus(b.dataset.k, b); });
 };
 // ---- 4. 상태 — 누르면 바로 다음 ----
