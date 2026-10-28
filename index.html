@@ -939,6 +939,8 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 #wz-store-in{margin-top:10px}
 /* 6 완성 */
 .wz-final{position:relative;height:min(62vw,280px);margin-top:10px}
+/* 고른 판 크기(인치)대로 자켓+판을 함께 실제 비율로 (12"=1, 10"≈.83, 7"≈.58) — 통통 튀며 바뀜 */
+.wz-stage,.wz-final{scale:var(--wzs,1);transform-origin:50% 45%;transition:scale .55s cubic-bezier(.34,1.56,.64,1)}
 .wz-final .wz-sleeve{top:4%;left:0;transform:rotate(-3deg);width:min(52vw,236px)}
 .wz-final .wz-disc{top:2%;left:auto;right:0;transform:none;width:min(56vw,252px)}
 .wz-final.go{transition:transform .8s cubic-bezier(.6,0,.4,1),opacity .8s;transform:translateY(60vh) scale(.2);opacity:0}
@@ -5954,12 +5956,19 @@ function wzEnterDisc(){
   const rpmOn=!!SETTINGS.showRpm, inchOn=!!SETTINGS.showInch;
   wz$('#wz-spec').hidden=!(rpmOn||inchOn);
   wzChipGroup('wz-rpm', rpmOn ? [['33','33⅓ RPM'],['45','45 RPM']] : [], $('#f-rpm'), ()=>wzSpin(true));
-  wzChipGroup('wz-inch', inchOn ? [['12"','12"'],['10"','10"'],['7"','7"']] : [], $('#f-inch'));
+  wzChipGroup('wz-inch', inchOn ? [['12"','12"'],['10"','10"'],['7"','7"']] : [], $('#f-inch'), ()=>wzApplySize());
+  wzApplySize();
   const st=wz$('#wz-stage'); st.classList.remove('out'); wzSetStep(3);
   setTimeout(()=>{ st.classList.add('out'); wzSpin(); }, 450);
 }
 // 판 회전 속도 = 고른 RPM (33⅓ → 1.8초/바퀴, 45 → 1.33초/바퀴). RPM 칸을 안 쓰면 기본 3.2초.
 // animation-duration 을 바꾸면 각도가 튀므로 playbackRate 로 조절하고, 바꿀 땐 턴테이블처럼 서서히 가속/감속
+// 판 크기: 설정에서 인치를 켰을 때만, 12인치 기준 실제 비율
+function wzApplySize(){
+  const v=SETTINGS.showInch ? (($('#f-inch')||{}).value||'') : '';
+  const k=v==='10"' ? 10/12 : v==='7"' ? 7/12 : 1;
+  document.querySelectorAll('#sheet-wiz .wz-stage, #sheet-wiz .wz-final').forEach(e=>e.style.setProperty('--wzs', k.toFixed(3)));
+}
 function wzSpinRate(){
   if(!SETTINGS.showRpm) return 1;
   const v=($('#f-rpm')||{}).value;
@@ -6085,7 +6094,7 @@ function wzFinal(){
   const u=wzJacketURL(), en=isEN();
   wz$('#wz-fsleeve').innerHTML=wzImgHTML(u);
   document.querySelectorAll('#sheet-wiz .wz-lbl').forEach(l=>l.innerHTML=u?`<img src="${escapeHtml(u)}" alt="">`:'');
-  wzPaintDisc(); requestAnimationFrame(()=>wzSpin());
+  wzPaintDisc(); wzApplySize(); requestAnimationFrame(()=>wzSpin());
   wz$('#wz-ft').textContent=$('#f-album').value; wz$('#wz-fa').textContent=$('#f-artist').value;
   const st=WZ_STATUS.find(o=>o.k===WZ.status), wish=WZ.status==='위시';
   const fc=$('#f-color'), price=_wzNum($('#f-price').value);
