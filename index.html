@@ -915,7 +915,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-chips button.on{border-color:var(--accent);color:var(--accent2);background:rgba(232,100,60,.1)}
 .wz-chips[hidden]{display:none}
 /* 4 상태 */
-.wz-choices{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.wz-choices{display:flex;flex-direction:column;gap:10px;margin-top:22px}
 .wz-choice{display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;background:var(--card);border:1.5px solid var(--line);cursor:pointer;text-align:left;font:inherit;color:var(--txt);
   opacity:0;transform:translateY(14px);transition:opacity .4s,transform .5s cubic-bezier(.22,1,.36,1),border-color .2s,background .2s}
 .wz-choice.in{opacity:1;transform:none}
@@ -1676,7 +1676,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
   <section class="wz-step right" id="wz-s4">
     <div class="wz-q">이 바이닐은<br>지금 어떤 <em>상태</em>인가요?</div>
-    <div class="wz-sub">고르면 바로 다음으로 넘어가요</div>
     <div class="wz-choices" id="wz-choices"></div>
   </section>
 
@@ -5814,7 +5813,6 @@ function wzTexts(){
   q('#wz-s3 .wz-q','어떤 <em>판</em>인가요?','What does the <em>disc</em> look like?');
   t('#wz-opa span','투명도','Opacity'); t('#wz-to4','다음','Next');
   q('#wz-s4 .wz-q','이 바이닐은<br>지금 어떤 <em>상태</em>인가요?','What <em>state</em> is<br>this record in?');
-  t('#wz-s4 .wz-sub','고르면 바로 다음으로 넘어가요','Tap one to continue');
   q('#wz-s5 .wz-q','얼마에 샀나요?','How much was it?');
   t('#wz-s5 .wz-mini span','정가','List price'); ph('#wz-list','선택','Optional');
   t('#wz-s5 .wz-flab','어디서 샀나요?','Where did you buy it?'); ph('#wz-store-in','구매처 입력','Store name');
