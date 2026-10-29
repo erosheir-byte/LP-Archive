@@ -4043,6 +4043,11 @@ function _ttBg(card, cover){
   if(ci && ci.complete && ci.naturalWidth) draw(ci);
   else if(cover){ const im=new Image(); im.onload=()=>draw(im); im.src=cover; }
 }
+// 카드의 디스크 상자는 세로로 길어서(대부분 커버 뒤에 가려짐) 그대로 쓰면 찌그러진다 → 폭 기준 정원으로
+function _ttDiscRect(el){
+  const r=el && el.getBoundingClientRect(); if(!r || !r.width) return null;
+  const d=r.width; return { left:r.left, top:r.top+(r.height-d)/2, width:d, height:d };
+}
 function _ttRect(el,r,rad){ Object.assign(el.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}); if(rad!=null) el.style.borderRadius=rad; }
 
 function openTurntable(it, card){
@@ -4060,7 +4065,7 @@ function openTurntable(it, card){
   _tt$('tt-title').textContent=''; _ttInfo();
   tt.setAttribute('aria-hidden','false');
   const artEl=card && card.querySelector('.art'), discEl=card && card.querySelector('.disc');
-  const ar=artEl && artEl.getBoundingClientRect(), dr=discEl && discEl.getBoundingClientRect();
+  const ar=artEl && artEl.getBoundingClientRect(), dr=_ttDiscRect(discEl);
   stage.classList.add('tt-flying');
   tt.classList.add('on','show');
   const sr=stage.getBoundingClientRect();
@@ -4068,7 +4073,7 @@ function openTurntable(it, card){
   _ttPaintDisc(it, card, cover); _ttSyncArm();
   // 전환 애니메이션 동안엔 매 프레임 루프를 돌리지 않는다 (애니메이션이 메인 스레드 방해 없이 돌게)
   const done=()=>{ stage.classList.remove('tt-flying'); if(!TT.raf){ TT.last=0; TT.raf=requestAnimationFrame(_ttTick); } setTimeout(()=>{ if(TT.open && TT.it===it) playPreview(it, disc); }, 60); };
-  if(!ar || !ar.width){ tt.classList.add('ui'); done(); return; }
+  if(!ar || !ar.width || !dr){ tt.classList.add('ui'); done(); return; }
   // 1) 커버가 가운데로, 디스크는 커버 뒤에서 따라옴  2) 디스크가 빠져나오며 커지고 커버는 사라짐
   //    날아가는 디스크는 복사본이 아니라 화면의 디스크 자체 — transform 만 움직임 (새로 그릴 것 없음)
   const fly=document.createElement('div'); fly.className='tt-fly'; if(cover) fly.style.backgroundImage=`url("${cover}")`;
@@ -4091,7 +4096,7 @@ function closeTurntable(){
   if(_preview.id===it.id) stopPreview();
   // 디스크가 카드 속으로 돌아감 (그새 목록이 다시 그려졌으면 같은 카드를 다시 찾는다)
   let card=TT.card; if(!card || !card.isConnected) card=document.querySelector(`#grid .lp[data-id="${it.id}"]`);
-  const discEl=card && card.querySelector('.disc'), dr=discEl && discEl.getBoundingClientRect();
+  const discEl=card && card.querySelector('.disc'), dr=_ttDiscRect(discEl);
   tt.classList.remove('ui');
   const disc=_tt$('tt-disc'); let anims=[];
   stage.classList.add('tt-flying');
