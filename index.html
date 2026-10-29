@@ -4129,7 +4129,7 @@ function _ttvArmImg(u){
   return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
 }
 async function _ttvScene(it, track){
-  const W=_ttvW, H=_ttvH, S=600, sx=(W-S)/2, sy=250, u=S/100;
+  const W=_ttvW, H=_ttvH, S=600, sx=(W-S)/2, sy=280, u=S/100;
   const cover=artFor(it), coverIm=cover ? await _loadCardImg(_cardSrc(cover,600), 4000) : null;
   const wm=await _loadCardImg('icons/wordmark.png?v=4', 3000);
   try{ await Promise.all(['900 50px "Noto Sans KR"','500 26px "Noto Sans KR"','800 22px "Noto Sans KR"'].map(f=>document.fonts.load(f))); }catch(e){}
@@ -4143,7 +4143,7 @@ async function _ttvScene(it, track){
   if(wm){ const h=46, w=wm.naturalWidth*h/wm.naturalHeight; b.drawImage(wm,(W-w)/2,70,w,h); }
   b.save(); b.shadowColor='rgba(0,0,0,.55)'; b.shadowBlur=80; b.shadowOffsetY=30; b.beginPath(); b.arc(W/2,sy+S/2,S/2-2,0,Math.PI*2); b.fillStyle='#000'; b.fill(); b.restore();
   b.save(); b.translate(sx+96*u, sy+2*u); b.beginPath(); b.arc(0,0,8.4*u,0,Math.PI*2); b.fillStyle='#17161b'; b.fill(); b.lineWidth=.4*u; b.strokeStyle='rgba(255,255,255,.09)'; b.stroke(); b.restore();
-  const ty=sy+S+110; b.textAlign='center';
+  const ty=sy+S+140; b.textAlign='center';
   b.fillStyle='#f2a444'; b.font='800 22px "Noto Sans KR",sans-serif'; if('letterSpacing' in b) b.letterSpacing='4px';
   b.fillText('NOW PLAYING', W/2, ty); if('letterSpacing' in b) b.letterSpacing='0px';
   b.fillStyle='#fff'; b.font='900 50px "Noto Sans KR",sans-serif';
@@ -4183,7 +4183,7 @@ async function _ttvScene(it, track){
   return { W,H,S,sx,sy,u,bg,dc,sh,arm,armSh, opacity:(!photo && it.discOpacity!=null)?it.discOpacity:1, rate:String(it.rpm)==='45'?270:200 };
 }
 function _ttvFrame(x, sc, t, D){
-  const {W,S,sx,sy,u}=sc, prog=Math.min(1,t/D);
+  const {S,sx,sy,u}=sc, prog=Math.min(1,t/D);
   x.drawImage(sc.bg,0,0);
   x.save(); x.translate(sx+S/2, sy+S/2); x.rotate((t*sc.rate)*Math.PI/180); x.globalAlpha=sc.opacity; x.drawImage(sc.dc,-S/2,-S/2); x.restore();
   x.drawImage(sc.sh, sx, sy);
@@ -4192,14 +4192,6 @@ function _ttvFrame(x, sc, t, D){
     x.save(); x.translate(sx+96.8*u, sy+3.2*u); x.rotate(ang); x.globalAlpha=.5; x.drawImage(sc.armSh,-12*u-20,-16*u-20); x.restore();
     x.save(); x.translate(sx+96*u, sy+2*u); x.rotate(ang); x.drawImage(sc.arm,-12*u,-16*u,24*u,82*u); x.restore();
   }
-  // 진행 막대 + 시간
-  const by=1150, bx=90, bw=W-180;
-  x.fillStyle='rgba(255,255,255,.16)'; x.fillRect(bx,by,bw,5);
-  const gr=x.createLinearGradient(bx,0,bx+bw,0); gr.addColorStop(0,'#f2a444'); gr.addColorStop(1,'#e8643c');
-  x.fillStyle=gr; x.fillRect(bx,by,bw*prog,5);
-  const mmss=v=>{ v=Math.max(0,Math.round(v)); return Math.floor(v/60)+':'+String(v%60).padStart(2,'0'); };
-  x.font='600 22px "Noto Sans KR",sans-serif'; x.fillStyle='rgba(255,255,255,.55)';
-  x.textAlign='left'; x.fillText(mmss(t), bx, by+40); x.textAlign='right'; x.fillText('-'+mmss(D-t), bx+bw, by+40);
 }
 async function makeTurntableVideo(it, onProgress){
   const codecs=await _ttvCodecs();
