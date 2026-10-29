@@ -1299,7 +1299,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-title.swap{opacity:0;transform:translateY(6px)}
 .tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:rgba(255,255,255,.72);font-size:14px;min-width:0}
 .tt-aa span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tt-thumb{width:34px;height:34px;border-radius:7px;flex:none;background:#26222e var(--tt-cover,none) center/cover;box-shadow:0 4px 10px rgba(0,0,0,.4)}
 .tt-gap{flex:1;min-height:16px}
 .tt-gap.b{flex:1.4}
 /* 디스크 가운데: 멈춰 있으면 ▶ 표시, 가운데를 탭하면 일시정지/재생 */
@@ -2052,7 +2051,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     <div class="tt-info tt-fade">
       <div class="tt-np">Now playing</div>
       <div class="tt-title" id="tt-title"></div>
-      <div class="tt-aa"><span class="tt-thumb"></span><span id="tt-aa"></span></div>
+      <div class="tt-aa"><span id="tt-aa"></span></div>
     </div>
     <div class="tt-gap b"></div>
   </div>
@@ -4016,7 +4015,6 @@ function openTurntable(it, card){
   if(_preview.id && _preview.id!==it.id) stopPreview();
   _fetchPreviewUrl(it).catch(()=>{});            // 전환하는 동안 미리듣기 목록을 받아 둔다
   const cover=artFor(it)||'';
-  tt.style.setProperty('--tt-cover', cover?`url("${cover}")`:'none');
   _ttBg(card, cover);
   disc.className='disc tt-disc'+(it.discPhoto?' has-photo':'')+(cover&&!it.discPhoto?' has-cover':'');
   disc.setAttribute('style', discStyle(it)); if(cover) disc.style.setProperty('--tt-lbl', `url("${cover}")`);
@@ -4039,12 +4037,11 @@ function openTurntable(it, card){
   const fd=_ttDiscClone(discEl, it);
   const cs=sr.width*.86, C={left:sr.left+(sr.width-cs)/2, top:sr.top+(sr.height-cs)/2, width:cs, height:cs};
   const M={left:sr.left+sr.width*.5-cs*.46, top:sr.top+sr.height*.5-cs*.46, width:cs*.92, height:cs*.92};
-  const th=document.querySelector('#tt .tt-thumb').getBoundingClientRect();
   _ttRect(fly, C); _ttRect(fd, sr); document.body.append(fd, fly);
   card.classList.add('tt-hold');
   const E1='cubic-bezier(.22,1,.36,1)', E2='cubic-bezier(.65,0,.35,1)';
   fd.animate([{transform:_ttMap(dr,sr), easing:E1},{transform:_ttMap(M,sr), offset:.42},{transform:_ttMap(M,sr), offset:.46, easing:E1},{transform:'none'}], {duration:1300, fill:'forwards'});
-  fly.animate([{transform:_ttMap(ar,C), opacity:1, easing:E1},{transform:'none', opacity:1, offset:.42},{transform:'none', opacity:1, offset:.46, easing:E2},{transform:th.width?_ttMap(th,C):'none', opacity:0}], {duration:1300, fill:'forwards'});
+  fly.animate([{transform:_ttMap(ar,C), opacity:1, easing:E1},{transform:'none', opacity:1, offset:.42},{transform:'none', opacity:1, offset:.46, easing:E2},{transform:`translate(${cs*.2}px,${cs*.2}px) scale(.6)`, opacity:0}], {duration:1300, fill:'forwards'});
   setTimeout(()=>{ if(!TT.open) return; fd.style.zIndex='911'; tt.classList.add('ui'); }, 600);
   setTimeout(()=>{ fd.remove(); fly.remove(); if(TT.open) done(); }, 1330);
 }
@@ -4173,10 +4170,8 @@ async function _ttvScene(it, track){
   b.fillStyle='#fff'; b.font='900 50px "Noto Sans KR",sans-serif';
   b.fillText(_ttvFit(b, (track&&track.title)||it.album||'', W-100), W/2, ty+68);
   const sub=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
-  b.font='500 26px "Noto Sans KR",sans-serif'; const subT=_ttvFit(b, sub, W-200), tw=b.measureText(subT).width, th=48, gx=W/2-(tw+th+16)/2;
-  b.save(); b.beginPath(); if(b.roundRect) b.roundRect(gx, ty+104, th, th, 9); else b.rect(gx, ty+104, th, th); b.clip();
-  if(coverIm) b.drawImage(coverIm, gx, ty+104, th, th); else { b.fillStyle='#26222e'; b.fillRect(gx, ty+104, th, th); } b.restore();
-  b.textAlign='left'; b.fillStyle='rgba(255,255,255,.72)'; b.fillText(subT, gx+th+16, ty+137);
+  b.font='500 26px "Noto Sans KR",sans-serif'; b.fillStyle='rgba(255,255,255,.72)';
+  b.fillText(_ttvFit(b, sub, W-120), W/2, ty+124);
   // 2) 디스크 (매 프레임 돌려 그림)
   const dc=mk(S,S), d=dc.getContext('2d'), R=S/2;
   d.save(); d.beginPath(); d.arc(R,R,R,0,Math.PI*2); d.clip();
