@@ -21,15 +21,20 @@
 
 스크린샷 순서와 문구(한국어 / 영어):
 
-앱의 두 강점(손가락으로 돌려 듣기, 취향 카드 공유)이 먼저 보이도록 1번과 5번에 두었습니다.
+큰 영어 한 마디 + 작은 한 줄(한국어/영어) 구성입니다. 일곱 장 모두 "○○ it." 으로 끝나 앱 이름 **Turn it** 이 각인되도록 했습니다.
+앱의 두 강점(손가락으로 돌려 듣기, 취향 카드 공유)은 1번과 5번에 두었습니다.
 
-1. 손가락으로 돌리면 **노래**가 흘러요 — **Spin** the disc to play the music (보관함 카드에서 꺼낸 디스크 + 회전 표시)
-2. 모아온 **바이닐**을 한눈에 — Your **vinyl**, all in one place (보관함)
-3. 검색 한 번이면 **커버와 노래**까지 — One search finds the **cover & songs** (등록: 이 앨범이 맞나요?)
-4. **디스크 컬러**까지 그대로 — Right down to your **disc color** (등록: 디스크 컬러·투명도·RPM·인치)
-5. 내 **취향**을 카드로 친구에게 자랑하기 — Show off your **taste** with a card (컬렉션 카드 공유)
-6. 사고, 듣고, **달력**에 남기고 — Every buy and spin on your **calendar** (달력)
-7. 얼마나 모았는지 한눈에 **통계**로 — Your collection in **numbers** (통계)
+| # | 큰 문구 | 작은 문구 (한국어 / 영어) | 화면 |
+|---|---|---|---|
+| 1 | **Turn** it. | 돌리면, 음악이 시작돼요 / Spin the disc, start the music | 카드에서 꺼낸 디스크 + 회전 표시 |
+| 2 | **Keep** it. | 모아온 바이닐을 한곳에 / Every record, one shelf | 보관함 |
+| 3 | **Find** it. | 검색 한 번이면 커버와 노래까지 / One search, cover and songs | 등록: 이 앨범이 맞나요? |
+| 4 | **Match** it. | 디스크 색까지 내 것 그대로 / Right down to your disc color | 등록: 디스크 컬러·투명도·RPM·인치 |
+| 5 | **Share** it. | 내 취향, 카드 한 장으로 / Your taste, on a card | 컬렉션 카드 공유 |
+| 6 | **Log** it. | 사고, 듣고, 달력에 남기고 / Every buy and spin, on a calendar | 달력 |
+| 7 | **Track** it. | 얼마나 모았는지 한눈에 / Your collection in numbers | 통계 |
+
+그래픽 이미지: **Turn it. Hear it.** + 돌려 듣는 내 바이닐 보관함 / Your vinyl collection, ready to spin
 
 - 스크린샷 속 앨범은 모두 **가상의 앨범과 직접 그린 커버**입니다(실제 앨범 아트 저작권 문제 방지).
 - 다시 만들 때는 같은 데모 데이터로 앱을 띄워 캡처한 뒤 문구를 얹었습니다. 화면이 바뀌면 다시 만들어 주세요.
@@ -61,7 +66,8 @@ Turnit — 내 바이닐 보관함
 
 ### 긴 설명 (4000자)
 ```
-🎵 Turnit — 돌려 듣는 내 바이닐 보관함
+🎵 Turn it. Hear it.
+돌려 듣는 내 바이닐 보관함, Turnit
 
 모아온 바이닐을 한 곳에 예쁘게 정리하고, 손가락으로 돌려 듣고, 내 취향을 친구에게 자랑해 보세요.
 
@@ -140,7 +146,8 @@ vinyl,record,LP,turntable,collection,album,collector,barcode,music log,crate,rec
 
 ### Full description (4000)
 ```
-🎵 Turnit — your vinyl collection, ready to spin
+🎵 Turn it. Hear it.
+Turnit — your vinyl collection, ready to spin
 
 Keep every record you own in one beautiful place, spin it with your finger to listen, and show off your taste to friends.
 
