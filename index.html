@@ -2287,7 +2287,7 @@ const I18N = {
   "🎧 청음 기록 추가":"🎧 Add a listening entry",
   "들은 날짜":"Date listened",
   "기록 저장":"Save entry",
-  "📄 동일 앨범 추가":"📄 Add the same album",
+  "📄 같은 앨범 추가":"📄 Add the same album",
   "🗑 삭제":"🗑 Delete",
   "별점":"Rating",
   "변경사항 저장":"Save changes",
@@ -3937,8 +3937,8 @@ function openDetail(id, mode){
   if(sameAlbum.length>1){
     action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?'📌 대표 이미지 지정됨 — 해제하기':'📌 이 커버를 대표 이미지로'}</button>`;
   }
-  // 동일 앨범을 또 살 때: 이 앨범 정보를 복사해 등록 화면을 미리 채움
-  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 동일 앨범 추가</button>`;
+  // 같은 앨범을 또 살 때: 이 앨범 정보를 복사해 등록 화면을 미리 채움
+  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 추가</button>`;
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
@@ -5482,7 +5482,7 @@ function openAdd(initStatus, presetDate, opts){   // opts.silent: 칸만 초기�
   toggleBuyFields();
   if(!(opts&&opts.silent)) show('add');
 }
-// 동일 앨범 추가: 기존 항목 정보를 복사해 등록 화면을 '이 앨범이 맞나요?' 단계부터 연다 (구매일은 오늘, 상태는 새로 고름)
+// 같은 앨범 추가: 기존 항목 정보를 복사해 등록 화면을 '이 앨범이 맞나요?' 단계부터 연다 (구매일은 오늘, 상태는 새로 고름)
 function cloneToAdd(it){
   hide('detail');
   openWizard(undefined, undefined, { step:2, fill:()=>_cloneFill(it) });
@@ -5836,7 +5836,7 @@ function openWizard(initStatus, presetDate, opts){   // opts:{fill, step, status
   if(opts && opts.fill){ opts.fill(); wzJumpTo(opts.step||2, opts.status||null); }
   show('wiz');
 }
-// 이미 채워진 값으로 원하는 단계부터 (동일 앨범 추가·작성 중 복구). 앞 단계도 그려 둬서 뒤로 가기가 자연스럽게
+// 이미 채워진 값으로 원하는 단계부터 (같은 앨범 추가·작성 중 복구). 앞 단계도 그려 둬서 뒤로 가기가 자연스럽게
 function wzJumpTo(step, status){
   const u=wzJacketURL(), pv=window.__addPv, fc=$('#f-color');
   const ar=$('#f-artist').value.trim(), al=$('#f-album').value.trim();
