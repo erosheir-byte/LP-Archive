@@ -2287,7 +2287,7 @@ const I18N = {
   "🎧 청음 기록 추가":"🎧 Add a listening entry",
   "들은 날짜":"Date listened",
   "기록 저장":"Save entry",
-  "📄 같은 앨범 한 장 더 추가":"📄 Add another copy of this album",
+  "📄 같은 앨범 추가":"📄 Add the same album",
   "🗑 삭제":"🗑 Delete",
   "별점":"Rating",
   "변경사항 저장":"Save changes",
@@ -3937,8 +3937,8 @@ function openDetail(id, mode){
   if(sameAlbum.length>1){
     action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?'📌 대표 이미지 지정됨 — 해제하기':'📌 이 커버를 대표 이미지로'}</button>`;
   }
-  // 같은 앨범을 한 장 더 살 때: 이 앨범 정보를 복사해 추가 폼을 미리 채움
-  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 한 장 더 추가</button>`;
+  // 같은 앨범을 또 살 때: 이 앨범 정보를 복사해 등록 화면을 미리 채움
+  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 추가</button>`;
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
@@ -5482,10 +5482,13 @@ function openAdd(initStatus, presetDate, opts){   // opts.silent: 칸만 초기�
   toggleBuyFields();
   if(!(opts&&opts.silent)) show('add');
 }
-// 같은 앨범 한 장 더: 기존 항목 정보를 복사해 추가 폼을 미리 채운다 (구매일은 오늘)
+// 같은 앨범 추가: 기존 항목 정보를 복사해 등록 화면을 '이 앨범이 맞나요?' 단계부터 연다 (구매일은 오늘, 상태는 새로 고름)
 function cloneToAdd(it){
   hide('detail');
-  openAdd(it.status==='개봉' ? '개봉' : (statusGroup(it.status)==='배송전' ? '배송전' : (it.status==='위시' ? '위시' : undefined)));
+  openWizard(undefined, undefined, { step:2, fill:()=>_cloneFill(it) });
+  previewToast(isEN&&isEN() ? 'Copied — review and add ✓' : '앨범 정보를 복사했어요 — 확인 후 추가하세요 ✓');
+}
+function _cloneFill(it){
   $('#f-artist').value=it.artist||'';
   $('#f-album').value=it.album||'';
   const fc=$('#f-color');
@@ -5504,8 +5507,7 @@ function cloneToAdd(it){
   if(art){ const pa=$('#pa-prev'); pa.innerHTML=''; const im=document.createElement('img'); im.src=art;
            pa.appendChild(im); pa.dataset.url=art; $('#pt-prev').textContent='이 커버로 저장돼요 ✓'; }
   window.__addPv = it.previewAlbumId ? {id:it.previewAlbumId, name:it.previewAlbumName||''} : null;
-  setupColorField('f'); toggleBuyFields(); paintGradeDesc('f');
-  previewToast(isEN&&isEN() ? 'Copied — review and add ✓' : '앨범 정보를 복사했어요 — 확인 후 추가하세요 ✓');
+  toggleBuyFields(); paintGradeDesc('f');   // setupColorField 는 부르지 않음(등록 화면의 판 다시 그리기 연결을 덮어씀)
 }
 $('#f-status').onchange=toggleBuyFields;
 { const fc=$('#f-cat'); if(fc) fc.onchange=toggleBuyFields; }
@@ -5778,6 +5780,7 @@ document.addEventListener('visibilitychange', ()=>{
 });
 function wzOnHide(){
   WZ.open=false;
+  clearAddDraft();   // 등록 화면을 닫으면(저장 완료·취소) 임시저장도 지운다
   wzBgmStop(250);
   try{ stopBarcodeScan(); }catch(e){}
   const bx=$('#bc-box'); if(bx) bx.style.display='none';
@@ -5818,7 +5821,7 @@ function wzTexts(){
   q('#wz-s6 .wz-q','이렇게 <em>등록</em>할게요','Ready to <em>add</em>');
   t('#wz-more-btn span','추가 입력하기','More details'); t('#wz-save','보관함에 추가','Add to library');
 }
-function openWizard(initStatus, presetDate){
+function openWizard(initStatus, presetDate, opts){   // opts:{fill, step, status} — 미리 채운 값으로 해당 단계부터
   openAdd(initStatus, presetDate, {silent:true});   // 추가 폼 칸 초기화 (구분·구매일 기본값 포함)
   Object.assign(WZ,{ hist:[], cands:[], cand:null, direct:false, editMeta:false, status:null, preset:initStatus||null, open:true });
   wzReturn();
@@ -5830,7 +5833,26 @@ function openWizard(initStatus, presetDate){
   wz$('#wz-q').value=''; wz$('#wz-results').innerHTML=''; wz$('#wz-msg').textContent='';
   wz$('#wz-more').classList.remove('open');
   wzSetStep(1, true);
+  if(opts && opts.fill){ opts.fill(); wzJumpTo(opts.step||2, opts.status||null); }
   show('wiz');
+}
+// 이미 채워진 값으로 원하는 단계부터 (같은 앨범 추가·작성 중 복구). 앞 단계도 그려 둬서 뒤로 가기가 자연스럽게
+function wzJumpTo(step, status){
+  const u=wzJacketURL(), pv=window.__addPv, fc=$('#f-color');
+  const ar=$('#f-artist').value.trim(), al=$('#f-album').value.trim();
+  WZ.direct=false; WZ.status=status||null; WZ.editMeta=!(ar&&al);
+  WZ.cand={ artist:ar, album:al, img:u, collectionId:(pv&&pv.id)||null };
+  WZ.cands=u?[WZ.cand]:[];
+  if(!(ar&&al)) step=2;
+  if(step>=4 && !fc.value.trim() && !fc.dataset.photo) step=3;
+  if(step>=5 && !WZ.status) step=4;
+  if(step===5 && WZ.status==='위시') step=6;
+  wzRenderJacket(); wzSetStep(2, true);
+  if(step>=3) wzEnterDisc();
+  if(step>=4) wz$('#wz-to4').onclick();
+  if(step>=5 && WZ.status!=='위시') wzEnterBuy();
+  if(step>=6) wzFinal();
+  WZ.hist=[1,2,3,4,5].filter(n=>n<step && !(n===5 && WZ.status==='위시'));
 }
 // ---- 1. 검색 ----
 let _wzTimer=null;
@@ -6157,9 +6179,11 @@ const ADD_DRAFT_KEY='lp_add_draft';
 const ADD_DRAFT_FIELDS=['f-artist','f-album','f-color','f-cat','f-status','f-op','f-rpm','f-inch',
   'f-sleeve','f-media','f-price','f-list','f-store','f-buy','f-eta','f-open','f-genre','f-year','f-note'];
 function saveAddDraft(){
-  const sh=$('#sheet-add');
-  if(!sh || !sh.classList.contains('show')) return;   // 추가 폼이 열려 있을 때만
+  const sh=$('#sheet-add'), wz=$('#sheet-wiz');
+  const wizOpen=!!(wz && wz.classList.contains('show') && WZ.open);
+  if(!wizOpen && (!sh || !sh.classList.contains('show'))) return;   // 추가 폼·등록 화면이 열려 있을 때만
   const d={t:Date.now(), v:{}, openUnknown:openUnknown,
+           wz: wizOpen ? {step:WZ.step, status:WZ.status} : null,   // 등록 화면이면 어느 단계였는지도
            hex:($('#f-color')&&$('#f-color').dataset.hex)||'',
            art:($('#pa-prev')&&$('#pa-prev').dataset.url)||'',
            disc:(window.__addDraft&&window.__addDraft.discPhoto)||null,
@@ -6171,8 +6195,7 @@ function saveAddDraft(){
 function clearAddDraft(){ try{ localStorage.removeItem(ADD_DRAFT_KEY); }catch(e){} }
 let _addDraftTimer=null;
 function scheduleAddDraft(){ clearTimeout(_addDraftTimer); _addDraftTimer=setTimeout(saveAddDraft, 400); }
-{ const sh=$('#sheet-add');
-  ['input','change','click'].forEach(ev=>sh.addEventListener(ev, scheduleAddDraft)); }
+['#sheet-add','#sheet-wiz'].forEach(q=>{ const sh=$(q); if(sh) ['input','change','click'].forEach(ev=>sh.addEventListener(ev, scheduleAddDraft)); });
 // 화면이 가려지는 순간(앱 전환·홈·잠금) 즉시 저장 — 이때 웹뷰가 죽어도 내용이 남는다
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden){ clearTimeout(_addDraftTimer); saveAddDraft(); } });
 window.addEventListener('pagehide', ()=>{ clearTimeout(_addDraftTimer); saveAddDraft(); });
@@ -6183,8 +6206,20 @@ function restoreAddDraft(){
   const typed=['f-artist','f-album','f-color','f-store','f-price','f-list','f-note','f-genre','f-year']
     .some(i=>String(d.v[i]||'').trim());
   if(!typed && !d.disc){ clearAddDraft(); return false; }   // 실제 입력이 없었으면 복구할 것도 없음
+  const en=(typeof isEN==='function')&&isEN();
+  if(d.wz){   // 등록 화면에서 쓰던 중이면 그 단계로
+    openWizard(undefined, undefined, { step:Math.max(2, d.wz.step||2), status:d.wz.status||null, fill:()=>{ _applyAddDraft(d); toggleBuyFields(); paintGradeDesc('f'); } });
+    previewToast(en?'Restored your unfinished entry ✓':'작성 중이던 추가 내용을 복구했어요 ✓');
+    return true;
+  }
   const cat=d.v['f-cat']||'보유중';
   openAdd(cat==='보유중' ? (d.v['f-status']==='개봉'?'개봉':undefined) : cat);
+  _applyAddDraft(d);
+  setupColorField('f'); toggleBuyFields(); paintGradeDesc('f');
+  previewToast(en?'Restored your unfinished entry ✓':'작성 중이던 추가 내용을 복구했어요 ✓');
+  return true;
+}
+function _applyAddDraft(d){
   ADD_DRAFT_FIELDS.forEach(i=>{ const el=$('#'+i); if(el && d.v[i]!==undefined) el.value=d.v[i]; });
   const fc=$('#f-color');
   if(fc){ if(d.hex) fc.dataset.hex=d.hex; else delete fc.dataset.hex;
@@ -6196,10 +6231,6 @@ function restoreAddDraft(){
   if(d.art){ const pa=$('#pa-prev'); pa.innerHTML=''; const im=document.createElement('img'); im.src=d.art;
              pa.appendChild(im); pa.dataset.url=d.art;
              $('#pt-prev').textContent='이 커버로 저장돼요 ✓'; }
-  setupColorField('f'); toggleBuyFields(); paintGradeDesc('f');
-  const en=(typeof isEN==='function')&&isEN();
-  previewToast(en?'Restored your unfinished entry ✓':'작성 중이던 추가 내용을 복구했어요 ✓');
-  return true;
 }
 
 /* ---------- persist (in-memory + attempt localStorage) ---------- */
