@@ -1277,7 +1277,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .tt-ic svg{width:20px;height:20px}
 .tt-logo{height:40px;width:auto;display:block;pointer-events:none}
-.tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none;margin-top:48px}
+.tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none;margin-top:40px}
 .tt .disc.tt-disc{position:absolute;left:0;top:0;bottom:auto;width:100%;height:100%;transform:rotate(var(--tt-a,0deg));transition:none;
   animation:none;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 22px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
 .tt .disc.tt-disc:active{cursor:grabbing}
@@ -1299,10 +1299,13 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-aa span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tt-thumb{width:34px;height:34px;border-radius:7px;flex:none;background:#26222e var(--tt-cover,none) center/cover;box-shadow:0 4px 10px rgba(0,0,0,.4)}
 .tt-gap{flex:1;min-height:16px}
-.tt-ctrls{display:flex;justify-content:center;align-items:center;gap:30px;flex:none}
-.tt-ctrls .tt-ic{width:54px;height:54px}
-.tt-ctrls .tt-play{width:70px;height:70px;border:none;background:linear-gradient(150deg,var(--accent2,#f2a444),var(--accent,#e8643c));color:#1a0d06;box-shadow:0 12px 30px rgba(0,0,0,.35)}
-.tt-ctrls .tt-play svg{width:28px;height:28px}
+.tt-gap.b{flex:1.4}
+/* 디스크 가운데: 멈춰 있으면 ▶ 표시, 가운데를 탭하면 일시정지/재생 */
+.tt-cbtn{position:absolute;left:50%;top:50%;width:22%;aspect-ratio:1;border-radius:50%;z-index:4;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;color:#fff;background:rgba(10,9,12,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;transform:translate(-50%,-50%) scale(.85);transition:opacity .25s,transform .25s}
+.tt-cbtn svg{width:38%;height:38%}
+.tt-cbtn.show,.tt-cbtn.flash{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .tt-fly{position:fixed;z-index:910;border-radius:4px;background:#26222e center/cover;box-shadow:0 20px 50px rgba(0,0,0,.5);pointer-events:none}
 .disc.tt-flydisc{position:fixed;z-index:909;transform:none;bottom:auto;pointer-events:none;transition:none}
 .lp.tt-hold .artwrap{visibility:hidden}
@@ -1999,9 +2002,11 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <img class="tt-logo" src="icons/wordmark.png?v=4" alt="Turnit" width="1400" height="520">
       <button type="button" class="tt-ic" id="tt-share" aria-label="동영상으로 공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
     </div>
+    <div class="tt-gap"></div>
     <div class="tt-stage" id="tt-stage">
       <div class="disc tt-disc" id="tt-disc"></div>
       <div class="tt-shine"></div>
+      <div class="tt-cbtn" id="tt-cbtn"><svg id="tt-ci" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
       <svg class="tt-arm" id="tt-arm" viewBox="0 0 100 100" aria-hidden="true">
         <defs>
           <linearGradient id="tta-sil" x1="0" x2="1"><stop offset="0" stop-color="#7d7a85"/><stop offset=".35" stop-color="#f7f6f9"/><stop offset=".6" stop-color="#d4d1d9"/><stop offset="1" stop-color="#8c8994"/></linearGradient>
@@ -2047,12 +2052,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="tt-title" id="tt-title"></div>
       <div class="tt-aa"><span class="tt-thumb"></span><span id="tt-aa"></span></div>
     </div>
-    <div class="tt-gap"></div>
-    <div class="tt-ctrls tt-fade">
-      <button type="button" class="tt-ic" id="tt-prev" aria-label="이전 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.2v12H6zM20 6v12l-9-6z"/></svg></button>
-      <button type="button" class="tt-ic tt-play" id="tt-play" aria-label="재생/일시정지"><svg id="tt-pi" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-      <button type="button" class="tt-ic" id="tt-next" aria-label="다음 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.8 6H18v12h-2.2zM4 6l9 6-9 6z"/></svg></button>
-    </div>
+    <div class="tt-gap b"></div>
   </div>
   <div class="tt-vid" id="tt-vid" hidden>
     <div class="tt-vid-box">
@@ -2560,7 +2560,7 @@ const I18N = {
   "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent","인스타 스토리·카톡으로 보내 보세요":"Send it to your Instagram story or friends",
   "이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.":"This device can't make videos. Please update the app.","동영상을 만드는 중 오류가 발생했어요.":"Something went wrong while making the video.",
   "톤암":"Tonearm","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
-  "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Swipe down to close.",
+  "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap the center to pause, swipe down to close.",
   "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "커버 변경하기":"Change the cover",
   "디스크 이미지 변경하기":"Change the disc image",
@@ -3952,7 +3952,8 @@ function _ttInfo(){
     if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ el.textContent=TT.title; el.classList.remove('swap'); },180); }
     else el.textContent=title;
   }
-  _tt$('tt-pi').innerHTML = _ttPlaying() ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>' : '<path d="M8 5v14l11-7z"/>';
+  const cb=_tt$('tt-cbtn'), pl=_ttPlaying(); cb.classList.toggle('show', !pl && !TT.drag && !!_tt$('tt').classList.contains('ui'));
+  if(!cb.classList.contains('flash')) _tt$('tt-ci').innerHTML = pl ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>' : '<path d="M8 5v14l11-7z"/>';
 }
 function _ttTick(now){
   if(!TT.open){ TT.raf=0; return; }
@@ -3977,8 +3978,10 @@ function _ttPlay(){ const it=TT.it; if(!it) return;
   if(_preview.id===it.id){ if(_preview.paused) _resumePreview(); else _pausePreview(); }
   else playPreview(it, _tt$('tt-disc'));
 }
-function _ttStep(dir){ const it=TT.it; if(!it) return;
-  if(_preview.id===it.id) previewStep(dir, _tt$('tt-disc')); else playPreview(it, _tt$('tt-disc'));
+// 가운데 탭 피드백: 누른 순간의 상태 아이콘(⏸/▶)을 잠깐 보여 준다
+function _ttFlash(){ const cb=_tt$('tt-cbtn'); if(!cb) return;
+  _tt$('tt-ci').innerHTML = _ttPlaying() ? '<path d="M8 5v14l11-7z"/>' : '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>';
+  cb.classList.add('flash'); clearTimeout(_ttFlash._t); _ttFlash._t=setTimeout(()=>cb.classList.remove('flash'), 600);
 }
 function _ttRect(el,r,rad){ Object.assign(el.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}); if(rad!=null) el.style.borderRadius=rad; }
 function _ttDiscClone(src, it){
@@ -4056,7 +4059,7 @@ function closeTurntable(){
   const tt=_tt$('tt'), disc=_tt$('tt-disc'); if(!tt) return;
   const ctr=()=>{ const r=_tt$('tt-stage').getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]; };
   const ang=e=>{ const [cx,cy]=ctr(); return Math.atan2(e.clientY-cy, e.clientX-cx)*180/Math.PI; };
-  disc.addEventListener('pointerdown',e=>{ if(!TT.open) return; TT.drag=true; TT.moved=false; TT.lastA=ang(e); TT.acc=0;
+  disc.addEventListener('pointerdown',e=>{ if(!TT.open) return; TT.drag=true; TT.moved=false; TT.lastA=ang(e); TT.acc=0; TT.downX=e.clientX; TT.downY=e.clientY;
     try{ disc.setPointerCapture(e.pointerId); }catch(_){}
     if(TT.it) _fetchPreviewUrl(TT.it).catch(()=>{}); });
   disc.addEventListener('pointermove',e=>{ if(!TT.drag) return;
@@ -4067,15 +4070,17 @@ function closeTurntable(){
       while(TT.acc>=360){ TT.acc-=360; previewStep(+1, disc); }   // 시계 방향 한 바퀴 → 다음 곡
       while(TT.acc<=-360){ TT.acc+=360; previewStep(-1, disc); }  // 반대 방향 → 이전 곡
     } });
-  const up=()=>{ TT.drag=false; };
+  const up=e=>{ if(!TT.drag) return; TT.drag=false;
+    // 돌리지 않고 가운데(라벨 근처)를 탭 → 일시정지/재생
+    if(e && e.type==='pointerup' && !TT.moved && Math.hypot(e.clientX-TT.downX, e.clientY-TT.downY)<12){
+      const r=_tt$('tt-stage').getBoundingClientRect(), d=Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2));
+      if(d<r.width*.22){ _ttFlash(); _ttPlay(); }
+    } };
   disc.addEventListener('pointerup',up); disc.addEventListener('pointercancel',up);
   _tt$('tt-close').onclick=closeTurntable;
-  _tt$('tt-play').onclick=_ttPlay;
-  _tt$('tt-prev').onclick=()=>_ttStep(-1);
-  _tt$('tt-next').onclick=()=>_ttStep(1);
   // 디스크·버튼 밖을 아래로 쓸어내리면 닫기
   let sy=null;
-  tt.addEventListener('pointerdown',e=>{ if(!TT.open || e.target.closest('.tt-disc,.tt-ctrls,.tt-ic,.tt-vid')) return; sy=e.clientY; });
+  tt.addEventListener('pointerdown',e=>{ if(!TT.open || e.target.closest('.tt-disc,.tt-ic,.tt-vid')) return; sy=e.clientY; });
   tt.addEventListener('pointerup',e=>{ if(sy!==null && e.clientY-sy>90) closeTurntable(); sy=null; });
   tt.addEventListener('pointercancel',()=>{ sy=null; });
 })();
@@ -7895,7 +7900,7 @@ const TOUR_STEPS=[
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
     desc:'커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
   { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'디스크 직접 돌리기',
-    desc:'커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 아래로 쓸어내리면 닫혀요.' },
+    desc:'커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 아래로 쓸어내리면 닫혀요.' },
   { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'커버 변경하기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.' },
