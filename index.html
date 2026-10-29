@@ -823,14 +823,13 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-q{font-size:26px;font-weight:900;line-height:1.28;letter-spacing:-.02em;margin:6px 0;word-break:keep-all}
 .wz-q em{font-style:normal;background:linear-gradient(120deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
 .wz-q.c{text-align:center}
-.wz-sub{color:var(--muted);font-size:14px;margin-bottom:18px}
 .wz-step .wz-sp{flex:1 1 auto;min-height:6px}
 .wz-cta{flex:none;margin-top:24px;width:100%;height:56px;border-radius:16px;border:none;font:inherit;font-size:16.5px;font-weight:800;color:#1a0d06;
   background:linear-gradient(150deg,var(--accent2),var(--accent));box-shadow:0 12px 30px rgba(232,100,60,.3);cursor:pointer;transition:transform .15s}
 .wz-cta:active{transform:scale(.98)}
 .wz-link{align-self:center;background:none;border:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;margin-top:10px;cursor:pointer;padding:6px}
 /* 1 검색 */
-.wz-search{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:0 14px;height:56px;transition:border-color .2s}
+.wz-search{margin-top:22px;display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:0 14px;height:56px;transition:border-color .2s}
 .wz-search:focus-within{border-color:var(--accent)}
 .wz-search svg{flex:none;color:var(--muted)}
 .wz-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:17px;font-weight:500}
@@ -1636,7 +1635,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
   <section class="wz-step" id="wz-s1">
     <div class="wz-q">어떤 <em>바이닐</em>을<br>등록할까요?</div>
-    <div class="wz-sub">가수나 앨범명을 입력해 주세요</div>
     <div class="wz-search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="wz-q" placeholder="예) 검정치마 TEAM BABY" autocomplete="off" enterkeyhint="search">
@@ -5803,7 +5801,6 @@ function wzBack(){
 function wzTexts(){
   const en=isEN(), q=(sel,ko,e)=>{ const el=wz$(sel); if(el) el.innerHTML=en?e:ko; }, t=(sel,ko,e)=>{ const el=wz$(sel); if(el) el.textContent=en?e:ko; }, ph=(sel,ko,e)=>{ const el=wz$(sel); if(el) el.placeholder=en?e:ko; };
   q('#wz-s1 .wz-q','어떤 <em>바이닐</em>을<br>등록할까요?','Which <em>record</em><br>are you adding?');
-  t('#wz-s1 .wz-sub','가수나 앨범명을 입력해 주세요','Type an artist or album');
   ph('#wz-q','예) 검정치마 TEAM BABY','e.g. The Black Skirts TEAM BABY');
   t('#wz-scan span','바코드 찍기','Scan barcode'); t('#wz-direct span','사진으로 직접 등록','Add with a photo');
   t('#wz-full','한 번에 입력','All on one page');
