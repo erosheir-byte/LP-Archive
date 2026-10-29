@@ -1259,6 +1259,56 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .ms-share.busy{color:var(--accent2);pointer-events:none}
 .ms-share.busy svg{animation:scspin .9s linear infinite}
 @keyframes scspin{to{transform:rotate(360deg)}}
+/* ===== 턴테이블 화면: 카드의 디스크를 탭하면 크게 전환해 손가락으로 돌려 듣기 ===== */
+.tt{position:fixed;inset:0;z-index:900;pointer-events:none;overflow:hidden;visibility:hidden;user-select:none;-webkit-user-select:none;touch-action:none;
+  background:rgba(11,10,13,0);transition:background .45s;color:#f3f1f5}
+.tt.on{pointer-events:auto;visibility:visible}
+.tt.show{background:#0b0a0d}
+.tt-bg{position:absolute;inset:-20%;background:var(--tt-cover,none) center/cover;filter:blur(60px) saturate(1.3);opacity:0;transform:scale(1.2);transition:opacity .5s}
+.tt-dark{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,12,.5),rgba(10,9,12,.8) 55%,#0b0a0d);opacity:0;transition:opacity .5s}
+.tt.show .tt-bg{opacity:.9}.tt.show .tt-dark{opacity:1}
+.tt-col{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  padding:calc(10px + env(safe-area-inset-top)) 0 calc(34px + env(safe-area-inset-bottom));--tts:min(84vw,400px,calc(100vh - 400px))}
+.tt-fade{opacity:0;transition:opacity .35s}
+.tt.ui .tt-fade{opacity:1}
+.tt-grab{width:40px;height:4px;border-radius:3px;background:rgba(255,255,255,.25);flex:none}
+.tt-head{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px 0;flex:none}
+.tt-ic{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.tt-ic svg{width:20px;height:20px}
+.tt-lab{font-size:12.5px;color:rgba(255,255,255,.7);font-weight:700;letter-spacing:.02em}
+.tt-sp{width:42px;height:42px}
+.tt-hint{height:22px;margin:14px 0 18px;font-size:12.5px;color:rgba(255,255,255,.75);transition:opacity .4s;flex:none}
+.tt.ui .tt-hint.off{opacity:0}
+.tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none}
+.tt .disc.tt-disc{position:absolute;left:0;top:0;bottom:auto;width:100%;height:100%;transform:rotate(var(--tt-a,0deg));transition:none;
+  animation:none;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 22px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
+.tt .disc.tt-disc:active{cursor:grabbing}
+.tt .disc.tt-disc.has-cover::after{width:33%;height:33%;background:var(--tt-lbl) center/cover;filter:none}
+.tt .disc.tt-disc::before{width:4%;height:4%}
+.tt-shine{position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 210deg,transparent 0 8%,rgba(255,255,255,.12) 12%,transparent 18% 58%,rgba(255,255,255,.08) 62%,transparent 68%)}
+.tt-stage.photo .tt-shine{opacity:.5}
+.tt-arm{position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;pointer-events:none;transition:opacity .35s}
+.tt-arm[hidden]{display:none}
+.tt-arm{--tta-tube:url(#tta-blk);--tta-tubeE:url(#tta-blkE);--tta-metal:url(#tta-blkR);--tta-lift:#55525d}   /* <use> 안쪽까지 전달되도록 변수로 색 지정 */
+.tt-arm.silver{--tta-tube:url(#tta-sil);--tta-tubeE:url(#tta-silE);--tta-metal:url(#tta-silR);--tta-lift:#d8d5dc}
+.tt-info{text-align:center;padding:30px 28px 0;width:100%;flex:none}
+.tt-tn{font-size:12px;color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.06em;min-height:15px}
+.tt-title{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.02em;line-height:1.25;transition:opacity .25s,transform .25s;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tt-title.swap{opacity:0;transform:translateY(6px)}
+.tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:rgba(255,255,255,.72);font-size:14px;min-width:0}
+.tt-aa span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-thumb{width:34px;height:34px;border-radius:7px;flex:none;background:#26222e var(--tt-cover,none) center/cover;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.tt-gap{flex:1;min-height:16px}
+.tt-ctrls{display:flex;justify-content:center;align-items:center;gap:30px;flex:none}
+.tt-ctrls .tt-ic{width:54px;height:54px}
+.tt-ctrls .tt-play{width:70px;height:70px;border:none;background:linear-gradient(150deg,var(--accent2,#f2a444),var(--accent,#e8643c));color:#1a0d06;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.tt-ctrls .tt-play svg{width:28px;height:28px}
+.tt-fly{position:fixed;z-index:910;border-radius:4px;background:#26222e center/cover;box-shadow:0 20px 50px rgba(0,0,0,.5);pointer-events:none}
+.disc.tt-flydisc{position:fixed;z-index:909;transform:none;bottom:auto;pointer-events:none;transition:none}
+.lp.tt-hold .artwrap{visibility:hidden}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -1927,6 +1977,75 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </div>
 </div>
 
+
+<!-- 턴테이블 화면 (카드의 디스크를 탭하면 열림) -->
+<div class="tt" id="tt" aria-hidden="true">
+  <div class="tt-bg"></div><div class="tt-dark"></div>
+  <div class="tt-col">
+    <div class="tt-grab tt-fade"></div>
+    <div class="tt-head tt-fade">
+      <button type="button" class="tt-ic" id="tt-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="tt-lab">지금 돌리는 중</div>
+      <div class="tt-sp"></div>
+    </div>
+    <div class="tt-hint tt-fade" id="tt-hint">디스크를 잡고 돌려 보세요</div>
+    <div class="tt-stage" id="tt-stage">
+      <div class="disc tt-disc" id="tt-disc"></div>
+      <div class="tt-shine"></div>
+      <svg class="tt-arm" id="tt-arm" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="tta-sil" x1="0" x2="1"><stop offset="0" stop-color="#7d7a85"/><stop offset=".35" stop-color="#f7f6f9"/><stop offset=".6" stop-color="#d4d1d9"/><stop offset="1" stop-color="#8c8994"/></linearGradient>
+          <linearGradient id="tta-silE" x1="0" x2="1"><stop offset="0" stop-color="#6c6974"/><stop offset=".4" stop-color="#e9e7ec"/><stop offset="1" stop-color="#7f7c87"/></linearGradient>
+          <radialGradient id="tta-silR" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9c6cf"/><stop offset="1" stop-color="#77737f"/></radialGradient>
+          <linearGradient id="tta-blk" x1="0" x2="1"><stop offset="0" stop-color="#121115"/><stop offset=".38" stop-color="#5a5763"/><stop offset=".62" stop-color="#2a2830"/><stop offset="1" stop-color="#0e0d11"/></linearGradient>
+          <linearGradient id="tta-blkE" x1="0" x2="1"><stop offset="0" stop-color="#121115"/><stop offset=".4" stop-color="#4a4752"/><stop offset="1" stop-color="#121115"/></linearGradient>
+          <radialGradient id="tta-blkR" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6b6874"/><stop offset=".55" stop-color="#2b2931"/><stop offset="1" stop-color="#121115"/></radialGradient>
+          <linearGradient id="tta-shell" x1="0" x2="1"><stop offset="0" stop-color="#1d1c22"/><stop offset=".45" stop-color="#3b3942"/><stop offset="1" stop-color="#1a191e"/></linearGradient>
+          <filter id="tta-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceAlpha" stdDeviation="1.1"/></filter>
+          <!-- 톤암 본체: 회전축 (0,0) 에서 아래(+y)로 -->
+          <g id="tta-shape">
+            <rect style="fill:var(--tta-tube)" x="-4" y="-12.6" width="8" height="6.4" rx="1.4"/>
+            <rect x="-4" y="-8.4" width="8" height=".6" fill="#e8643c"/>
+            <rect style="fill:var(--tta-tubeE)" x="-1" y="-6.4" width="2" height="6.4"/>
+            <path style="fill:var(--tta-tube)" d="M-1.15 0 L1.15 0 L.85 52 L-.85 52 Z"/>
+            <g transform="translate(0 52) rotate(22)">
+              <rect style="fill:var(--tta-tubeE)" x="-1.3" y="-.6" width="2.6" height="2.4" rx=".5"/>
+              <path d="M-2.4 1.6 L2.4 1.6 L2.9 10.6 Q2.9 11.8 1.8 11.8 L-1.8 11.8 Q-2.9 11.8 -2.9 10.6 Z" fill="url(#tta-shell)" stroke="rgba(255,255,255,.22)" stroke-width=".25"/>
+              <path d="M2.6 5.2 L6.2 3.6" style="stroke:var(--tta-lift)" stroke-width=".7" stroke-linecap="round" fill="none"/>
+              <rect x="-1.6" y="6.4" width="3.2" height="4.6" rx=".5" fill="#e8643c"/>
+              <rect x="-1.6" y="6.4" width="3.2" height="1" rx=".3" fill="rgba(255,255,255,.28)"/>
+              <circle cx="0" cy="11.9" r=".45" fill="#f5f3f7"/>
+            </g>
+          </g>
+        </defs>
+        <g transform="translate(96 2)">
+          <circle r="8.4" fill="#17161b" stroke="rgba(255,255,255,.09)" stroke-width=".4"/>
+          <circle r="7" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".3"/>
+        </g>
+        <g id="tta-shadow" opacity=".32" filter="url(#tta-blur)"><use href="#tta-shape"/></g>
+        <g id="tta-body"><use href="#tta-shape"/></g>
+        <g transform="translate(96 2)">
+          <circle r="4.6" style="fill:var(--tta-metal)"/>
+          <circle r="4.6" fill="none" stroke="rgba(0,0,0,.35)" stroke-width=".35"/>
+          <circle r="1.6" fill="#17161b"/>
+          <circle r=".6" fill="#e8643c"/>
+        </g>
+      </svg>
+    </div>
+    <div class="tt-info tt-fade">
+      <div class="tt-tn" id="tt-tn"></div>
+      <div class="tt-title" id="tt-title"></div>
+      <div class="tt-aa"><span class="tt-thumb"></span><span id="tt-aa"></span></div>
+    </div>
+    <div class="tt-gap"></div>
+    <div class="tt-ctrls tt-fade">
+      <button type="button" class="tt-ic" id="tt-prev" aria-label="이전 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.2v12H6zM20 6v12l-9-6z"/></svg></button>
+      <button type="button" class="tt-ic tt-play" id="tt-play" aria-label="재생/일시정지"><svg id="tt-pi" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <button type="button" class="tt-ic" id="tt-next" aria-label="다음 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.8 6H18v12h-2.2zM4 6l9 6-9 6z"/></svg></button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ====================== i18n engine (KO ⇄ EN display layer) ====================== */
 /* Translates DOM text/attributes at runtime from a KO→EN dictionary WITHOUT
@@ -2417,7 +2536,9 @@ const I18N = {
   "왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Search the album or scan its barcode, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
   "디스크 직접 돌리기":"Spin the disc yourself",
-  "카드 위로 살짝 보이는 디스크를 탭하면 디스크가 앞으로 나와요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 디스크가 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
+  "지금 돌리는 중":"Now spinning","디스크를 잡고 돌려 보세요":"Grab the disc and give it a spin",
+  "톤암":"Tonearm","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
+  "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Swipe down to close.",
   "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "커버 변경하기":"Change the cover",
   "디스크 이미지 변경하기":"Change the disc image",
@@ -3092,7 +3213,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark' };
+const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark', tonearm:'black' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -3255,7 +3376,7 @@ function renderLibEmpty(){
 }
 $('#le-add').onclick=()=>openWizard();
 function renderGrid(){
-  stopPreview();   // 목록이 다시 그려지면 재생 중이던 미리듣기 정지
+  if(!window._ttOpen) stopPreview();   // 목록이 다시 그려지면 재생 중이던 미리듣기 정지 (턴테이블 화면에서 듣는 중이면 유지)
   renderLibEmpty();
   $('#grid').classList.toggle('list', filter.view==='list');
   $('#grid').classList.toggle('disc-on', gridDisc);
@@ -3329,56 +3450,8 @@ function renderGrid(){
       if(el.classList.contains('pulled')){ el.classList.remove('pulled'); stopPreview(); return; }   // cover tap closes the pulled disc
       openDetail(el.dataset.id);
     };
-    if(disc){
-      const it = DATA.find(d=>d.id===el.dataset.id);
-      let spin=0, dragging=false, moved=false, lastAng=0, cx=0, cy=0, spinAtPlay=0, playing=false;
-      const angle=(x,y)=>Math.atan2(y-cy, x-cx)*180/Math.PI;
-      const down=(x,y)=>{
-        if(!el.classList.contains('pulled')) return;   // only spin when raised
-        const r=disc.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2;
-        dragging=true; moved=false; lastAng=angle(x,y);
-        disc.classList.add('spinning');
-        // 이미 이 판이 재생 중이면 곡 전환 기준점을 현재 각도로 다시 잡음
-        if(it && _preview.id===it.id){ playing=true; spinAtPlay=spin; }
-        if(it) _fetchPreviewUrl(it);   // 회전 시작에 대비해 미리듣기 URL 미리 받아두기
-      };
-      const move=(x,y)=>{
-        if(!dragging) return;
-        let a=angle(x,y), d=a-lastAng;
-        if(d>180) d-=360; if(d<-180) d+=360;   // wrap
-        if(Math.abs(d)>1.5 && !moved){            // 드래그로 회전 시작 → 미리듣기 재생
-          moved=true;
-          if(it){ playPreview(it, disc); playing=true; spinAtPlay=spin; }
-        }
-        spin+=d; lastAng=a;
-        disc.style.setProperty('--spin', spin+'deg');
-        // 재생 중: 시작 각도 대비 한 바퀴(±360°) 돌 때마다 다음/이전 곡
-        if(playing && _preview.id===(it&&it.id)){
-          while(spin-spinAtPlay>=360){ spinAtPlay+=360; previewStep(+1, disc); }   // 시계방향 → 다음곡
-          while(spin-spinAtPlay<=-360){ spinAtPlay-=360; previewStep(-1, disc); }  // 반시계방향 → 이전곡
-        }
-      };
-      const up=()=>{ if(!dragging)return; dragging=false; disc.classList.remove('spinning');
-        if(_preview.audio && _preview.discEl===disc){
-          // 손으로 돌리던 각도를 0~360으로 정규화한 뒤 인라인 값을 비워 키프레임이 이어받게 함
-          spin=((spin%360)+360)%360;
-          disc.style.removeProperty('--spin');
-          disc.style.animationDelay=(-(spin/360)*2.4)+'s';   // 멈춘 각도에서 시작
-          disc.classList.add('playing');
-        } };   // 손 떼면 음악에 맞춰 계속 회전
-      disc.addEventListener('mousedown',e=>{ down(e.clientX,e.clientY);
-        const mm=ev=>move(ev.clientX,ev.clientY), mu=()=>{up();window.removeEventListener('mousemove',mm);window.removeEventListener('mouseup',mu);};
-        window.addEventListener('mousemove',mm); window.addEventListener('mouseup',mu); });
-      disc.addEventListener('touchstart',e=>down(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
-      disc.addEventListener('touchmove',e=>{ if(dragging){e.preventDefault();} move(e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
-      disc.addEventListener('touchend',up);
-      disc.onclick=(e)=>{
-        e.stopPropagation();
-        if(moved){ moved=false; return; }   // was a spin, not a tap
-        const willPull = !el.classList.contains('pulled');
-        el.classList.toggle('pulled');       // tap to raise / slide back
-        if(!willPull){ stopPreview(); playing=false; }         // 판을 내리면 미리듣기 정지
-      };
+    if(disc){   // 디스크 탭 → 턴테이블 화면
+      disc.onclick=(e)=>{ e.stopPropagation(); const it=getIt(); if(it) openTurntable(it, el); };
     }
   });
   // lazy-load covers as cards scroll into view (prevents request flooding that left lower cards blank)
@@ -3835,6 +3908,156 @@ async function playPreview(it, disc){
   _preview.last[it.id]=urls[_preview.idx].url;
   _playPreviewIdx(disc);
 }
+/* ===== 턴테이블 화면 =====
+   카드의 디스크를 탭하면 커버가 가운데로 날아오고 디스크가 빠져나와 화면을 채운다.
+   손가락으로 돌리면 재생 · 시계 방향 한 바퀴 = 다음 곡, 반대 = 이전 곡 (카드에서 돌리던 것과 같은 규칙)
+   재생 중엔 RPM(33⅓/45) 속도로 돌고, 톤암은 설정(블랙/실버/끔)을 따른다. */
+const TT={ open:false, it:null, card:null, a:0, vel:0, drag:false, lastA:0, acc:0, moved:false, armA:-9, lift:1, last:0, title:'', raf:0 };
+const _tt$=id=>document.getElementById(id);
+function _ttPlaying(){ return !!(TT.it && _preview.id===TT.it.id && !_preview.paused); }
+function _ttRate(){ return (TT.it && String(TT.it.rpm)==='45') ? 270 : 200; }   // °/초 — 33⅓ RPM = 200, 45 RPM = 270
+function _ttArmMode(){ const v=(typeof SETTINGS!=='undefined' && SETTINGS.tonearm) || 'black'; return v; }
+function _ttSyncArm(){
+  const arm=_tt$('tt-arm'), m=_ttArmMode();
+  arm.hidden = (m==='off'); arm.classList.toggle('silver', m==='silver');
+}
+function _ttInfo(){
+  const it=TT.it; if(!it) return;
+  const mine=_preview.id===it.id, u=mine?_preview.urls:null, cur=mine?_lpCurrentTrack():null;
+  const title=(cur && cur.title) || it.album || '—';
+  if(title!==TT.title){
+    const el=_tt$('tt-title'); TT.title=title;
+    if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ el.textContent=TT.title; el.classList.remove('swap'); },180); }
+    else el.textContent=title;
+  }
+  _tt$('tt-tn').textContent = (u && u.length>1) ? `TRACK ${((_preview.idx%u.length)+u.length)%u.length+1} / ${u.length}` : '';
+  _tt$('tt-pi').innerHTML = _ttPlaying() ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>' : '<path d="M8 5v14l11-7z"/>';
+}
+function _ttTick(now){
+  if(!TT.open){ TT.raf=0; return; }
+  const dt=Math.min(.05,(now-(TT.last||now))/1000); TT.last=now;
+  const playing=_ttPlaying();
+  if(!TT.drag){ const tgt=playing?_ttRate():0; TT.vel+=(tgt-TT.vel)*Math.min(1,dt*3.2); TT.a+=TT.vel*dt; }
+  _tt$('tt-disc').style.setProperty('--tt-a', TT.a+'deg');
+  // 톤암: 재생 → 디스크 위로 옮긴 뒤 살며시 내려앉음 / 멈춤 → 먼저 들고 제자리로. 곡이 흐를수록 바늘이 안쪽으로
+  const a=_preview.audio, prog=(playing && a && a.duration>0)? Math.min(1,a.currentTime/a.duration) : 0;
+  if(playing){ const tgt=5+prog*8; TT.armA+=(tgt-TT.armA)*Math.min(1,dt*4.5);
+    if(Math.abs(TT.armA-tgt)>.25 && TT.lift>.5) TT.lift=1; else TT.lift+=(0-TT.lift)*Math.min(1,dt*5); }
+  else if(TT.lift<.97) TT.lift+=(1-TT.lift)*Math.min(1,dt*7);
+  else { TT.lift=1; TT.armA+=(-9-TT.armA)*Math.min(1,dt*4); }
+  const sc=1+TT.lift*.035;
+  _tt$('tta-body').setAttribute('transform',`translate(96 2) rotate(${TT.armA.toFixed(2)}) scale(${sc.toFixed(3)})`);
+  _tt$('tta-shadow').setAttribute('transform',`translate(${(96.8+TT.lift*2.6).toFixed(2)} ${(3.2+TT.lift*3.4).toFixed(2)}) rotate(${TT.armA.toFixed(2)}) scale(${sc.toFixed(3)})`);
+  _tt$('tta-shadow').setAttribute('opacity',(.5-TT.lift*.18).toFixed(3));
+  _ttInfo();
+  TT.raf=requestAnimationFrame(_ttTick);
+}
+function _ttPlay(){ const it=TT.it; if(!it) return;
+  if(_preview.id===it.id){ if(_preview.paused) _resumePreview(); else _pausePreview(); }
+  else playPreview(it, _tt$('tt-disc'));
+}
+function _ttStep(dir){ const it=TT.it; if(!it) return;
+  if(_preview.id===it.id) previewStep(dir, _tt$('tt-disc')); else playPreview(it, _tt$('tt-disc'));
+}
+function _ttRect(el,r,rad){ Object.assign(el.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}); if(rad!=null) el.style.borderRadius=rad; }
+function _ttDiscClone(src, it){
+  const d=document.createElement('div');
+  d.className='disc tt-flydisc'+(it.discPhoto?' has-photo':''); d.setAttribute('style', discStyle(it));
+  return d;
+}
+function openTurntable(it, card){
+  if(!it || TT.open) return;
+  const tt=_tt$('tt'), disc=_tt$('tt-disc'), stage=_tt$('tt-stage');
+  Object.assign(TT,{ open:true, it, card, a:0, vel:0, drag:false, acc:0, armA:-9, lift:1, last:0, title:'' });
+  window._ttOpen=true;
+  if(_preview.id && _preview.id!==it.id) stopPreview();
+  _fetchPreviewUrl(it).catch(()=>{});            // 전환하는 동안 미리듣기 목록을 받아 둔다
+  const cover=artFor(it)||'';
+  tt.style.setProperty('--tt-cover', cover?`url("${cover}")`:'none');
+  disc.className='disc tt-disc'+(it.discPhoto?' has-photo':'')+(cover&&!it.discPhoto?' has-cover':'');
+  disc.setAttribute('style', discStyle(it)); if(cover) disc.style.setProperty('--tt-lbl', `url("${cover}")`);
+  stage.classList.toggle('photo', !!it.discPhoto);
+  _tt$('tt-aa').textContent=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
+  _tt$('tt-title').textContent=''; _ttInfo();
+  _tt$('tt-hint').classList.remove('off');
+  _ttSyncArm();
+  tt.setAttribute('aria-hidden','false');
+  const artEl=card && card.querySelector('.art'), discEl=card && card.querySelector('.disc');
+  const ar=artEl && artEl.getBoundingClientRect(), dr=discEl && discEl.getBoundingClientRect();
+  stage.style.visibility='hidden';
+  tt.classList.add('on','show');
+  if(!TT.raf) TT.raf=requestAnimationFrame(_ttTick);
+  const sr=stage.getBoundingClientRect();
+  const done=()=>{ stage.style.visibility=''; playPreview(it, disc); };
+  if(!ar || !ar.width){ tt.classList.add('ui'); done(); return; }
+  // 1) 커버가 가운데로, 디스크는 커버 뒤에서 따라옴  2) 디스크가 빠져나오며 커지고 커버는 아래 썸네일로
+  const fly=document.createElement('div'); fly.className='tt-fly'; if(cover) fly.style.backgroundImage=`url("${cover}")`;
+  const fd=_ttDiscClone(discEl, it);
+  _ttRect(fly, ar, '4px'); _ttRect(fd, dr); document.body.append(fd, fly);
+  card.classList.add('tt-hold');
+  const cs=sr.width*.86, cx=sr.left+sr.width/2, cy=sr.top+sr.height/2;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    fly.style.transition=fd.style.transition='all .55s cubic-bezier(.22,1,.36,1)';
+    _ttRect(fly, {left:cx-cs/2, top:cy-cs/2, width:cs, height:cs}, '12px');
+    _ttRect(fd, {left:cx-cs*.46, top:cy-cs*.46, width:cs*.92, height:cs*.92});
+  }));
+  setTimeout(()=>{
+    if(!TT.open) return;
+    const th=document.querySelector('#tt .tt-thumb').getBoundingClientRect();
+    fly.style.transition='all .7s cubic-bezier(.65,0,.35,1)'; fd.style.transition='all .7s cubic-bezier(.22,1,.36,1)';
+    _ttRect(fd, sr); fd.style.zIndex='911';
+    _ttRect(fly, th, '7px'); fly.style.opacity='0';
+    tt.classList.add('ui');
+  }, 600);
+  setTimeout(()=>{ fd.remove(); fly.remove(); if(TT.open) done(); }, 1330);
+}
+function closeTurntable(){
+  if(!TT.open) return;
+  const tt=_tt$('tt'), stage=_tt$('tt-stage'), it=TT.it;
+  TT.open=false; window._ttOpen=false;
+  if(_preview.id===it.id) stopPreview();
+  // 디스크가 카드 속으로 돌아감 (그새 목록이 다시 그려졌으면 같은 카드를 다시 찾는다)
+  let card=TT.card; if(!card || !card.isConnected) card=document.querySelector(`#grid .lp[data-id="${it.id}"]`);
+  const discEl=card && card.querySelector('.disc'), dr=discEl && discEl.getBoundingClientRect();
+  tt.classList.remove('ui');
+  if(dr && dr.width){
+    const sr=stage.getBoundingClientRect(), fd=_ttDiscClone(discEl, it);
+    _ttRect(fd, sr); fd.style.zIndex='911'; document.body.append(fd);
+    stage.style.visibility='hidden';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ fd.style.transition='all .5s cubic-bezier(.65,0,.35,1)'; _ttRect(fd, dr); }));
+    setTimeout(()=>fd.remove(), 520);
+  }
+  setTimeout(()=>tt.classList.remove('show'), 200);
+  setTimeout(()=>{ tt.classList.remove('on'); tt.setAttribute('aria-hidden','true'); stage.style.visibility='';
+    document.querySelectorAll('.lp.tt-hold').forEach(c=>c.classList.remove('tt-hold')); }, 540);
+}
+(function setupTurntable(){
+  const tt=_tt$('tt'), disc=_tt$('tt-disc'); if(!tt) return;
+  const ctr=()=>{ const r=_tt$('tt-stage').getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]; };
+  const ang=e=>{ const [cx,cy]=ctr(); return Math.atan2(e.clientY-cy, e.clientX-cx)*180/Math.PI; };
+  disc.addEventListener('pointerdown',e=>{ if(!TT.open) return; TT.drag=true; TT.moved=false; TT.lastA=ang(e); TT.acc=0;
+    try{ disc.setPointerCapture(e.pointerId); }catch(_){}
+    _tt$('tt-hint').classList.add('off'); if(TT.it) _fetchPreviewUrl(TT.it).catch(()=>{}); });
+  disc.addEventListener('pointermove',e=>{ if(!TT.drag) return;
+    let a=ang(e), d=a-TT.lastA; if(d>180) d-=360; if(d<-180) d+=360; TT.lastA=a;
+    TT.a+=d; TT.acc+=d; TT.vel=d*30;
+    if(!TT.moved && Math.abs(TT.acc)>1.5){ TT.moved=true; if(!_ttPlaying()){ TT.acc=0; _ttPlay(); } }   // 돌리기 시작 = 재생
+    if(_preview.id===(TT.it&&TT.it.id)){
+      while(TT.acc>=360){ TT.acc-=360; previewStep(+1, disc); }   // 시계 방향 한 바퀴 → 다음 곡
+      while(TT.acc<=-360){ TT.acc+=360; previewStep(-1, disc); }  // 반대 방향 → 이전 곡
+    } });
+  const up=()=>{ TT.drag=false; };
+  disc.addEventListener('pointerup',up); disc.addEventListener('pointercancel',up);
+  _tt$('tt-close').onclick=closeTurntable;
+  _tt$('tt-play').onclick=_ttPlay;
+  _tt$('tt-prev').onclick=()=>_ttStep(-1);
+  _tt$('tt-next').onclick=()=>_ttStep(1);
+  // 디스크·버튼 밖을 아래로 쓸어내리면 닫기
+  let sy=null;
+  tt.addEventListener('pointerdown',e=>{ if(!TT.open || e.target.closest('.tt-disc,.tt-ctrls,.tt-ic')) return; sy=e.clientY; });
+  tt.addEventListener('pointerup',e=>{ if(sy!==null && e.clientY-sy>90) closeTurntable(); sy=null; });
+  tt.addEventListener('pointercancel',()=>{ sy=null; });
+})();
 /* 공용 확인/알림 다이얼로그 — 시스템 alert/confirm 대신 앱 디자인의 팝업.
    appAlert(msg,{title}) → Promise, appConfirm(msg,{title,okText,cancelText,danger}) → Promise<boolean> */
 function _appDialog(opts){
@@ -3861,6 +4084,7 @@ function appConfirm(msg, o){ return _appDialog(Object.assign({msg, confirm:true}
 window.appAlert=appAlert; window.appConfirm=appConfirm;   // module(Firebase) 코드에서도 사용
 
 function previewToast(msg){
+  if(window._ttOpen && /^♪/.test(msg)) return;   // 턴테이블 화면은 곡 이름을 직접 보여줌
   let t=document.getElementById('preview-toast');
   if(!t){ t=document.createElement('div'); t.id='preview-toast'; document.body.appendChild(t); }
   t.textContent=msg; t.classList.add('show');
@@ -7052,6 +7276,14 @@ function renderSettings(){
           <button type="button" class="${SETTINGS.crackleLevel==='normal'?'on':''}" data-crackle="normal">기본</button>
         </div>
       </div>
+      <div class="set-row col">
+        <div class="set-l"><div class="set-t">톤암</div><div class="set-d">디스크를 크게 돌리는 화면에 보이는 바늘</div></div>
+        <div class="set-seg" id="set-arm">
+          <button type="button" class="${(SETTINGS.tonearm||'black')==='black'?'on':''}" data-arm="black">블랙</button>
+          <button type="button" class="${SETTINGS.tonearm==='silver'?'on':''}" data-arm="silver">실버</button>
+          <button type="button" class="${SETTINGS.tonearm==='off'?'on':''}" data-arm="off">끔</button>
+        </div>
+      </div>
       <div class="set-row" data-act="showYear">
         <div class="set-l"><div class="set-t">발매년도 표기</div><div class="set-d">카드와 상세에 발매년도를 표시해요</div></div>
         ${tog(SETTINGS.showYear)}
@@ -7125,6 +7357,11 @@ function renderSettings(){
     wrap.querySelectorAll('#set-crackle button').forEach(x=>x.classList.toggle('on',x===b));
     saveSettings();
     try{ if(SETTINGS.crackleLevel==='off') VinylNoise.stop(); }catch(e){}
+  });
+  wrap.querySelectorAll('#set-arm button').forEach(b=>b.onclick=()=>{
+    SETTINGS.tonearm=b.dataset.arm;
+    wrap.querySelectorAll('#set-arm button').forEach(x=>x.classList.toggle('on',x===b));
+    saveSettings();
   });
   wrap.querySelectorAll('#set-view button').forEach(b=>b.onclick=()=>{
     SETTINGS.defaultView=b.dataset.view;
@@ -7412,9 +7649,7 @@ const TOUR_STEPS=[
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
     desc:'커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
   { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'디스크 직접 돌리기',
-    open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
-    leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
-    desc:'카드 위로 살짝 보이는 디스크를 탭하면 디스크가 앞으로 나와요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 디스크가 들어가며 멈춰요.' },
+    desc:'커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 아래로 쓸어내리면 닫혀요.' },
   { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'커버 변경하기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.' },
@@ -8065,6 +8300,8 @@ function showExitConfirm(){
 function handleAppBack(){
   // 0-a) 첫 사용 가이드가 떠 있으면 뒤로가기 = 건너뛰기
   try{ if(window.__tourOn && window.__tourOn()){ window.__endTour(); return; } }catch(e){}
+  // 0-b) 턴테이블 화면
+  if(window._ttOpen){ closeTurntable(); return; }
   // 0) 종료 확인 모달이 떠 있으면 그것부터 닫기
   const ec=document.getElementById('exit-confirm');
   if(ec){ ec.classList.remove('show'); setTimeout(()=>{ try{ec.remove();}catch(e){} },200); return; }
