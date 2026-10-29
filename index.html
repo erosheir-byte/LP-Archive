@@ -827,6 +827,23 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-cta{flex:none;margin-top:24px;width:100%;height:56px;border-radius:16px;border:none;font:inherit;font-size:16.5px;font-weight:800;color:#1a0d06;
   background:linear-gradient(150deg,var(--accent2),var(--accent));box-shadow:0 12px 30px rgba(232,100,60,.3);cursor:pointer;transition:transform .15s}
 .wz-cta:active{transform:scale(.98)}
+/* 보관함이 비었을 때(첫 사용): 커버플로우·검색·필터 대신 첫 등록 안내 */
+#view-coll.coll-empty>.cf-wrap,#view-coll.coll-empty>.toolbar,#view-coll.coll-empty>.countrow,#view-coll.coll-empty>.grid{display:none}
+.lib-empty{display:none;padding:26px 22px 40px;text-align:center}
+#view-coll.coll-empty>.lib-empty{display:block}
+.le-stage{position:relative;width:min(78vw,320px);height:min(56vw,230px);margin:6px auto 0}
+.le-sleeve{position:absolute;left:0;top:6%;width:62%;aspect-ratio:1;border-radius:14px;border:2px dashed var(--line);background:rgba(255,255,255,.02);transform:rotate(-4deg);
+  display:flex;align-items:center;justify-content:flex-start;padding-left:calc(27% - 17px);color:var(--dim)}
+.le-disc{position:absolute;right:0;top:0;width:66%;aspect-ratio:1;border-radius:50%;animation:wzspin 6s linear infinite;
+  background:#1c1c1c repeating-radial-gradient(circle at 50% 50%,rgba(0,0,0,.18) 0 1.2px,rgba(255,255,255,.035) 1.2px 2.6px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 22px 50px rgba(0,0,0,.45)}
+.le-disc::before{content:"";position:absolute;inset:34%;border-radius:50%;background:linear-gradient(150deg,var(--accent2),var(--accent))}
+.le-disc::after{content:"";position:absolute;left:50%;top:50%;width:6%;height:6%;border-radius:50%;background:var(--bg);transform:translate(-50%,-50%)}
+.le-disc i{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 20deg,transparent 0 20%,rgba(255,255,255,.08) 25%,transparent 30% 70%,rgba(255,255,255,.05) 75%,transparent 80%)}
+@media (prefers-reduced-motion:reduce){.le-disc{animation-duration:20s}}
+.le-q{color:var(--txt);font-size:24px;font-weight:900;line-height:1.3;letter-spacing:-.02em;margin-top:26px;word-break:keep-all}
+.le-q em{font-style:normal;background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lib-empty .wz-cta{max-width:340px;margin:22px auto 0;display:block}
 .wz-link{align-self:center;background:none;border:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;margin-top:10px;cursor:pointer;padding:6px}
 /* 1 검색 */
 .wz-search{margin-top:22px;display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:0 14px;height:56px;transition:border-color .2s}
@@ -1301,6 +1318,16 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
 <!-- COLLECTION VIEW -->
 <div class="view on" id="view-coll">
+
+  <!-- 첫 사용(보관함 비었을 때) -->
+  <div class="lib-empty" id="lib-empty">
+    <div class="le-stage" aria-hidden="true">
+      <div class="le-sleeve"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="le-disc"><i></i></div>
+    </div>
+    <div class="le-q" id="le-q"></div>
+    <button class="wz-cta" id="le-add" type="button"></button>
+  </div>
 
   <!-- Cover Flow -->
   <div class="cf-wrap">
@@ -3216,8 +3243,19 @@ function renderChips(){
   }
 }
 
+// 보관함이 비었으면(첫 사용) 첫 등록 안내만 보여 준다
+function renderLibEmpty(){
+  const v=$('#view-coll'); if(!v) return;
+  const empty=!DATA.length; v.classList.toggle('coll-empty', empty);
+  if(!empty) return;
+  const en=isEN();
+  $('#le-q').innerHTML = en ? 'Add your first <em>record</em>' : '첫 <em>바이닐</em>을<br>등록해 볼까요?';
+  $('#le-add').textContent = en ? 'Add a record' : '바이닐 등록하기';
+}
+$('#le-add').onclick=()=>openWizard();
 function renderGrid(){
   stopPreview();   // 목록이 다시 그려지면 재생 중이던 미리듣기 정지
+  renderLibEmpty();
   $('#grid').classList.toggle('list', filter.view==='list');
   $('#grid').classList.toggle('disc-on', gridDisc);
   let list=DATA.filter(passes);
