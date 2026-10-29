@@ -39,4 +39,11 @@ if (existsSync(icons)) {
   console.log("copied icons/");
 }
 
+// 외부 라이브러리(동영상 공유용 mp4-muxer 등) — 앱에서도 인터넷 없이 불러오도록 같이 넣는다
+const vendor = join(root, "vendor");
+if (existsSync(vendor)) {
+  cpSync(vendor, join(www, "vendor"), { recursive: true });
+  console.log("copied vendor/");
+}
+
 console.log("www/ 번들 준비 완료 →", www);
