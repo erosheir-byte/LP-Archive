@@ -1268,7 +1268,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-dark{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,12,.5),rgba(10,9,12,.8) 55%,#0b0a0d);opacity:0;transition:opacity .5s}
 .tt.show .tt-bg{opacity:.9}.tt.show .tt-dark{opacity:1}
 .tt-col{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  padding:calc(10px + env(safe-area-inset-top)) 0 calc(34px + env(safe-area-inset-bottom));--tts:min(84vw,400px,calc(100vh - 400px))}
+  padding:calc(10px + env(safe-area-inset-top)) 0 calc(34px + env(safe-area-inset-bottom));--tts:min(84vw,400px,calc(100vh - 420px))}
 .tt-fade{opacity:0;transition:opacity .35s}
 .tt.ui .tt-fade{opacity:1}
 .tt-grab{width:40px;height:4px;border-radius:3px;background:rgba(255,255,255,.25);flex:none}
@@ -1276,11 +1276,8 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-ic{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .tt-ic svg{width:20px;height:20px}
-.tt-lab{font-size:12.5px;color:rgba(255,255,255,.7);font-weight:700;letter-spacing:.02em}
-.tt-sp{width:42px;height:42px}
-.tt-hint{height:22px;margin:14px 0 18px;font-size:12.5px;color:rgba(255,255,255,.75);transition:opacity .4s;flex:none}
-.tt.ui .tt-hint.off{opacity:0}
-.tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none}
+.tt-logo{height:28px;width:auto;display:block;pointer-events:none}
+.tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none;margin-top:48px}
 .tt .disc.tt-disc{position:absolute;left:0;top:0;bottom:auto;width:100%;height:100%;transform:rotate(var(--tt-a,0deg));transition:none;
   animation:none;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 22px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
 .tt .disc.tt-disc:active{cursor:grabbing}
@@ -1293,8 +1290,8 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-arm[hidden]{display:none}
 .tt-arm{--tta-tube:url(#tta-blk);--tta-tubeE:url(#tta-blkE);--tta-metal:url(#tta-blkR);--tta-lift:#55525d}   /* <use> 안쪽까지 전달되도록 변수로 색 지정 */
 .tt-arm.silver{--tta-tube:url(#tta-sil);--tta-tubeE:url(#tta-silE);--tta-metal:url(#tta-silR);--tta-lift:#d8d5dc}
-.tt-info{text-align:center;padding:30px 28px 0;width:100%;flex:none}
-.tt-tn{font-size:12px;color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.06em;min-height:15px}
+.tt-info{text-align:center;padding:52px 28px 0;width:100%;flex:none}
+.tt-np{font-size:12px;color:var(--accent2,#f2a444);font-weight:800;letter-spacing:.2em;text-transform:uppercase}
 .tt-title{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.02em;line-height:1.25;transition:opacity .25s,transform .25s;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tt-title.swap{opacity:0;transform:translateY(6px)}
@@ -1309,6 +1306,20 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-fly{position:fixed;z-index:910;border-radius:4px;background:#26222e center/cover;box-shadow:0 20px 50px rgba(0,0,0,.5);pointer-events:none}
 .disc.tt-flydisc{position:fixed;z-index:909;transform:none;bottom:auto;pointer-events:none;transition:none}
 .lp.tt-hold .artwrap{visibility:hidden}
+.tt-vid{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.tt-vid[hidden]{display:none}
+.tt-vid-box{width:min(86vw,340px);background:#1b1a21;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px 18px 16px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.tt-vid-v{display:block;height:min(44vh,360px);aspect-ratio:9/16;margin:0 auto 14px;border-radius:12px;background:#000;object-fit:cover}
+.tt-vid-v[hidden]{display:none}
+.tt-vid-t{font-size:16px;font-weight:800}
+.tt-vid-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin:14px 0 10px;overflow:hidden}
+.tt-vid-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2,#f2a444),var(--accent,#e8643c));transition:width .2s}
+.tt-vid[data-state="done"] .tt-vid-bar{display:none}
+.tt-vid-d{font-size:12.5px;color:rgba(255,255,255,.6);line-height:1.5}
+.tt-vid-btns{display:flex;gap:8px;margin-top:16px}
+.tt-vid-btns button{flex:1;padding:12px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;cursor:pointer;background:rgba(255,255,255,.08);color:#fff}
+.tt-vid-btns button[hidden]{display:none}
+.tt-vid-btns .go{background:linear-gradient(150deg,var(--accent2,#f2a444),var(--accent,#e8643c));color:#1a0d06}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -1985,10 +1996,9 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     <div class="tt-grab tt-fade"></div>
     <div class="tt-head tt-fade">
       <button type="button" class="tt-ic" id="tt-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="tt-lab">지금 돌리는 중</div>
-      <div class="tt-sp"></div>
+      <img class="tt-logo" src="icons/wordmark.png?v=4" alt="Turnit" width="1400" height="520">
+      <button type="button" class="tt-ic" id="tt-share" aria-label="동영상으로 공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
     </div>
-    <div class="tt-hint tt-fade" id="tt-hint">디스크를 잡고 돌려 보세요</div>
     <div class="tt-stage" id="tt-stage">
       <div class="disc tt-disc" id="tt-disc"></div>
       <div class="tt-shine"></div>
@@ -2033,7 +2043,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       </svg>
     </div>
     <div class="tt-info tt-fade">
-      <div class="tt-tn" id="tt-tn"></div>
+      <div class="tt-np">Now playing</div>
       <div class="tt-title" id="tt-title"></div>
       <div class="tt-aa"><span class="tt-thumb"></span><span id="tt-aa"></span></div>
     </div>
@@ -2042,6 +2052,15 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <button type="button" class="tt-ic" id="tt-prev" aria-label="이전 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.2v12H6zM20 6v12l-9-6z"/></svg></button>
       <button type="button" class="tt-ic tt-play" id="tt-play" aria-label="재생/일시정지"><svg id="tt-pi" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
       <button type="button" class="tt-ic" id="tt-next" aria-label="다음 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.8 6H18v12h-2.2zM4 6l9 6-9 6z"/></svg></button>
+    </div>
+  </div>
+  <div class="tt-vid" id="tt-vid" hidden>
+    <div class="tt-vid-box">
+      <video class="tt-vid-v" id="tt-vid-v" playsinline muted loop autoplay hidden></video>
+      <div class="tt-vid-t" id="tt-vid-t"></div>
+      <div class="tt-vid-bar"><i id="tt-vid-bar"></i></div>
+      <div class="tt-vid-d" id="tt-vid-d"></div>
+      <div class="tt-vid-btns"><button type="button" id="tt-vid-x"></button><button type="button" class="go" id="tt-vid-go" hidden>공유하기</button></div>
     </div>
   </div>
 </div>
@@ -2536,7 +2555,10 @@ const I18N = {
   "왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Search the album or scan its barcode, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
   "디스크 직접 돌리기":"Spin the disc yourself",
-  "지금 돌리는 중":"Now spinning","디스크를 잡고 돌려 보세요":"Grab the disc and give it a spin",
+  "이 환경에서는 공유할 수 없어요":"Sharing is not available here",
+  "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
+  "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent","인스타 스토리·카톡으로 보내 보세요":"Send it to your Instagram story or friends",
+  "이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.":"This device can't make videos. Please update the app.","동영상을 만드는 중 오류가 발생했어요.":"Something went wrong while making the video.",
   "톤암":"Tonearm","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
   "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Swipe down to close.",
   "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
@@ -3923,14 +3945,13 @@ function _ttSyncArm(){
 }
 function _ttInfo(){
   const it=TT.it; if(!it) return;
-  const mine=_preview.id===it.id, u=mine?_preview.urls:null, cur=mine?_lpCurrentTrack():null;
+  const mine=_preview.id===it.id, cur=mine?_lpCurrentTrack():null;
   const title=(cur && cur.title) || it.album || '—';
   if(title!==TT.title){
     const el=_tt$('tt-title'); TT.title=title;
     if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ el.textContent=TT.title; el.classList.remove('swap'); },180); }
     else el.textContent=title;
   }
-  _tt$('tt-tn').textContent = (u && u.length>1) ? `TRACK ${((_preview.idx%u.length)+u.length)%u.length+1} / ${u.length}` : '';
   _tt$('tt-pi').innerHTML = _ttPlaying() ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>' : '<path d="M8 5v14l11-7z"/>';
 }
 function _ttTick(now){
@@ -3979,7 +4000,6 @@ function openTurntable(it, card){
   stage.classList.toggle('photo', !!it.discPhoto);
   _tt$('tt-aa').textContent=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
   _tt$('tt-title').textContent=''; _ttInfo();
-  _tt$('tt-hint').classList.remove('off');
   _ttSyncArm();
   tt.setAttribute('aria-hidden','false');
   const artEl=card && card.querySelector('.art'), discEl=card && card.querySelector('.disc');
@@ -4015,6 +4035,7 @@ function closeTurntable(){
   if(!TT.open) return;
   const tt=_tt$('tt'), stage=_tt$('tt-stage'), it=TT.it;
   TT.open=false; window._ttOpen=false;
+  if(TTV.busy) TTV.cancel=true; _ttvPanel('off');
   if(_preview.id===it.id) stopPreview();
   // 디스크가 카드 속으로 돌아감 (그새 목록이 다시 그려졌으면 같은 카드를 다시 찾는다)
   let card=TT.card; if(!card || !card.isConnected) card=document.querySelector(`#grid .lp[data-id="${it.id}"]`);
@@ -4037,7 +4058,7 @@ function closeTurntable(){
   const ang=e=>{ const [cx,cy]=ctr(); return Math.atan2(e.clientY-cy, e.clientX-cx)*180/Math.PI; };
   disc.addEventListener('pointerdown',e=>{ if(!TT.open) return; TT.drag=true; TT.moved=false; TT.lastA=ang(e); TT.acc=0;
     try{ disc.setPointerCapture(e.pointerId); }catch(_){}
-    _tt$('tt-hint').classList.add('off'); if(TT.it) _fetchPreviewUrl(TT.it).catch(()=>{}); });
+    if(TT.it) _fetchPreviewUrl(TT.it).catch(()=>{}); });
   disc.addEventListener('pointermove',e=>{ if(!TT.drag) return;
     let a=ang(e), d=a-TT.lastA; if(d>180) d-=360; if(d<-180) d+=360; TT.lastA=a;
     TT.a+=d; TT.acc+=d; TT.vel=d*30;
@@ -4054,9 +4075,242 @@ function closeTurntable(){
   _tt$('tt-next').onclick=()=>_ttStep(1);
   // 디스크·버튼 밖을 아래로 쓸어내리면 닫기
   let sy=null;
-  tt.addEventListener('pointerdown',e=>{ if(!TT.open || e.target.closest('.tt-disc,.tt-ctrls,.tt-ic')) return; sy=e.clientY; });
+  tt.addEventListener('pointerdown',e=>{ if(!TT.open || e.target.closest('.tt-disc,.tt-ctrls,.tt-ic,.tt-vid')) return; sy=e.clientY; });
   tt.addEventListener('pointerup',e=>{ if(sy!==null && e.clientY-sy>90) closeTurntable(); sy=null; });
   tt.addEventListener('pointercancel',()=>{ sy=null; });
+})();
+/* ===== 턴테이블 화면 → 30초 동영상 공유 =====
+   지금 듣는 곡(30초 미리듣기)에 맞춰 디스크가 도는 세로 영상(720×1280, MP4)을 휴대폰 안에서 만든다.
+   화면을 캔버스에 한 장씩 그려 WebCodecs 로 인코딩하고 vendor/mp4-muxer 로 MP4 에 담는다(실시간보다 빠름).
+   소리: AAC 를 우선, 안 되는 기기는 Opus. 음원을 못 받으면 소리 없이 만들고 알려준다. */
+const TTV={ busy:false, cancel:false, blob:null, url:null, name:'' };
+const _ttvW=720, _ttvH=1280, _ttvFps=30;
+async function _ttvAudio(url, rate){
+  let buf=null;
+  try{ const r=await fetch(url); if(r.ok) buf=await r.arrayBuffer(); }catch(e){}
+  if(!buf){   // 앱: 다른 사이트 음원은 네이티브로 받는다 (웹 보안 정책 우회)
+    const C=window.Capacitor, H=C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.CapacitorHttp;
+    if(H){ try{ const r=await H.get({ url, responseType:'blob', connectTimeout:10000, readTimeout:15000 });
+      if(r && r.status<400 && typeof r.data==='string' && r.data){ const bin=atob(r.data.replace(/^data:[^,]*,/,'')); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); buf=u8.buffer; } }catch(e){} }
+  }
+  if(!buf) return null;
+  try{ return await new OfflineAudioContext(2, rate, rate).decodeAudioData(buf); }catch(e){ return null; }
+}
+async function _ttvCodecs(){
+  if(typeof VideoEncoder==='undefined' || typeof VideoFrame==='undefined') return null;
+  let video=null;
+  for(const codec of ['avc1.42001f','avc1.4d001f','avc1.640028']){
+    const cfg={ codec, width:_ttvW, height:_ttvH, bitrate:5_000_000, framerate:_ttvFps, avc:{format:'avc'} };
+    try{ if((await VideoEncoder.isConfigSupported(cfg)).supported){ video=cfg; break; } }catch(e){}
+  }
+  if(!video) return null;
+  let audio=null;
+  if(typeof AudioEncoder!=='undefined'){
+    for(const [codec,mux,rate] of [['mp4a.40.2','aac',44100],['opus','opus',48000]]){
+      const cfg={ codec, sampleRate:rate, numberOfChannels:2, bitrate:160000 };
+      try{ if((await AudioEncoder.isConfigSupported(cfg)).supported){ audio={cfg, mux}; break; } }catch(e){}
+    }
+  }
+  return { video, audio };
+}
+function _ttvFit(x, text, maxW){
+  if(x.measureText(text).width<=maxW) return text;
+  let t=text; while(t.length>1 && x.measureText(t+'…').width>maxW) t=t.slice(0,-1);
+  return t+'…';
+}
+// 톤암 그림: 화면의 SVG 정의를 그대로 가져와 지금 설정한 색으로 바꿔 이미지로 만든다
+function _ttvArmImg(u){
+  const svgEl=document.getElementById('tt-arm'); if(!svgEl) return Promise.resolve(null);
+  const silver=_ttArmMode()==='silver';
+  const map=silver ? {tube:'url(#tta-sil)',tubeE:'url(#tta-silE)',metal:'url(#tta-silR)',lift:'#d8d5dc'} : {tube:'url(#tta-blk)',tubeE:'url(#tta-blkE)',metal:'url(#tta-blkR)',lift:'#55525d'};
+  const defs=svgEl.querySelector('defs').innerHTML.replace(/var\(--tta-(\w+)\)/g,(m,k)=>map[k]||m);
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-12 -16 24 82" width="${24*u}" height="${82*u}"><defs>${defs}</defs><use href="#tta-shape" xlink:href="#tta-shape"/>`+
+    `<circle r="4.6" fill="${map.metal}"/><circle r="4.6" fill="none" stroke="rgba(0,0,0,.35)" stroke-width=".35"/><circle r="1.6" fill="#17161b"/><circle r=".6" fill="#e8643c"/></svg>`;
+  return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
+}
+async function _ttvScene(it, track){
+  const W=_ttvW, H=_ttvH, S=600, sx=(W-S)/2, sy=250, u=S/100;
+  const cover=artFor(it), coverIm=cover ? await _loadCardImg(_cardSrc(cover,600), 4000) : null;
+  const wm=await _loadCardImg('icons/wordmark.png?v=4', 3000);
+  try{ await Promise.all(['900 50px "Noto Sans KR"','500 26px "Noto Sans KR"','800 22px "Noto Sans KR"'].map(f=>document.fonts.load(f))); }catch(e){}
+  const mk=(w,h)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; };
+  // 1) 고정 배경 + 글자 (매 프레임 그대로 깔기)
+  const bg=mk(W,H), b=bg.getContext('2d');
+  b.fillStyle='#0b0a0d'; b.fillRect(0,0,W,H);
+  if(coverIm){ b.save(); b.filter='blur(60px) saturate(1.3)'; b.globalAlpha=.9; const k=Math.max(W,H)*1.4; b.drawImage(coverIm,(W-k)/2,(H-k)/2,k,k); b.restore(); }
+  let g=b.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(10,9,12,.5)'); g.addColorStop(.55,'rgba(10,9,12,.8)'); g.addColorStop(1,'#0b0a0d');
+  b.fillStyle=g; b.fillRect(0,0,W,H);
+  if(wm){ const h=46, w=wm.naturalWidth*h/wm.naturalHeight; b.drawImage(wm,(W-w)/2,70,w,h); }
+  b.save(); b.shadowColor='rgba(0,0,0,.55)'; b.shadowBlur=80; b.shadowOffsetY=30; b.beginPath(); b.arc(W/2,sy+S/2,S/2-2,0,Math.PI*2); b.fillStyle='#000'; b.fill(); b.restore();
+  b.save(); b.translate(sx+96*u, sy+2*u); b.beginPath(); b.arc(0,0,8.4*u,0,Math.PI*2); b.fillStyle='#17161b'; b.fill(); b.lineWidth=.4*u; b.strokeStyle='rgba(255,255,255,.09)'; b.stroke(); b.restore();
+  const ty=sy+S+110; b.textAlign='center';
+  b.fillStyle='#f2a444'; b.font='800 22px "Noto Sans KR",sans-serif'; if('letterSpacing' in b) b.letterSpacing='4px';
+  b.fillText('NOW PLAYING', W/2, ty); if('letterSpacing' in b) b.letterSpacing='0px';
+  b.fillStyle='#fff'; b.font='900 50px "Noto Sans KR",sans-serif';
+  b.fillText(_ttvFit(b, (track&&track.title)||it.album||'', W-100), W/2, ty+68);
+  const sub=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
+  b.font='500 26px "Noto Sans KR",sans-serif'; const subT=_ttvFit(b, sub, W-200), tw=b.measureText(subT).width, th=48, gx=W/2-(tw+th+16)/2;
+  b.save(); b.beginPath(); if(b.roundRect) b.roundRect(gx, ty+104, th, th, 9); else b.rect(gx, ty+104, th, th); b.clip();
+  if(coverIm) b.drawImage(coverIm, gx, ty+104, th, th); else { b.fillStyle='#26222e'; b.fillRect(gx, ty+104, th, th); } b.restore();
+  b.textAlign='left'; b.fillStyle='rgba(255,255,255,.72)'; b.fillText(subT, gx+th+16, ty+137);
+  // 2) 디스크 (매 프레임 돌려 그림)
+  const dc=mk(S,S), d=dc.getContext('2d'), R=S/2;
+  d.save(); d.beginPath(); d.arc(R,R,R,0,Math.PI*2); d.clip();
+  const photo=it.discPhoto ? await _loadCardImg(it.discPhoto, 4000) : null;
+  if(photo){ const k=Math.max(S/photo.naturalWidth, S/photo.naturalHeight), w=photo.naturalWidth*k, h=photo.naturalHeight*k; d.drawImage(photo,(S-w)/2,(S-h)/2,w,h); }
+  else {
+    d.fillStyle=it.colorHex || it.discColorCustom || discColor(it.color) || '#1a1a1a'; d.fillRect(0,0,S,S);
+    d.lineWidth=1; d.strokeStyle='rgba(0,0,0,.09)'; for(let r=R*.36; r<R-4; r+=2.6){ d.beginPath(); d.arc(R,R,r,0,Math.PI*2); d.stroke(); }
+    g=d.createRadialGradient(R,R,0,R,R,R); g.addColorStop(0,'rgba(255,255,255,.07)'); g.addColorStop(.5,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(0,0,0,.22)');
+    d.fillStyle=g; d.fillRect(0,0,S,S);
+    const lr=S*.165; d.save(); d.beginPath(); d.arc(R,R,lr,0,Math.PI*2); d.clip();
+    if(coverIm) d.drawImage(coverIm,R-lr,R-lr,lr*2,lr*2); else { d.fillStyle='rgba(0,0,0,.35)'; d.fillRect(0,0,S,S); } d.restore();
+    d.beginPath(); d.arc(R,R,S*.02,0,Math.PI*2); d.fillStyle='#d9d3c8'; d.fill();
+  }
+  d.restore();
+  d.beginPath(); d.arc(R,R,R-.5,0,Math.PI*2); d.lineWidth=1; d.strokeStyle='rgba(255,255,255,.08)'; d.stroke();
+  // 3) 고정 광택
+  const sh=mk(S,S), s=sh.getContext('2d');
+  if(s.createConicGradient){ const cg=s.createConicGradient(210*Math.PI/180-Math.PI/2,R,R);
+    [[0,0],[.08,0],[.12,.12],[.18,0],[.58,0],[.62,.08],[.68,0],[1,0]].forEach(([o,a])=>cg.addColorStop(o,`rgba(255,255,255,${a})`));
+    s.fillStyle=cg; s.beginPath(); s.arc(R,R,R,0,Math.PI*2); s.fill(); }
+  // 4) 톤암 + 그림자
+  let arm=null, armSh=null;
+  if(_ttArmMode()!=='off'){
+    arm=await _ttvArmImg(u);
+    if(arm){ armSh=mk(arm.width+40, arm.height+40); const a=armSh.getContext('2d'); a.filter='blur(4px)'; a.drawImage(arm,20,20); a.filter='none'; a.globalCompositeOperation='source-in'; a.fillStyle='#000'; a.fillRect(0,0,armSh.width,armSh.height); }
+  }
+  return { W,H,S,sx,sy,u,bg,dc,sh,arm,armSh, opacity:(!photo && it.discOpacity!=null)?it.discOpacity:1, rate:String(it.rpm)==='45'?270:200 };
+}
+function _ttvFrame(x, sc, t, D){
+  const {W,S,sx,sy,u}=sc, prog=Math.min(1,t/D);
+  x.drawImage(sc.bg,0,0);
+  x.save(); x.translate(sx+S/2, sy+S/2); x.rotate((t*sc.rate)*Math.PI/180); x.globalAlpha=sc.opacity; x.drawImage(sc.dc,-S/2,-S/2); x.restore();
+  x.drawImage(sc.sh, sx, sy);
+  if(sc.arm){
+    const ang=(5+prog*8)*Math.PI/180;
+    x.save(); x.translate(sx+96.8*u, sy+3.2*u); x.rotate(ang); x.globalAlpha=.5; x.drawImage(sc.armSh,-12*u-20,-16*u-20); x.restore();
+    x.save(); x.translate(sx+96*u, sy+2*u); x.rotate(ang); x.drawImage(sc.arm,-12*u,-16*u,24*u,82*u); x.restore();
+  }
+  // 진행 막대 + 시간
+  const by=1150, bx=90, bw=W-180;
+  x.fillStyle='rgba(255,255,255,.16)'; x.fillRect(bx,by,bw,5);
+  const gr=x.createLinearGradient(bx,0,bx+bw,0); gr.addColorStop(0,'#f2a444'); gr.addColorStop(1,'#e8643c');
+  x.fillStyle=gr; x.fillRect(bx,by,bw*prog,5);
+  const mmss=v=>{ v=Math.max(0,Math.round(v)); return Math.floor(v/60)+':'+String(v%60).padStart(2,'0'); };
+  x.font='600 22px "Noto Sans KR",sans-serif'; x.fillStyle='rgba(255,255,255,.55)';
+  x.textAlign='left'; x.fillText(mmss(t), bx, by+40); x.textAlign='right'; x.fillText('-'+mmss(D-t), bx+bw, by+40);
+}
+async function makeTurntableVideo(it, onProgress){
+  const codecs=await _ttvCodecs();
+  if(!codecs) throw new Error('unsupported');
+  const { Muxer, ArrayBufferTarget }=await import('./vendor/mp4-muxer.mjs');
+  // 지금 듣는 곡 (아직 안 틀었으면 목록의 지금 곡/첫 곡)
+  let urls=_preview.cache[it.id]; if(urls===undefined) urls=await _fetchPreviewUrl(it);
+  const track=(_preview.id===it.id && _lpCurrentTrack()) || (urls && urls.length ? urls[0] : null);
+  let audio=null;
+  if(track && codecs.audio) audio=await _ttvAudio(track.url, codecs.audio.cfg.sampleRate);
+  if(TTV.cancel) throw new Error('cancel');
+  const D=audio ? Math.min(30, audio.duration) : 30, N=Math.round(D*_ttvFps);
+  const sc=await _ttvScene(it, track);
+  const muxer=new Muxer({ target:new ArrayBufferTarget(), fastStart:'in-memory', firstTimestampBehavior:'offset',
+    video:{ codec:'avc', width:_ttvW, height:_ttvH, frameRate:_ttvFps },
+    audio: audio ? { codec:codecs.audio.mux, numberOfChannels:2, sampleRate:codecs.audio.cfg.sampleRate } : undefined });
+  let err=null;
+  const venc=new VideoEncoder({ output:(c,m)=>muxer.addVideoChunk(c,m), error:e=>{ err=e; } });
+  venc.configure(codecs.video);
+  const cv=document.createElement('canvas'); cv.width=_ttvW; cv.height=_ttvH; const x=cv.getContext('2d');
+  for(let i=0;i<N;i++){
+    if(TTV.cancel || err) break;
+    _ttvFrame(x, sc, i/_ttvFps, D);
+    const f=new VideoFrame(cv, { timestamp:Math.round(i*1e6/_ttvFps), duration:Math.round(1e6/_ttvFps) });
+    venc.encode(f, { keyFrame:i%60===0 }); f.close();
+    if(venc.encodeQueueSize>6) await new Promise(r=>{ const h=()=>{ venc.removeEventListener('dequeue',h); r(); }; venc.addEventListener('dequeue',h); setTimeout(h,500); });
+    if(i%6===0){ onProgress && onProgress(audio ? i/N*.9 : i/N); await new Promise(r=>setTimeout(r,0)); }
+  }
+  if(TTV.cancel){ try{ venc.close(); }catch(e){} throw new Error('cancel'); }
+  await venc.flush(); venc.close();
+  if(err) throw err;
+  if(audio){
+    const rate=codecs.audio.cfg.sampleRate, total=Math.min(audio.length, Math.round(D*rate));
+    const ch0=audio.getChannelData(0), ch1=audio.numberOfChannels>1?audio.getChannelData(1):ch0;
+    const aenc=new AudioEncoder({ output:(c,m)=>muxer.addAudioChunk(c,m), error:e=>{ err=e; } });
+    aenc.configure(codecs.audio.cfg);
+    const fadeIn=Math.round(.25*rate), fadeOut=Math.round(1.5*rate), step=1024;
+    for(let o=0;o<total && !err;o+=step){
+      const n=Math.min(step,total-o), pl=new Float32Array(n*2);
+      for(let k=0;k<n;k++){ const p=o+k; let gn=1; if(p<fadeIn) gn=p/fadeIn; if(total-p<fadeOut) gn=Math.min(gn,(total-p)/fadeOut);
+        pl[k]=ch0[p]*gn; pl[n+k]=ch1[p]*gn; }
+      const ad=new AudioData({ format:'f32-planar', sampleRate:rate, numberOfFrames:n, numberOfChannels:2, timestamp:Math.round(o*1e6/rate), data:pl });
+      aenc.encode(ad); ad.close();
+      if(aenc.encodeQueueSize>20) await new Promise(r=>setTimeout(r,0));
+    }
+    await aenc.flush(); aenc.close();
+    if(err) throw err;
+  }
+  onProgress && onProgress(1);
+  muxer.finalize();
+  return { blob:new Blob([muxer.target.buffer], { type:'video/mp4' }), silent:!audio };
+}
+async function _ttvShare(){
+  const blob=TTV.blob; if(!blob) return false;
+  const text=isEN()?'Now spinning on Turnit 🎵':'Turnit 에서 돌리는 중 🎵';
+  const C=window.Capacitor;
+  if(C && C.isNativePlatform && C.isNativePlatform()){
+    const P=C.Plugins||{}, FS=P.Filesystem, Sh=P.Share;
+    if(FS && FS.writeFile && Sh && Sh.share){
+      try{
+        const w=await FS.writeFile({ path:TTV.name, data:await _blobToBase64(blob), directory:'CACHE' });
+        await Sh.share({ title:'Turnit', text, files:[w.uri], dialogTitle:isEN()?'Share video':'동영상 공유' });
+        return true;
+      }catch(e){ if(/cancel/i.test(String((e&&e.message)||e))) return true; console.error('video share', e); }
+    }
+    return false;
+  }
+  const file=new File([blob], TTV.name, { type:'video/mp4' });
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({ files:[file], title:'Turnit', text }); return true; }
+    catch(e){ if(e && e.name==='AbortError') return true; if(e && e.name==='NotAllowedError') return 'gesture'; }
+  }
+  try{ const a=document.createElement('a'); a.href=TTV.url; a.download=TTV.name; document.body.appendChild(a); a.click(); a.remove(); return true; }catch(e){ return false; }
+}
+function _ttvPanel(state, p){
+  const el=_tt$('tt-vid'); el.hidden=(state==='off'); el.dataset.state=state;
+  if(state==='off') return;
+  _tt$('tt-vid-t').textContent = state==='make' ? tr('동영상 만드는 중') : tr('동영상이 준비됐어요');
+  _tt$('tt-vid-bar').style.width=Math.round((p||0)*100)+'%';
+  _tt$('tt-vid-d').textContent = state==='make' ? (tr('30초 영상으로 만들고 있어요')+' · '+Math.round((p||0)*100)+'%') : (TTV.silent ? tr('음원을 받지 못해 소리 없이 만들었어요') : tr('인스타 스토리·카톡으로 보내 보세요'));
+  _tt$('tt-vid-x').textContent = state==='make' ? tr('취소') : tr('닫기');
+  _tt$('tt-vid-go').hidden = state!=='done';
+  const v=_tt$('tt-vid-v'); v.hidden = state!=='done';
+  if(state==='done' && TTV.url && v.src!==TTV.url){ v.src=TTV.url; v.play().catch(()=>{}); }
+  if(state!=='done'){ try{ v.pause(); }catch(e){} v.removeAttribute('src'); }
+}
+async function shareTurntableVideo(){
+  const it=TT.it; if(!it || TTV.busy) return;
+  TTV.busy=true; TTV.cancel=false;
+  if(TTV.url){ URL.revokeObjectURL(TTV.url); TTV.url=null; } TTV.blob=null;
+  _ttvPanel('make', 0);
+  try{
+    const r=await makeTurntableVideo(it, p=>{ if(!TTV.cancel) _ttvPanel('make', p); });
+    TTV.blob=r.blob; TTV.silent=r.silent; TTV.url=URL.createObjectURL(r.blob);
+    TTV.name='turnit-'+String(it.album||'vinyl').replace(/[^\w가-힣]+/g,'-').slice(0,40)+'.mp4';
+    if(!TT.open){ _ttvPanel('off'); return; }
+    _ttvPanel('done', 1);
+    const ok=await _ttvShare();
+    if(ok===false) previewToast(tr('이 환경에서는 공유할 수 없어요'));
+  }catch(e){
+    _ttvPanel('off');
+    if(String(e&&e.message)==='cancel') return;
+    console.error('turntable video', e);
+    appAlert(String(e&&e.message)==='unsupported' ? tr('이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.') : tr('동영상을 만드는 중 오류가 발생했어요.'));
+  }finally{ TTV.busy=false; }
+}
+(function setupTurntableVideo(){
+  const b=_tt$('tt-share'); if(!b) return;
+  b.onclick=shareTurntableVideo;
+  _tt$('tt-vid-x').onclick=()=>{ if(TTV.busy) TTV.cancel=true; _ttvPanel('off'); };
+  _tt$('tt-vid-go').onclick=async()=>{ const ok=await _ttvShare(); if(ok===false) previewToast(tr('이 환경에서는 공유할 수 없어요')); };
 })();
 /* 공용 확인/알림 다이얼로그 — 시스템 alert/confirm 대신 앱 디자인의 팝업.
    appAlert(msg,{title}) → Promise, appConfirm(msg,{title,okText,cancelText,danger}) → Promise<boolean> */
