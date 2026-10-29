@@ -17,7 +17,10 @@
       "android/**",
       "ios/**",
       "www/**",
-      "scripts/**"
+      "scripts/**",
+      "store-assets/**",
+      "STORE.md",
+      "RELEASE.md"
     ],
     "rewrites": [
       { "source": "**", "destination": "/index.html" }

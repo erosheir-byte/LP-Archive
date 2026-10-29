@@ -283,7 +283,7 @@ h1 .em{color:var(--accent)}
 .subchips{margin-top:-4px}
 .chip.sm{padding:6px 13px;font-size:12px;background:transparent;border-color:var(--line);color:var(--dim)}
 .chip.sm.on{background:rgba(232,100,60,.18);border-color:var(--accent);color:var(--accent2)}
-.count{font-size:12px;color:var(--dim)}
+.count{font-size:12px;color:var(--dim);white-space:nowrap}
 .countrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 20px 12px}
 .ctrls{display:flex;gap:7px;align-items:center}
 .viewtoggle{display:flex;background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden}
@@ -1991,14 +1991,14 @@ const I18N = {
   "가수, 앨범, 컬러 검색…":"Search artist, album, color…",
   "전체 장르":"All genres",
   "기본순":"Default",
-  "등록일순":"By date added",
-  "구매순":"By purchase date",
-  "앨범명 순":"By album",
-  "가수 순":"By artist",
-  "별점 순":"By rating",
-  "가격순":"By price",
-  "오름차순":"Ascending",
-  "내림차순":"Descending",
+  "등록일순":"Added",
+  "구매순":"Purchased",
+  "앨범명 순":"Album",
+  "가수 순":"Artist",
+  "별점 순":"Rating",
+  "가격순":"Price",
+  "오름차순":"Asc",
+  "내림차순":"Desc",
   "앨범형":"Grid",
   "리스트형":"List",
   "음원 연결":"Audio source",
@@ -2007,6 +2007,7 @@ const I18N = {
   "배송전":"Pre-arrival",
   "보유중":"Owned",
   "판매·교환":"Sold/Exchanged",
+  "구매":"Bought","청음":"Played","회":"plays",
   "위시":"Wishlist",
   "개봉":"Opened",
   "미개봉":"Sealed",
@@ -2021,7 +2022,7 @@ const I18N = {
   "확인필요":"Needs check",
   "도착 전":"Pre-arrival",
   /* --- counts / empty states --- */
-  "장 표시 중":" items shown",
+  "장 표시 중":" shown",
   "장":" items",
   "총 ":"Total ",
   "보유 ":"Owned ",
@@ -2242,6 +2243,7 @@ const I18N = {
   "블랙":"Black","화이트":"White","블루":"Blue","레드":"Red","그레이":"Gray",
   "옐로우":"Yellow","퍼플":"Purple","오렌지":"Orange","투명":"Clear","마블":"Marble",
   "자주":"Maroon","그린":"Green","기타":"Other",
+  "네이비":"Navy","핑크":"Pink","골드":"Gold","실버":"Silver","연보라":"Lavender","연두":"Lime","하늘":"Sky Blue","브라운":"Brown",
   /* --- genres (common) --- */
   "팝":"Pop","록":"Rock","R&B·소울":"R&B/Soul","R&B/소울":"R&B/Soul","가요":"K-Pop",
   "힙합":"Hip-hop","클래식":"Classical","인디":"Indie","OST":"OST","재즈":"Jazz",
@@ -6104,7 +6106,7 @@ function wzPaintDisc(){
       +(photo
         ? `<small>${en?'Using your own photo · type the color name':'사진으로 직접 등록해요 · 컬러 이름을 적어 주세요'}</small><button type="button" class="fix" id="wz-fix">${en?'Adjust position & size':'위치·크기 조정'}</button>`
         : `<small>${en?'Custom color · give it a name':'직접 고른 색이에요 · 이름을 적어 주세요'}</small>`)
-    : `${escapeHtml(fc.value||'')}<small>${en?'Pick a color':'컬러를 골라 주세요'}</small>`;
+    : `${escapeHtml(en ? tr(fc.value||'') : (fc.value||''))}<small>${en?'Pick a color':'컬러를 골라 주세요'}</small>`;
   { const fx=wz$('#wz-fix'); if(fx) fx.onclick=()=>{ if(window.__openDiscPhoto) window.__openDiscPhoto(); }; }
   // 직접 고른 색은 이름을 비우면 색 코드(hex)를 이름으로 (예전 폼과 같은 규칙)
   { const ci=wz$('#wz-cin'); if(ci){ ci.oninput=()=>{ fc.value=ci.value.trim() ? ci.value : (custom ? fc.dataset.hex : ''); }; ci.onfocus=()=>ci.select(); ci.onkeydown=e=>{ if(e.key==='Enter') ci.blur(); }; } }
@@ -6179,7 +6181,7 @@ function wzFinal(){
   wz$('#wz-ft').textContent=$('#f-album').value; wz$('#wz-fa').textContent=$('#f-artist').value;
   const st=WZ_STATUS.find(o=>o.k===WZ.status), wish=WZ.status==='위시';
   const fc=$('#f-color'), price=_wzNum($('#f-price').value);
-  const tags=[ st && (en?st.en:st.ko), fc.value.trim() || (fc.dataset.photo ? (en?'Photo':'사진') : ''),
+  const tags=[ st && (en?st.en:st.ko), (en ? tr(fc.value.trim()) : fc.value.trim()) || (fc.dataset.photo ? (en?'Photo':'사진') : ''),
     (!wish && price && !(SETTINGS&&SETTINGS.hideMoney)) ? Number(price).toLocaleString('ko-KR')+(en?' KRW':'원') : '',
     !wish ? $('#f-store').value.trim() : '' ].filter(Boolean);
   wz$('#wz-tags').innerHTML=tags.map(t=>`<span>${escapeHtml(t)}</span>`).join('');
@@ -6370,7 +6372,7 @@ function renderCal(){
   const ev=calEvents().filter(e=>{ const d=new Date(e.date); return d.getFullYear()===calYear && d.getMonth()===calMonth; });
   const byDay={};
   ev.forEach(e=>{ const day=new Date(e.date).getDate(); (byDay[day]=byDay[day]||[]).push(e); });
-  const dows=['일','월','화','수','목','금','토'];
+  const dows=isEN() ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] : ['일','월','화','수','목','금','토'];
   $('#cal-dows').innerHTML=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
   let html='';
   const todayStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
