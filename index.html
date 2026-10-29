@@ -1260,10 +1260,11 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .ms-share.busy svg{animation:scspin .9s linear infinite}
 @keyframes scspin{to{transform:rotate(360deg)}}
 /* ===== 턴테이블 화면: 카드의 디스크를 탭하면 크게 전환해 손가락으로 돌려 듣기 ===== */
-.tt{position:fixed;inset:0;z-index:900;pointer-events:none;overflow:hidden;visibility:hidden;user-select:none;-webkit-user-select:none;touch-action:none;
-  background:rgba(11,10,13,0);transition:background .45s;color:#f3f1f5}
+.tt{position:fixed;inset:0;z-index:900;pointer-events:none;overflow:hidden;visibility:hidden;user-select:none;-webkit-user-select:none;touch-action:none;color:#f3f1f5}
 .tt.on{pointer-events:auto;visibility:visible}
-.tt.show{background:#0b0a0d}
+/* 바탕은 색 전환 대신 불투명도로 (색 전환은 매 프레임 화면 전체를 다시 그림) */
+.tt-base{position:absolute;inset:0;background:#0b0a0d;opacity:0;transition:opacity .45s}
+.tt.show .tt-base{opacity:1}
 /* 배경: 커버를 작은 캔버스에 미리 흐리게 그려 키워서 깐다 (큰 화면에 실시간 blur 필터를 걸면 휴대폰에서 버벅임) */
 .tt-bg{position:absolute;inset:0;opacity:0;transition:opacity .5s}
 .tt-bg canvas{display:block;width:100%;height:100%}
@@ -1280,16 +1281,20 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-ic svg{width:20px;height:20px}
 .tt-logo{height:40px;width:auto;display:block;pointer-events:none}
 .tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none;margin-top:40px}
-.tt .disc.tt-disc{position:absolute;left:0;top:0;bottom:auto;width:100%;height:100%;transform:none;will-change:transform;transition:none;
-  animation:none;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 22px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
-.tt .disc.tt-disc:active{cursor:grabbing}
-.tt .disc.tt-disc.has-cover::after,.disc.tt-flydisc.has-cover::after{width:33%;height:33%;background:var(--tt-lbl) center/cover;filter:none}
-.tt .disc.tt-disc::before{width:4%;height:4%}
+/* 디스크는 열 때 캔버스에 한 번 그려 두고 돌리기만 한다 (CSS 그라데이션 여러 겹은 휴대폰에서 다시 그리기가 무거움) */
+.tt-disc{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border-radius:50%;will-change:transform;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.tt-disc:active{cursor:grabbing}
 .tt-shine{position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;
   background:conic-gradient(from 210deg,transparent 0 8%,rgba(255,255,255,.12) 12%,transparent 18% 58%,rgba(255,255,255,.08) 62%,transparent 68%)}
 .tt-stage.photo .tt-shine{opacity:.5}
-.tt-arm{position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;pointer-events:none;transition:opacity .35s}
-.tt-arm[hidden]{display:none}
+.tt-arm{display:none}   /* 톤암 그림의 원본(정의)만 — 화면에는 아래 이미지로 */
+/* 톤암: 미리 만든 이미지·그림자를 transform 으로만 움직임 (GPU 가 처리, 다시 그리기 없음) */
+.tt-armw{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tt-armw[hidden]{display:none}
+.tt-plate{position:absolute;left:87.6%;top:-6.4%;width:16.8%;height:16.8%;border-radius:50%;background:#17161b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.tt-armsh,.tt-armb{position:absolute;display:block;will-change:transform;pointer-events:none}
+.tt-armb{left:84%;top:-14%;width:24%;height:82%;transform-origin:50% 19.512%}
+.tt-armsh{left:82%;top:-16%;width:28%;height:86%;transform-origin:50% 20.93%}
 .tt-arm{--tta-tube:url(#tta-blk);--tta-tubeE:url(#tta-blkE);--tta-metal:url(#tta-blkR);--tta-lift:#55525d}   /* <use> 안쪽까지 전달되도록 변수로 색 지정 */
 .tt-arm.silver{--tta-tube:url(#tta-sil);--tta-tubeE:url(#tta-silE);--tta-metal:url(#tta-silR);--tta-lift:#d8d5dc}
 .tt-info{text-align:center;padding:106px 28px 0;width:100%;flex:none}
@@ -1307,8 +1312,8 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   opacity:0;transform:translate(-50%,-50%) scale(.85);transition:opacity .25s,transform .25s}
 .tt-cbtn svg{width:38%;height:38%}
 .tt-cbtn.show,.tt-cbtn.flash{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.tt-fly{position:fixed;z-index:910;border-radius:6px;transform-origin:0 0;will-change:transform,opacity;background:#26222e center/cover;box-shadow:0 20px 50px rgba(0,0,0,.5);pointer-events:none}
-.disc.tt-flydisc{position:fixed;z-index:909;transform:none;transform-origin:0 0;will-change:transform;bottom:auto;pointer-events:none;transition:none}
+.tt-fly{position:fixed;z-index:910;border-radius:6px;transform-origin:0 0;will-change:transform,opacity;background:#26222e center/cover;box-shadow:0 12px 30px rgba(0,0,0,.45);pointer-events:none}
+.tt-stage.tt-flying .tt-armw,.tt-stage.tt-flying .tt-shine,.tt-stage.tt-flying .tt-cbtn{visibility:hidden}   /* 디스크가 날아오는 동안엔 디스크만 */
 .lp.tt-hold .artwrap{visibility:hidden}
 .tt-vid{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .tt-vid[hidden]{display:none}
@@ -1995,7 +2000,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 
 <!-- 턴테이블 화면 (카드의 디스크를 탭하면 열림) -->
 <div class="tt" id="tt" aria-hidden="true">
-  <div class="tt-bg"></div><div class="tt-dark"></div>
+  <div class="tt-base"></div><div class="tt-bg"></div><div class="tt-dark"></div>
   <div class="tt-col">
     <div class="tt-grab tt-fade"></div>
     <div class="tt-head tt-fade">
@@ -2005,9 +2010,10 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     </div>
     <div class="tt-gap"></div>
     <div class="tt-stage" id="tt-stage">
-      <div class="disc tt-disc" id="tt-disc"></div>
+      <canvas class="tt-disc" id="tt-disc"></canvas>
       <div class="tt-shine"></div>
       <div class="tt-cbtn" id="tt-cbtn"><svg id="tt-ci" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="tt-armw" id="tt-armw"><div class="tt-plate"></div><canvas class="tt-armsh" id="tt-armsh"></canvas><img class="tt-armb" id="tt-armb" alt=""></div>
       <svg class="tt-arm" id="tt-arm" viewBox="0 0 100 100" aria-hidden="true">
         <defs>
           <linearGradient id="tta-sil" x1="0" x2="1"><stop offset="0" stop-color="#7d7a85"/><stop offset=".35" stop-color="#f7f6f9"/><stop offset=".6" stop-color="#d4d1d9"/><stop offset="1" stop-color="#8c8994"/></linearGradient>
@@ -2034,18 +2040,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             </g>
           </g>
         </defs>
-        <g transform="translate(96 2)">
-          <circle r="8.4" fill="#17161b" stroke="rgba(255,255,255,.09)" stroke-width=".4"/>
-          <circle r="7" fill="none" stroke="rgba(255,255,255,.05)" stroke-width=".3"/>
-        </g>
-        <g id="tta-shadow" opacity=".32" filter="url(#tta-blur)"><use href="#tta-shape"/></g>
-        <g id="tta-body"><use href="#tta-shape"/></g>
-        <g transform="translate(96 2)">
-          <circle r="4.6" style="fill:var(--tta-metal)"/>
-          <circle r="4.6" fill="none" stroke="rgba(0,0,0,.35)" stroke-width=".35"/>
-          <circle r="1.6" fill="#17161b"/>
-          <circle r=".6" fill="#e8643c"/>
-        </g>
       </svg>
     </div>
     <div class="tt-info tt-fade">
@@ -3940,9 +3934,59 @@ const _tt$=id=>document.getElementById(id);
 function _ttPlaying(){ return !!(TT.it && _preview.id===TT.it.id && !_preview.paused); }
 function _ttRate(){ return (TT.it && String(TT.it.rpm)==='45') ? 270 : 200; }   // °/초 — 33⅓ RPM = 200, 45 RPM = 270
 function _ttArmMode(){ const v=(typeof SETTINGS!=='undefined' && SETTINGS.tonearm) || 'black'; return v; }
+// 톤암 이미지(SVG)와 흐린 그림자(캔버스)를 지금 크기·색으로 한 번 만들어 둔다
 function _ttSyncArm(){
-  const arm=_tt$('tt-arm'), m=_ttArmMode();
-  arm.hidden = (m==='off'); arm.classList.toggle('silver', m==='silver');
+  const w=_tt$('tt-armw'), m=_ttArmMode(); w.hidden=(m==='off'); if(m==='off') return;
+  const stW=_tt$('tt-stage').getBoundingClientRect().width || 300, dpr=Math.min(2.5, window.devicePixelRatio||1);
+  const u=stW/100*dpr, key=m+'|'+Math.round(u*10);
+  if(TT._armKey===key) return; TT._armKey=key;
+  _ttvArmImg(u).then(im=>{
+    if(!im || TT._armKey!==key) return;
+    _tt$('tt-armb').src=im.src;
+    const c=_tt$('tt-armsh'), p=2*u; c.width=Math.round(28*u); c.height=Math.round(86*u);
+    const x=c.getContext('2d'); x.clearRect(0,0,c.width,c.height);
+    x.filter=`blur(${(1.1*u).toFixed(1)}px)`; x.drawImage(im,p,p,24*u,82*u); x.filter='none';
+    x.globalCompositeOperation='source-in'; x.fillStyle='#000'; x.fillRect(0,0,c.width,c.height); x.globalCompositeOperation='source-over';
+  });
+}
+// 홈(골)과 음영은 색과 상관없이 같으므로 크기별로 한 번만 그려 둔다
+const _ttGrooves=new Map();
+function _ttGroove(S){
+  if(_ttGrooves.has(S)) return _ttGrooves.get(S);
+  const c=document.createElement('canvas'); c.width=c.height=S; const d=c.getContext('2d'), R=S/2;
+  d.beginPath(); d.arc(R,R,R,0,Math.PI*2); d.clip();
+  d.lineWidth=S/600; d.strokeStyle='rgba(0,0,0,.09)'; const st=S*.0043; for(let r=R*.36; r<R-S*.007; r+=st){ d.beginPath(); d.arc(R,R,r,0,Math.PI*2); d.stroke(); }
+  const g=d.createRadialGradient(R,R,0,R,R,R); g.addColorStop(0,'rgba(255,255,255,.07)'); g.addColorStop(.5,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(0,0,0,.22)');
+  d.fillStyle=g; d.fillRect(0,0,S,S);
+  _ttGrooves.set(S,c); return c;
+}
+// 디스크 그림 (턴테이블 화면과 공유 동영상이 같이 씀)
+function _ttDrawDisc(d, S, it, coverIm, photo){
+  const R=S/2; d.clearRect(0,0,S,S);
+  d.save(); d.beginPath(); d.arc(R,R,R,0,Math.PI*2); d.clip();
+  if(photo){ const k=Math.max(S/photo.naturalWidth, S/photo.naturalHeight), w=photo.naturalWidth*k, h=photo.naturalHeight*k; d.drawImage(photo,(S-w)/2,(S-h)/2,w,h); }
+  else {
+    d.fillStyle=it.colorHex || it.discColorCustom || discColor(it.color) || '#1a1a1a'; d.fillRect(0,0,S,S);
+    d.drawImage(_ttGroove(S),0,0);
+    const lr=S*.165; d.save(); d.beginPath(); d.arc(R,R,lr,0,Math.PI*2); d.clip();
+    if(coverIm && coverIm.naturalWidth) d.drawImage(coverIm,R-lr,R-lr,lr*2,lr*2); else { d.fillStyle='rgba(0,0,0,.35)'; d.fillRect(0,0,S,S); } d.restore();
+    d.beginPath(); d.arc(R,R,S*.02,0,Math.PI*2); d.fillStyle='#d9d3c8'; d.fill();
+  }
+  d.restore();
+  d.beginPath(); d.arc(R,R,R-S/1200,0,Math.PI*2); d.lineWidth=S/600; d.strokeStyle='rgba(255,255,255,.08)'; d.stroke();
+}
+// 턴테이블 화면의 디스크 캔버스: 카드에 이미 떠 있는 커버를 라벨로 써서 바로 그리고, 사진·커버가 늦게 오면 다시 그림
+function _ttPaintDisc(it, card, cover){
+  const cv=_tt$('tt-disc'), stW=_tt$('tt-stage').getBoundingClientRect().width || 300, dpr=Math.min(2.5, window.devicePixelRatio||1);
+  const S=Math.round(stW*dpr); if(cv.width!==S){ cv.width=S; cv.height=S; }
+  const x=cv.getContext('2d');
+  let coverIm=card && card.querySelector('.art img'); if(coverIm && !(coverIm.complete && coverIm.naturalWidth)) coverIm=null;
+  let photo=null;
+  const draw=()=>{ if(TT.it===it) _ttDrawDisc(x, S, it, coverIm, photo); };
+  draw();
+  if(it.discPhoto){ const im=new Image(); im.onload=()=>{ photo=im; draw(); }; im.src=it.discPhoto; }
+  else if(!coverIm && cover){ const im=new Image(); im.onload=()=>{ coverIm=im; draw(); }; im.src=cover; }
+  cv.style.opacity = (!it.discPhoto && it.discOpacity!=null) ? it.discOpacity : '';
 }
 function _ttInfo(){
   const it=TT.it; if(!it) return;
@@ -3971,10 +4015,10 @@ function _ttTick(now){
   else { TT.lift=1; TT.armA+=(-9-TT.armA)*Math.min(1,dt*4); }
   // 톤암은 눈에 띄게 움직일 때만 다시 그린다 (매 프레임 SVG 를 새로 그리면 휴대폰에서 무거움)
   if(Math.abs(TT.armA-(TT._armA??99))>.03 || Math.abs(TT.lift-(TT._lift??9))>.004){ TT._armA=TT.armA; TT._lift=TT.lift;
-  const sc=1+TT.lift*.035;
-  _tt$('tta-body').setAttribute('transform',`translate(96 2) rotate(${TT.armA.toFixed(2)}) scale(${sc.toFixed(3)})`);
-  _tt$('tta-shadow').setAttribute('transform',`translate(${(96.8+TT.lift*2.6).toFixed(2)} ${(3.2+TT.lift*3.4).toFixed(2)}) rotate(${TT.armA.toFixed(2)}) scale(${sc.toFixed(3)})`);
-  _tt$('tta-shadow').setAttribute('opacity',(.5-TT.lift*.18).toFixed(3)); }
+  const sc=(1+TT.lift*.035).toFixed(3), u=(TT._u||3), rot=`rotate(${TT.armA.toFixed(2)}deg) scale(${sc})`;
+  _tt$('tt-armb').style.transform=rot;
+  const sh=_tt$('tt-armsh'); sh.style.transform=`translate(${((.8+TT.lift*2.6)*u).toFixed(1)}px,${((1.2+TT.lift*3.4)*u).toFixed(1)}px) ${rot}`;
+  sh.style.opacity=(.5-TT.lift*.18).toFixed(3); }
   _ttInfo();
   TT.raf=requestAnimationFrame(_ttTick);
 }
@@ -4000,13 +4044,7 @@ function _ttBg(card, cover){
   else if(cover){ const im=new Image(); im.onload=()=>draw(im); im.src=cover; }
 }
 function _ttRect(el,r,rad){ Object.assign(el.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}); if(rad!=null) el.style.borderRadius=rad; }
-function _ttDiscClone(src, it){
-  const d=document.createElement('div');
-  const cover=!it.discPhoto && artFor(it);
-  d.className='disc tt-flydisc'+(it.discPhoto?' has-photo':'')+(cover?' has-cover':''); d.setAttribute('style', discStyle(it));
-  if(cover) d.style.setProperty('--tt-lbl', `url("${cover}")`);   // 크게 펼친 화면과 같은 라벨(커버)
-  return d;
-}
+
 function openTurntable(it, card){
   if(!it || TT.open) return;
   const tt=_tt$('tt'), disc=_tt$('tt-disc'), stage=_tt$('tt-stage');
@@ -4016,34 +4054,34 @@ function openTurntable(it, card){
   _fetchPreviewUrl(it).catch(()=>{});            // 전환하는 동안 미리듣기 목록을 받아 둔다
   const cover=artFor(it)||'';
   _ttBg(card, cover);
-  disc.className='disc tt-disc'+(it.discPhoto?' has-photo':'')+(cover&&!it.discPhoto?' has-cover':'');
-  disc.setAttribute('style', discStyle(it)); if(cover) disc.style.setProperty('--tt-lbl', `url("${cover}")`);
+  disc.style.transform='';
   stage.classList.toggle('photo', !!it.discPhoto);
   _tt$('tt-aa').textContent=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
   _tt$('tt-title').textContent=''; _ttInfo();
-  _ttSyncArm();
   tt.setAttribute('aria-hidden','false');
   const artEl=card && card.querySelector('.art'), discEl=card && card.querySelector('.disc');
   const ar=artEl && artEl.getBoundingClientRect(), dr=discEl && discEl.getBoundingClientRect();
-  stage.style.visibility='hidden';
+  stage.classList.add('tt-flying');
   tt.classList.add('on','show');
-  if(!TT.raf) TT.raf=requestAnimationFrame(_ttTick);
   const sr=stage.getBoundingClientRect();
-  const done=()=>{ stage.style.visibility=''; playPreview(it, disc); };
+  TT._u=sr.width/100; TT._armA=null;
+  _ttPaintDisc(it, card, cover); _ttSyncArm();
+  // 전환 애니메이션 동안엔 매 프레임 루프를 돌리지 않는다 (애니메이션이 메인 스레드 방해 없이 돌게)
+  const done=()=>{ stage.classList.remove('tt-flying'); if(!TT.raf){ TT.last=0; TT.raf=requestAnimationFrame(_ttTick); } setTimeout(()=>{ if(TT.open && TT.it===it) playPreview(it, disc); }, 60); };
   if(!ar || !ar.width){ tt.classList.add('ui'); done(); return; }
-  // 1) 커버가 가운데로, 디스크는 커버 뒤에서 따라옴  2) 디스크가 빠져나오며 커지고 커버는 아래 썸네일로
-  //    (둘 다 도착 크기로 한 번만 그려 두고 transform 만 움직임)
+  // 1) 커버가 가운데로, 디스크는 커버 뒤에서 따라옴  2) 디스크가 빠져나오며 커지고 커버는 사라짐
+  //    날아가는 디스크는 복사본이 아니라 화면의 디스크 자체 — transform 만 움직임 (새로 그릴 것 없음)
   const fly=document.createElement('div'); fly.className='tt-fly'; if(cover) fly.style.backgroundImage=`url("${cover}")`;
-  const fd=_ttDiscClone(discEl, it);
   const cs=sr.width*.86, C={left:sr.left+(sr.width-cs)/2, top:sr.top+(sr.height-cs)/2, width:cs, height:cs};
   const M={left:sr.left+sr.width*.5-cs*.46, top:sr.top+sr.height*.5-cs*.46, width:cs*.92, height:cs*.92};
-  _ttRect(fly, C); _ttRect(fd, sr); document.body.append(fd, fly);
+  _ttRect(fly, C); document.body.append(fly);
   card.classList.add('tt-hold');
   const E1='cubic-bezier(.22,1,.36,1)', E2='cubic-bezier(.65,0,.35,1)';
-  fd.animate([{transform:_ttMap(dr,sr), easing:E1},{transform:_ttMap(M,sr), offset:.42},{transform:_ttMap(M,sr), offset:.46, easing:E1},{transform:'none'}], {duration:1300, fill:'forwards'});
-  fly.animate([{transform:_ttMap(ar,C), opacity:1, easing:E1},{transform:'none', opacity:1, offset:.42},{transform:'none', opacity:1, offset:.46, easing:E2},{transform:`translate(${cs*.2}px,${cs*.2}px) scale(.6)`, opacity:0}], {duration:1300, fill:'forwards'});
-  setTimeout(()=>{ if(!TT.open) return; fd.style.zIndex='911'; tt.classList.add('ui'); }, 600);
-  setTimeout(()=>{ fd.remove(); fly.remove(); if(TT.open) done(); }, 1330);
+  disc.style.transformOrigin='0 0';
+  const da=disc.animate([{transform:_ttMap(dr,sr), easing:E1},{transform:_ttMap(M,sr), offset:.42},{transform:_ttMap(M,sr), offset:.46, easing:E1},{transform:'none'}], {duration:1300, fill:'forwards'});
+  fly.animate([{transform:_ttMap(ar,C), opacity:1, easing:E1},{transform:'none', opacity:1, offset:.42},{transform:'none', opacity:1, offset:.46, easing:E2},{transform:`translate(${cs*.1}px,${cs*.1}px) scale(.8)`, opacity:0, offset:.66},{transform:`translate(${cs*.1}px,${cs*.1}px) scale(.8)`, opacity:0}], {duration:1300, fill:'forwards'});
+  setTimeout(()=>{ if(TT.open) tt.classList.add('ui'); }, 600);
+  setTimeout(()=>{ fly.remove(); da.cancel(); disc.style.transformOrigin=''; if(TT.open) done(); }, 1330);
 }
 function closeTurntable(){
   if(!TT.open) return;
@@ -4055,20 +4093,19 @@ function closeTurntable(){
   let card=TT.card; if(!card || !card.isConnected) card=document.querySelector(`#grid .lp[data-id="${it.id}"]`);
   const discEl=card && card.querySelector('.disc'), dr=discEl && discEl.getBoundingClientRect();
   tt.classList.remove('ui');
+  const disc=_tt$('tt-disc'); let anims=[];
+  stage.classList.add('tt-flying');
   if(dr && dr.width){
-    const sr=stage.getBoundingClientRect(), fd=_ttDiscClone(discEl, it);
-    _ttRect(fd, sr); fd.style.zIndex='911'; document.body.append(fd);
-    // 멈춘 각도 그대로 카드 자리로 줄어듦 (가운데 기준)
-    const rot=`rotate(${(TT.a%360).toFixed(1)}deg)`, sx=dr.width/sr.width, sy=dr.height/sr.height;
+    // 멈춘 각도 그대로 카드 자리로 줄어듦 (가운데 기준, 화면의 디스크 자체를 움직임)
+    const sr=stage.getBoundingClientRect();
+    const rot=`rotate(${(TT.a%360).toFixed(1)}deg)`, sx=dr.width/sr.width, sy=dr.height/sr.height, op=+(disc.style.opacity||1);
     const dx=(dr.left+dr.width/2)-(sr.left+sr.width/2), dy=(dr.top+dr.height/2)-(sr.top+sr.height/2);
-    fd.style.transformOrigin='50% 50%'; fd.style.transform=`translate(0px,0px) scale(1,1) ${rot}`;
-    stage.style.visibility='hidden';
-    fd.animate([{transform:`translate(0px,0px) scale(1,1) ${rot}`},{transform:`translate(${dx}px,${dy}px) scale(${sx},${sy}) ${rot}`}], {duration:500, easing:'cubic-bezier(.65,0,.35,1)', fill:'forwards'});
-    fd.animate([{opacity:1},{opacity:1, offset:.6},{opacity:0}], {duration:500, fill:'forwards'});   // 끝에서 커버 속으로 스며들듯
-    setTimeout(()=>fd.remove(), 520);
+    anims=[disc.animate([{transform:`translate(0px,0px) scale(1,1) ${rot}`},{transform:`translate(${dx}px,${dy}px) scale(${sx},${sy}) ${rot}`}], {duration:500, easing:'cubic-bezier(.65,0,.35,1)', fill:'forwards'}),
+      disc.animate([{opacity:op},{opacity:op, offset:.6},{opacity:0}], {duration:500, fill:'forwards'})];   // 끝에서 커버 속으로 스며들듯
   }
   setTimeout(()=>tt.classList.remove('show'), 200);
-  setTimeout(()=>{ tt.classList.remove('on'); tt.setAttribute('aria-hidden','true'); stage.style.visibility='';
+  setTimeout(()=>{ tt.classList.remove('on'); tt.setAttribute('aria-hidden','true');
+    anims.forEach(a=>a.cancel()); stage.classList.remove('tt-flying');
     document.querySelectorAll('.lp.tt-hold').forEach(c=>c.classList.remove('tt-hold')); }, 540);
 }
 (function setupTurntable(){
@@ -4099,6 +4136,12 @@ function closeTurntable(){
   tt.addEventListener('pointerdown',e=>{ if(!TT.open || e.target.closest('.tt-disc,.tt-ic,.tt-vid')) return; sy=e.clientY; });
   tt.addEventListener('pointerup',e=>{ if(sy!==null && e.clientY-sy>90) closeTurntable(); sy=null; });
   tt.addEventListener('pointercancel',()=>{ sy=null; });
+  // 한가할 때 디스크 홈·톤암 그림을 미리 만들어 둔다 (처음 열 때 버벅이지 않게)
+  (window.requestIdleCallback||(f=>setTimeout(f,2000)))(()=>{ try{
+    const stW=_tt$('tt-stage').getBoundingClientRect().width; if(!stW) return;
+    _ttGroove(Math.round(stW*Math.min(2.5, window.devicePixelRatio||1))).getContext('2d').getImageData(0,0,1,1);
+    _ttSyncArm();
+  }catch(e){} }, {timeout:5000});
 })();
 /* ===== 턴테이블 화면 → 30초 동영상 공유 =====
    지금 듣는 곡(30초 미리듣기)에 맞춰 디스크가 도는 세로 영상(720×1280, MP4)을 휴대폰 안에서 만든다.
@@ -4150,10 +4193,10 @@ function _ttvArmImg(u){
   return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
 }
 async function _ttvScene(it, track){
-  const W=_ttvW, H=_ttvH, S=600, sx=(W-S)/2, sy=280, u=S/100;
+  const W=_ttvW, H=_ttvH, S=548, sx=(W-S)/2, sy=272, u=S/100;   // 턴테이블 화면과 같은 비율(디스크 = 폭의 76%)
   const cover=artFor(it), coverIm=cover ? await _loadCardImg(_cardSrc(cover,600), 4000) : null;
   const wm=await _loadCardImg('icons/wordmark.png?v=4', 3000);
-  try{ await Promise.all(['900 50px "Noto Sans KR"','500 26px "Noto Sans KR"','800 22px "Noto Sans KR"'].map(f=>document.fonts.load(f))); }catch(e){}
+  try{ await Promise.all(['900 44px "Noto Sans KR"','500 26px "Noto Sans KR"','800 22px "Noto Sans KR"'].map(f=>document.fonts.load(f))); }catch(e){}
   const mk=(w,h)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; };
   // 1) 고정 배경 + 글자 (매 프레임 그대로 깔기)
   const bg=mk(W,H), b=bg.getContext('2d');
@@ -4161,33 +4204,21 @@ async function _ttvScene(it, track){
   if(coverIm){ b.save(); b.filter='blur(60px) saturate(1.3)'; b.globalAlpha=.9; const k=Math.max(W,H)*1.4; b.drawImage(coverIm,(W-k)/2,(H-k)/2,k,k); b.restore(); }
   let g=b.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(10,9,12,.5)'); g.addColorStop(.55,'rgba(10,9,12,.8)'); g.addColorStop(1,'#0b0a0d');
   b.fillStyle=g; b.fillRect(0,0,W,H);
-  if(wm){ const h=70, w=wm.naturalWidth*h/wm.naturalHeight; b.drawImage(wm,(W-w)/2,72,w,h); }
+  if(wm){ const h=74, w=wm.naturalWidth*h/wm.naturalHeight; b.drawImage(wm,(W-w)/2,66,w,h); }
   b.save(); b.shadowColor='rgba(0,0,0,.55)'; b.shadowBlur=80; b.shadowOffsetY=30; b.beginPath(); b.arc(W/2,sy+S/2,S/2-2,0,Math.PI*2); b.fillStyle='#000'; b.fill(); b.restore();
   b.save(); b.translate(sx+96*u, sy+2*u); b.beginPath(); b.arc(0,0,8.4*u,0,Math.PI*2); b.fillStyle='#17161b'; b.fill(); b.lineWidth=.4*u; b.strokeStyle='rgba(255,255,255,.09)'; b.stroke(); b.restore();
-  const ty=sy+S+140; b.textAlign='center';
+  const ty=sy+S+148; b.textAlign='center';
   b.fillStyle='#f2a444'; b.font='800 22px "Noto Sans KR",sans-serif'; if('letterSpacing' in b) b.letterSpacing='4px';
   b.fillText('NOW PLAYING', W/2, ty); if('letterSpacing' in b) b.letterSpacing='0px';
-  b.fillStyle='#fff'; b.font='900 50px "Noto Sans KR",sans-serif';
-  b.fillText(_ttvFit(b, (track&&track.title)||it.album||'', W-100), W/2, ty+68);
+  b.fillStyle='#fff'; b.font='900 44px "Noto Sans KR",sans-serif';
+  b.fillText(_ttvFit(b, (track&&track.title)||it.album||'', W-100), W/2, ty+56);
   const sub=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
   b.font='500 26px "Noto Sans KR",sans-serif'; b.fillStyle='rgba(255,255,255,.72)';
-  b.fillText(_ttvFit(b, sub, W-120), W/2, ty+124);
+  b.fillText(_ttvFit(b, sub, W-120), W/2, ty+104);
   // 2) 디스크 (매 프레임 돌려 그림)
   const dc=mk(S,S), d=dc.getContext('2d'), R=S/2;
-  d.save(); d.beginPath(); d.arc(R,R,R,0,Math.PI*2); d.clip();
   const photo=it.discPhoto ? await _loadCardImg(it.discPhoto, 4000) : null;
-  if(photo){ const k=Math.max(S/photo.naturalWidth, S/photo.naturalHeight), w=photo.naturalWidth*k, h=photo.naturalHeight*k; d.drawImage(photo,(S-w)/2,(S-h)/2,w,h); }
-  else {
-    d.fillStyle=it.colorHex || it.discColorCustom || discColor(it.color) || '#1a1a1a'; d.fillRect(0,0,S,S);
-    d.lineWidth=1; d.strokeStyle='rgba(0,0,0,.09)'; for(let r=R*.36; r<R-4; r+=2.6){ d.beginPath(); d.arc(R,R,r,0,Math.PI*2); d.stroke(); }
-    g=d.createRadialGradient(R,R,0,R,R,R); g.addColorStop(0,'rgba(255,255,255,.07)'); g.addColorStop(.5,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(0,0,0,.22)');
-    d.fillStyle=g; d.fillRect(0,0,S,S);
-    const lr=S*.165; d.save(); d.beginPath(); d.arc(R,R,lr,0,Math.PI*2); d.clip();
-    if(coverIm) d.drawImage(coverIm,R-lr,R-lr,lr*2,lr*2); else { d.fillStyle='rgba(0,0,0,.35)'; d.fillRect(0,0,S,S); } d.restore();
-    d.beginPath(); d.arc(R,R,S*.02,0,Math.PI*2); d.fillStyle='#d9d3c8'; d.fill();
-  }
-  d.restore();
-  d.beginPath(); d.arc(R,R,R-.5,0,Math.PI*2); d.lineWidth=1; d.strokeStyle='rgba(255,255,255,.08)'; d.stroke();
+  _ttDrawDisc(d, S, it, coverIm, photo);
   // 3) 고정 광택
   const sh=mk(S,S), s=sh.getContext('2d');
   if(s.createConicGradient){ const cg=s.createConicGradient(210*Math.PI/180-Math.PI/2,R,R);
