@@ -21,21 +21,21 @@
 
 스크린샷 순서와 문구(한국어 / 영어):
 
-메인 문구(크게, 한국어 스토어는 한국어 / 영어 스토어는 영어) 위에 작은 주황색 보조 문구 "○○ it." 을 붙였습니다.
-보조 문구가 일곱 장 모두 "○○ it." 으로 끝나 앱 이름 **Turn it** 이 자연스럽게 각인됩니다. 글꼴은 Pretendard.
+메인 문구(크게, 한국어 스토어는 한국어 / 영어 스토어는 영어) 위에 작은 주황색 보조 문구 "○○ it," 을 붙였습니다(쉼표로 끝나 메인 문구로 이어지는 느낌).
+보조 문구가 일곱 장 모두 "○○ it," 으로 끝나 앱 이름 **Turn it** 이 자연스럽게 각인됩니다. 글꼴은 Pretendard.
 앱의 두 강점(손가락으로 돌려 듣기, 취향 카드 공유)은 1번과 5번에 두었습니다.
 
 | # | 보조 문구 | 메인 문구 (한국어 / 영어) | 화면 |
 |---|---|---|---|
-| 1 | Turn it. | 돌리면, 음악이 흘러요 / Spin the disc, hear the music | 카드에서 꺼낸 디스크 + 회전 표시 |
-| 2 | Keep it. | 모아온 바이닐을 한곳에 / Every record, one shelf | 보관함 |
-| 3 | Find it. | 검색 한 번이면 커버와 노래까지 / One search finds the cover and songs | 등록: 이 앨범이 맞나요? |
-| 4 | Match it. | 디스크 색까지 내 것 그대로 / Right down to your disc color | 등록: 디스크 컬러·투명도·RPM·인치 |
-| 5 | Share it. | 내 취향을 카드 한 장으로 / Your taste, on a card | 컬렉션 카드 공유 |
-| 6 | Log it. | 사고, 듣고, 달력에 남기고 / Every buy and spin, on a calendar | 달력 |
-| 7 | Track it. | 얼마나 모았는지 한눈에 / Your collection in numbers | 통계 |
+| 1 | Turn it, | 돌리면, 음악이 흘러요 / Spin the disc, hear the music | 카드에서 꺼낸 디스크 + 회전 표시 |
+| 2 | Keep it, | 모아온 바이닐을 한곳에 / Every record, one shelf | 보관함 |
+| 3 | Find it, | 검색 한 번이면 커버와 노래까지 / One search finds the cover and songs | 등록: 이 앨범이 맞나요? |
+| 4 | Match it, | 디스크 색까지 내 것 그대로 / Right down to your disc color | 등록: 디스크 컬러·투명도·RPM·인치 |
+| 5 | Share it, | 내 취향을 카드 한 장으로 / Your taste, on a card | 컬렉션 카드 공유 |
+| 6 | Log it, | 사고, 듣고, 달력에 남기고 / Every buy and spin, on a calendar | 달력 |
+| 7 | Track it, | 얼마나 모았는지 한눈에 / Your collection in numbers | 통계 |
 
-그래픽 이미지: 보조 문구 **Turn it. Hear it.** + 메인 문구 돌려 듣는 내 바이닐 보관함 / Your vinyl, ready to spin
+그래픽 이미지: 보조 문구 **Turn it, hear it,** + 메인 문구 돌려 듣는 내 바이닐 보관함 / Your vinyl, ready to spin
 
 - 스크린샷 속 앨범은 모두 **가상의 앨범과 직접 그린 커버**입니다(실제 앨범 아트 저작권 문제 방지).
 - 다시 만들 때는 같은 데모 데이터로 앱을 띄워 캡처한 뒤 문구를 얹었습니다. 화면이 바뀌면 다시 만들어 주세요.
@@ -68,7 +68,7 @@ Turnit — 내 바이닐 보관함
 ### 긴 설명 (4000자)
 ```
 🎵 돌려 듣는 내 바이닐 보관함, Turnit
-Turn it. Hear it.
+Turn it, hear it,
 
 모아온 바이닐을 한 곳에 예쁘게 정리하고, 손가락으로 돌려 듣고, 내 취향을 친구에게 자랑해 보세요.
 
@@ -147,7 +147,7 @@ vinyl,record,LP,turntable,collection,album,collector,barcode,music log,crate,rec
 
 ### Full description (4000)
 ```
-🎵 Turn it. Hear it.
+🎵 Turn it, hear it,
 Turnit — your vinyl collection, ready to spin
 
 Keep every record you own in one beautiful place, spin it with your finger to listen, and show off your taste to friends.
