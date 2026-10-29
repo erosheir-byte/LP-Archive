@@ -4,8 +4,8 @@
 서명 키·빌드·심사 절차는 `RELEASE.md` 를 보세요.
 
 > 용어: 앱과 스토어 문구는 같은 말을 씁니다.
-> - **바이닐**: 자켓과 디스크를 합친 한 장 전체 (LP 대신)
-> - **자켓**: 겉 커버 / **디스크**: 안에 든 레코드 자체 ('판'은 쓰지 않음)
+> - **바이닐**: 커버와 디스크를 합친 한 장 전체 (LP 대신)
+> - **커버**: 겉면 (자켓·앨범아트 대신) / **디스크**: 안에 든 레코드 자체 ('판'은 쓰지 않음)
 > 검색 노출을 위해 키워드에는 "LP", "LP판", "레코드판"도 함께 넣었습니다.
 
 ---
@@ -64,7 +64,7 @@ Turnit — 내 바이닐 보관함
 
 ■ 검색 한 번이면 끝나는 등록
 • 앨범을 검색하거나 뒷면 바코드를 찍으면 커버와 노래를 자동으로 찾아줘요
-• 큰 자켓을 보며 한 단계씩: 앨범 → 디스크 → 상태 → 구매 정보
+• 큰 커버를 보며 한 단계씩: 앨범 → 디스크 → 상태 → 구매 정보
 • 디스크 컬러·투명도는 물론 디스크 사진까지, 12·10·7인치와 33⅓·45 RPM도 기록
 • 등록하는 동안 그 앨범 노래가 흘러요
 • 원하는 커버가 없으면 사진으로 직접 등록
@@ -72,7 +72,7 @@ Turnit — 내 바이닐 보관함
 ■ 돌려 듣는 재미
 • 커버를 탭하면 디스크가 돌며 30초 미리듣기
 • 디스크를 손가락으로 돌리면 다음 곡·이전 곡
-• 자켓 대신 컬러 디스크로 보는 '디스크 보기'
+• 커버 대신 컬러 디스크로 보는 '디스크 보기'
 • 한국 앨범은 곡 제목도 한국어로
 
 ■ 기록하고 돌아보기
@@ -141,7 +141,7 @@ Keep every record you own in one beautiful place, give it a spin, and look back 
 
 ■ Add a record in seconds
 • Search an album or scan the barcode on the back — Turnit finds the cover and the songs
-• One step at a time with a big jacket in view: album → disc → condition → purchase
+• One step at a time with a big cover in view: album → disc → condition → purchase
 • Log the disc color and opacity, even a photo of the disc, plus 12"/10"/7" and 33⅓/45 RPM
 • The album plays while you add it
 • No matching cover? Use your own photo
@@ -149,7 +149,7 @@ Keep every record you own in one beautiful place, give it a spin, and look back 
 ■ Listen like you're spinning it
 • Tap a cover and the disc turns with a 30-second preview
 • Spin the record with your finger for the next or previous track
-• Disc view shows your colored discs instead of jackets
+• Disc view shows your colored discs instead of covers
 
 ■ Log it and look back
 • Calendar: purchases, arrivals, openings and listens shown as covers by date
@@ -193,7 +193,7 @@ Welcome to Turnit 🎉
 | 개인정보처리방침 URL | https://lp-archive.web.app/privacy.html |
 
 ## 5. 데이터 보안(Data safety) 신고 요약
-- **수집·전송 데이터**: 이메일 주소, 이름(구글 로그인), 사용자 콘텐츠(자켓/디스크/주문내역 사진), 앱 활동(컬렉션 기록)
+- **수집·전송 데이터**: 이메일 주소, 이름(구글 로그인), 사용자 콘텐츠(커버/디스크/주문내역 사진), 앱 활동(컬렉션 기록)
 - **목적**: 앱 기능(계정·동기화·메타데이터 조회·주문내역 텍스트 추출), 광고
 - **전송 중 암호화**: 예 (HTTPS)
 - **삭제 요청 가능**: 예 — 인앱 '회원 탈퇴' + 이메일 요청
@@ -205,7 +205,7 @@ Welcome to Turnit 🎉
 ```
 이메일: (테스트용 계정 생성 후 입력)
 비밀번호: (해당 비밀번호)
-안내: 로그인 후 왼쪽 위 + 버튼으로 바이닐 등록(앨범 검색 → 자켓 → 디스크 → 상태 → 구매) /
+안내: 로그인 후 왼쪽 위 + 버튼으로 바이닐 등록(앨범 검색 → 커버 → 디스크 → 상태 → 구매) /
       보관함에서 커버를 탭하면 30초 미리듣기 / 설정 → 회원 탈퇴에서 계정 삭제 확인 가능
 ```
 

@@ -737,7 +737,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .pk-item:active{transform:scale(.95)}
 .pk-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .pk-cap{font-size:9px;color:var(--muted);padding:3px 4px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* 후보 그리드 안의 '직접 올리기' 타일 (앨범아트를 못 찾았을 때 사진 선택) */
+/* 후보 그리드 안의 '직접 올리기' 타일 (커버를 못 찾았을 때 사진 선택) */
 .pk-uptile{border:2px dashed var(--line)}
 .pk-uptile .pk-up-box{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .pk-uptile .pk-up-box svg{width:30px;height:30px}
@@ -747,7 +747,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .dt-art .pk-manual{margin-top:14px}
 .pk-up{display:block;text-align:center;background:var(--card2);border:1px dashed var(--line);border-radius:11px;padding:12px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer}
 .pk-up:active{opacity:.8}
-/* 앨범아트 직접 올리기 접이식 토글 */
+/* 커버 직접 올리기 접이식 토글 */
 .art-manual-toggle{display:block;width:100%;padding:9px;background:none;border:none;color:var(--dim);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;text-decoration:underline;text-underline-offset:3px}
 .art-manual-toggle:active{opacity:.7}
 .art-manual-box{display:flex;flex-direction:column;gap:8px}
@@ -800,7 +800,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .fld .genre-custom[hidden]{display:none}
 .e-pv-name{flex:1;min-width:0;font-size:15px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .e-pv-name.dim{color:var(--dim)}
-/* ===== 바이닐 등록 단계 화면 (검색 → 자켓 → 판 → 상태 → 구매 → 완성) ===== */
+/* ===== 바이닐 등록 단계 화면 (검색 → 커버 → 디스크 → 상태 → 구매 → 완성) ===== */
 #sheet-wiz{padding:0!important;overflow:hidden;background:var(--bg)}
 #sheet-wiz .wz{position:absolute;inset:0;top:var(--sat);overflow:hidden;overflow:clip;
   background-image:radial-gradient(700px 420px at 85% -10%,rgba(232,100,60,.15),transparent 60%)}
@@ -1300,7 +1300,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 <div class="wrap">
 <header>
   <button class="hdr-add" id="fab" type="button" aria-label="바이닐 추가" title="바이닐 추가"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-  <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/디스크 보기 전환" title="자켓 ↔ 디스크 보기">
+  <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="커버/디스크 보기 전환" title="커버 ↔ 디스크 보기">
     <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">디스크 보기</span>
   </button>
   <div class="hdr-logo"><img class="wm-dark" src="icons/wordmark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"><img class="wm-light" src="icons/wordmark-dark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"></div>
@@ -1538,12 +1538,12 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <button class="sheet-x" data-close="add" aria-label="닫기">✕</button>
   <div class="form">
     <h2>바이닐 추가</h2>
-    <div class="fhint">가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.</div>
+    <div class="fhint">가수와 앨범명을 입력하면 커버를 자동으로 찾아드려요.</div>
     <div class="row2">
       <div class="fld"><label class="req">가수 <b class="star">*</b></label><input id="f-artist" placeholder="예: Tom Misch"></div>
       <div class="fld"><label class="req">앨범명 <b class="star">*</b></label><input id="f-album" placeholder="예: Geography"></div>
     </div>
-    <div class="searching" id="f-searching">앨범아트 검색 중…</div>
+    <div class="searching" id="f-searching">커버 검색 중…</div>
     <div class="picker" id="f-cands"></div>
     <div class="preview">
       <div class="pa" id="pa-prev">art</div>
@@ -1600,7 +1600,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     </div>
     <div id="f-grade-fld" class="buyonly gradewrap" style="display:none">
       <div class="row2">
-        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션">ⓘ</span></label>
+        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="커버 컨디션">ⓘ</span></label>
           <select id="f-sleeve" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1649,7 +1649,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </div>
 </div>
 
-<!-- 바이닐 등록 단계 화면: 검색 → 자켓 → 판 → 상태 → 구매 정보 → 완성 (값은 위 추가 폼 #f-* 에 채워 같은 저장 로직 사용) -->
+<!-- 바이닐 등록 단계 화면: 검색 → 커버 → 디스크 → 상태 → 구매 정보 → 완성 (값은 위 추가 폼 #f-* 에 채워 같은 저장 로직 사용) -->
 <div class="ov" id="ov-wiz"></div>
 <div class="sheet fs" id="sheet-wiz">
  <div class="wz">
@@ -1685,7 +1685,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     <div class="wz-alt" id="wz-alt"></div>
     <div class="wz-altcap" id="wz-altcap"></div>
     <div class="wz-sp"></div>
-    <button class="wz-cta" id="wz-to3" type="button">이 자켓으로 할게요</button>
+    <button class="wz-cta" id="wz-to3" type="button">이 커버로 할게요</button>
   </section>
 
   <section class="wz-step right" id="wz-s3">
@@ -1828,7 +1828,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     </div>
     <div id="e-grade-fld" class="gradewrap" style="display:none">
       <div class="row2">
-        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="자켓/커버 컨디션">ⓘ</span></label>
+        <div class="fld"><label>슬리브 상태 <span class="grade-help" title="커버 컨디션">ⓘ</span></label>
           <select id="e-sleeve" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1973,12 +1973,12 @@ const I18N = {
   "이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)":"This domain isn't authorized for auth. (Console → Authentication → Settings → Authorized domains)",
   "비밀번호가 서로 달라요.":"Passwords don't match.",
   /* --- header / nav --- */
-  "자켓/디스크 보기 전환":"Toggle cover / disc view",
-  "자켓 ↔ 디스크 보기":"Cover ↔ disc view",
+  "커버/디스크 보기 전환":"Toggle cover / disc view",
+  "커버 ↔ 디스크 보기":"Cover ↔ disc view",
   "디스크 보기":"Disc view",
-  "자켓 보기":"Cover view",
+  "커버 보기":"Cover view",
   "디스크 보기로 전환":"Switch to disc view",
-  "자켓 보기로 전환":"Switch to cover view",
+  "커버 보기로 전환":"Switch to cover view",
   "보관함":"Library",
   "달력":"Calendar",
   "통계":"Stats",
@@ -2035,11 +2035,11 @@ const I18N = {
   /* --- FAB / add sheet --- */
   "바이닐 추가":"Add Vinyl",
   "위시 추가":"Add to Wishlist",
-  "가수와 앨범명을 입력하면 앨범아트를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
+  "가수와 앨범명을 입력하면 커버를 자동으로 찾아드려요.":"Enter the artist and album to auto-find the cover art.",
   "가수·앨범 입력 후 미리보기":"Preview after entering artist & album",
   "📷 앨범에서 올리기":"📷 Choose from album",
-  "앨범아트가 안 찾아지면 — 직접 올리기":"Cover art not found? — Upload manually",
-  "📷 앨범아트 사진 올리기":"📷 Upload cover photo",
+  "커버가 안 찾아지면 — 직접 올리기":"Cover art not found? — Upload manually",
+  "📷 커버 사진 올리기":"📷 Upload cover photo",
   "또는 이미지 주소(URL) 붙여넣기":"Or paste an image address (URL)",
   "적용":"Apply",
   "가수":"Artist",
@@ -2048,7 +2048,7 @@ const I18N = {
   "예: Geography":"e.g. Geography",
   "예: Adele":"e.g. Adele",
   "예: 30":"e.g. 30",
-  "앨범아트 검색 중…":"Searching for cover art…",
+  "커버 검색 중…":"Searching for cover art…",
   "컬러":"Color",
   "상태":"Status",
   "구분":"Type",
@@ -2068,9 +2068,9 @@ const I18N = {
   "메모":"Note",
   "취소":"Cancel",
   "보관함에 추가":"Add to Library",
-  "앨범아트를 찾았어요 ✓":"Found cover art ✓",
-  "앨범아트를 찾지 못했어요":"Couldn't find cover art",
-  "앨범아트를 찾지 못했어요 — 직접 올려보세요":"No cover art found — upload your own",
+  "커버를 찾았어요 ✓":"Found cover art ✓",
+  "커버를 찾지 못했어요":"Couldn't find cover art",
+  "커버를 찾지 못했어요 — 직접 올려보세요":"No cover art found — upload your own",
   "직접 올리기":"Upload",
   "이 커버로 저장돼요 ✓":"This cover will be saved ✓",
   "업로드 중…":"Uploading…",
@@ -2195,7 +2195,6 @@ const I18N = {
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
   "판매 차익":"Sale profit",
-  "가장 잘 판 바이닐":"Best sale",
   "현재가는 판매 기록 기준 추정값이에요.":"Current value is estimated from sale records.",
   /* --- collection sheets --- */
   "새 컬렉션":"New collection",
@@ -2403,7 +2402,7 @@ const I18N = {
   "이전 곡":"Previous track",
   "재생/일시정지":"Play / pause",
   "다음 곡":"Next track",
-  "자켓/커버 컨디션":"Sleeve condition",
+  "커버 컨디션":"Sleeve condition",
   "디스크 컨디션":"Disc condition",
   "예: 2018":"e.g. 2018",
   "그날의 느낌이나 한마디":"How it felt, or a quick note",
@@ -2420,11 +2419,11 @@ const I18N = {
   "디스크 직접 돌리기":"Spin the disc yourself",
   "카드 위로 살짝 보이는 디스크를 탭하면 디스크가 앞으로 나와요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 디스크가 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
   "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
-  "앨범 커버 변경하기":"Change the album cover",
+  "커버 변경하기":"Change the cover",
   "디스크 이미지 변경하기":"Change the disc image",
   "수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 디스크 이미지를 변경할 수 있어요.":"Tap the edit button at the end of the color palette on the edit screen to change the disc image.",
   "상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.":"Tap the edit button on the cover in the detail view to pick a different cover or use a saved image.",
-  "자켓 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
+  "커버 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
   "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
   "달력 대표 이미지 정하기":"Pick the calendar image",
   "한 날짜에 바이닐 기록이 여러 개일 땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정할 수 있어요.":"When a day has several vinyl entries, pin the one you want to set it as that day's image.",
@@ -4490,7 +4489,7 @@ async function openCoverPicker(it){
       <button type="button" class="pk-cancel" id="pk-cancel">취소</button>
       <button type="button" class="pk-done" id="pk-done" disabled>변경 완료</button>
     </div>`;
-  box.innerHTML=search+'<div class="pk-title" id="pk-status">앨범아트 검색 중…</div><div id="pk-results"></div>'+manual+actions;
+  box.innerHTML=search+'<div class="pk-title" id="pk-status">커버 검색 중…</div><div id="pk-results"></div>'+manual+actions;
 
   const close=()=>{ box.classList.remove('show'); box.innerHTML=''; };
   const selected=()=>{ if(!selKey) return null; const i=+selKey.slice(1); return (selKey[0]==='e'?extras:cands)[i]||null; };
@@ -4510,7 +4509,7 @@ async function openCoverPicker(it){
   // 검색어(가수·앨범)로 후보를 다시 불러와 그리드 갱신
   async function runSearch(artist, album){
     const status=$('#pk-status');
-    if(status) status.textContent='앨범아트 검색 중…';
+    if(status) status.textContent='커버 검색 중…';
     if(selKey && selKey[0]==='c') selKey=null;   // 검색 결과가 바뀌면 이전 결과의 선택은 해제
     cands=[]; render();
     cands=await fetchCandidates(artist, album, {alias:true});
@@ -4698,7 +4697,7 @@ enableSwipeClose('add');
 });
 
 /* ---------- add form ---------- */
-// 후보 그리드에 넣는 '직접 올리기' 타일 — 앨범아트를 못 찾았을 때 사진을 골라 올린다
+// 후보 그리드에 넣는 '직접 올리기' 타일 — 커버를 못 찾았을 때 사진을 골라 올린다
 const ART_UPLOAD_TILE = '<div class="pk-item pk-uptile" id="f-uptile" title="직접 올리기"><div class="pk-up-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div><div class="pk-cap">직접 올리기</div></div>';
 function wireArtUploadTile(box){ const t=box.querySelector('#f-uptile'); if(t) t.onclick=()=>{ const fi=$('#f-file'); if(fi) fi.click(); }; }
 let prevTimer;
@@ -4725,7 +4724,7 @@ function schedulePreview(){
       // default-select the first candidate
       $('#pa-prev').innerHTML=`<img src="${cands[0].img}">`;
       $('#pa-prev').dataset.url=cands[0].img;
-      $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 것을 선택하세요`:'앨범아트를 찾았어요 ✓';
+      $('#pt-prev').textContent=cands.length>1?`후보 ${cands.length}개 — 맞는 것을 선택하세요`:'커버를 찾았어요 ✓';
       autofillGenre(cands[0]); autofillYear(cands[0]);
       // 기본 선택된 후보가 iTunes 앨범이면 음원 연결도 그 앨범으로 자동 지정
       window.__addPv = cands[0].collectionId ? {id:cands[0].collectionId, name:cands[0].album||''} : null;
@@ -4748,7 +4747,7 @@ function schedulePreview(){
       });
     }else{
       $('#pa-prev').textContent='art';$('#pa-prev').dataset.url='';
-      $('#pt-prev').textContent='앨범아트를 찾지 못했어요 — 직접 올려보세요';
+      $('#pt-prev').textContent='커버를 찾지 못했어요 — 직접 올려보세요';
       box.classList.add('show');box.innerHTML=ART_UPLOAD_TILE;
       wireArtUploadTile(box);
     }
@@ -5497,7 +5496,7 @@ function openAdd(initStatus, presetDate, opts){   // opts.silent: 칸만 초기�
   fillGenreSelect($('#f-genre'),'');   // 직접 입력한 장르 목록 갱신 + 입력칸 닫기
   { const fc=$('#f-color'); if(fc){ delete fc.dataset.hex; delete fc.dataset.photo; fc.dataset.camswatch='1'; } }
   window.__addDraft={discPhoto:null};   // 추가 폼의 판 사진 임시 보관 (저장 시 항목에 반영)
-  window.__addPv=null;                  // 고른 앨범아트 후보의 iTunes 앨범 ID (저장 시 음원 연결로 사용)
+  window.__addPv=null;                  // 고른 커버 후보의 iTunes 앨범 ID (저장 시 음원 연결로 사용)
   window.__openDiscPhoto=()=>openDiscPhoto(window.__addDraft, {draft:true, prefix:'f'});
   { const op=$('#f-op'); if(op) op.value=100; const l=$('#f-oplab'); if(l) l.textContent='100%'; }
   $('#f-file').value='';
@@ -5696,7 +5695,7 @@ $('#add-save').onclick=()=>{
     status:status, sellDate:null, sellPrice:null, profit:null,
     sleeveGrade: (status==='개봉') ? (($('#f-sleeve')&&$('#f-sleeve').value)||'') : '',
     mediaGrade: (status==='개봉') ? (($('#f-media')&&$('#f-media').value)||'') : '',
-    // 앨범아트 후보로 고른 iTunes 앨범이 있으면 음원도 그 앨범으로 자동 연결
+    // 커버 후보로 고른 iTunes 앨범이 있으면 음원도 그 앨범으로 자동 연결
     previewAlbumId:(window.__addPv&&window.__addPv.id)||null,
     previewAlbumName:(window.__addPv&&window.__addPv.id&&window.__addPv.name)||null,
     rating:0, note:$('#f-note').value.trim(), _art:url,
@@ -5721,7 +5720,7 @@ $('#add-save').onclick=()=>{
 };
 
 /* ===== 바이닐 등록 단계 화면 =====
-   검색 → 자켓 → 판 → 상태 → 구매 정보 → 완성. 보이는 화면만 단계로 나누고 값은 위 추가 폼(#f-*)에 채운다.
+   검색 → 커버 → 디스크 → 상태 → 구매 정보 → 완성. 보이는 화면만 단계로 나누고 값은 위 추가 폼(#f-*)에 채운다.
    저장·검증·장르/발매년도 자동 채움·음원 연결은 기존 '보관함에 추가'(#add-save) 로직을 그대로 쓴다.
    바코드 상자·상태 등급·개봉일·도착일·비고 칸은 열려 있는 동안 단계 화면으로 빌려 오고, 닫을 때 돌려놓는다.
    '한 번에 입력'을 누르면 지금까지 채운 값 그대로 기존 한 화면 폼으로 넘어간다. */
@@ -5849,7 +5848,7 @@ function wzTexts(){
   t('#wz-full','한 번에 입력','All on one page');
   q('#wz-s2 .wz-q','이 앨범이 맞나요?','Is this the album?');
   ph('#wz-ar','가수','Artist'); ph('#wz-al','앨범명','Album'); t('#wz-edit','앨범명·가수 수정','Edit title & artist');
-  t('#wz-to3','이 자켓으로 할게요','Use this cover');
+  t('#wz-to3','이 커버로 할게요','Use this cover');
   q('#wz-s3 .wz-q','어떤 <em>디스크</em>인가요?','What does the <em>disc</em> look like?');
   t('#wz-opa span','투명도','Opacity'); t('#wz-to4','다음','Next');
   q('#wz-s4 .wz-q','이 바이닐은<br>지금 어떤 <em>상태</em>인가요?','What <em>state</em> is<br>this record in?');
@@ -7416,14 +7415,14 @@ const TOUR_STEPS=[
     open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
     leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
     desc:'카드 위로 살짝 보이는 디스크를 탭하면 디스크가 앞으로 나와요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 디스크가 들어가며 멈춰요.' },
-  { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'앨범 커버 변경하기',
+  { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'커버 변경하기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.' },
   { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'디스크 이미지 변경하기',
     open:()=>{ if(DATA.length){ openDetail(DATA[0].id); showEditForm(DATA[0]); } }, leave:()=>{ try{ hide('edit'); }catch(e){} try{ hide('detail'); }catch(e){} },
     desc:'수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 디스크 이미지를 변경할 수 있어요.' },
   { tab:'coll', target:'#cf-mode-toggle', round:true, title:'디스크 보기',
-    desc:'자켓 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
+    desc:'커버 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
   { tab:'cal', target:'#cal-grid', title:'달력',
     desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
   { tab:'cal', target:'#daylist .dl-row .dl-pin', round:true, pad:6, noScroll:true, title:'달력 대표 이미지 정하기',
@@ -7602,8 +7601,8 @@ function refreshGenreChips(){
 let cfItems=[], cfIndex=0, cfCards=[], cfMode='cover';   // 'cover' | 'vinyl'
 function applyCfMode(){
   const stage=$('#cf-stage'); if(stage) stage.classList.toggle('vinyl-mode', cfMode==='vinyl');
-  const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '자켓 보기로 전환' : '디스크 보기로 전환'; }
-  const lab=$('#cf-mode-lab'); if(lab) lab.textContent = cfMode==='vinyl' ? '자켓 보기' : '디스크 보기';
+  const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '커버 보기로 전환' : '디스크 보기로 전환'; }
+  const lab=$('#cf-mode-lab'); if(lab) lab.textContent = cfMode==='vinyl' ? '커버 보기' : '디스크 보기';
 }
 function buildCoverFlow(){
   cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
