@@ -16,17 +16,20 @@
 |---|---|---|
 | 앱 아이콘 | `icons/icon-512.png` | 512×512 |
 | 플레이 그래픽 이미지(피처) | `store-assets/play/feature-ko.jpg` · `feature-en.jpg` | 1024×500 |
-| 플레이 폰 스크린샷 | `store-assets/play/ko-1~6.jpg` · `en-1~6.jpg` | 1080×1920 (9:16) |
-| 앱스토어 6.7" 스크린샷 | `store-assets/app-store/ko-1~6.jpg` · `en-1~6.jpg` | 1290×2796 |
+| 플레이 폰 스크린샷 | `store-assets/play/ko-1~7.jpg` · `en-1~7.jpg` | 1080×1920 (9:16) |
+| 앱스토어 6.7" 스크린샷 | `store-assets/app-store/ko-1~7.jpg` · `en-1~7.jpg` | 1290×2796 |
 
 스크린샷 순서와 문구(한국어 / 영어):
 
-1. 모아온 **바이닐**을 한눈에 — Your **vinyl**, all in one place (보관함)
-2. 검색 한 번이면 **커버와 노래**까지 — One search finds the **cover & songs** (등록: 이 앨범이 맞나요?)
-3. **디스크 컬러**까지 그대로 — Right down to your **disc color** (등록: 디스크 컬러·투명도·RPM·인치)
-4. **디스크**를 넘기며 미리듣기 — Flip through and **hear** every record (디스크 보기)
-5. 사고, 듣고, **달력**에 남기고 — Every buy and spin on your **calendar** (달력)
-6. 내 **취향**을 숫자로 돌아보기 — See your **taste** in numbers (통계)
+앱의 두 강점(손가락으로 돌려 듣기, 취향 카드 공유)이 먼저 보이도록 1번과 5번에 두었습니다.
+
+1. 손가락으로 돌리면 **노래**가 흘러요 — **Spin** the disc to play the music (보관함 카드에서 꺼낸 디스크 + 회전 표시)
+2. 모아온 **바이닐**을 한눈에 — Your **vinyl**, all in one place (보관함)
+3. 검색 한 번이면 **커버와 노래**까지 — One search finds the **cover & songs** (등록: 이 앨범이 맞나요?)
+4. **디스크 컬러**까지 그대로 — Right down to your **disc color** (등록: 디스크 컬러·투명도·RPM·인치)
+5. 내 **취향**을 카드로 친구에게 자랑하기 — Show off your **taste** with a card (컬렉션 카드 공유)
+6. 사고, 듣고, **달력**에 남기고 — Every buy and spin on your **calendar** (달력)
+7. 얼마나 모았는지 한눈에 **통계**로 — Your collection in **numbers** (통계)
 
 - 스크린샷 속 앨범은 모두 **가상의 앨범과 직접 그린 커버**입니다(실제 앨범 아트 저작권 문제 방지).
 - 다시 만들 때는 같은 데모 데이터로 앱을 띄워 캡처한 뒤 문구를 얹었습니다. 화면이 바뀌면 다시 만들어 주세요.
@@ -43,7 +46,7 @@ Turnit — 내 바이닐 보관함
 
 ### 짧은 설명 (플레이, 80자)
 ```
-앨범을 검색하면 커버와 노래까지. 내 바이닐을 기록하고, 돌려 듣고, 돌아보세요.
+디스크를 손가락으로 돌려 듣고, 내 취향을 카드로 자랑하는 바이닐 보관함.
 ```
 
 ### 부제 (앱스토어, 30자)
@@ -60,7 +63,19 @@ Turnit — 내 바이닐 보관함
 ```
 🎵 Turnit — 돌려 듣는 내 바이닐 보관함
 
-모아온 바이닐을 한 곳에 예쁘게 정리하고, 돌려 듣고, 돌아보세요.
+모아온 바이닐을 한 곳에 예쁘게 정리하고, 손가락으로 돌려 듣고, 내 취향을 친구에게 자랑해 보세요.
+
+■ 손가락으로 돌려 듣는 바이닐
+• 카드에서 디스크를 꺼내 손가락으로 돌리면 노래가 흘러요
+• 시계 방향으로 한 바퀴면 다음 곡, 반대로 돌리면 이전 곡
+• 커버를 탭하면 디스크가 돌며 30초 미리듣기
+• 커버 대신 컬러 디스크로 보는 '디스크 보기'
+• 한국 앨범은 곡 제목도 한국어로
+
+■ 내 취향을 카드로 자랑하기
+• 내 컬렉션·이 달의 기록을 예쁜 카드 이미지로 만들어 바로 공유
+• 테마별 컬렉션을 만들고 링크·카카오톡으로 공유
+• 좋아요한 앨범만 모아 공유하기
 
 ■ 검색 한 번이면 끝나는 등록
 • 앨범을 검색하거나 뒷면 바코드를 찍으면 커버와 노래를 자동으로 찾아줘요
@@ -69,22 +84,11 @@ Turnit — 내 바이닐 보관함
 • 등록하는 동안 그 앨범 노래가 흘러요
 • 원하는 커버가 없으면 사진으로 직접 등록
 
-■ 돌려 듣는 재미
-• 커버를 탭하면 디스크가 돌며 30초 미리듣기
-• 디스크를 손가락으로 돌리면 다음 곡·이전 곡
-• 커버 대신 컬러 디스크로 보는 '디스크 보기'
-• 한국 앨범은 곡 제목도 한국어로
-
 ■ 기록하고 돌아보기
 • 달력: 구매·도착·개봉·청음 기록을 날짜별 커버로
 • 통계: 별점, 자주 간 구매처, 장르, 가장 많이 들은 앨범
-• 이 달의 기록·취향 카드를 이미지로 만들어 공유
 • 미개봉·개봉·배송 전·위시·판매/교환까지 상태별 관리
 • 같은 앨범을 또 샀다면 정보 그대로 '같은 앨범 추가'
-
-■ 함께 즐기기
-• 테마별 컬렉션을 만들고 링크·카카오톡으로 공유
-• 좋아요한 앨범 모아 공유하기
 
 ■ 편리하게
 • 이메일·구글 로그인으로 기기가 바뀌어도 그대로 (클라우드 동기화)
@@ -104,9 +108,10 @@ Turnit — 내 바이닐 보관함
 ### 이번 버전 새 기능 (첫 출시용)
 ```
 Turnit 첫 버전이에요 🎉
+• 디스크를 손가락으로 돌려 듣는 미리듣기
+• 내 컬렉션을 카드로 만들어 친구에게 공유
 • 검색·바코드로 커버와 노래를 찾아주는 단계형 등록
-• 디스크 컬러·사진·RPM·인치까지 그대로 기록
-• 30초 미리듣기, 달력, 통계, 컬렉션 공유
+• 달력과 통계로 돌아보는 내 수집 기록
 ```
 
 ---
@@ -120,7 +125,7 @@ Turnit — My Vinyl Shelf
 
 ### Short description (Play, 80)
 ```
-Search an album to get its cover and songs. Log, spin and revisit your vinyl.
+Spin your vinyl with a finger to play it, and share your taste as a card.
 ```
 
 ### Subtitle (App Store, 30)
@@ -137,7 +142,18 @@ vinyl,record,LP,turntable,collection,album,collector,barcode,music log,crate,rec
 ```
 🎵 Turnit — your vinyl collection, ready to spin
 
-Keep every record you own in one beautiful place, give it a spin, and look back on what you've collected.
+Keep every record you own in one beautiful place, spin it with your finger to listen, and show off your taste to friends.
+
+■ Spin it with your finger
+• Pull the disc out of a card and spin it — the music starts playing
+• One turn clockwise for the next track, counter-clockwise for the previous one
+• Tap a cover and the disc turns with a 30-second preview
+• Disc view shows your colored discs instead of covers
+
+■ Show off your taste
+• Turn your collection or your month into a beautiful card and share it
+• Build themed collections and share them by link
+• Share the albums you like
 
 ■ Add a record in seconds
 • Search an album or scan the barcode on the back — Turnit finds the cover and the songs
@@ -146,21 +162,11 @@ Keep every record you own in one beautiful place, give it a spin, and look back 
 • The album plays while you add it
 • No matching cover? Use your own photo
 
-■ Listen like you're spinning it
-• Tap a cover and the disc turns with a 30-second preview
-• Spin the record with your finger for the next or previous track
-• Disc view shows your colored discs instead of covers
-
 ■ Log it and look back
 • Calendar: purchases, arrivals, openings and listens shown as covers by date
 • Stats: ratings, favorite stores, genres and most-played albums
-• Turn your month or your taste into a shareable card
 • Track sealed, opened, on the way, wishlist and sold/traded records
 • Bought another copy? "Add the same album" copies everything over
-
-■ Share with friends
-• Build themed collections and share them by link
-• Share the albums you like
 
 ■ Made easy
 • Sign in with email or Google — your shelf syncs across devices
@@ -175,9 +181,10 @@ Privacy policy: https://lp-archive.web.app/privacy.html
 ### What's new (first release)
 ```
 Welcome to Turnit 🎉
+• Spin the disc with your finger to play the music
+• Share your collection as a card
 • Step-by-step adding with search and barcode
-• Log your disc's color, photo, RPM and size
-• 30-second previews, calendar, stats and shareable collections
+• Look back with a calendar and stats
 ```
 
 ---
