@@ -444,7 +444,7 @@ h1 .em{color:var(--accent)}
 .mini-disc::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26%;height:26%;border-radius:50%;background:var(--disc,#1a1a1a);filter:brightness(.65);box-shadow:0 0 0 1px rgba(0,0,0,.4),inset 0 0 5px rgba(0,0,0,.5)}
 .mini-disc.has-photo{background:var(--photo) center/cover no-repeat}
 .mini-disc.has-photo::after{display:none}
-/* 팔레트 안 '판에 사진 넣기' 칩 */
+/* 팔레트 안 '디스크에 사진 넣기' 칩 */
 .palette .sw-photo{display:flex;align-items:center;justify-content:center;color:var(--muted);border:2px dashed rgba(255,255,255,.35);background:var(--card2);background-size:cover;background-position:center}
 .palette .sw-photo.has{border-style:solid;border-color:#fff;color:transparent}
 /* disc with a custom photo: hide the synthetic gradient so the photo shows */
@@ -495,7 +495,7 @@ body.scroll-lock{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 /* 풀스크린이 열려 있는 동안 뒤의 바텀시트·오버레이를 숨겨 단일 레이어로 유지 */
 body.fs-open .sheet:not(.fs){visibility:hidden}
 body.fs-open .ov{opacity:0!important;pointer-events:none}
-/* 판에 사진 넣기 팝업은 풀스크린(수정) 위에서도 떠야 함 */
+/* 디스크에 사진 넣기 팝업은 풀스크린(수정) 위에서도 떠야 함 */
 #sheet-vinyl{z-index:70}
 #ov-vinyl{z-index:65}
 body.fs-open #sheet-vinyl.show{visibility:visible}
@@ -1300,8 +1300,8 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 <div class="wrap">
 <header>
   <button class="hdr-add" id="fab" type="button" aria-label="바이닐 추가" title="바이닐 추가"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-  <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/바이닐 보기 전환" title="자켓 ↔ 바이닐 보기">
-    <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">바이닐 보기</span>
+  <button class="cf-mode-toggle" id="cf-mode-toggle" type="button" aria-label="자켓/디스크 보기 전환" title="자켓 ↔ 디스크 보기">
+    <span class="cf-mode-ic" id="cf-mode-ic"></span><span id="cf-mode-lab">디스크 보기</span>
   </button>
   <div class="hdr-logo"><img class="wm-dark" src="icons/wordmark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"><img class="wm-light" src="icons/wordmark-dark.png?v=4" alt="turn잇 — Turnit" width="1400" height="520"></div>
   <div class="acct" id="acct">
@@ -1435,7 +1435,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 </div>
 
 <!-- 달력: 하루 앨범 목록 시트 -->
-<!-- 바이닐 꾸미기 팝업 -->
+<!-- 디스크 꾸미기 팝업 -->
 <div class="ov" id="ov-vinyl"></div>
 <div class="sheet" id="sheet-vinyl">
   <div class="grab" id="grab-vinyl"></div>
@@ -1582,7 +1582,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="disc-prev collapsed" id="f-discprev"><div class="mini-disc" id="f-discprev-d"></div></div>
     </div>
     <div class="vinyl-extra collapsed" id="f-vinyl-extra">
-      <div class="fld"><label>판 투명도 <span class="op-lab" id="f-oplab">100%</span></label><input type="range" id="f-op" min="20" max="100" value="100" class="vd-range"></div>
+      <div class="fld"><label>디스크 투명도 <span class="op-lab" id="f-oplab">100%</span></label><input type="range" id="f-op" min="20" max="100" value="100" class="vd-range"></div>
     </div>
     <div class="row2" id="f-spec-row">
       <div class="fld" id="f-rpm-fld"><label>회전수 (RPM)</label>
@@ -1609,7 +1609,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>바이닐 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
+        <div class="fld"><label>디스크 상태 <span class="grade-help" title="디스크 컨디션">ⓘ</span></label>
           <select id="f-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1689,7 +1689,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </section>
 
   <section class="wz-step right" id="wz-s3">
-    <div class="wz-q c">어떤 <em>판</em>인가요?</div>
+    <div class="wz-q c">어떤 <em>디스크</em>인가요?</div>
     <div class="wz-stage" id="wz-stage"><div class="wz-disc"><div class="wz-rot"><div class="wz-vinyl"></div><div class="wz-lbl"></div><div class="wz-hole"></div></div><div class="wz-shine"></div></div><div class="wz-sleeve" id="wz-sleeve"></div></div>
     <div class="wz-cname" id="wz-cname"></div>
     <div class="wz-colors" id="wz-colors"></div>
@@ -1816,7 +1816,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="disc-prev" id="e-discprev"><div class="mini-disc" id="e-discprev-d"></div></div>
     </div>
     <div class="vinyl-extra" id="e-vinyl-extra">
-      <div class="fld"><label>판 투명도 <span class="op-lab" id="e-oplab">100%</span></label><input type="range" id="e-op" min="20" max="100" value="100" class="vd-range"></div>
+      <div class="fld"><label>디스크 투명도 <span class="op-lab" id="e-oplab">100%</span></label><input type="range" id="e-op" min="20" max="100" value="100" class="vd-range"></div>
     </div>
     <div class="row2" id="e-spec-row">
       <div class="fld" id="e-rpm-fld"><label>회전수 (RPM)</label>
@@ -1837,7 +1837,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
             <option value="F">F (Fair)</option><option value="P">P (Poor)</option>
           </select>
         </div>
-        <div class="fld"><label>바이닐 상태 <span class="grade-help" title="바이닐 컨디션">ⓘ</span></label>
+        <div class="fld"><label>디스크 상태 <span class="grade-help" title="디스크 컨디션">ⓘ</span></label>
           <select id="e-media" class="gradesel">
             <option value="">선택 안 함</option>
             <option value="M">M (Mint)</option><option value="NM">NM (Near Mint)</option>
@@ -1973,11 +1973,11 @@ const I18N = {
   "이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)":"This domain isn't authorized for auth. (Console → Authentication → Settings → Authorized domains)",
   "비밀번호가 서로 달라요.":"Passwords don't match.",
   /* --- header / nav --- */
-  "자켓/바이닐 보기 전환":"Toggle cover / disc view",
-  "자켓 ↔ 바이닐 보기":"Cover ↔ disc view",
-  "바이닐 보기":"Disc view",
+  "자켓/디스크 보기 전환":"Toggle cover / disc view",
+  "자켓 ↔ 디스크 보기":"Cover ↔ disc view",
+  "디스크 보기":"Disc view",
   "자켓 보기":"Cover view",
-  "바이닐 보기로 전환":"Switch to disc view",
+  "디스크 보기로 전환":"Switch to disc view",
   "자켓 보기로 전환":"Switch to cover view",
   "보관함":"Library",
   "달력":"Calendar",
@@ -2056,7 +2056,7 @@ const I18N = {
   "팔레트 열기":"Open palette",
   "구매처":"Store",
   "슬리브 상태":"Sleeve grade",
-  "바이닐 상태":"Media grade",
+  "디스크 상태":"Media grade",
   "선택 안 함":"None",
   "구매일자":"Purchase date",
   "개봉일자":"Opened date",
@@ -2088,16 +2088,16 @@ const I18N = {
   "도착일":"Arrival date",
   "배송 예정일":"Est. delivery",
   "대표":"Pinned",
-  "판에 사진 넣기":"Photo on the disc",
-  "📷 판에 사진 넣기":"📷 Photo on the disc",
-  "판 투명도":"Disc opacity",
+  "디스크에 사진 넣기":"Photo on the disc",
+  "📷 디스크에 사진 넣기":"📷 Photo on the disc",
+  "디스크 투명도":"Disc opacity",
   "판매일":"Sale date",
   "판매가":"Sale price",
   "차익":"Profit",
   "비고":"Notes",
   "커버 수정":"Edit cover",
   "좋아요":"Like",
-  "바이닐 꾸미기":"Decorate vinyl",
+  "디스크 꾸미기":"Decorate disc",
   "📦 배송완료로 표시":"📦 Mark as delivered",
   "🛒 구매완료로 표시":"🛒 Mark as purchased",
   "✏️ 정보 수정":"✏️ Edit details",
@@ -2121,18 +2121,18 @@ const I18N = {
   "맞는 커버를 선택하거나, 직접 올리세요":"Pick a matching cover, or upload your own",
   "검색 결과가 없어요 — 직접 올려보세요":"No results — try uploading your own",
   /* --- vinyl decorate (Pro) --- */
-  "바이닐 꾸미기는 Pro 전용 기능이에요":"Vinyl decoration is a Pro-only feature",
-  "바이닐 판의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.":"Fine-tune the color and opacity of each disc to make your collection truly your own.",
+  "디스크 꾸미기는 Pro 전용 기능이에요":"Disc decoration is a Pro-only feature",
+  "디스크의 색상과 투명도를 원하는 대로 세밀하게 조정하고, 나만의 컬렉션을 더 특별하게 꾸며보세요.":"Fine-tune the color and opacity of each disc to make your collection truly your own.",
   "Pro 멤버십 알아보기":"Learn about Pro membership",
   "(데모: Pro 켜기)":"(Demo: turn on Pro)",
   "결제 연동은 준비 중이에요. 조금만 기다려 주세요.":"Payments are coming soon. Please stay tuned.",
-  "🎨 바이닐 꾸미기 ":"🎨 Decorate vinyl ",
+  "🎨 디스크 꾸미기 ":"🎨 Decorate disc ",
   "색상":"Color",
   "사진":"Photo",
-  "판 색상":"Disc color",
+  "디스크 색상":"Disc color",
   "투명도 ":"Opacity ",
   "기본값으로 되돌리기":"Reset to default",
-  "바이닐 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.":"Your photo fits inside the record-shaped guide. Drag with one finger to move, pinch with two to resize/tilt.",
+  "디스크 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.":"Your photo fits inside the disc-shaped guide. Drag with one finger to move, pinch with two to resize/tilt.",
   "사진을 올려주세요":"Please add a photo",
   "📷 사진 올리기":"📷 Add photo",
   "크기 ":"Size ",
@@ -2171,7 +2171,7 @@ const I18N = {
   "아직 데이터가 부족해요.":"Not enough data yet.",
   "선호 아티스트":"Top artists",
   "선호 장르":"Top genres",
-  "바이닐 컬러 분포":"Vinyl color breakdown",
+  "디스크 컬러 분포":"Disc color breakdown",
   "자주 간 구매처":"Frequent stores",
   "수집 히스토리":"Collection history",
   "가장 많이 들은 앨범":"Most played albums",
@@ -2189,8 +2189,8 @@ const I18N = {
   "정가 대비 낮은 순":"Lowest vs. list",
   "구매가 대비 높은 순":"Highest vs. paid",
   "구매가 대비 낮은 순":"Lowest vs. paid",
-  "정가를 입력한 판만 보여요":"Only records with a list price",
-  "구매가를 입력한 판만 보여요":"Only records with a purchase price",
+  "정가를 입력한 바이닐만 보여요":"Only records with a list price",
+  "구매가를 입력한 바이닐만 보여요":"Only records with a purchase price",
   "합계":"Total",
   "데이터 없음":"No data",
   "총 구매가":"Total spent",
@@ -2258,7 +2258,7 @@ const I18N = {
   "장르 표기":"Show genre",
   "카드에 장르 태그를 표시해요":"Show a genre tag on each card",
   "상태 등급 선택":"Condition grading",
-  "개봉한 바이닐의 슬리브·판 컨디션 등급을 기록해요":"Record sleeve & media condition grades on opened records",
+  "개봉한 바이닐의 슬리브·디스크 컨디션 등급을 기록해요":"Record sleeve & media condition grades on opened records",
   "모아보기 중복 앨범 한 장만":"One card per album in Cover Flow",
   "커버플로우에서 같은 앨범이 여러 장이어도 하나만 보여요":"Show duplicates of the same album as a single card",
   "RPM·인치 선택":"RPM & size",
@@ -2312,7 +2312,7 @@ const I18N = {
   /* --- 청음 기록 / 상세 액션 --- */
   "🎧 청음 기록":"🎧 Listening log",
   "+ 청음 기록":"+ Add entry",
-  "아직 청음 기록이 없어요. 판을 들었다면 남겨보세요.":"No listening entries yet. Log one after you spin this record.",
+  "아직 청음 기록이 없어요. 바이닐을 들었다면 남겨보세요.":"No listening entries yet. Log one after you spin this record.",
   "🎧 청음 기록 추가":"🎧 Add a listening entry",
   "들은 날짜":"Date listened",
   "기록 저장":"Save entry",
@@ -2404,7 +2404,7 @@ const I18N = {
   "재생/일시정지":"Play / pause",
   "다음 곡":"Next track",
   "자켓/커버 컨디션":"Sleeve condition",
-  "바이닐 컨디션":"Record condition",
+  "디스크 컨디션":"Disc condition",
   "예: 2018":"e.g. 2018",
   "그날의 느낌이나 한마디":"How it felt, or a quick note",
   "가수명":"Artist",
@@ -2413,18 +2413,18 @@ const I18N = {
   "· 공유된 컬렉션":"· shared collection",
   /* --- 첫 사용 가이드 --- */
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
-  "내 바이닐을 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
+  "내 바이닐을 등록하고, 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
   "바이닐 등록":"Add a record",
   "왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Search the album or scan its barcode, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
-  "바이닐 직접 돌리기":"Spin the record yourself",
-  "카드 위로 살짝 보이는 바이닐을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
-  "커버를 탭하면 판이 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
+  "디스크 직접 돌리기":"Spin the disc yourself",
+  "카드 위로 살짝 보이는 디스크를 탭하면 디스크가 앞으로 나와요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 디스크가 들어가며 멈춰요.":"Tap the record peeking out above a card and it slides forward. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap again to slide it back and stop.",
+  "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "앨범 커버 변경하기":"Change the album cover",
-  "바이닐 이미지 변경하기":"Change the vinyl image",
-  "수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 바이닐 이미지를 변경할 수 있어요.":"Tap the edit button at the end of the color palette on the edit screen to change the vinyl image.",
+  "디스크 이미지 변경하기":"Change the disc image",
+  "수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 디스크 이미지를 변경할 수 있어요.":"Tap the edit button at the end of the color palette on the edit screen to change the disc image.",
   "상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.":"Tap the edit button on the cover in the detail view to pick a different cover or use a saved image.",
-  "자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
+  "자켓 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.":"View your records as colored vinyl discs instead of sleeves, in the color you picked when adding them.",
   "구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.":"Purchases, arrivals, unboxings and listens show up on the calendar. Tap a day to see its entries and albums.",
   "달력 대표 이미지 정하기":"Pick the calendar image",
   "한 날짜에 바이닐 기록이 여러 개일 땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정할 수 있어요.":"When a day has several vinyl entries, pin the one you want to set it as that day's image.",
@@ -3024,11 +3024,11 @@ function renderPalette(containerId, inputId, onChange){
   const isCustom = !hasPhoto && !!(inp&&inp.dataset.hex) && !inPalette;
   const customBg = isCustom ? inp.dataset.hex : 'conic-gradient(from 0deg,#e23b3b,#e6c23a,#36a35a,#3a6fd6,#8a4fd6,#e23b3b)';
   html+=`<button type="button" class="sw sw-custom${isCustom?' on':''}" title="직접 선택" style="--sw:${customBg}"></button>`;
-  // 판에 사진 넣기 칩 (수정 화면에서만: dataset.camswatch)
+  // 디스크에 사진 넣기 칩 (수정 화면에서만: dataset.camswatch)
   if(inp && inp.dataset.camswatch==='1'){
     const photo=inp.dataset.photo||'';
     const photoSVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
-    html+=`<button type="button" class="sw sw-photo${photo?' has on':''}" title="판에 사진 넣기" ${photo?`style="background-image:url(${photo})"`:''}>${photo?'':photoSVG}</button>`;
+    html+=`<button type="button" class="sw sw-photo${photo?' has on':''}" title="디스크에 사진 넣기" ${photo?`style="background-image:url(${photo})"`:''}>${photo?'':photoSVG}</button>`;
   }
   box.innerHTML=html;
   box.querySelectorAll('.sw:not(.sw-custom):not(.sw-photo)').forEach(el=>el.onclick=()=>{
@@ -3060,7 +3060,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
   const dot=document.getElementById(prefix+'-colordot');
   const pal=document.getElementById(prefix+'-palette');
   const tog=document.getElementById(prefix+'-coltoggle');
-  const extra=document.getElementById(prefix+'-vinyl-extra');   // 판 투명도 — 팔레트와 함께 접힘
+  const extra=document.getElementById(prefix+'-vinyl-extra');   // 디스크 투명도 — 팔레트와 함께 접힘
   const prevBox=document.getElementById(prefix+'-discprev');    // 팔레트 옆 LP판 미리보기
   const prevD=document.getElementById(prefix+'-discprev-d');
   const op=document.getElementById(prefix+'-op');
@@ -3938,8 +3938,8 @@ function openDetail(id, mode){
   if(typeof SETTINGS==='undefined' || SETTINGS.showGrade!==false){
     const gradeCell=g=>`<span class="grade-badge">${g}</span> <span style="color:var(--dim);font-size:11px">${(GRADE_DESC[g]||'').split(' — ')[0]}</span>`;
     if(it.sleeveGrade) R('슬리브 상태', gradeCell(it.sleeveGrade));
-    if(it.mediaGrade) R('바이닐 상태', gradeCell(it.mediaGrade));
-    if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('바이닐 상태', gradeCell(it.grade));  // 구 데이터 폴백
+    if(it.mediaGrade) R('디스크 상태', gradeCell(it.mediaGrade));
+    if(!it.sleeveGrade && !it.mediaGrade && it.grade) R('디스크 상태', gradeCell(it.grade));  // 구 데이터 폴백
   }
   { const rpmOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showRpm, inchOn=(typeof SETTINGS==='undefined')||!!SETTINGS.showInch;
     const parts=[rpmOn&&it.rpm?it.rpm+' RPM':'', inchOn?(it.inch||''):''].filter(Boolean);
@@ -3991,7 +3991,7 @@ function openDetail(id, mode){
         <button class="lst-del" data-i="${i}" aria-label="삭제">✕</button>
       </div>`).join('')}</div>`;
   } else {
-    listenHTML+=`<div class="lst-empty">아직 청음 기록이 없어요. 판을 들었다면 남겨보세요.</div>`;
+    listenHTML+=`<div class="lst-empty">아직 청음 기록이 없어요. 바이닐을 들었다면 남겨보세요.</div>`;
   }
   $('#dt-body').innerHTML=`<div class="dt-titlerow"><h2>${it.album||'—'}</h2><button class="like-btn ${it.liked?'on':''}" id="dt-like" aria-label="좋아요">${heartSVG(it.liked)}</button></div><div class="dar">${it.artist||'—'}</div>`
     +`<div class="dt-raterow"><div class="dt-rate">${starsEdit(it)}</div><button class="dt-editfab" id="dt-edit" aria-label="정보 수정"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>수정</button></div>`
@@ -4145,7 +4145,7 @@ function showEditForm(it){
   // 팔레트
   { const ec=$('#e-color'); if(ec){ const hx=it.colorHex||it.discColorCustom||(it.color?discColor(it.color):''); if(hx&&hx[0]==='#') ec.dataset.hex=hx; else delete ec.dataset.hex;
       if(it.discPhoto) ec.dataset.photo=it.discPhoto; else delete ec.dataset.photo;
-      ec.dataset.camswatch='1';   // 팔레트에 '판에 사진 넣기' 칩 노출
+      ec.dataset.camswatch='1';   // 팔레트에 '디스크에 사진 넣기' 칩 노출
       window.__openDiscPhoto=()=>openDiscPhoto(it); } }
   { const op=$('#e-op'); if(op){ op.value=Math.round((it.discOpacity!=null?it.discOpacity:1)*100); } }
   setupColorField('e');
@@ -4189,13 +4189,13 @@ function showEditForm(it){
   };
 }
 
-// 바이닐 꾸미기 (Pro 전용): 판 색상 + 투명도 세부 조정, 저장 즉시 반영
-function openDiscPhoto(it, opts){   // 판에 사진 넣기. opts:{draft:true,prefix:'f'} 면 추가 폼 임시 보관 모드
+// 디스크 꾸미기 (Pro 전용): 디스크 색상 + 투명도 세부 조정, 저장 즉시 반영
+function openDiscPhoto(it, opts){   // 디스크에 사진 넣기. opts:{draft:true,prefix:'f'} 면 추가 폼 임시 보관 모드
   const box=$('#vinyl-box');   // 별도 팝업 시트에 렌더
   box.innerHTML=`
-    <div class="inl-title">📷 판에 사진 넣기</div>
+    <div class="inl-title">📷 디스크에 사진 넣기</div>
     <div class="vd-pane" id="vd-pane-photo">
-      <div class="vd-photodesc">바이닐 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.</div>
+      <div class="vd-photodesc">디스크 모양 가이드 안에 사진이 들어가요. 한 손가락으로 위치를 옮기고, 두 손가락으로 크기·기울기를 조절하세요.</div>
       <div class="vd-stage" id="vd-stage">
         <div class="vd-imgwrap" id="vd-imgwrap"></div>
         <div class="vd-guide"></div>
@@ -5440,7 +5440,7 @@ function paintGradeDesc(prefix){
   const s=$('#'+prefix+'-sleeve'), m=$('#'+prefix+'-media'), d=$('#'+prefix+'-grade-desc');
   if(!d) return;
   const lines=[];
-  if(m&&m.value) lines.push('💿 바이닐 '+m.value+' — '+gradeShort(m.value));
+  if(m&&m.value) lines.push('💿 디스크 '+m.value+' — '+gradeShort(m.value));
   if(s&&s.value) lines.push('✉️ 슬리브 '+s.value+' — '+sleeveShort(s.value));
   d.innerHTML=lines.join('<br>');
 }
@@ -5850,7 +5850,7 @@ function wzTexts(){
   q('#wz-s2 .wz-q','이 앨범이 맞나요?','Is this the album?');
   ph('#wz-ar','가수','Artist'); ph('#wz-al','앨범명','Album'); t('#wz-edit','앨범명·가수 수정','Edit title & artist');
   t('#wz-to3','이 자켓으로 할게요','Use this cover');
-  q('#wz-s3 .wz-q','어떤 <em>판</em>인가요?','What does the <em>disc</em> look like?');
+  q('#wz-s3 .wz-q','어떤 <em>디스크</em>인가요?','What does the <em>disc</em> look like?');
   t('#wz-opa span','투명도','Opacity'); t('#wz-to4','다음','Next');
   q('#wz-s4 .wz-q','이 바이닐은<br>지금 어떤 <em>상태</em>인가요?','What <em>state</em> is<br>this record in?');
   q('#wz-s5 .wz-q','얼마에 샀나요?','How much was it?');
@@ -6563,7 +6563,7 @@ function openPriceList(kind, keep){
       <button type="button" class="pl-cmp${st.cmp?' on':''}" id="pl-cmp">${cmpLab}</button>
     </div>
     <div class="pl-sum">${st.cmp
-      ? (buy ? '정가를 입력한 판만 보여요' : '구매가를 입력한 판만 보여요')
+      ? (buy ? '정가를 입력한 바이닐만 보여요' : '구매가를 입력한 바이닐만 보여요')
       : `<span>합계</span> <b>${won(total)}</b>`}</div>`;
   const row = r => {
     const it=r.d, art=artFor(it);
@@ -7058,7 +7058,7 @@ function renderSettings(){
         ${tog(SETTINGS.showYear)}
       </div>
       <div class="set-row" data-act="showGrade">
-        <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉한 바이닐의 슬리브·판 컨디션 등급을 기록해요</div></div>
+        <div class="set-l"><div class="set-t">상태 등급 선택</div><div class="set-d">개봉한 바이닐의 슬리브·디스크 컨디션 등급을 기록해요</div></div>
         ${tog(SETTINGS.showGrade)}
       </div>
       <div class="set-row" data-act="dedupeFlow">
@@ -7407,23 +7407,23 @@ function renderCollPick(q){
    설정 > 앱 가이드 다시 보기 로 재실행. */
 const TOUR_STEPS=[
   { title:'Turnit 에 오신 걸 환영해요',
-    desc:'내 바이닐을 등록하고, 판을 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
+    desc:'내 바이닐을 등록하고, 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
   { tab:'coll', target:'#fab', round:true, title:'바이닐 등록',
     desc:'왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.' },
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
-    desc:'커버를 탭하면 판이 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
-  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'바이닐 직접 돌리기',
+    desc:'커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
+  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'디스크 직접 돌리기',
     open:()=>{ const c=document.querySelector('#grid .lp'); if(c) c.classList.add('pulled'); },
     leave:()=>{ document.querySelectorAll('#grid .lp.pulled').forEach(c=>c.classList.remove('pulled')); },
-    desc:'카드 위로 살짝 보이는 바이닐을 탭하면 판이 앞으로 나와요. 손가락으로 판을 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 판이 들어가며 멈춰요.' },
+    desc:'카드 위로 살짝 보이는 디스크를 탭하면 디스크가 앞으로 나와요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 다시 탭하면 디스크가 들어가며 멈춰요.' },
   { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'앨범 커버 변경하기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
     desc:'상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.' },
-  { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'바이닐 이미지 변경하기',
+  { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'디스크 이미지 변경하기',
     open:()=>{ if(DATA.length){ openDetail(DATA[0].id); showEditForm(DATA[0]); } }, leave:()=>{ try{ hide('edit'); }catch(e){} try{ hide('detail'); }catch(e){} },
-    desc:'수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 바이닐 이미지를 변경할 수 있어요.' },
-  { tab:'coll', target:'#cf-mode-toggle', round:true, title:'바이닐 보기',
-    desc:'자켓 대신 컬러 바이닐 판 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
+    desc:'수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 디스크 이미지를 변경할 수 있어요.' },
+  { tab:'coll', target:'#cf-mode-toggle', round:true, title:'디스크 보기',
+    desc:'자켓 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
   { tab:'cal', target:'#cal-grid', title:'달력',
     desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
   { tab:'cal', target:'#daylist .dl-row .dl-pin', round:true, pad:6, noScroll:true, title:'달력 대표 이미지 정하기',
@@ -7602,8 +7602,8 @@ function refreshGenreChips(){
 let cfItems=[], cfIndex=0, cfCards=[], cfMode='cover';   // 'cover' | 'vinyl'
 function applyCfMode(){
   const stage=$('#cf-stage'); if(stage) stage.classList.toggle('vinyl-mode', cfMode==='vinyl');
-  const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '자켓 보기로 전환' : '바이닐 보기로 전환'; }
-  const lab=$('#cf-mode-lab'); if(lab) lab.textContent = cfMode==='vinyl' ? '자켓 보기' : '바이닐 보기';
+  const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '자켓 보기로 전환' : '디스크 보기로 전환'; }
+  const lab=$('#cf-mode-lab'); if(lab) lab.textContent = cfMode==='vinyl' ? '자켓 보기' : '디스크 보기';
 }
 function buildCoverFlow(){
   cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
