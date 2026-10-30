@@ -1321,31 +1321,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-fly{position:fixed;z-index:910;border-radius:6px;transform-origin:0 0;will-change:transform,opacity;background:#26222e center/cover;box-shadow:0 12px 30px rgba(0,0,0,.45);pointer-events:none}
 .tt-stage.tt-flying .tt-armw,.tt-stage.tt-flying .tt-shine,.tt-stage.tt-flying .tt-cbtn{visibility:hidden}   /* 디스크가 날아오는 동안엔 디스크만 */
 .lp.tt-hold .artwrap{visibility:hidden}
-/* 턴테이블 따라하기 가이드: 화면을 가리지 않고(직접 만질 수 있게) 점선 강조 + 손가락(터치 점) 애니메이션 + 안내 카드 */
-.ttg{position:fixed;inset:0;z-index:950;pointer-events:none}
-.ttg[hidden]{display:none}
-.ttg-ring{position:fixed;border:2px dashed var(--accent2,#f2a444);border-radius:50%;pointer-events:none;transition:left .35s,top .35s,width .35s,height .35s,border-radius .35s,opacity .25s;animation:ttg-pulse 1.6s ease-in-out infinite}
-.ttg-ring.sq{border-radius:16px}
-.ttg-ring.none{opacity:0}
-@keyframes ttg-pulse{0%,100%{box-shadow:0 0 0 0 rgba(242,164,68,.35)}50%{box-shadow:0 0 0 9px rgba(242,164,68,0)}}
-.ttg-dot{position:fixed;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);opacity:0;pointer-events:none;will-change:transform,opacity;
-  box-shadow:0 0 0 7px rgba(255,255,255,.22),0 6px 18px rgba(0,0,0,.45)}
-.ttg-card{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;bottom:calc(20px + env(safe-area-inset-bottom));pointer-events:auto;
-  background:#1b1a21;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:15px 16px 10px;color:#f3f1f5;box-shadow:0 18px 50px rgba(0,0,0,.55);transition:opacity .2s,transform .2s}
-.ttg-card.top{bottom:auto;top:calc(76px + env(safe-area-inset-top))}
-.ttg-card.swap{opacity:0;transform:translateY(8px)}
-.ttg-card.ok .ttg-t{color:var(--accent2,#f2a444)}
-.ttg-st{font-size:11px;font-weight:800;color:var(--accent2,#f2a444);letter-spacing:.04em}
-.ttg-t{font-size:16.5px;font-weight:800;margin-top:4px;transition:color .2s}
-.ttg-d{font-size:13px;color:rgba(255,255,255,.66);margin-top:4px;line-height:1.5;min-height:19px}
-.ttg-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px}
-.ttg-dots{display:flex;gap:4px}
-.ttg-dots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);transition:width .2s}
-.ttg-dots i.on{background:var(--accent2,#f2a444);width:14px}
-.ttg-btns{display:flex;align-items:center;gap:4px}
-.ttg-skip{background:none;border:none;color:rgba(255,255,255,.5);font:inherit;font-size:13px;font-weight:600;padding:8px 6px;cursor:pointer}
-.ttg-next{background:linear-gradient(150deg,var(--accent2,#f2a444),var(--accent,#e8643c));color:#1a0d06;border:none;border-radius:11px;padding:8px 16px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
-.ttg-next[hidden]{display:none}
 .tt-vid{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .tt-vid[hidden]{display:none}
 .tt-vid-box{width:min(86vw,340px);background:#1b1a21;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px 18px 16px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
@@ -2091,17 +2066,6 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </div>
 </div>
 
-<!-- 턴테이블 따라하기 가이드 (첫 바이닐 등록 직후 한 번) -->
-<div class="ttg" id="ttg" hidden>
-  <div class="ttg-ring none" id="ttg-ring"></div>
-  <div class="ttg-dot" id="ttg-dot"></div>
-  <div class="ttg-card" id="ttg-card">
-    <div class="ttg-st" id="ttg-st"></div>
-    <div class="ttg-t" id="ttg-t"></div>
-    <div class="ttg-d" id="ttg-d"></div>
-    <div class="ttg-row"><div class="ttg-dots" id="ttg-dots"></div><div class="ttg-btns"><button type="button" class="ttg-skip" id="ttg-skip">건너뛰기</button><button type="button" class="ttg-next" id="ttg-next" hidden>다음</button></div></div>
-  </div>
-</div>
 <script>
 /* ====================== i18n engine (KO ⇄ EN display layer) ====================== */
 /* Translates DOM text/attributes at runtime from a KO→EN dictionary WITHOUT
@@ -2592,19 +2556,15 @@ const I18N = {
   "왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.":"Tap + at the top left to add a record. Search the album or scan its barcode, and the cover and audio are found for you.",
   "커버 탭해서 미리듣기":"Tap a cover to preview",
   "디스크 직접 돌리기":"Spin the disc yourself",
-  "디스크를 탭해 보세요":"Tap the disc","커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블이 열려요.":"Tap the disc peeking out below the cover to open the turntable.",
-  "좋아요 👍":"Nice 👍","톤암이 내려앉으며 노래가 흘러요.":"The tonearm drops and the music starts.",
-  "디스크를 한 바퀴 돌려 보세요":"Spin the disc one full turn","시계 방향으로 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.":"Clockwise for the next song, counter-clockwise for the previous one.",
-  "다음 곡으로 넘어갔어요 👍":"Skipped to the next song 👍",
-  "가운데를 탭해 멈춰 보세요":"Tap the center to pause","디스크 가운데를 탭하면 바로 멈춰요.":"Tap the middle of the disc to stop right away.","멈췄어요 👍":"Paused 👍",
-  "다시 탭해서 이어 듣기":"Tap again to keep listening","한 번 더 탭하면 멈춘 곳부터 다시 재생돼요.":"Tap once more and it picks up where it stopped.",
-  "톤암을 디스크 밖으로 빼 보세요":"Move the tonearm off the disc","실제 턴테이블처럼 바늘을 들어 밖으로 빼면 노래가 꺼져요.":"Just like a real turntable, lift the needle off and the music stops.","꺼졌어요 👍":"Stopped 👍",
-  "다시 디스크 위에 올려 보세요":"Put it back on the disc","놓은 자리부터 재생돼요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요.":"It plays from where you drop it. The outer edge is the start of the song, further in is later.",
-  "켜졌어요 👍":"Playing 👍","원하는 부분부터 골라 들을 수 있어요.":"Now you can jump to any part of the song.",
+  "턴테이블 사용법":"How the turntable works","디스크로 음악 듣는 법을 다시 알려드릴게요.":"Here's how to listen with the disc again.",
+  "턴테이블 가이드 다시 보기":"Replay turntable guide","디스크 돌리기·톤암·공유 방법을 다시 안내해요":"Shows how to spin, use the tonearm and share again","바이닐을 먼저 등록해 주세요":"Add a record first",
+  "첫 바이닐을 등록했어요 🎉":"Your first record is in 🎉","이제 Turnit 의 핵심, 디스크로 음악 듣는 법을 알려드릴게요.":"Here's the heart of Turnit: how to listen with the disc.",
+  "디스크를 탭해 보세요":"Tap the disc","커버 아래로 살짝 보이는 디스크를 탭하면 자켓에서 디스크가 나와 턴테이블에 올라가고, 톤암이 내려앉으며 노래가 흘러요.":"Tap the disc peeking out below the cover. It slides out of the sleeve onto the turntable, the tonearm drops, and the music starts.",
+  "돌려서 곡 넘기기":"Spin to change songs","디스크를 손가락으로 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.":"Spin the disc one full turn clockwise for the next song, counter-clockwise for the previous one.",
+  "가운데를 탭하면 일시정지":"Tap the center to pause","디스크 가운데를 탭하면 멈추고, 다시 탭하면 이어서 재생돼요.":"Tap the center of the disc to pause, and tap again to keep playing.",
+  "톤암으로 원하는 부분부터":"Drop the tonearm anywhere","톤암을 잡아 디스크 위에 놓으면 그 자리부터 들려요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요. 디스크 밖으로 빼면 멈춰요.":"Drag the tonearm onto the disc to play from that spot. The outer edge is the start of the song, further in is later. Move it off the disc to stop.",
   "30초 영상으로 공유":"Share a 30-second video","공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 인스타 스토리나 카톡으로 바로 보낼 수 있어요.":"The share button makes a 30-second video of your disc spinning to the current song, ready for your Instagram story or friends.",
-  "아래로 쓸어내려 닫아 보세요":"Swipe down to close","디스크가 다시 자켓으로 들어가요.":"The disc slides back into its sleeve.",
-  "완성! 이제 마음껏 돌려 보세요 🎶":"All set! Spin away 🎶",
-  "턴테이블 가이드 다시 보기":"Replay turntable guide","디스크 돌리기·톤암·공유를 직접 따라 해 봐요":"Try spinning, the tonearm and sharing, step by step","바이닐을 먼저 등록해 주세요":"Add a record first",
+  "왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.":"Tap the top-left button or swipe down, and the disc slides back into its sleeve.",
   "이 환경에서는 공유할 수 없어요":"Sharing is not available here",
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
   "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent","인스타 스토리·카톡으로 보내 보세요":"Send it to your Instagram story or friends",
@@ -4141,7 +4101,7 @@ function openTurntable(it, card){
   TT._u=sr.width/100; TT._armA=null;
   _ttPaintDisc(it, card, cover); _ttSyncArm();
   // 전환 애니메이션 동안엔 매 프레임 루프를 돌리지 않는다 (애니메이션이 메인 스레드 방해 없이 돌게)
-  const done=()=>{ stage.classList.remove('tt-flying'); if(!TT.raf){ TT.last=0; TT.raf=requestAnimationFrame(_ttTick); } setTimeout(()=>{ if(TT.open && TT.it===it) playPreview(it, disc); }, 60); _ttgEmit('open'); };
+  const done=()=>{ stage.classList.remove('tt-flying'); if(!TT.raf){ TT.last=0; TT.raf=requestAnimationFrame(_ttTick); } setTimeout(()=>{ if(TT.open && TT.it===it) playPreview(it, disc); }, 60); };
   if(!ar || !ar.width || !dr){ tt.classList.add('ui'); done(); return; }
   // 1) 자켓(커버)이 가운데로, 디스크는 그 뒤에서 따라옴  2) 디스크가 자켓 옆으로 쓱 빠져나옴
   // 3) 자켓은 비켜나며 사라지고 디스크는 턴테이블 자리로 커짐 → 톤암이 내려앉으며 재생
@@ -4175,7 +4135,6 @@ function closeTurntable(){
   if(!TT.open) return;
   const tt=_tt$('tt'), stage=_tt$('tt-stage'), it=TT.it;
   TT.open=false; window._ttOpen=false;
-  _ttgEmit('close');
   if(TTV.busy) TTV.cancel=true; _ttvPanel('off');
   if(_preview.id===it.id) stopPreview();
   // 디스크가 카드 속으로 돌아감 (그새 목록이 다시 그려졌으면 같은 카드를 다시 찾는다)
@@ -4208,15 +4167,15 @@ function closeTurntable(){
     let a=ang(e), d=a-TT.lastA; if(d>180) d-=360; if(d<-180) d+=360; TT.lastA=a;
     TT.a+=d; TT.acc+=d; TT.vel=d*30;
     if(!TT.moved && Math.abs(TT.acc)>1.5){ TT.moved=true; if(!_ttPlaying()){ TT.acc=0; _ttPlay(); } }   // 돌리기 시작 = 재생
-    const mine=_preview.id===(TT.it&&TT.it.id);
-    while(TT.acc>=360){ TT.acc-=360; if(mine) previewStep(+1, disc); _ttgEmit('spin'); }   // 시계 방향 한 바퀴 → 다음 곡
-    while(TT.acc<=-360){ TT.acc+=360; if(mine) previewStep(-1, disc); _ttgEmit('spin'); }  // 반대 방향 → 이전 곡
-  });
+    if(_preview.id===(TT.it&&TT.it.id)){
+      while(TT.acc>=360){ TT.acc-=360; previewStep(+1, disc); }   // 시계 방향 한 바퀴 → 다음 곡
+      while(TT.acc<=-360){ TT.acc+=360; previewStep(-1, disc); }  // 반대 방향 → 이전 곡
+    } });
   const up=e=>{ if(!TT.drag) return; TT.drag=false;
     // 돌리지 않고 가운데(라벨 근처)를 탭 → 일시정지/재생
     if(e && e.type==='pointerup' && !TT.moved && Math.hypot(e.clientX-TT.downX, e.clientY-TT.downY)<12){
       const r=_tt$('tt-stage').getBoundingClientRect(), d=Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2));
-      if(d<r.width*.22){ _ttFlash(); _ttPlay(); _ttgEmit('center'); }
+      if(d<r.width*.22){ _ttFlash(); _ttPlay(); }
     } };
   disc.addEventListener('pointerup',up); disc.addEventListener('pointercancel',up);
   _tt$('tt-close').onclick=closeTurntable;
@@ -4241,7 +4200,6 @@ function closeTurntable(){
   const armUp=()=>{
     if(!TT.armDrag) return; TT.armDrag=false;
     const it=TT.it; if(!it) return;
-    _ttgEmit(TT.armA>=2.5?'armOn':'armOff');
     if(TT.armA>=2.5){                            // 디스크 위에 내려놓음 → 그 자리부터 재생
       const p=Math.max(0, Math.min(.95, (TT.armA-5)/8)), au=_preview.audio;
       if(_preview.id===it.id && au && au.duration>0){ try{ au.currentTime=p*au.duration; }catch(_){} if(_preview.paused) _resumePreview(); }
@@ -4485,130 +4443,6 @@ async function shareTurntableVideo(){
   b.onclick=shareTurntableVideo;
   _tt$('tt-vid-x').onclick=()=>{ if(TTV.busy) TTV.cancel=true; _ttvPanel('off'); };
   _tt$('tt-vid-go').onclick=async()=>{ const ok=await _ttvShare(); if(ok===false) previewToast(tr('이 환경에서는 공유할 수 없어요')); };
-})();
-/* ===== 첫 바이닐 등록 직후: 턴테이블 따라하기 가이드 =====
-   읽는 가이드가 아니라, 손가락 애니메이션을 보고 직접 해 보면 다음 단계로 넘어간다.
-   디스크 탭(열림) → 한 바퀴 돌려 다음 곡 → 가운데 탭 멈춤·재생 → 톤암 빼서 끄기·올려서 켜기 → 공유 소개 → 쓸어내려 닫기.
-   화면을 가리지 않아 실제로 만질 수 있고, 6초가 지나면 '다음', 언제든 '건너뛰기'. 한 번만(lp_ttguide_done). */
-const TTG={ on:false, i:-1, steps:[], it:null, busy:false, nextT:0, anim:null, raf:0 };
-function _ttgEmit(ev){
-  if(!TTG.on || TTG.busy) return;
-  const st=TTG.steps[TTG.i]; if(!st) return;
-  if(ev==='close' && st.wait!=='close'){ _ttgEnd(false); return; }   // 중간에 닫으면 가이드도 끝
-  if(st.wait===ev) _ttgOk(st);
-}
-function _ttgOk(st){
-  TTG.busy=true; clearTimeout(TTG.nextT); _ttgHand(null);
-  const card=_tt$('ttg-card');
-  if(st.ok){ _tt$('ttg-t').textContent=tr(st.ok); _tt$('ttg-d').textContent=st.okd?tr(st.okd):''; card.classList.add('ok'); }
-  setTimeout(()=>{ card.classList.remove('ok'); TTG.busy=false; if(!TTG.on) return;
-    if(TTG.i>=TTG.steps.length-1) _ttgEnd(true); else _ttgGo(TTG.i+1); }, st.ok?1200:200);
-}
-// 손가락(터치 점) 애니메이션: tap / orbit / drag — transform 만 움직임
-function _ttgHand(h){
-  const dot=_tt$('ttg-dot'); if(TTG.anim){ TTG.anim.cancel(); TTG.anim=null; } dot.style.opacity='0';
-  if(!h) return;
-  const T=(x,y,s)=>`translate(${x}px,${y}px) scale(${s})`;
-  let kf, dur;
-  if(h.type==='tap'){ dur=1500; kf=[{opacity:0,transform:T(h.x,h.y,1.5)},{opacity:1,transform:T(h.x,h.y,1),offset:.25},{opacity:1,transform:T(h.x,h.y,.78),offset:.4},{opacity:1,transform:T(h.x,h.y,1),offset:.55},{opacity:0,transform:T(h.x,h.y,1),offset:.85},{opacity:0,transform:T(h.x,h.y,1)}]; }
-  else if(h.type==='orbit'){ dur=2400; kf=[]; const N=28;
-    for(let k=0;k<=N;k++){ const a=-Math.PI/2+(k/N)*Math.PI*2*(h.dir||1); kf.push({ transform:T(h.cx+Math.cos(a)*h.r, h.cy+Math.sin(a)*h.r, 1), opacity:(k===0||k===N)?0:1, offset:.08+.8*(k/N) }); }
-    kf.unshift({transform:kf[0].transform, opacity:0, offset:0}); kf.push({transform:kf[kf.length-1].transform, opacity:0, offset:1}); }
-  else if(h.type==='drag'){ dur=h.dur||1900; kf=[{opacity:0,transform:T(h.a.x,h.a.y,1.4)},{opacity:1,transform:T(h.a.x,h.a.y,.85),offset:.18},{opacity:1,transform:T(h.b.x,h.b.y,.85),offset:.68},{opacity:1,transform:T(h.b.x,h.b.y,1),offset:.76},{opacity:0,transform:T(h.b.x,h.b.y,1),offset:.92},{opacity:0,transform:T(h.b.x,h.b.y,1)}]; }
-  TTG.anim=dot.animate(kf,{duration:dur, iterations:Infinity, easing:'ease-in-out'});
-}
-function _ttgRing(r, shape){
-  const ring=_tt$('ttg-ring');
-  if(!r){ ring.classList.add('none'); return; }
-  ring.classList.remove('none'); ring.classList.toggle('sq', shape==='sq');
-  Object.assign(ring.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});
-}
-const _ttgPad=(r,p)=>r && ({left:r.left-p, top:r.top-p, width:r.width+p*2, height:r.height+p*2});
-function _ttgArm(deg, len){   // 회전축 기준 각도·길이의 화면 좌표 (톤암 그림과 같은 기하)
-  const r=_tt$('tt-stage').getBoundingClientRect(), u=r.width/100, th=deg*Math.PI/180;
-  return { x:r.left+96*u-Math.sin(th)*len*u, y:r.top+2*u+Math.cos(th)*len*u };
-}
-function _ttgLayout(){
-  const st=TTG.steps[TTG.i]; if(!st || TTG.busy) return;
-  const L=st.layout ? st.layout() : {};
-  _ttgRing(L.ring||null, L.shape); _ttgHand(L.hand||null);
-  const card=_tt$('ttg-card'), cy=L.ring ? L.ring.top+L.ring.height/2 : 0;
-  card.classList.toggle('top', !!st.cardTop || (!!L.ring && cy>window.innerHeight*.55 && !window._ttOpen));
-}
-function _ttgGo(i){
-  TTG.i=i; const st=TTG.steps[i], card=_tt$('ttg-card');
-  card.classList.add('swap');
-  setTimeout(()=>{
-    _tt$('ttg-st').textContent=`${i+1} / ${TTG.steps.length}`;
-    _tt$('ttg-t').textContent=tr(st.t); _tt$('ttg-d').textContent=st.d?tr(st.d):'';
-    _tt$('ttg-dots').innerHTML=TTG.steps.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');
-    card.classList.remove('swap');
-    if(st.enter) try{ st.enter(); }catch(e){}
-    _ttgLayout();
-    const nx=_tt$('ttg-next'); nx.hidden=true; nx.textContent=tr(i===TTG.steps.length-1?'완료':'다음');
-    clearTimeout(TTG.nextT); TTG.nextT=setTimeout(()=>{ if(TTG.on && TTG.i===i) nx.hidden=false; }, st.wait?6000:0);
-  }, i===0?0:180);
-}
-function _ttgEnd(finished){
-  if(!TTG.on) return;
-  TTG.on=false; clearTimeout(TTG.nextT); _ttgHand(null);
-  _tt$('ttg').hidden=true;
-  window.removeEventListener('scroll',_ttgOnScroll); window.removeEventListener('resize',_ttgOnScroll);
-  try{ localStorage.setItem('lp_ttguide_done','1'); }catch(e){}
-  if(finished) previewToast(tr('완성! 이제 마음껏 돌려 보세요 🎶'));
-}
-function _ttgOnScroll(){ if(TTG.raf) return; TTG.raf=requestAnimationFrame(()=>{ TTG.raf=0; _ttgLayout(); }); }
-function startTurntableGuide(it, force){
-  let done=false; try{ done=localStorage.getItem('lp_ttguide_done')==='1'; }catch(e){}
-  if((done && !force) || TTG.on || !it || (window.__tourOn && window.__tourOn())) return;
-  const card=()=>document.querySelector(`#grid .lp[data-id="${it.id}"]`);
-  const stR=()=>_tt$('tt-stage').getBoundingClientRect();
-  const center=()=>{ const r=stR(); return {x:r.left+r.width/2, y:r.top+r.height/2, r}; };
-  const steps=[
-    { t:'디스크를 탭해 보세요', d:'커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블이 열려요.', wait:'open', ok:'좋아요 👍', okd:'톤암이 내려앉으며 노래가 흘러요.',
-      enter:()=>{ const c=card(); if(c){ try{ c.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){} } },
-      fallback:()=>openTurntable(it, card()),
-      layout:()=>{ const c=card(); if(!c) return {};
-        const aw=c.querySelector('.artwrap').getBoundingClientRect(), ar=c.querySelector('.art').getBoundingClientRect();
-        return { ring:_ttgPad(aw,8), shape:'sq', hand:{type:'tap', x:ar.left+ar.width/2, y:(ar.bottom+aw.bottom)/2} }; } },
-    { t:'디스크를 한 바퀴 돌려 보세요', d:'시계 방향으로 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.', wait:'spin', ok:'다음 곡으로 넘어갔어요 👍',
-      layout:()=>{ const c=center(); return { ring:_ttgPad(c.r,8), hand:{type:'orbit', cx:c.x, cy:c.y, r:c.r.width*.36} }; } },
-    { t:'가운데를 탭해 멈춰 보세요', d:'디스크 가운데를 탭하면 바로 멈춰요.', wait:'center', ok:'멈췄어요 👍',
-      layout:()=>{ const c=center(), s=c.r.width*.26; return { ring:{left:c.x-s/2, top:c.y-s/2, width:s, height:s}, hand:{type:'tap', x:c.x, y:c.y} }; } },
-    { t:'다시 탭해서 이어 듣기', d:'한 번 더 탭하면 멈춘 곳부터 다시 재생돼요.', wait:'center', ok:'좋아요 👍',
-      layout:()=>{ const c=center(), s=c.r.width*.26; return { ring:{left:c.x-s/2, top:c.y-s/2, width:s, height:s}, hand:{type:'tap', x:c.x, y:c.y} }; } },
-    { t:'톤암을 디스크 밖으로 빼 보세요', d:'실제 턴테이블처럼 바늘을 들어 밖으로 빼면 노래가 꺼져요.', wait:'armOff', ok:'꺼졌어요 👍', arm:true,
-      layout:()=>{ const b=_tt$('tt-armb').getBoundingClientRect(); return { ring:_ttgPad(b,6), shape:'sq', hand:{type:'drag', a:_ttgArm(TT.armA,55), b:_ttgArm(-10,55)} }; } },
-    { t:'다시 디스크 위에 올려 보세요', d:'놓은 자리부터 재생돼요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요.', wait:'armOn', ok:'켜졌어요 👍', okd:'원하는 부분부터 골라 들을 수 있어요.', arm:true,
-      layout:()=>{ const c=center(); return { ring:_ttgPad(c.r,8), hand:{type:'drag', a:_ttgArm(-9,55), b:_ttgArm(8,55)} }; } },
-    { t:'30초 영상으로 공유', d:'공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 인스타 스토리나 카톡으로 바로 보낼 수 있어요.',
-      layout:()=>({ ring:_ttgPad(_tt$('tt-share').getBoundingClientRect(),6) }) },
-    { t:'아래로 쓸어내려 닫아 보세요', d:'디스크가 다시 자켓으로 들어가요.', wait:'close', cardTop:true,
-      fallback:()=>closeTurntable(),
-      layout:()=>{ const W=window.innerWidth, H=window.innerHeight, y0=Math.max(stR().bottom+24, H*.62); return { hand:{type:'drag', a:{x:W/2, y:y0}, b:{x:W/2, y:Math.min(H-30, y0+H*.22)}, dur:1500} }; } },
-  ].filter(s=>!s.arm || _ttArmMode()!=='off');   // 톤암을 꺼 둔 경우 톤암 단계는 건너뜀
-  Object.assign(TTG,{ on:true, it, steps, busy:false });
-  _tt$('ttg').hidden=false;
-  window.addEventListener('scroll',_ttgOnScroll,{passive:true}); window.addEventListener('resize',_ttgOnScroll);
-  _ttgGo(0);
-}
-// 설정 > 턴테이블 가이드 다시 보기: 보관함으로 가서 맨 앞 카드로 다시 따라 해 본다 (이미 바이닐이 있는 사용자도)
-function replayTurntableGuide(){
-  try{ hide('settings'); }catch(e){}
-  if(window._ttOpen) closeTurntable();
-  const nav=document.querySelector('.nav button[data-v="coll"]'); if(nav && !nav.classList.contains('on')) nav.click();
-  let c=document.querySelector('#grid .lp[data-id]');
-  if(!c && DATA.length){ filter.chip='전체'; filter.sub=''; filter.q=''; const q=$('#q'); if(q) q.value=''; renderChips(); renderGrid(); c=document.querySelector('#grid .lp[data-id]'); }
-  const it=c && DATA.find(d=>d.id===c.dataset.id);
-  if(!it){ previewToast(tr('바이닐을 먼저 등록해 주세요')); return; }
-  setTimeout(()=>startTurntableGuide(it, true), 450);
-}
-(function setupTurntableGuide(){
-  const nx=_tt$('ttg-next'), sk=_tt$('ttg-skip'); if(!nx) return;
-  nx.onclick=()=>{ const st=TTG.steps[TTG.i]; if(!st) return;
-    if(st.fallback){ st.fallback(); nx.hidden=true; }       // 대신 해 주고 그 결과로 넘어감
-    else if(TTG.i>=TTG.steps.length-1) _ttgEnd(true); else _ttgGo(TTG.i+1); };
-  sk.onclick=()=>_ttgEnd(false);
 })();
 /* 공용 확인/알림 다이얼로그 — 시스템 alert/confirm 대신 앱 디자인의 팝업.
    appAlert(msg,{title}) → Promise, appConfirm(msg,{title,okText,cancelText,danger}) → Promise<boolean> */
@@ -6493,7 +6327,7 @@ $('#add-save').onclick=()=>{
   $('#view-coll').classList.add('on');
   renderChips();renderGrid();renderStats();buildCoverFlow();
   window.scrollTo(0,0);
-  if(DATA.length===1) setTimeout(()=>{ try{ startTurntableGuide(it); }catch(e){} }, 1200);   // 첫 바이닐 → 턴테이블 따라하기 가이드
+  if(DATA.length===1) setTimeout(()=>{ try{ startTurntableGuide(it); }catch(e){} }, 1200);   // 첫 바이닐 → 턴테이블 가이드
 };
 
 /* ===== 바이닐 등록 단계 화면 =====
@@ -7883,7 +7717,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap" id="set-ttguide"><div class="set-l"><div class="set-t">턴테이블 가이드 다시 보기</div><div class="set-d">디스크 돌리기·톤암·공유를 직접 따라 해 봐요</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-ttguide"><div class="set-l"><div class="set-t">턴테이블 가이드 다시 보기</div><div class="set-d">디스크 돌리기·톤암·공유 방법을 다시 안내해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 바이닐 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
@@ -8232,14 +8066,14 @@ const TOUR_STEPS=[
   { tab:'my', target:'#my-gear', round:true, title:'설정',
     desc:'언어·테마·표시 옵션은 여기에서 바꿔요. 이 가이드는 설정의 「앱 가이드 다시 보기」로 언제든 다시 볼 수 있어요.' },
 ];
-let _tour={ i:-1, on:false };
+let _tour={ i:-1, on:false, steps:TOUR_STEPS, kind:'main' };   // steps: 지금 보여주는 가이드(기본 = 첫 사용 가이드)
 function _tourSwitchTab(v){
   const b=document.querySelector(`.nav button[data-v="${v}"]`);
   if(b && !b.classList.contains('on')) b.click();
 }
 function _tourLayout(){
   if(!_tour.on) return;
-  const st=TOUR_STEPS[_tour.i]; if(!st) return;
+  const st=_tour.steps[_tour.i]; if(!st) return;
   const hl=$('#tour-hl'), card=$('#tour-card');
   const el=st.target?document.querySelector(st.target):null;
   const vis=el && getComputedStyle(el).display!=='none' && getComputedStyle(el).visibility!=='hidden' && el.getBoundingClientRect().width>0;   // fixed 요소는 offsetParent 가 null 이라 rect 로 판단
@@ -8262,13 +8096,13 @@ function _tourLayout(){
     ar.style.left=Math.max(18,Math.min(cr.width-18,cx))+'px'; });
 }
 function _tourRender(){
-  const st=TOUR_STEPS[_tour.i], n=TOUR_STEPS.length, last=_tour.i===n-1, first=_tour.i===0;
+  const S=_tour.steps, st=S[_tour.i], n=S.length, last=_tour.i===n-1, first=_tour.i===0;
   const card=$('#tour-card');
   card.innerHTML=`<div class="tour-arrow"></div>
     ${first?'':`<div class="tour-step">${_tour.i} / ${n-1}</div>`}
     <div class="tour-t">${st.title}</div>
     <div class="tour-d">${st.desc}</div>
-    <div class="tour-dots">${TOUR_STEPS.map((_,k)=>`<i class="${k===_tour.i?'on':''}"></i>`).join('')}</div>
+    <div class="tour-dots">${S.map((_,k)=>`<i class="${k===_tour.i?'on':''}"></i>`).join('')}</div>
     <div class="tour-btns">
       <button type="button" class="tour-skip" id="tour-skip">${last?'':'건너뛰기'}</button><span class="sp"></span>
       ${first?'':'<button type="button" class="tour-prev" id="tour-prev">이전</button>'}
@@ -8279,11 +8113,11 @@ function _tourRender(){
   $('#tour-next').onclick=()=>last?endTour():tourGo(_tour.i+1);
 }
 function tourGo(i){
-  if(i<0||i>=TOUR_STEPS.length) return;
-  const prev=TOUR_STEPS[_tour.i];
+  if(i<0||i>=_tour.steps.length) return;
+  const prev=_tour.steps[_tour.i];
   if(prev && prev.leave && _tour.i!==i){ try{ prev.leave(); }catch(e){} }
   _tour.i=i;
-  const st=TOUR_STEPS[i];
+  const st=_tour.steps[i];
   if(st.tab) _tourSwitchTab(st.tab);
   if(st.open){ try{ st.open(); }catch(e){} }
   const scrollToTarget=()=>{
@@ -8299,10 +8133,12 @@ function tourGo(i){
   const prevClosed = !!(prev && prev.leave && prev!==st);
   if(st.open || prevClosed) setTimeout(()=>{ scrollToTarget(); _tourLayout(); }, 380);
   if(prevClosed) setTimeout(()=>{ scrollToTarget(); _tourLayout(); }, 700);
+  if(st.relayout) setTimeout(()=>{ if(_tour.i===i) _tourLayout(); }, st.relayout);   // 화면 전환이 긴 단계는 끝난 뒤 한 번 더
   requestAnimationFrame(()=>requestAnimationFrame(_tourLayout));
 }
-function startTour(){
+function startTour(steps, kind){
   if(_tour.on) return;
+  _tour.steps=Array.isArray(steps)?steps:TOUR_STEPS; _tour.kind=kind||'main';
   try{ stopPreview(); }catch(e){}
   document.querySelectorAll('.sheet.show').forEach(sh=>{ try{ hide(sh.id.replace(/^sheet-/,'')); }catch(e){} });
   _tour.on=true;
@@ -8313,14 +8149,53 @@ function startTour(){
 }
 function endTour(){
   if(!_tour.on) return;
-  { const cur=TOUR_STEPS[_tour.i]; if(cur && cur.leave){ try{ cur.leave(); }catch(e){} } }
-  _tour.on=false; _tour.i=-1;
+  { const cur=_tour.steps[_tour.i]; if(cur && cur.leave){ try{ cur.leave(); }catch(e){} } }
+  const kind=_tour.kind;
+  _tour.on=false; _tour.i=-1; _tour.steps=TOUR_STEPS; _tour.kind='main';
   $('#tour').classList.remove('show');
   window.removeEventListener('resize',_tourLayout);
   window.removeEventListener('scroll',_tourLayout);
+  if(kind==='tt'){ try{ localStorage.setItem('lp_ttguide_done','1'); }catch(e){} return; }   // 턴테이블 가이드: 열린 화면 그대로 두고 직접 해 보게
   _tourSwitchTab('coll');
   try{ localStorage.setItem('lp_tour_done','1'); }catch(e){}
   try{ if(window.LPCloud&&LPCloud.markTourDone) LPCloud.markTourDone(); }catch(e){}
+}
+/* ===== 첫 바이닐 등록 직후: 턴테이블 가이드 =====
+   디스크 탭(실제로 열리고 노래가 나옴) → 돌려서 곡 넘기기 → 가운데 탭 일시정지 → 톤암 → 영상 공유 → 닫기.
+   한 번만 보여준다(lp_ttguide_done). 끝나면 턴테이블 화면은 열어 둔 채로 직접 해 보게 한다. */
+function startTurntableGuide(it, force){
+  let done=false; try{ done=localStorage.getItem('lp_ttguide_done')==='1'; }catch(e){}
+  if((done && !force) || _tour.on || !it) return;
+  const cardSel=`#grid .lp[data-id="${it.id}"]`, card=()=>document.querySelector(cardSel);
+  const opened=()=>{ if(!TT.open){ const c=card(); if(c){ try{ c.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){} } openTurntable(it, card()); } };
+  const closed=()=>{ if(TT.open) closeTurntable(); };
+  startTour([
+    force ? { title:'턴테이블 사용법', open:closed, desc:'디스크로 음악 듣는 법을 다시 알려드릴게요.' }   // 설정에서 다시 볼 때
+          : { title:'첫 바이닐을 등록했어요 🎉', open:closed, desc:'이제 Turnit 의 핵심, 디스크로 음악 듣는 법을 알려드릴게요.' },
+    { tab:'coll', target:cardSel+' .artwrap', pad:10, title:'디스크를 탭해 보세요', open:closed,
+      desc:'커버 아래로 살짝 보이는 디스크를 탭하면 자켓에서 디스크가 나와 턴테이블에 올라가고, 톤암이 내려앉으며 노래가 흘러요.' },
+    { target:'#tt-stage', round:true, pad:14, noScroll:true, relayout:1800, title:'돌려서 곡 넘기기', open:opened,
+      desc:'디스크를 손가락으로 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.' },
+    { target:'#tt-cbtn', round:true, pad:10, noScroll:true, relayout:1800, title:'가운데를 탭하면 일시정지', open:opened,
+      desc:'디스크 가운데를 탭하면 멈추고, 다시 탭하면 이어서 재생돼요.' },
+    { target:'#tt-armb', pad:8, noScroll:true, relayout:1800, title:'톤암으로 원하는 부분부터', open:opened,
+      desc:'톤암을 잡아 디스크 위에 놓으면 그 자리부터 들려요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요. 디스크 밖으로 빼면 멈춰요.' },
+    { target:'#tt-share', round:true, pad:6, noScroll:true, title:'30초 영상으로 공유', open:opened,
+      desc:'공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 인스타 스토리나 카톡으로 바로 보낼 수 있어요.' },
+    { target:'#tt-close', round:true, pad:6, noScroll:true, title:'닫기', open:opened,
+      desc:'왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.' },
+  ], 'tt');
+}
+// 설정 > 턴테이블 가이드 다시 보기: 보관함으로 가서 맨 앞 카드로 다시 안내 (이미 바이닐이 있는 사용자도)
+function replayTurntableGuide(){
+  try{ hide('settings'); }catch(e){}
+  if(window._ttOpen) closeTurntable();
+  const nav=document.querySelector('.nav button[data-v="coll"]'); if(nav && !nav.classList.contains('on')) nav.click();
+  let c=document.querySelector('#grid .lp[data-id]');
+  if(!c && DATA.length){ filter.chip='전체'; filter.sub=''; filter.q=''; const q=$('#q'); if(q) q.value=''; renderChips(); renderGrid(); c=document.querySelector('#grid .lp[data-id]'); }
+  const it=c && DATA.find(d=>d.id===c.dataset.id);
+  if(!it){ previewToast(tr('바이닐을 먼저 등록해 주세요')); return; }
+  setTimeout(()=>startTurntableGuide(it, true), 450);
 }
 // 로그인 직후 호출: 계정에 본 기록이 없고 이 기기에도 없으면 한 번 보여준다
 window.__maybeStartTour=function(cloudDone){
@@ -8855,9 +8730,8 @@ function showExitConfirm(){
 function handleAppBack(){
   // 0-a) 첫 사용 가이드가 떠 있으면 뒤로가기 = 건너뛰기
   try{ if(window.__tourOn && window.__tourOn()){ window.__endTour(); return; } }catch(e){}
-  // 0-b) 턴테이블 화면 (따라하기 가이드 중이면 닫으면서 가이드도 끝남)
+  // 0-b) 턴테이블 화면
   if(window._ttOpen){ closeTurntable(); return; }
-  if(TTG.on){ _ttgEnd(false); return; }
   // 0) 종료 확인 모달이 떠 있으면 그것부터 닫기
   const ec=document.getElementById('exit-confirm');
   if(ec){ ec.classList.remove('show'); setTimeout(()=>{ try{ec.remove();}catch(e){} },200); return; }
