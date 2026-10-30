@@ -1299,8 +1299,14 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-arm.silver{--tta-tube:url(#tta-sil);--tta-tubeE:url(#tta-silE);--tta-metal:url(#tta-silR);--tta-lift:#d8d5dc}
 .tt-info{text-align:center;padding:106px 28px 0;width:100%;flex:none}
 .tt-np{font-size:12px;color:var(--accent2,#f2a444);font-weight:800;letter-spacing:.2em;text-transform:uppercase}
-.tt-title{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.02em;line-height:1.25;transition:opacity .25s,transform .25s;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tt-title{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.02em;line-height:1.3;transition:opacity .25s,transform .25s;
+  white-space:nowrap;overflow:hidden}
+/* 긴 제목: 한 줄로 두고 가로로 천천히 흐름 (처음에 잠깐 멈췄다가 → 이어 붙인 같은 제목으로 끊김 없이 반복) */
+.tt-title .mq-in{display:inline-block}
+.tt-title.mq{text-align:left;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.tt-title.mq .mq-in{will-change:transform;animation:tt-mq var(--mq-t,10s) linear infinite}
+.tt-title.mq .mq-in span+span{padding-left:48px}
+@keyframes tt-mq{0%,18%{transform:translateX(0)}100%{transform:translateX(calc(-1 * var(--mq-d,0px)))}}
 .tt-title.swap{opacity:0;transform:translateY(6px)}
 .tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:rgba(255,255,255,.72);font-size:14px;min-width:0}
 .tt-aa span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -3988,14 +3994,25 @@ function _ttPaintDisc(it, card, cover){
   else if(!coverIm && cover){ const im=new Image(); im.onload=()=>{ coverIm=im; draw(); }; im.src=cover; }
   cv.style.opacity = (!it.discPhoto && it.discOpacity!=null) ? it.discOpacity : '';
 }
+// 제목이 한 줄에 안 들어가면 같은 제목을 하나 더 이어 붙여 가로로 흐르게 한다
+function _ttSetTitle(el, text){
+  el.classList.remove('mq'); el.textContent='';
+  const inn=document.createElement('span'), a=document.createElement('span'); inn.className='mq-in'; a.textContent=text; inn.appendChild(a); el.appendChild(inn);
+  const w=a.getBoundingClientRect().width, cw=el.clientWidth;
+  if(cw && w>cw+1){
+    inn.appendChild(a.cloneNode(true));
+    const d=w+48; el.style.setProperty('--mq-d', d+'px'); el.style.setProperty('--mq-t', (d/34/.82).toFixed(1)+'s');   // 초당 약 34px
+    el.classList.add('mq');
+  }
+}
 function _ttInfo(){
   const it=TT.it; if(!it) return;
   const mine=_preview.id===it.id, cur=mine?_lpCurrentTrack():null;
   const title=(cur && cur.title) || it.album || '—';
   if(title!==TT.title){
     const el=_tt$('tt-title'); TT.title=title;
-    if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ el.textContent=TT.title; el.classList.remove('swap'); },180); }
-    else el.textContent=title;
+    if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ _ttSetTitle(el, TT.title); el.classList.remove('swap'); },180); }
+    else _ttSetTitle(el, title);
   }
   const cb=_tt$('tt-cbtn'), pl=_ttPlaying(), show=!pl && !TT.drag && _tt$('tt').classList.contains('ui');
   if(show!==TT._show){ TT._show=show; cb.classList.toggle('show', show); }
@@ -4215,8 +4232,8 @@ async function _ttvScene(it, track){
   const ty=sy+S+148; b.textAlign='center';
   b.fillStyle='#f2a444'; b.font='800 22px "Noto Sans KR",sans-serif'; if('letterSpacing' in b) b.letterSpacing='4px';
   b.fillText('NOW PLAYING', W/2, ty); if('letterSpacing' in b) b.letterSpacing='0px';
-  b.fillStyle='#fff'; b.font='900 44px "Noto Sans KR",sans-serif';
-  b.fillText(_ttvFit(b, (track&&track.title)||it.album||'', W-100), W/2, ty+56);
+  const title=(track&&track.title)||it.album||'';
+  b.font='900 44px "Noto Sans KR",sans-serif'; const titleW=b.measureText(title).width;   // 제목은 매 프레임 그림 (길면 가로로 흐름)
   const sub=[it.album, it.artist].map(v=>String(v||'').trim()).filter(v=>v && v!=='-').join(' · ');
   b.font='500 26px "Noto Sans KR",sans-serif'; b.fillStyle='rgba(255,255,255,.72)';
   b.fillText(_ttvFit(b, sub, W-120), W/2, ty+104);
@@ -4235,7 +4252,7 @@ async function _ttvScene(it, track){
     arm=await _ttvArmImg(u);
     if(arm){ armSh=mk(arm.width+40, arm.height+40); const a=armSh.getContext('2d'); a.filter='blur(4px)'; a.drawImage(arm,20,20); a.filter='none'; a.globalCompositeOperation='source-in'; a.fillStyle='#000'; a.fillRect(0,0,armSh.width,armSh.height); }
   }
-  return { W,H,S,sx,sy,u,bg,dc,sh,arm,armSh, opacity:(!photo && it.discOpacity!=null)?it.discOpacity:1, rate:String(it.rpm)==='45'?270:200 };
+  return { W,H,S,sx,sy,u,bg,dc,sh,arm,armSh, title, titleW, titleY:ty+56, opacity:(!photo && it.discOpacity!=null)?it.discOpacity:1, rate:String(it.rpm)==='45'?270:200 };
 }
 function _ttvFrame(x, sc, t, D){
   const {S,sx,sy,u}=sc, prog=Math.min(1,t/D);
@@ -4246,6 +4263,20 @@ function _ttvFrame(x, sc, t, D){
     const ang=(5+prog*8)*Math.PI/180;
     x.save(); x.translate(sx+96.8*u, sy+3.2*u); x.rotate(ang); x.globalAlpha=.5; x.drawImage(sc.armSh,-12*u-20,-16*u-20); x.restore();
     x.save(); x.translate(sx+96*u, sy+2*u); x.rotate(ang); x.drawImage(sc.arm,-12*u,-16*u,24*u,82*u); x.restore();
+  }
+  // 제목: 들어가면 가운데, 길면 화면과 같은 방식으로 가로로 흐름 (처음 잠깐 멈춤 → 초당 약 60px)
+  x.font='900 44px "Noto Sans KR",sans-serif'; x.fillStyle='#fff';
+  const box=sc.W-100;
+  if(sc.titleW<=box){ x.textAlign='center'; x.fillText(sc.title, sc.W/2, sc.titleY); }
+  else {
+    const gap=80, dd=sc.titleW+gap, move=dd/60, hold=move*.22, cyc=hold+move, k=t%cyc, off=k<hold?0:(k-hold)/move*dd;
+    // 따로 그린 뒤 양 끝을 흐리게 지워서(화면과 같은 페이드) 올린다
+    const tc=sc.tc||(sc.tc=Object.assign(document.createElement('canvas'),{width:box,height:70})), c=tc.getContext('2d');
+    c.globalCompositeOperation='source-over'; c.clearRect(0,0,box,70);
+    c.font=x.font; c.fillStyle='#fff'; c.textAlign='left'; c.fillText(sc.title, -off, 52); c.fillText(sc.title, -off+dd, 52);
+    const fg=sc.tf||(sc.tf=(()=>{ const g=c.createLinearGradient(0,0,box,0); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(.05,'#000'); g.addColorStop(.95,'#000'); g.addColorStop(1,'rgba(0,0,0,0)'); return g; })());
+    c.globalCompositeOperation='destination-in'; c.fillStyle=fg; c.fillRect(0,0,box,70);
+    x.drawImage(tc, 50, sc.titleY-52);
   }
 }
 async function makeTurntableVideo(it, onProgress){
