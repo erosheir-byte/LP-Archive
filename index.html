@@ -2604,6 +2604,7 @@ const I18N = {
   "30초 영상으로 공유":"Share a 30-second video","공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 인스타 스토리나 카톡으로 바로 보낼 수 있어요.":"The share button makes a 30-second video of your disc spinning to the current song, ready for your Instagram story or friends.",
   "아래로 쓸어내려 닫아 보세요":"Swipe down to close","디스크가 다시 자켓으로 들어가요.":"The disc slides back into its sleeve.",
   "완성! 이제 마음껏 돌려 보세요 🎶":"All set! Spin away 🎶",
+  "턴테이블 가이드 다시 보기":"Replay turntable guide","디스크 돌리기·톤암·공유를 직접 따라 해 봐요":"Try spinning, the tonearm and sharing, step by step","바이닐을 먼저 등록해 주세요":"Add a record first",
   "이 환경에서는 공유할 수 없어요":"Sharing is not available here",
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
   "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent","인스타 스토리·카톡으로 보내 보세요":"Send it to your Instagram story or friends",
@@ -4557,9 +4558,9 @@ function _ttgEnd(finished){
   if(finished) previewToast(tr('완성! 이제 마음껏 돌려 보세요 🎶'));
 }
 function _ttgOnScroll(){ if(TTG.raf) return; TTG.raf=requestAnimationFrame(()=>{ TTG.raf=0; _ttgLayout(); }); }
-function startTurntableGuide(it){
+function startTurntableGuide(it, force){
   let done=false; try{ done=localStorage.getItem('lp_ttguide_done')==='1'; }catch(e){}
-  if(done || TTG.on || !it || (window.__tourOn && window.__tourOn())) return;
+  if((done && !force) || TTG.on || !it || (window.__tourOn && window.__tourOn())) return;
   const card=()=>document.querySelector(`#grid .lp[data-id="${it.id}"]`);
   const stR=()=>_tt$('tt-stage').getBoundingClientRect();
   const center=()=>{ const r=stR(); return {x:r.left+r.width/2, y:r.top+r.height/2, r}; };
@@ -4590,6 +4591,17 @@ function startTurntableGuide(it){
   _tt$('ttg').hidden=false;
   window.addEventListener('scroll',_ttgOnScroll,{passive:true}); window.addEventListener('resize',_ttgOnScroll);
   _ttgGo(0);
+}
+// 설정 > 턴테이블 가이드 다시 보기: 보관함으로 가서 맨 앞 카드로 다시 따라 해 본다 (이미 바이닐이 있는 사용자도)
+function replayTurntableGuide(){
+  try{ hide('settings'); }catch(e){}
+  if(window._ttOpen) closeTurntable();
+  const nav=document.querySelector('.nav button[data-v="coll"]'); if(nav && !nav.classList.contains('on')) nav.click();
+  let c=document.querySelector('#grid .lp[data-id]');
+  if(!c && DATA.length){ filter.chip='전체'; filter.sub=''; filter.q=''; const q=$('#q'); if(q) q.value=''; renderChips(); renderGrid(); c=document.querySelector('#grid .lp[data-id]'); }
+  const it=c && DATA.find(d=>d.id===c.dataset.id);
+  if(!it){ previewToast(tr('바이닐을 먼저 등록해 주세요')); return; }
+  setTimeout(()=>startTurntableGuide(it, true), 450);
 }
 (function setupTurntableGuide(){
   const nx=_tt$('ttg-next'), sk=_tt$('ttg-skip'); if(!nx) return;
@@ -7871,6 +7883,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-ttguide"><div class="set-l"><div class="set-t">턴테이블 가이드 다시 보기</div><div class="set-d">디스크 돌리기·톤암·공유를 직접 따라 해 봐요</div></div><span class="set-chev">→</span></div>
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 바이닐 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
@@ -7916,6 +7929,7 @@ function renderSettings(){
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
   { const tb=$('#set-tour'); if(tb) tb.onclick=()=>{ hide('settings'); startTour(); }; }
+  { const tg=$('#set-ttguide'); if(tg) tg.onclick=replayTurntableGuide; }
   // 광고 보고 배너 잠시 끄기 (보상형)
   { const af=$('#set-adfree'); if(af) af.onclick=()=>{ try{ watchRewardedAdFree(); }catch(e){} }; }
   // Discogs 토큰 저장
