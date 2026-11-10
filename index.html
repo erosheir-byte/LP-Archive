@@ -2375,6 +2375,7 @@ const I18N = {
   /* --- preview toast --- */
   "🔇 미리듣기를 찾지 못했어요":"🔇 Couldn't find a preview",
   "🔇 미리듣기를 찾지 못했어요 — 상세의 음원 연결로 지정해보세요":"🔇 No preview found — link an album from the detail page",
+  "📶 미리듣기 연결이 불안정해요 — 잠시 후 다시 눌러 주세요":"📶 Couldn't reach the preview service — try again in a moment",
   "재생할 수 없어요":"Can't play this",
   "미리듣기":"Preview",
   /* --- common color names --- */
@@ -3635,9 +3636,17 @@ async function _koTitles(it, tracks){
   }).catch(()=>{});
   if(_hasHangul(it.artist) || _hasHangul(it.album) || _hasHangul(it._pvName)) await Promise.race([work, new Promise(r=>setTimeout(r,2500))]);
 }
-async function _fetchPreviewUrl(it){
-  // cache[it.id] = 수록곡 [{url,title}] 배열
-  if(_preview.cache[it.id]!==undefined) return _preview.cache[it.id];
+// cache[it.id] = 수록곡 [{url,title}] 배열. 같은 판을 동시에 여러 번 조회하지 않도록 진행 중인 조회를 공유한다.
+function _fetchPreviewUrl(it){
+  if(_preview.cache[it.id]!==undefined) return Promise.resolve(_preview.cache[it.id]);
+  const inflight=_preview.inflight||(_preview.inflight={});
+  if(!inflight[it.id]) inflight[it.id]=_fetchPreviewUrlNow(it).finally(()=>{ delete inflight[it.id]; });
+  return inflight[it.id];
+}
+async function _fetchPreviewUrlNow(it){
+  // 요청 실패(횟수 제한 403·네트워크 오류)는 '음원 없음'과 구분: 기억하지 않고 다음에 다시 시도한다
+  let failed=false;
+  const getJSON=async url=>{ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); };
   const artist=(it.artist||'').trim(), album=(it.album||'').trim();
   const term=(artist+' '+album).trim();
   const country = (typeof isEN==='function' && isEN()) ? 'US' : 'KR';
@@ -3650,13 +3659,12 @@ async function _fetchPreviewUrl(it){
     if(it.previewAlbumId){
       for(const st of stores){
         try{
-          const lr=await fetch('https://itunes.apple.com/lookup?id='+it.previewAlbumId+'&entity=song&country='+st+'&limit=80'+langQ);
-          const lj=await lr.json();
+          const lj=await getJSON('https://itunes.apple.com/lookup?id='+it.previewAlbumId+'&entity=song&country='+st+'&limit=80'+langQ);
           const u=(lj.results||[])
             .filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
             .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim(), id:x.trackId, no:x.trackNumber, disc:x.discNumber})).filter(t=>t.url);
           if(u.length){ it._pvName = it.previewAlbumName || '지정 앨범'; if(country==='KR') await _koTitles(it, u); _preview.cache[it.id]=u; return u; }
-        }catch(e){}
+        }catch(e){ failed=true; }
       }
     }
     // 1) 먼저 '앨범'을 찾아 정확한 collectionId를 얻는다 → 그 앨범 수록곡만 재생(다른 앨범 곡 섞임 방지)
@@ -3665,8 +3673,9 @@ async function _fetchPreviewUrl(it){
       const artistOk=x=>{ if(!wantAr) return true; const a=norm(x.artistName); return a===wantAr || a.includes(wantAr) || wantAr.includes(a); };
       let cand=null, candCountry=country;
       for(const st of stores){
-        const ar=await fetch('https://itunes.apple.com/search?media=music&entity=album&country='+st+'&limit=8&term='+encodeURIComponent(term)+langQ);
-        const aj=await ar.json();
+        let aj;
+        try{ aj=await getJSON('https://itunes.apple.com/search?media=music&entity=album&country='+st+'&limit=8&term='+encodeURIComponent(term)+langQ); }
+        catch(e){ failed=true; continue; }   // 이 스토어가 실패해도 다른 스토어는 계속 시도
         const cands=(aj.results||[]);
         const c = cands.find(x=>norm(x.collectionName)===wantAl && (!wantAr || norm(x.artistName)===wantAr))
                || cands.find(x=>norm(x.collectionName)===wantAl && artistOk(x))
@@ -3679,8 +3688,7 @@ async function _fetchPreviewUrl(it){
         const lookStores = country==='KR' ? ['KR','US'] : [candCountry, candCountry==='KR'?'US':'KR'];
         for(const st of lookStores){
           try{
-            const lr=await fetch('https://itunes.apple.com/lookup?id='+cand.collectionId+'&entity=song&country='+st+'&limit=80'+langQ);
-            const lj=await lr.json();
+            const lj=await getJSON('https://itunes.apple.com/lookup?id='+cand.collectionId+'&entity=song&country='+st+'&limit=80'+langQ);
             const res=(lj.results||[]);
             const u=res.filter(x=>x.wrapperType==='track' && x.kind==='song' && x.previewUrl)
               .map(x=>({url:x.previewUrl, title:(x.trackName||'').trim(), id:x.trackId, no:x.trackNumber, disc:x.discNumber}))
@@ -3692,23 +3700,26 @@ async function _fetchPreviewUrl(it){
               if(country==='KR') await _koTitles(it, urls);
               break;
             }
-          }catch(e){}
+          }catch(e){ failed=true; }
         }
       }
     }
     // 3) 앨범을 못 찾았을 때만 폴백: 곡 검색(양 스토어) 후 앨범명·아티스트가 모두 맞는 곡만 (없으면 빈 목록)
-    if(!urls.length && term){
+    //    앞 단계가 실패했으면(대개 횟수 제한) 요청을 더 보내지 않고 다음 탭에 처음부터 다시 시도
+    if(!urls.length && term && !failed){
       const al=norm(album), ar2=norm(artist);
       for(const st of stores){
-        const r=await fetch('https://itunes.apple.com/search?media=music&entity=song&country='+st+'&limit=25&term='+encodeURIComponent(term)+langQ);
-        const j=await r.json();
+        let j;
+        try{ j=await getJSON('https://itunes.apple.com/search?media=music&entity=song&country='+st+'&limit=25&term='+encodeURIComponent(term)+langQ); }
+        catch(e){ failed=true; continue; }
         let pool=(j.results||[]).filter(x=>x.previewUrl);
         if(al){ pool=pool.filter(x=>{ const c=norm(x.collectionName); return c && (c===al || c.includes(al)); }); }
         if(ar2){ pool=pool.filter(x=>{ const a=norm(x.artistName); return a && (a===ar2 || a.includes(ar2) || ar2.includes(a)); }); }
         if(pool.length){ urls=pool.map(x=>({url:x.previewUrl, title:(x.trackName||'').trim(), id:x.trackId, no:x.trackNumber, disc:x.discNumber})).filter(t=>t.url); if(urls.length){ it._pvName=(pool[0].collectionName||''); if(country==='KR') await _koTitles(it, urls); break; } }
       }
     }
-  }catch(e){}
+  }catch(e){ failed=true; }
+  if(!urls.length && failed){ const r=[]; r.failed=true; return r; }   // 저장하지 않음 → 다음 탭에 재시도
   if(it._pvName===undefined) it._pvName='';   // 조회했으나 못 찾음 표시
   _preview.cache[it.id] = urls;
   return urls;
@@ -3934,7 +3945,10 @@ async function playPreview(it, disc){
   let urls = _preview.cache[it.id];
   if(urls===undefined) urls = await _fetchPreviewUrl(it);
   if(_preview.id!==it.id) return;        // 기다리는 사이 다른 판을 돌렸으면 취소
-  if(!urls || !urls.length){ previewToast('🔇 미리듣기를 찾지 못했어요 — 상세의 음원 연결로 지정해보세요'); _preview.id=null; return; }
+  if(!urls || !urls.length){
+    previewToast(urls && urls.failed ? '📶 미리듣기 연결이 불안정해요 — 잠시 후 다시 눌러 주세요'
+                                     : '🔇 미리듣기를 찾지 못했어요 — 상세의 음원 연결로 지정해보세요');
+    _preview.id=null; return; }
   _preview.urls = urls;
   _preview.idx = Math.floor(Math.random()*urls.length);   // 첫 곡은 랜덤 시작
   _preview.last[it.id]=urls[_preview.idx].url;
