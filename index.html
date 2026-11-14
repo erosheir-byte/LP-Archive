@@ -2528,8 +2528,8 @@ const I18N = {
   /* --- 가져오기 (엑셀·CSV) --- */
   "📄 엑셀·CSV 파일로 한번에 등록":"📄 Bulk add from an Excel or CSV file",
   "양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요":"Upload a file in the template format to add many records at once",
-  "엑셀 양식(CSV) 받기":"Download the CSV template",
-  "머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요":"A template with the headers filled in — open it in Excel, fill it in, then upload",
+  "엑셀 양식 받기":"Get the Excel template",
+  "드롭다운·작성 방법이 들어 있는 엑셀 파일 — 채운 뒤 위에서 올리세요":"An Excel file with dropdowns and instructions — fill it in, then upload it above",
   "가져오기 미리보기":"Import preview",
   "전체 선택":"Select all",
   "전체 해제":"Clear all",
@@ -7691,7 +7691,7 @@ function renderSettings(){
     <div class="set-card">
       <div class="set-row tap" id="set-imp-paste"><div class="set-l"><div class="set-t">📋 표 붙여넣기로 한번에 등록</div><div class="set-d">엑셀·구글 시트에서 칸을 복사해 붙여 넣으면 바로 등록돼요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
+      <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식 받기</div><div class="set-d">드롭다운·작성 방법이 들어 있는 엑셀 파일 — 채운 뒤 위에서 올리세요</div></div><span class="set-chev">⤓</span></div>
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
@@ -8573,6 +8573,10 @@ const IMP_HEADERS={
   price:['구매가','구입가','구매가격','구입가격','가격','금액','구매금액','결제금액','price','cost','paid'],
   listPrice:['정가','소비자가','listprice','msrp'],
   buy:['구매일','구매일자','구입일','구입일자','구매날짜','구입날짜','주문일','날짜','일자','buy','date','purchasedate','purchased','orderdate'],
+  arrive:['도착일','도착일자','수령일','받은날','배송완료일','arrived','arrivaldate'],
+  openDate:['개봉일','개봉일자','개봉날짜','opened','opendate'],
+  rpm:['rpm','회전수'],
+  inch:['인치','사이즈','크기','size','inch','inches'],
   genre:['장르','genre'],
   year:['발매년도','발매연도','발매년','연도','발매일','출시연도','year','releaseyear','released'],
   note:['비고','메모','노트','코멘트','note','notes','memo','comment']
@@ -8593,7 +8597,8 @@ function rowsFromAoa(aoa){
     const g=k=> idx[k]!==undefined ? String(r[idx[k]]==null?'':r[idx[k]]).trim() : '';
     return { artist:g('artist'), album:g('album'), color:g('color'), status:g('status'),
              store:g('store'), price:g('price'), listPrice:g('listPrice'), buy:g('buy'),
-             genre:g('genre'), year:g('year'), note:g('note') };
+             genre:g('genre'), year:g('year'), note:g('note'),
+             arrive:g('arrive'), openDate:g('openDate'), rpm:g('rpm'), inch:g('inch') };
   });
 }
 // 날짜: 2024-03-05 · 2024.3.5 · 2024. 3. 5. · 2024/3/5 · 2024년 3월 5일 · 24.03.05 · 3/5/2024 · 20240305 · 엑셀 날짜 숫자
@@ -8627,18 +8632,20 @@ function importRowsToItems(rows){
     const ar=(r.artist||'').trim(), al=(r.album||'').trim();
     if(!ar && !al){ errors.push(r); return; }
     const toNum=v=>{ if(v==null||v==='') return null; const n=Number(String(v).replace(/[^\d.]/g,'')); return isNaN(n)||!n?null:n; };
-    const price=toNum(r.price);
+    const price=toNum(r.price), status=_impStatus(r.status);
+    const rpm=/45/.test(r.rpm||'')?'45':(/33|3[34]/.test(r.rpm||'')?'33':'');
+    const inch=/12/.test(r.inch||'')?'12"':/10/.test(r.inch||'')?'10"':/(^|\D)7(\D|$)/.test(r.inch||'')?'7"':'';
     const it={ id:'u'+(base+i), no:DATA.length+items.length+1,
       artist:ar||'-', album:al, color:(r.color||'').trim()||'블랙', colorHex:null,
       discPhoto:null, discOpacity:null,
       store:(r.store||'').trim(), price, orig:price, listPrice:toNum(r.listPrice), pay:'',
-      buy:_impDate(r.buy), arrive:null, openDate:null,
-      status:_impStatus(r.status), sellDate:null, sellPrice:null, profit:null,
+      buy:_impDate(r.buy), arrive:_impDate(r.arrive), openDate:status==='개봉'?_impDate(r.openDate):null,
+      status, sellDate:null, sellPrice:null, profit:null,
       sleeveGrade:'', mediaGrade:'',
       previewAlbumId:null, previewAlbumName:null,
       rating:0, note:(r.note||'').trim(),
-      genre:(r.genre||'').trim(), year:(parseInt(r.year,10)||null),
-      rpm:'', inch:'' };
+      genre:(r.genre||'').trim()?(canonGenre(r.genre.trim())||r.genre.trim()):'', year:(parseInt(r.year,10)||null),
+      rpm, inch };
     if(r.cover){ it._art=r.cover; it.cover=r.cover; }
     items.push(it);
   });
@@ -8687,6 +8694,9 @@ function openImportPreview(items, srcLabel, skipped){
       else sel.forEach(it=>cloudSaveItem(it));
     }catch(e){ console.error('bulk save', e); }
     hide('import');
+    // RPM·인치를 적어 온 경우 그 칸이 보이도록 설정을 켠다 (꺼져 있으면 기록해도 안 보임)
+    if(sel.some(it=>it.rpm) && !SETTINGS.showRpm){ SETTINGS.showRpm=true; saveSettings(); }
+    if(sel.some(it=>it.inch) && !SETTINGS.showInch){ SETTINGS.showInch=true; saveSettings(); }
     renderChips(); renderGrid(); renderStats(); buildCoverFlow();
     // 많이 가져오면 커버·미리듣기는 둘러보는 동안 차례로 채워진다는 걸 알려 준다 (한꺼번에 찾으면 요청 한도에 걸림)
     if(sel.length>30) appAlert(isEN()?`${sel.length.toLocaleString()} records added. Covers and previews fill in as you browse your library.`:`${sel.length.toLocaleString()}장을 등록했어요. 커버와 미리듣기는 보관함을 둘러보는 동안 차례로 찾아 채워져요.`, {title:isEN()?'Import complete ✓':'가져오기 완료 ✓'});
@@ -8740,23 +8750,21 @@ function openPasteImport(){ const ta=$('#paste-ta'); ta.value=''; _pasteInfo(); 
     setTimeout(()=>openImportPreview(items, (isEN()?'Pasted · ':'붙여넣기 · ')+items.length.toLocaleString()+(isEN()?'':'장'), rows.length-ok.length), 250);
 }; }
 { const ov=$('#ov-paste'); if(ov) ov.onclick=()=>hide('paste'); }
-// 엑셀 양식(CSV) 받기 — BOM 포함(엑셀에서 한글 안 깨짐).
-// 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일을 올려 OS 공유시트/브라우저로 전달한다.
+// 엑셀 양식 받기 — 드롭다운·작성 방법이 들어 있는 .xlsx (templates/, scripts/make-import-template.py 로 만듦)
+// 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일로 저장해 휴대폰 공유창으로 보낸다 (업로드 없이, 인터넷 없이)
 async function downloadImportTemplate(){
-  const csv='\uFEFF가수,앨범명,컬러,구분,구매처,구매가,정가,구매일,장르,발매년도,비고\r\nTom Misch,Geography,블랙,미개봉,yes24,45000,49000,2026-01-15,팝,2018,예시 행은 지우고 사용하세요\r\n';
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+  const name='turnit-import-template.xlsx', src='templates/'+name;
+  const C=window.Capacitor;
+  if(C && C.isNativePlatform && C.isNativePlatform()){
+    const P=C.Plugins||{}, FS=P.Filesystem, Sh=P.Share;
     try{
-      previewToast('양식 파일 준비 중…');
-      const url=await window.LPCloud.uploadImage(blob,'csv');
-      const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
-      if(Sh && Sh.share){ await Sh.share({ title:'바이닐 등록 양식 (CSV)', text:'엑셀에서 열어 채운 뒤 앱에 업로드하세요', url, dialogTitle:'양식 받기' }); return; }
-      window.open(url,'_blank'); return;
-    }catch(e){ console.error('template share', e); appAlert('양식을 준비하지 못했어요. 로그인과 네트워크를 확인해주세요.'); return; }
+      const blob=await (await fetch(src)).blob();
+      const w=await FS.writeFile({ path:name, data:await _blobToBase64(blob), directory:'CACHE' });
+      await Sh.share({ title:isEN()?'Turnit import template':'Turnit 바이닐 등록 양식', text:isEN()?'Fill it in with Excel or Google Sheets, then upload it in the app.':'엑셀·구글 시트에서 채운 뒤 앱에서 올려 주세요.', files:[w.uri], dialogTitle:isEN()?'Get template':'양식 받기' });
+    }catch(e){ if(!/cancel/i.test(String((e&&e.message)||e))){ console.error('template share', e); appAlert(isEN()?'Could not prepare the template.':'양식을 준비하지 못했어요.'); } }
+    return;
   }
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='lp-import-template.csv'; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  const a=document.createElement('a'); a.href=src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
 }
 { const f=$('#imp-fileinput'); if(f) f.onchange=e=>{ const file=e.target.files[0]; if(file) importFromFile(file); }; }
 { const ov=$('#ov-import'); if(ov) ov.onclick=()=>hide('import'); }

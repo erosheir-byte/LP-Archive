@@ -46,4 +46,11 @@ if (existsSync(vendor)) {
   console.log("copied vendor/");
 }
 
+// 엑셀 등록 양식 (설정 > 엑셀 양식 받기)
+const templates = join(root, "templates");
+if (existsSync(templates)) {
+  cpSync(templates, join(www, "templates"), { recursive: true });
+  console.log("copied templates/");
+}
+
 console.log("www/ 번들 준비 완료 →", www);
