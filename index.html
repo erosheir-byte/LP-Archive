@@ -751,7 +751,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .art-manual-toggle{display:block;width:100%;padding:9px;background:none;border:none;color:var(--dim);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;text-decoration:underline;text-underline-offset:3px}
 .art-manual-toggle:active{opacity:.7}
 .art-manual-box{display:flex;flex-direction:column;gap:8px}
-/* 상태 등급 선택 (슬리브/음반, Discogs 기준) */
+/* 상태 등급 선택 (슬리브/음반, 업계 표준 등급) */
 .gradewrap{margin-bottom:2px}
 .gradewrap .grade-help{color:var(--dim);font-size:11px;cursor:help}
 .gradesel{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:inherit;font-size:13px;font-weight:700;padding:10px 10px;outline:none;cursor:pointer}
@@ -771,10 +771,6 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .bc-manual input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:13px}
 .bc-manual button{flex:0 0 auto;padding:0 16px;border-radius:11px;border:none;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:700;cursor:pointer}
 .bc-status{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.5;min-height:16px}
-/* Discogs 토큰 입력 */
-.set-token{display:flex;gap:8px}
-.set-token input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:12.5px}
-.set-token button{flex:0 0 auto;padding:0 16px;border-radius:11px;border:none;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:700;cursor:pointer}
 .pk-url{display:flex;gap:7px}
 .pk-url input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
 .pk-url input:focus{border-color:var(--accent)}
@@ -1490,7 +1486,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </div>
   <div class="coll-list" id="coll-list"></div>
 
-  <input type="file" id="imp-fileinput" accept=".xlsx,.xls,.csv,text/csv" hidden>
+  <input type="file" id="imp-fileinput" accept=".xlsx,.csv,.tsv,.txt,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 
   <div class="my-sec-head" style="margin-top:22px">
     <h3>취향 요약</h3>
@@ -2410,7 +2406,6 @@ const I18N = {
   "규격":"Format",
   "기본 보기 모드":"Default view",
   "보관함을 열 때 기본 레이아웃":"Default layout when opening the Library",
-  "Discogs 토큰":"Discogs token",
   "바코드 스캔으로 앨범 정보를 불러올 때 사용해요":"Used to fetch record info when scanning a barcode",
   "데이터 내보내기 / 백업":"Export data / Backup",
   "전체 기록을 JSON 파일로 저장":"Save your entire collection as a JSON file",
@@ -2427,10 +2422,8 @@ const I18N = {
   "바코드를 카메라에 비춰주세요…":"Point the camera at the barcode…",
   "카메라를 열 수 없어요. 아래에 번호를 직접 입력하세요.":"Couldn't open the camera. Enter the number manually below.",
   "바코드 번호를 인식하지 못했어요.":"Couldn't read a barcode number.",
-  "Discogs 토큰이 없어요. 마이페이지 환경설정에서 입력하세요.":"No Discogs token. Add one in My Page → Settings.",
   "이 바코드로 앨범을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.":"No record found for this barcode. Check the number or enter it manually.",
   "조회 중 오류가 발생했어요. 네트워크를 확인하세요.":"An error occurred during lookup. Please check your network.",
-  "Discogs 커버로 저장돼요 ✓":"Discogs cover will be saved ✓",
   /* --- condition grade --- */
   "상태 등급":"Condition grade",
   "레코드 컨디션 등급(Goldmine 기준)":"Record condition grade (Goldmine standard)",
@@ -2494,7 +2487,6 @@ const I18N = {
   /* --- 설정 --- */
   "발매년도 표기":"Show release year",
   "카드와 상세에 발매년도를 표시해요":"Show the release year on cards and detail",
-  "Discogs 연동":"Discogs",
   "컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)":"Used for importing a collection (barcode scanning needs no setup)",
   "이 계정의 바이닐 전체 삭제":"Delete every record in this account",
   "이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)":"Empties the account by deleting every record saved to it (cannot be undone)",
@@ -2509,9 +2501,7 @@ const I18N = {
   "정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.":"Are you sure? This cannot be undone.",
   "탈퇴 처리 중…":"Deleting your account…",
   "탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.":"Your account has been deleted. Thank you for using the app.",
-  /* --- 가져오기 (Discogs / 엑셀·CSV) --- */
-  "💿 Discogs 컬렉션 가져오기":"💿 Import a Discogs collection",
-  "Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)":"Add a whole Discogs collection at once (needs the username above)",
+  /* --- 가져오기 (엑셀·CSV) --- */
   "📄 엑셀·CSV 파일로 한번에 등록":"📄 Bulk add from an Excel or CSV file",
   "양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요":"Upload a file in the template format to add many records at once",
   "엑셀 양식(CSV) 받기":"Download the CSV template",
@@ -2522,14 +2512,8 @@ const I18N = {
   "가져오기":"Import",
   "이미 있음":"Already added",
   "가져올 항목이 없어요.":"Nothing to import.",
-  "환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.":"Enter your username in the Discogs card in Settings first.",
-  "Discogs 컬렉션을 불러오는 중…":"Loading the Discogs collection…",
-  "Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.":"Discogs user not found. Check the username.",
-  "컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.":"The collection is private or not permitted. Enter your own Discogs token in Settings.",
-  "Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.":"Something went wrong while querying Discogs. Please try again in a moment.",
   "가져올 컬렉션이 비어 있어요.":"The collection is empty.",
-  "엑셀 해석 도구를 불러오는 중…":"Loading the spreadsheet reader…",
-  "엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.":"Could not load the spreadsheet reader. Check your connection, or save the file as CSV and upload that.",
+  "이 형식은 읽을 수 없어요. 엑셀에서 .xlsx 또는 CSV 로 저장해 올려주세요.":"This file type can't be read. Save it as .xlsx or CSV in Excel and upload again.",
   "파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.":"Something went wrong while reading the file. Check the template.",
   "가져올 행이 없어요. 양식을 확인해주세요.":"No rows to import. Check the template.",
   "양식 파일 준비 중…":"Preparing the template…",
@@ -2547,7 +2531,6 @@ const I18N = {
   "그날의 느낌이나 한마디":"How it felt, or a quick note",
   "가수명":"Artist",
   "🔍 앨범·가수 검색":"🔍 Search albums or artists",
-  "Discogs 사용자명 (Username)":"Discogs username",
   "· 공유된 컬렉션":"· shared collection",
   /* --- 첫 사용 가이드 --- */
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
@@ -2563,7 +2546,7 @@ const I18N = {
   "돌려서 곡 넘기기":"Spin to change songs","디스크를 손가락으로 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.":"Spin the disc one full turn clockwise for the next song, counter-clockwise for the previous one.",
   "가운데를 탭하면 일시정지":"Tap the center to pause","디스크 가운데를 탭하면 멈추고, 다시 탭하면 이어서 재생돼요.":"Tap the center of the disc to pause, and tap again to keep playing.",
   "톤암으로 원하는 부분부터":"Drop the tonearm anywhere","톤암을 잡아 디스크 위에 놓으면 그 자리부터 들려요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요. 디스크 밖으로 빼면 멈춰요.":"Drag the tonearm onto the disc to play from that spot. The outer edge is the start of the song, further in is later. Move it off the disc to stop.",
-  "30초 영상으로 공유":"Share a 30-second video","공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 인스타 스토리나 카톡으로 바로 보낼 수 있어요.":"The share button makes a 30-second video of your disc spinning to the current song, ready for your Instagram story or friends.",
+  "30초 영상으로 공유":"Share a 30-second video","공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 원하는 곳에 편하게 공유해요.":"The share button makes a 30-second video of your disc spinning to the current song. Share it anywhere you like.",
   "왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.":"Tap the top-left button or swipe down, and the disc slides back into its sleeve.",
   "이 환경에서는 공유할 수 없어요":"Sharing is not available here",
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
@@ -2780,7 +2763,7 @@ async function searchItunes(term, limit){
 /* ===== 장르 기준: 애플 뮤직 장르 =====
    앱이 앨범 정보를 가져오는 애플 뮤직(iTunes)의 공식 장르를 기준으로 한다. 이름은 자연스러운 한국어로
    (Anime '일본 만화 영화' → 애니메이션, K-Pop 은 한국어 화면에선 '가요' · 영어 화면에선 'K-Pop'). 자주 안 쓰는 장르(어린이·종교·코미디 등)는 '기타'로 묶는다.
-   iTunes·Deezer·Discogs·AI 추출 등 어디서 온 이름이든 canonGenre() 로 이 목록에 맞추고,
+   iTunes·Deezer·AI 추출 등 어디서 온 이름이든 canonGenre() 로 이 목록에 맞추고,
    목록에 없는 이름은 사용자가 직접 입력한 장르로 보고 그대로 둔다 (genreCustom 표시가 있으면 손대지 않음). */
 const GENRES=['가요','팝','록','얼터너티브','R&B/소울','힙합/랩','일렉트로닉','댄스','재즈','블루스','클래식','사운드트랙','애니메이션','싱어송라이터','포크','컨트리','J-Pop','뉴에이지','월드','라틴','레게','홀리데이','기타'];
 const _gKey=v=>String(v||'').toLowerCase().replace(/[\s·・\/&\-_.,+'’()]/g,'');
@@ -3245,7 +3228,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark', tonearm:'black' };
+const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark', tonearm:'black' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -5388,7 +5371,7 @@ $('#f-file').onchange=async e=>{
   finally{ try{ e.target.value=''; }catch(_){} }   // 같은 파일 다시 선택 가능하도록
 };
 
-/* ===== 바코드 스캔 → Discogs 조회 ===== */
+/* ===== 바코드 스캔 → 앨범 조회 ===== */
 let _bcStream=null, _bcRAF=null, _bcDetector=null, _bcReader=null, _bcControls=null;
 function bcStatus(msg){ const s=$('#bc-status'); if(s) s.textContent=msg||''; }
 function bcT(en,ko){ return isEN()?en:ko; }
@@ -5479,7 +5462,6 @@ function stopBarcodeScan(){
 }
 /* 바코드 조회 — 키(토큰) 없이 되는 곳부터 순서대로 시도
    ① Deezer UPC (JSONP, 키 불필요)  ② MusicBrainz 바코드 (키 불필요)
-   ③ Discogs (토큰을 직접 넣은 사용자만, 바이닐 정보가 가장 정확)
    ①②는 호출 한도가 사용자 IP 단위라 사용자가 늘어도 안전하다. */
 function _dzUPC(code){
   return new Promise(res=>{
@@ -5517,25 +5499,6 @@ async function _mbBarcode(code){
              genre:'', src:'MusicBrainz' };
   }catch(e){ return null; }
 }
-async function _dgBarcode(code){
-  const token=(SETTINGS && SETTINGS.discogsToken||'').trim();
-  if(!token) return null;
-  try{
-    const url='https://api.discogs.com/database/search?type=release&barcode='+encodeURIComponent(code)+'&per_page=5&token='+encodeURIComponent(token);
-    const res=await fetch(url);
-    if(!res.ok) return null;
-    const data=await res.json();
-    const r=((data&&data.results)||[])[0];
-    if(!r) return null;
-    let artist='', album='';
-    if(r.title && r.title.includes(' - ')){ const p=r.title.split(' - '); artist=p[0].trim(); album=p.slice(1).join(' - ').trim(); }
-    else { album=(r.title||'').trim(); }
-    const cover=r.cover_image||r.thumb||'';
-    return { artist, album, year:String(r.year||'').slice(0,4),
-             cover:(cover && !/spacer\.gif/.test(cover))?cover:'',
-             genre:(r.genre&&r.genre[0])||'', src:'Discogs' };
-  }catch(e){ return null; }
-}
 async function lookupBarcode(code){
   code=String(code||'').replace(/\D/g,'');
   if(!code){ bcStatus(bcT('Could not read the barcode number.','바코드 번호를 인식하지 못했어요.')); return; }
@@ -5544,7 +5507,6 @@ async function lookupBarcode(code){
   try{
     hit = await _dzUPC(code);
     if(!hit) hit = await _mbBarcode(code);
-    if(!hit) hit = await _dgBarcode(code);   // 토큰을 직접 넣은 사용자만
   }catch(err){
     bcStatus(bcT('Lookup error. Please check your network.','조회 중 오류가 발생했어요. 네트워크를 확인하세요.')); return;
   }
@@ -7700,14 +7662,6 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-card">
-      <div class="set-row col" style="cursor:default">
-        <div class="set-l"><div class="set-t">Discogs 연동</div><div class="set-d">컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)</div></div>
-        <div class="set-token"><input id="set-discogs" placeholder="Discogs Personal Token" value="${escapeHtml(SETTINGS.discogsToken||'')}"><button type="button" id="set-discogs-save">저장</button></div>
-        <div class="set-token" style="margin-top:8px"><input id="set-discogs-user" placeholder="Discogs 사용자명 (Username)" value="${escapeHtml(SETTINGS.discogsUser||'')}"><button type="button" id="set-discogs-user-save">저장</button></div>
-      </div>
-    </div>
-    <div class="set-card">
-      <div class="set-row tap" id="set-imp-discogs"><div class="set-l"><div class="set-t">💿 Discogs 컬렉션 가져오기</div><div class="set-d">Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
     </div>
@@ -7758,7 +7712,6 @@ function renderSettings(){
     filter.view=SETTINGS.defaultView; // 즉시 반영
   });
   // 내보내기
-  { const b=$('#set-imp-discogs'); if(b) b.onclick=importFromDiscogs; }
   { const b=$('#set-imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
@@ -7766,9 +7719,6 @@ function renderSettings(){
   { const tg=$('#set-ttguide'); if(tg) tg.onclick=replayTurntableGuide; }
   // 광고 보고 배너 잠시 끄기 (보상형)
   { const af=$('#set-adfree'); if(af) af.onclick=()=>{ try{ watchRewardedAdFree(); }catch(e){} }; }
-  // Discogs 토큰 저장
-  { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
-  { const sv=$('#set-discogs-user-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsUser=$('#set-discogs-user').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
   // 계정 비우기 (이 계정의 모든 LP 삭제)
   { const cl=$('#set-clear'); if(cl) cl.onclick=async()=>{
       if(!(window.LPCloud && window.LPCloud.clearAll)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
@@ -8181,7 +8131,7 @@ function startTurntableGuide(it, force){
     { target:'#tt-armb', pad:8, noScroll:true, relayout:1800, title:'톤암으로 원하는 부분부터', open:opened,
       desc:'톤암을 잡아 디스크 위에 놓으면 그 자리부터 들려요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요. 디스크 밖으로 빼면 멈춰요.' },
     { target:'#tt-share', round:true, pad:6, noScroll:true, title:'30초 영상으로 공유', open:opened,
-      desc:'공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 인스타 스토리나 카톡으로 바로 보낼 수 있어요.' },
+      desc:'공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 원하는 곳에 편하게 공유해요.' },
     { target:'#tt-close', round:true, pad:6, noScroll:true, title:'닫기', open:opened,
       desc:'왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.' },
   ], 'tt');
@@ -8264,6 +8214,7 @@ function refreshGenreChips(){
 
 /* ---------- Cover Flow ---------- */
 let cfItems=[], cfIndex=0, cfCards=[], cfMode='cover';   // 'cover' | 'vinyl'
+var _cfArtDone=new Set();   // 커버를 이미 불러온(또는 불러오는 중인) 카드
 function applyCfMode(){
   const stage=$('#cf-stage'); if(stage) stage.classList.toggle('vinyl-mode', cfMode==='vinyl');
   const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '커버 보기로 전환' : '디스크 보기로 전환'; }
@@ -8296,12 +8247,8 @@ function buildCoverFlow(){
     </div>`;
   }).join('');
   cfCards=[...track.querySelectorAll('.cf-card')];
-  // load art for each cover-flow card (reuse cache)
-  cfItems.forEach(async it=>{
-    const img=track.querySelector(`img[data-cf="${it.id}"]`);
-    const url=it._art||pickedArt[artKey(it.artist,it.album)]||await fetchArt(it.artist,it.album);
-    if(url&&img){img.src=url;img.onload=()=>{const ph=img.parentElement.querySelector('.cf-ph'); if(ph) ph.style.display='none';};}
-  });
+  // 커버는 가운데 근처만 불러오고 넘길 때마다 이어서 (전부 한꺼번에 찾으면 수백~수천 건이 몰려 실패·버벅임)
+  _cfArtDone=new Set();
   cfIndex=Math.min(cfIndex,cfItems.length-1);
   layoutCoverFlow();
   applyCfMode();
@@ -8365,8 +8312,20 @@ function layoutCoverFlow(){
     c.querySelector('.cf-art').style.boxShadow=off===0?'0 22px 38px rgba(0,0,0,.6)':'0 14px 22px rgba(0,0,0,.45)';
     c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
   });
+  cfLoadArt();
   const it=cfItems[cfIndex]; if(!it)return;
   $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 미리듣기 · 길게 누르면 상세</span>${it.genre?' · '+tr(it.genre):''}${it.color?' · '+it.color:''}</div>`;
+}
+function cfLoadArt(){
+  const track=$('#cf-track'); if(!track || !cfItems.length) return;
+  for(let i=Math.max(0,cfIndex-8); i<=Math.min(cfItems.length-1,cfIndex+8); i++){
+    const it=cfItems[i]; if(!it || _cfArtDone.has(it.id)) continue; _cfArtDone.add(it.id);
+    (async()=>{
+      const img=track.querySelector(`img[data-cf="${it.id}"]`);
+      const url=it._art||pickedArt[artKey(it.artist,it.album)]||await fetchArt(it.artist,it.album);
+      if(url&&img){ img.src=url; img.onload=()=>{ const ph=img.parentElement.querySelector('.cf-ph'); if(ph) ph.style.display='none'; }; }
+    })();
+  }
 }
 function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow();
   if(_preview.id && (!cfItems[cfIndex] || _preview.id!==cfItems[cfIndex].id)) stopPreview();   // 다른 앨범으로 넘기면 정지
@@ -8490,10 +8449,15 @@ window.bootApp=function(items){
   }
 };
 
-/* ===== 대량 가져오기: Discogs 컬렉션 · 엑셀/CSV (마이페이지 '데이터 가져오기') ===== */
-// CSV 파서 — 따옴표 필드·쉼표/줄바꿈 포함 값·CRLF·BOM 처리
-function parseCSV(text){
-  text=String(text||'').replace(/^\uFEFF/,'');
+/* ===== 대량 가져오기: 엑셀/CSV (환경설정의 가져오기) ===== */
+// CSV/TSV 파서 — 따옴표 필드·구분자/줄바꿈 포함 값·CRLF·BOM 처리. 구분자는 첫 줄들을 보고 쉼표/탭/세미콜론 중에서 고른다
+function parseCSV(text, delim){
+  text=String(text||'').replace(/^﻿/,'');
+  if(!delim){
+    const head=text.split(/\r?\n/).slice(0,5).join('\n');
+    const cnt=d=>(head.match(new RegExp(d==='\t'?'\t':'\\'+d,'g'))||[]).length;
+    delim=[',','\t',';'].sort((a,b)=>cnt(b)-cnt(a))[0];
+  }
   const rows=[]; let row=[], cur='', inQ=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i];
@@ -8501,8 +8465,8 @@ function parseCSV(text){
       if(ch==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; }
       else cur+=ch;
     }else{
-      if(ch==='"') inQ=true;
-      else if(ch===','){ row.push(cur); cur=''; }
+      if(ch==='"' && cur==='') inQ=true;
+      else if(ch===delim){ row.push(cur); cur=''; }
       else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n') i++; row.push(cur); cur=''; rows.push(row); row=[]; }
       else cur+=ch;
     }
@@ -8510,68 +8474,143 @@ function parseCSV(text){
   if(cur!==''||row.length){ row.push(cur); rows.push(row); }
   return rows.filter(r=>r.some(c=>String(c).trim()!==''));
 }
-// 머리글 이름 → 필드 매핑 (한국어/영어 모두 허용)
-const IMP_HEADERS={
-  artist:['가수','아티스트','artist'],
-  album:['앨범명','앨범','album','title','제목'],
-  color:['컬러','색상','color'],
-  status:['구분','상태','status'],
-  store:['구매처','store','shop'],
-  price:['구매가','구매가(원)','구매가 (원)','price'],
-  listPrice:['정가','정가(원)','정가 (원)','listprice','list price'],
-  buy:['구매일','구매일자','구매 일자','buy','date','purchase date'],
-  genre:['장르','genre'],
-  year:['발매년도','연도','발매 연도','year'],
-  note:['비고','메모','note','memo']
-};
-function mapHeaderRow(cells){
-  const low=(cells||[]).map(c=>String(c==null?'':c).trim().toLowerCase());
-  const idx={};
-  Object.entries(IMP_HEADERS).forEach(([k,names])=>{
-    const i=low.findIndex(h=>names.includes(h));
-    if(i>=0) idx[k]=i;
+// 파일 글자 인코딩: UTF-8 이 아니면 한국어 윈도우 엑셀의 기본 저장 형식(CP949/EUC-KR)으로 읽는다
+async function _impReadText(file){
+  const buf=new Uint8Array(await file.arrayBuffer());
+  try{ return new TextDecoder('utf-8',{fatal:true}).decode(buf); }
+  catch(e){ try{ return new TextDecoder('euc-kr').decode(buf); }catch(_){ return new TextDecoder().decode(buf); } }
+}
+// 엑셀(.xlsx) 읽기 — 외부 도구 없이 직접 (zip 을 풀고 첫 시트의 값만). 날짜 서식 칸은 YYYY-MM-DD 로
+async function _readXlsx(ab){
+  const u8=new Uint8Array(ab), dv=new DataView(ab);
+  let eocd=-1; for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; } }
+  if(eocd<0) throw new Error('not a zip');
+  const n=dv.getUint16(eocd+10,true); let p=dv.getUint32(eocd+16,true); const files={};
+  const dec=new TextDecoder();
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    files[dec.decode(u8.subarray(p+46,p+46+nl))]={method,csize,off}; p+=46+nl+xl+cl;
+  }
+  const read=async name=>{
+    const f=files[name]; if(!f) return null;
+    const start=f.off+30+dv.getUint16(f.off+26,true)+dv.getUint16(f.off+28,true), data=u8.subarray(start,start+f.csize);
+    if(f.method===0) return dec.decode(data);
+    const st=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return await new Response(st).text();
+  };
+  const xml=t=>t?new DOMParser().parseFromString(t,'application/xml'):null;
+  const tags=(d,t)=>d?[...d.getElementsByTagName(t)]:[];
+  // 첫 시트 경로
+  let sheetPath='xl/worksheets/sheet1.xml';
+  try{ const wb=xml(await read('xl/workbook.xml')), rels=xml(await read('xl/_rels/workbook.xml.rels'));
+    const rid=tags(wb,'sheet')[0]?.getAttribute('r:id'), rel=tags(rels,'Relationship').find(r=>r.getAttribute('Id')===rid);
+    if(rel){ const t=rel.getAttribute('Target'); sheetPath=t.startsWith('/')?t.slice(1):'xl/'+t.replace(/^\.\//,''); } }catch(e){}
+  const ss=tags(xml(await read('xl/sharedStrings.xml')),'si').map(si=>tags(si,'t').map(t=>t.textContent).join(''));
+  // 날짜 서식 (기본 14~22·45~47, 사용자 서식은 y/d 가 들어가면)
+  const styles=xml(await read('xl/styles.xml')), custom={};
+  tags(styles,'numFmt').forEach(f=>{ custom[f.getAttribute('numFmtId')]=f.getAttribute('formatCode')||''; });
+  const isDateFmt=id=>{ id=+id; if((id>=14&&id<=22)||(id>=45&&id<=47)) return true;
+    const c=(custom[id]||'').replace(/"[^"]*"|\[[^\]]*\]/g,''); return /[yd]/i.test(c); };
+  const cellXfs=tags(styles,'cellXfs')[0], xfs=cellXfs?[...cellXfs.children].map(x=>isDateFmt(x.getAttribute('numFmtId')||0)):[];
+  const colIdx=ref=>{ const m=/^([A-Z]+)/.exec(ref||''); if(!m) return -1; let n=0; for(const ch of m[1]) n=n*26+(ch.charCodeAt(0)-64); return n-1; };
+  const serialDate=v=>{ const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000); return d.toISOString().slice(0,10); };
+  const aoa=[];
+  tags(xml(await read(sheetPath)),'row').forEach(r=>{
+    const out=[]; let ci=0;
+    [...r.getElementsByTagName('c')].forEach(c=>{
+      const at=colIdx(c.getAttribute('r')); if(at>=0) ci=at;
+      const t=c.getAttribute('t'), v=c.getElementsByTagName('v')[0]?.textContent ?? '';
+      let val;
+      if(t==='s') val=ss[+v]??'';
+      else if(t==='inlineStr') val=tags(c,'t').map(x=>x.textContent).join('');
+      else if(t==='b') val=v==='1'?'TRUE':'FALSE';
+      else if(t==='str'||t==='e') val=v;
+      else if(v!=='' && xfs[+(c.getAttribute('s')||0)] && !isNaN(+v)) val=serialDate(+v);
+      else val=v;
+      out[ci++]=val;
+    });
+    aoa.push(Array.from(out,x=>x==null?'':x));
   });
+  return aoa.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+// 머리글 이름 → 필드 매핑 (한국어/영어, 띄어쓰기·괄호 무시: '구매가 (원)' = '구매가')
+const IMP_HEADERS={
+  artist:['가수','가수명','아티스트','아티스트명','뮤지션','artist','artists','artistname'],
+  album:['앨범명','앨범','앨범이름','앨범제목','음반','음반명','타이틀','제목','lp명','album','albumname','albumtitle','title','release'],
+  color:['컬러','색상','색','디스크컬러','디스크색','바이닐컬러','판색','color','colour','vinylcolor'],
+  status:['구분','상태','소장상태','보관상태','status'],
+  store:['구매처','구입처','쇼핑몰','구매몰','판매처','store','shop','seller'],
+  price:['구매가','구입가','구매가격','구입가격','가격','금액','구매금액','결제금액','price','cost','paid'],
+  listPrice:['정가','소비자가','listprice','msrp'],
+  buy:['구매일','구매일자','구입일','구입일자','구매날짜','구입날짜','주문일','날짜','일자','buy','date','purchasedate','purchased','orderdate'],
+  genre:['장르','genre'],
+  year:['발매년도','발매연도','발매년','연도','발매일','출시연도','year','releaseyear','released'],
+  note:['비고','메모','노트','코멘트','note','notes','memo','comment']
+};
+const _impNorm=h=>String(h==null?'':h).toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[\s_\-·.:/]/g,'');
+function mapHeaderRow(cells){
+  const low=(cells||[]).map(_impNorm), idx={};
+  Object.entries(IMP_HEADERS).forEach(([k,names])=>{ const i=low.findIndex(h=>h && names.includes(h)); if(i>=0) idx[k]=i; });
   return idx;
 }
-// [머리글행, 데이터행...] → 표준 행 객체 배열 (머리글 인식 실패 시 null)
+// [..., 머리글행, 데이터행...] → 표준 행 객체 배열. 머리글은 위쪽 10줄 안에서 찾는다(맨 위에 제목 줄이 있어도 됨). 못 찾으면 null
 function rowsFromAoa(aoa){
   if(!aoa||!aoa.length) return [];
-  const idx=mapHeaderRow(aoa[0]);
-  if(idx.artist===undefined && idx.album===undefined) return null;
-  return aoa.slice(1).map(r=>{
+  let h=-1, idx=null;
+  for(let r=0;r<Math.min(10,aoa.length);r++){ const m=mapHeaderRow(aoa[r]); if(m.artist!==undefined || m.album!==undefined){ h=r; idx=m; break; } }
+  if(h<0) return null;
+  return aoa.slice(h+1).map(r=>{
     const g=k=> idx[k]!==undefined ? String(r[idx[k]]==null?'':r[idx[k]]).trim() : '';
     return { artist:g('artist'), album:g('album'), color:g('color'), status:g('status'),
              store:g('store'), price:g('price'), listPrice:g('listPrice'), buy:g('buy'),
              genre:g('genre'), year:g('year'), note:g('note') };
   });
 }
-// 표준 행 → 앱 항목 객체 (id 유일성 보장: 'u'+시각+'-'+순번)
+// 날짜: 2024-03-05 · 2024.3.5 · 2024. 3. 5. · 2024/3/5 · 2024년 3월 5일 · 24.03.05 · 3/5/2024 · 20240305 · 엑셀 날짜 숫자
+function _impDate(v){
+  if(v==null) return null; const t=String(v).trim(); if(!t) return null;
+  const ok=(y,m,d)=>{ y=+y; m=+m; d=+d; if(y<1900||y>2100||m<1||m>12||d<1||d>31) return null; return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; };
+  let m;
+  if(/^\d{5}(\.\d+)?$/.test(t)){ const d=new Date(Date.UTC(1899,11,30)+Math.round(parseFloat(t))*86400000); return d.toISOString().slice(0,10); }
+  if((m=t.match(/^(\d{4})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})/))) return ok(m[1],m[2],m[3]);
+  if((m=t.match(/^(\d{4})(\d{2})(\d{2})$/))) return ok(m[1],m[2],m[3]);
+  if((m=t.match(/^(\d{2})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{1,2})\.?$/))) return ok('20'+m[1],m[2],m[3]);
+  if((m=t.match(/^(\d{1,2})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{4})$/))) return +m[1]>12 ? ok(m[3],m[2],m[1]) : ok(m[3],m[1],m[2]);
+  return null;
+}
+// 구분(상태): 적힌 말이 조금 달라도 앱의 구분으로 맞춘다
+function _impStatus(v){
+  const t=String(v||'').replace(/\s+/g,'');
+  if(!t) return '미개봉';
+  if(/^(미개봉|새상품|신품|밀봉|sealed|new)/i.test(t)) return '미개봉';
+  if(/개봉|played|opened/i.test(t)) return '개봉';
+  if(/배송|주문|예약|preorder|shipping|ordered/i.test(t)) return '배송전';
+  if(/위시|구매예정|사고싶|wish/i.test(t)) return '위시';
+  if(/판매|팔았|sold/i.test(t)) return '판매';
+  if(/교환|trade/i.test(t)) return '교환';
+  return '미개봉';
+}
+// 표준 행 → 앱 항목 객체. 등록 순서: 파일의 아래 행일수록 최근 (id = 지금보다 조금 이른 시각 + 순번)
 function importRowsToItems(rows){
-  const now=Date.now(); const items=[]; const errors=[];
-  const normDate=v=>{ if(!v) return null;
-    const m=String(v).trim().replace(/[./]/g,'-').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-    return m ? `${m[1]}-${String(+m[2]).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}` : null; };
-  const normStatus=v=>{ const t=String(v||'').trim();
-    if(['미개봉','개봉','배송전','위시','판매','교환'].includes(t)) return t;
-    return '미개봉'; };
+  const now=Date.now(), base=now-rows.length-1; const items=[]; const errors=[];
   rows.forEach((r,i)=>{
     const ar=(r.artist||'').trim(), al=(r.album||'').trim();
     if(!ar && !al){ errors.push(r); return; }
     const toNum=v=>{ if(v==null||v==='') return null; const n=Number(String(v).replace(/[^\d.]/g,'')); return isNaN(n)||!n?null:n; };
     const price=toNum(r.price);
-    const it={ id:'u'+now+'-'+i, no:DATA.length+items.length+1,
+    const it={ id:'u'+(base+i), no:DATA.length+items.length+1,
       artist:ar||'-', album:al, color:(r.color||'').trim()||'블랙', colorHex:null,
       discPhoto:null, discOpacity:null,
       store:(r.store||'').trim(), price, orig:price, listPrice:toNum(r.listPrice), pay:'',
-      buy:normDate(r.buy), arrive:null, openDate:null,
-      status:normStatus(r.status), sellDate:null, sellPrice:null, profit:null,
+      buy:_impDate(r.buy), arrive:null, openDate:null,
+      status:_impStatus(r.status), sellDate:null, sellPrice:null, profit:null,
       sleeveGrade:'', mediaGrade:'',
       previewAlbumId:null, previewAlbumName:null,
       rating:0, note:(r.note||'').trim(),
       genre:(r.genre||'').trim(), year:(parseInt(r.year,10)||null),
       rpm:'', inch:'' };
     if(r.cover){ it._art=r.cover; it.cover=r.cover; }
-    if(r.discogsId!=null) it.discogsId=r.discogsId;
     items.push(it);
   });
   return {items, errors};
@@ -8621,62 +8660,15 @@ function openImportPreview(items, srcLabel){
   };
   show('import');
 }
-// Discogs 컬렉션 가져오기 (환경설정의 사용자명 필요, 토큰은 있으면 사용)
-async function importFromDiscogs(){
-  const user=(SETTINGS.discogsUser||'').trim();
-  if(!user){
-    appAlert('환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.');
-    renderSettings(); show('settings');
-    return;
-  }
-  const token=(SETTINGS.discogsToken||'').trim();
-  previewToast('Discogs 컬렉션을 불러오는 중…');
-  const all=[]; let page=1, pages=1;
-  try{
-    while(page<=pages && all.length<1000){
-      const url='https://api.discogs.com/users/'+encodeURIComponent(user)+'/collection/folders/0/releases?per_page=100&sort=added&page='+page+(token?('&token='+encodeURIComponent(token)):'');
-      const res=await fetch(url);
-      if(res.status===404){ appAlert('Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.'); return; }
-      if(res.status===401||res.status===403){ appAlert('컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.'); return; }
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const j=await res.json();
-      pages=(j.pagination&&j.pagination.pages)||1;
-      (j.releases||[]).forEach(rel=>{
-        const b=rel.basic_information||{};
-        const artist=((b.artists&&b.artists[0]&&b.artists[0].name)||'').replace(/\s*\(\d+\)\s*$/,'').trim();   // Discogs 동명 표기 "(2)" 제거
-        all.push({ artist, album:(b.title||'').trim(),
-          year:b.year||'', genre:(b.genres&&b.genres[0])||'',
-          cover:(b.cover_image&&!/spacer\.gif/.test(b.cover_image))?b.cover_image:'',
-          buy:(rel.date_added||'').slice(0,10),
-          discogsId:rel.id||b.id||null });
-      });
-      previewToast(`Discogs에서 ${all.length}장 불러오는 중…`);
-      page++;
-      if(page<=pages) await new Promise(r=>setTimeout(r,1100));   // rate limit(분당 60회) 여유
-    }
-  }catch(e){ console.error('discogs import', e); appAlert('Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'); return; }
-  if(!all.length){ appAlert('가져올 컬렉션이 비어 있어요.'); return; }
-  const {items}=importRowsToItems(all);
-  openImportPreview(items, `Discogs 컬렉션 · ${items.length}장`);
-}
-// 엑셀(.xlsx)/CSV 파일 가져오기 — xlsx 해석 도구는 필요할 때만 CDN에서 로드
+// 엑셀(.xlsx)/CSV 파일 가져오기 — 인터넷 없이 앱 안에서 바로 읽는다
 async function importFromFile(file){
   const name=(file.name||'').toLowerCase();
   let aoa=null;
   try{
-    if(name.endsWith('.csv') || file.type==='text/csv'){
-      aoa=parseCSV(await file.text());
-    }else{
-      previewToast('엑셀 해석 도구를 불러오는 중…');
-      let X=null;
-      try{ X=await import('https://esm.sh/xlsx@0.18.5'); }
-      catch(e1){ try{ X=await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm'); }catch(e2){} }
-      const XLSX=X && ((X.default&&X.default.read)?X.default:X);
-      if(!XLSX || !XLSX.read){ appAlert('엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.'); return; }
-      const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
-    }
+    if(/\.(xls|numbers)$/.test(name)){ appAlert('이 형식은 읽을 수 없어요. 엑셀에서 .xlsx 또는 CSV 로 저장해 올려주세요.'); return; }
+    const head=new Uint8Array(await file.slice(0,4).arrayBuffer());
+    if(name.endsWith('.xlsx') || (head[0]===0x50 && head[1]===0x4b)) aoa=await _readXlsx(await file.arrayBuffer());   // zip(PK) = xlsx
+    else aoa=parseCSV(await _impReadText(file));
   }catch(e){ console.error('file import', e); appAlert('파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.'); return; }
   const rows=rowsFromAoa(aoa);
   if(rows===null){ appAlert('머리글 행을 인식하지 못했어요. 첫 행에 "가수, 앨범명, ..." 같은 제목을 넣어주세요. (엑셀 양식 받기 참고)'); return; }
