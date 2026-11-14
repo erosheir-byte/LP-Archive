@@ -4565,11 +4565,6 @@ function openDetail(id, mode){
   let action='';
   if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료</button>`;
   else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료</button>`;
-  // 같은 앨범이 여러 장이면, 이 장의 커버를 달력·모아보기 '대표 이미지'로 지정할 수 있게
-  const sameAlbum=DATA.filter(x=>artKey(x.artist,x.album)===key);
-  if(sameAlbum.length>1){
-    action+=`<button class="act-btn" id="act-repcover" style="margin-top:8px">${it.repCover?'📌 대표 이미지 지정됨 — 해제하기':'📌 이 커버를 대표 이미지로'}</button>`;
-  }
   // 같은 앨범을 또 살 때: 이 앨범 정보를 복사해 등록 화면을 미리 채움
   action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 추가</button>`;
   action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
@@ -4623,16 +4618,6 @@ function openDetail(id, mode){
   const ab=$('#act-arrive'); if(ab) ab.onclick=()=>showArriveForm(it);
   const bb=$('#act-buy'); if(bb) bb.onclick=()=>showBuyForm(it);
   { const cb=$('#act-clone'); if(cb) cb.onclick=()=>cloneToAdd(it); }
-  // 대표 이미지 지정/해제: 같은 앨범의 다른 장에 걸린 지정은 풀고 이 장으로 옮긴다
-  { const rb=$('#act-repcover'); if(rb) rb.onclick=()=>{
-      const on=!it.repCover;
-      DATA.forEach(x=>{ if(x!==it && x.repCover && artKey(x.artist,x.album)===key){ x.repCover=null; cloudSaveItem(x); } });
-      it.repCover=on?true:null; cloudSaveItem(it);
-      if(typeof renderCal==='function') renderCal();
-      if(typeof buildCoverFlow==='function') buildCoverFlow();
-      previewToast(on?'이 커버가 앨범 대표 이미지로 지정됐어요 ✓':'대표 이미지 지정을 해제했어요');
-      openDetail(it.id);
-  }; }
   // 우측 상단 '수정' 버튼 — 상세를 연 순간부터 항상 보이는 수정 진입점
   { const eb=$('#dt-edit'); if(eb) eb.onclick=()=>showEditForm(it); }
   const db=$('#act-delete'); if(db) db.onclick=async()=>{
@@ -6930,13 +6915,6 @@ let calYear, calMonth;   // current view (month is 0-based)
 let calPick = (()=>{ try{ return JSON.parse(localStorage.getItem('lp_calpick')||'{}')||{}; }catch(e){ return {}; } })();
 function saveCalPick(){ try{ localStorage.setItem('lp_calpick', JSON.stringify(calPick)); }catch(e){} }
 function artFor(it){ return it._art || pickedArt[artKey(it.artist,it.album)] || artCache[artKey(it.artist,it.album)] || null; }
-// 같은 앨범(가수+앨범명)이 여러 장이고 장마다 커버가 다를 때,
-// 사용자가 '대표 이미지'로 지정한 장(repCover)의 커버를 우선 사용 (달력·모아보기 표시용)
-function repArtFor(it){
-  const k=artKey(it.artist,it.album);
-  const rep=DATA.find(x=>x.repCover && artKey(x.artist,x.album)===k);
-  return (rep && artFor(rep)) || artFor(it);
-}
 // collect date-events: {date:'YYYY-MM-DD', kind:'arrive'|'buy'|'sold'|'open', it}
 function calEvents(){
   const ev=[];
@@ -6997,7 +6975,7 @@ function renderCal(){
         if(c){ top=c; picked=true; pickedKind=pk.kind; }
       }
       if(!top) top=[...items].sort((a,b)=>rank(a.kind)-rank(b.kind))[0];
-      const art=repArtFor(top.it);
+      const art=artFor(top.it);
       const cls = top.kind==='buy'?'ph-buy' : top.kind==='sold'?'ph-sold' : '';
       // 개봉은 CD판으로 표시. 단 (구버전) 항목만 고른 픽은 커버 사진을 그대로 보여준다.
       if(top.kind==='open' && !(picked && !pickedKind && art)){
@@ -7045,7 +7023,7 @@ function openDayList(dateStr, items){
     if(showPins) html+=`<div class="dl-pinhint">${pinSVG} 달력 칸에 표시할 기록을 골라주세요</div>`;
     html+=items.map(ev=>{
       const it=ev.it;
-      const art=repArtFor(it);
+      const art=artFor(it);
       const thumb = art
         ? `<img src="${art}" alt="">`
         : `<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
@@ -7464,6 +7442,17 @@ function s0Liked(on){ const s=$('#sheet-daylist'); if(s) s.classList.toggle('lik
 // 좋아요는 이제 '내 컬렉션' 맨 앞 타일로 보여준다 (예전 호출부 호환)
 function renderLikes(){ renderCollections(); }
 
+// 설정 > 앱 정보: 설치된 앱의 실제 버전(스토어 빌드 때 정한 versionName · versionCode). 웹은 '웹 버전'
+let _appVerText=null;
+async function _fillAppVersion(){
+  const el=$('#set-appver'); if(!el) return;
+  if(_appVerText==null){
+    const C=window.Capacitor, A=C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.App;
+    if(A && A.getInfo){ try{ const i=await A.getInfo(); if(i && i.version) _appVerText=`v${i.version}`+(i.build?` (${i.build})`:''); }catch(e){} }
+    if(_appVerText==null) _appVerText=isEN()?'Web':'웹 버전';
+  }
+  const cur=$('#set-appver'); if(cur) cur.textContent='Turnit · '+_appVerText;
+}
 /* ===== 내 취향 요약 (LP 데이터 기반) ===== */
 function renderTaste(){
   const wrap=$('#taste'); if(!wrap) return;
@@ -7702,7 +7691,7 @@ function renderSettings(){
     <div class="set-card">
       <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-ttguide"><div class="set-l"><div class="set-t">턴테이블 가이드 다시 보기</div><div class="set-d">디스크 돌리기·톤암·공유 방법을 다시 안내해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d">Turnit · v1.0</div></div></div>
+      <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d" id="set-appver">Turnit</div></div></div>
       <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 바이닐 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
@@ -7764,6 +7753,7 @@ function renderSettings(){
       }catch(e){ console.error(e); appAlert('삭제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'); }
       finally{ cl.style.pointerEvents=''; if(t) t.textContent=old; }
   }; }
+  _fillAppVersion();
   // 회원 탈퇴 (계정 + 모든 데이터 영구 삭제)
   { const dl=$('#set-delete'); if(dl) dl.onclick=async()=>{
       if(!(window.LPCloud && window.LPCloud.deleteAccount)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
@@ -8254,12 +8244,11 @@ function buildCoverFlow(){
   cfItems=DATA.filter(d=>{const g=statusGroup(d.status);return g==='보유중'||g==='배송전';});  // 소장/예정만
   if(typeof SETTINGS==='undefined' || SETTINGS.dedupeFlow!==false){   // 같은 앨범(가수+앨범명)은 한 장만
     const norm=d=>((d.artist||'')+'|'+(d.album||'')).toLowerCase().replace(/\s+/g,'');
-    const repKeys=new Set(cfItems.filter(d=>d.repCover).map(norm));   // 대표 이미지가 지정된 앨범
-    const seen=new Set();
-    cfItems=cfItems.filter(d=>{ const k=norm(d);
-      if(seen.has(k)) return false;
-      if(repKeys.has(k) && !d.repCover) return false;   // 대표로 지정한 장이 따로 있으면 그 장을 보여준다
-      seen.add(k); return true; });
+    // 여러 장이면 가장 최근에 등록한 장을 보여준다 (id = 'u'+등록 시각)
+    const regAt=d=>{ const m=/^u(\d+)$/.exec(String(d.id)); return m?+m[1]:0; };
+    const pick=new Map();
+    cfItems.forEach(d=>{ const k=norm(d), cur=pick.get(k); if(!cur || regAt(d)>regAt(cur)) pick.set(k,d); });
+    cfItems=cfItems.filter(d=>pick.get(norm(d))===d);
   }
   if(!cfItems.length) cfItems=DATA.slice();
   const track=$('#cf-track');
