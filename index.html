@@ -5616,17 +5616,33 @@ function _cardImgFetch(src){
   return p;
 }
 // 기다리는 시간은 부르는 쪽마다 따로: 느린 커버는 오래 기다리지 않고 원판 그림으로
-function _loadCardImg(src, timeout=2500){
+function _loadCardImg(src, timeout=2500, patient=false){
   if(!src) return Promise.resolve(null);
   if(_cardImgDone.has(src)) return Promise.resolve(_cardImgDone.get(src));
-  if(_cardImgSlow.has(src)) return Promise.resolve(null);   // 지난번에 늦었던 커버는 기다리지 않음 (뒤에서 계속 받는 중)
+  if(_cardImgSlow.has(src) && !patient) return Promise.resolve(null);   // 지난번에 늦었던 커버는 기다리지 않음 (뒤에서 계속 받는 중)
   return Promise.race([_cardImgFetch(src), new Promise(res=>setTimeout(()=>{ if(!_cardImgDone.has(src)) _cardImgSlow.add(src); res(null); }, timeout))]);
 }
-// 커버가 없거나 못 불러온 칸: 그 판의 바이닐 색으로 원판을 그린다
-function _drawCardDisc(x, cx, cy, size, color){
+// 공유 카드 칸 하나: 커버 → 없으면 판 사진. 직접 올린 사진(저장소)은 휴대폰 망에서 느릴 수 있어 넉넉히 기다린다
+//  (예전엔 2.5초만 기다려서 직접 올린 커버가 원판 그림으로 나오곤 했음)
+async function _loadCardTile(d, px){
+  const cov=artFor(d);
+  if(cov){ const src=_cardSrc(cov,px), quick=/mzstatic\.com|dzcdn\.net/.test(src);
+    const im=await _loadCardImg(src, quick?3000:8000, !quick); if(im) return {d, im}; }
+  if(d.discPhoto){ const ph=await _loadCardImg(d.discPhoto, 8000, true); if(ph) return {d, im:null, disc:ph}; }
+  return {d, im:null};
+}
+// 커버가 없거나 못 불러온 칸: 그 판의 바이닐 색으로 원판을 그린다 (판 사진이 있으면 그 사진으로)
+function _drawCardDisc(x, cx, cy, size, color, photo){
   x.fillStyle='#1d1a22'; x.fillRect(cx, cy, size, size);
   const r=size*0.42, mx=cx+size/2, my=cy+size/2;
   x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.fillStyle=color||'#222'; x.fill();
+  if(photo){
+    x.save(); x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.clip();
+    const sc=Math.max(2*r/photo.naturalWidth, 2*r/photo.naturalHeight), w=photo.naturalWidth*sc, h=photo.naturalHeight*sc;
+    x.drawImage(photo, mx-w/2, my-h/2, w, h); x.restore();
+    x.strokeStyle='rgba(255,255,255,.22)'; x.lineWidth=2; x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.stroke();
+    return;
+  }
   // 광택 + 테두리: 검은 판도 어두운 배경에서 보이게
   const sh=x.createLinearGradient(mx-r,my-r,mx+r,my+r);
   sh.addColorStop(0,'rgba(255,255,255,.16)'); sh.addColorStop(.45,'rgba(255,255,255,0)'); sh.addColorStop(.55,'rgba(255,255,255,0)'); sh.addColorStop(1,'rgba(255,255,255,.10)');
@@ -5662,15 +5678,13 @@ async function _drawStoryCard(o){
   let tiles;
   if(o.preferLoaded){
     const cand=items.filter(d=>artFor(d)).slice(0,12);
-    const loaded=await Promise.all(cand.map(d=>_loadCardImg(_cardSrc(artFor(d),300))));
-    const ok=cand.map((d,i)=>({d,im:loaded[i]})).filter(t=>t.im);
+    const ok=(await Promise.all(cand.map(d=>_loadCardTile(d,300)))).filter(t=>t.im);
     const okSet=new Set(ok.map(t=>t.d));
     tiles=ok.concat(items.filter(d=>!okSet.has(d)).map(d=>({d,im:null}))).slice(0,9);
   } else {
     const nine=items.slice(0,9);
     const px = nine.length===1 ? 600 : nine.length<=4 ? 500 : 300;
-    const loaded=await Promise.all(nine.map(d=>_loadCardImg(_cardSrc(artFor(d),px))));
-    tiles=nine.map((d,i)=>({d,im:loaded[i]}));
+    tiles=await Promise.all(nine.map(d=>_loadCardTile(d,px)));
   }
   const extra=o.fixed9 ? 0 : Math.max(0, items.length-9);   // 월별 카드만 '+N' (컬렉션 카드는 9장 꽉 채움)
 
@@ -5693,7 +5707,7 @@ async function _drawStoryCard(o){
     x.beginPath(); if(x.roundRect) x.roundRect(cx,cy,cell,cell,20); else x.rect(cx,cy,cell,cell); x.clip();
     if(t && t.im){ const im=t.im, sc=Math.max(cell/im.naturalWidth, cell/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
       x.drawImage(im, cx+(cell-w)/2, cy+(cell-h)/2, w, h); }
-    else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color));
+    else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color), t.disc);
     else { x.fillStyle='rgba(255,255,255,.04)'; x.fillRect(cx,cy,cell,cell); }
     if(t && !(extra && i===cellsToDraw-1)){   // 커버 아래쪽: 앨범명 · 아티스트
       const gh=cell*0.44, gg=x.createLinearGradient(0,cy+cell-gh,0,cy+cell);
