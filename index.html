@@ -2234,7 +2234,7 @@ const I18N = {
   "좋아요":"Like",
   "디스크 꾸미기":"Decorate disc",
   "📦 배송완료":"📦 Delivered",
-  "🛒 구매완료로 표시":"🛒 Mark as purchased",
+  "🛒 구매완료":"🛒 Purchased",
   "✏️ 정보 수정":"✏️ Edit details",
   "정보 수정":"Edit details",
   "판매/교환가 (원)":"Sale/Exchange price (KRW)",
@@ -4564,7 +4564,7 @@ function openDetail(id, mode){
   const g=statusGroup(it.status);
   let action='';
   if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료</button>`;
-  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
+  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료</button>`;
   // 같은 앨범이 여러 장이면, 이 장의 커버를 달력·모아보기 '대표 이미지'로 지정할 수 있게
   const sameAlbum=DATA.filter(x=>artKey(x.artist,x.album)===key);
   if(sameAlbum.length>1){
@@ -4997,7 +4997,7 @@ function showArriveForm(it){
     persistItem(it);
     hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();
-    previewToast(isEN()?`Delivered ✓ Moved to your collection`:`배송완료 ✓ 보유중으로 옮겼어요`);
+    previewToast(isEN()?'Delivered ✓':'배송완료 ✓');
   };
 }
 
@@ -5026,7 +5026,7 @@ function showBuyForm(it){
     persistItem(it);
     hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();
-    previewToast(it.status==='배송전' ? (isEN()?'Purchased ✓ Waiting for delivery':'구매완료 ✓ 배송을 기다려요') : (isEN()?'Purchased ✓ Moved to your collection':'구매완료 ✓ 보유중으로 옮겼어요'));
+    previewToast(isEN()?'Purchased ✓':'구매완료 ✓');
   };
 }
 
