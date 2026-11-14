@@ -2233,7 +2233,7 @@ const I18N = {
   "커버 수정":"Edit cover",
   "좋아요":"Like",
   "디스크 꾸미기":"Decorate disc",
-  "📦 배송완료로 표시":"📦 Mark as delivered",
+  "📦 배송완료":"📦 Delivered",
   "🛒 구매완료로 표시":"🛒 Mark as purchased",
   "✏️ 정보 수정":"✏️ Edit details",
   "정보 수정":"Edit details",
@@ -4563,7 +4563,7 @@ function openDetail(id, mode){
   rows.push(`<div class="dt-row"><span class="k">음원 연결</span><span class="v dt-pv-v"><span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span></span></div>`);
   const g=statusGroup(it.status);
   let action='';
-  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
+  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료</button>`;
   else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
   // 같은 앨범이 여러 장이면, 이 장의 커버를 달력·모아보기 '대표 이미지'로 지정할 수 있게
   const sameAlbum=DATA.filter(x=>artKey(x.artist,x.album)===key);
@@ -4970,6 +4970,15 @@ function cropToVinyl(imgEl, stageEl, t){
   });
 }
 
+// 배송완료·구매완료 폼은 누른 버튼 자리에 펼친다 (예전엔 맨 아래 삭제 버튼 밑에 열려서 눌러도 변화가 안 보였음)
+function _inlOpen(btnId){
+  const box=$('#dt-inline'), btn=$('#'+btnId); if(!box) return;
+  if(btn){ btn.after(box); btn.style.display='none'; }
+  requestAnimationFrame(()=>{
+    box.scrollIntoView({behavior:'smooth', block:'center'});
+    const c=$('#inl-cancel'); if(c) c.onclick=()=>{ box.innerHTML=''; if(btn) btn.style.display=''; };
+  });
+}
 // 배송완료: pick arrival date (or skip) + opened/sealed, then move to 보유중
 function showArriveForm(it){
   const today=new Date().toISOString().slice(0,10);
@@ -4978,7 +4987,9 @@ function showArriveForm(it){
     <label class="inl-check"><input type="checkbox" id="inl-nodate"> 도착일 입력 생략</label>
     <div class="fld" id="inl-datewrap"><label>도착일</label><input type="date" id="inl-arrive" value="${today}"></div>
     <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option></select></div>
-    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
+    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>
+    <button class="act-btn" id="inl-cancel" style="margin-top:8px">취소</button>`;
+  _inlOpen('act-arrive');
   $('#inl-nodate').onchange=e=>{ $('#inl-datewrap').style.display=e.target.checked?'none':''; };
   $('#inl-save').onclick=()=>{
     it.arrive=$('#inl-nodate').checked?null:($('#inl-arrive').value||null);
@@ -4986,6 +4997,7 @@ function showArriveForm(it){
     persistItem(it);
     hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();
+    previewToast(isEN()?`Delivered ✓ Moved to your collection`:`배송완료 ✓ 보유중으로 옮겼어요`);
   };
 }
 
@@ -5002,7 +5014,9 @@ function showBuyForm(it){
       <div class="fld"><label>구매일자</label><input id="inl-buy" type="date" value="${today}"></div>
       <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option></select></div>
     </div>
-    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
+    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>
+    <button class="act-btn" id="inl-cancel" style="margin-top:8px">취소</button>`;
+  _inlOpen('act-buy');
   $('#inl-save').onclick=()=>{
     it.price=Number($('#inl-price').value)||null;
     const _lp=Number($('#inl-list').value)||null; if(_lp!=null) it.listPrice=_lp;
@@ -5012,6 +5026,7 @@ function showBuyForm(it){
     persistItem(it);
     hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();
+    previewToast(it.status==='배송전' ? (isEN()?'Purchased ✓ Waiting for delivery':'구매완료 ✓ 배송을 기다려요') : (isEN()?'Purchased ✓ Moved to your collection':'구매완료 ✓ 보유중으로 옮겼어요'));
   };
 }
 
