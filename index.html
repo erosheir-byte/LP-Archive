@@ -110,6 +110,13 @@ html[data-theme="light"] .dt-edit-btn{background:rgba(255,255,255,.92);color:#44
 html[data-theme="light"] .sug-box{box-shadow:0 10px 26px rgba(0,0,0,.15)}
 /* 데이터 가져오기 (마이페이지 섹션 + 미리보기 시트) */
 .imp-summary{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+/* 표 붙여넣기 */
+.paste-d{color:var(--muted);font-size:12.5px;line-height:1.55;margin:2px 0 12px}
+#paste-ta{width:100%;min-height:180px;max-height:46vh;resize:vertical;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;white-space:pre;overflow:auto;outline:none}
+#paste-ta:focus{border-color:var(--accent)}
+.paste-info{font-size:12.5px;color:var(--accent2);margin:9px 0 2px;min-height:18px;line-height:1.5}
+.paste-info.warn{color:var(--muted)}
 .imp-tools{display:flex;gap:8px}
 .imp-selbtn{background:var(--card2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:inherit;font-size:12px;padding:7px 12px;cursor:pointer}
 .imp-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer}
@@ -1807,6 +1814,23 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 </div>
 
 <!-- 일괄 가져오기 미리보기 시트 -->
+<!-- 표 붙여넣기로 한번에 등록 -->
+<div class="ov" id="ov-paste"></div>
+<div class="sheet" id="sheet-paste">
+  <div class="grab" id="grab-paste"></div>
+  <button class="sheet-x" data-close="paste" aria-label="닫기">✕</button>
+  <div class="form">
+    <h2>표 붙여넣기</h2>
+    <p class="paste-d">엑셀·구글 시트에서 머리글(가수, 앨범명…)부터 원하는 줄까지 칸을 선택해 복사한 뒤, 아래 칸에 붙여 넣으세요.</p>
+    <textarea id="paste-ta" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="가수&#9;앨범명&#9;컬러&#9;구매가&#9;구매일&#10;검정치마&#9;TEAM BABY&#9;블랙&#9;38000&#9;2024-03-05"></textarea>
+    <div class="paste-info" id="paste-info"></div>
+    <div class="btnrow">
+      <button class="btn ghost" data-close="paste">취소</button>
+      <button class="btn primary" id="paste-go" disabled>미리보기</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov" id="ov-import"></div>
 <div class="sheet" id="sheet-import">
   <div class="grab" id="grab-import"></div>
@@ -2513,6 +2537,9 @@ const I18N = {
   "이미 있음":"Already added",
   "가져올 항목이 없어요.":"Nothing to import.",
   "가져올 컬렉션이 비어 있어요.":"The collection is empty.",
+  "📋 표 붙여넣기로 한번에 등록":"📋 Paste from a spreadsheet","엑셀·구글 시트에서 칸을 복사해 붙여 넣으면 바로 등록돼요":"Copy cells from Excel or Google Sheets and paste them to add records at once",
+  "표 붙여넣기":"Paste from a spreadsheet","엑셀·구글 시트에서 머리글(가수, 앨범명…)부터 원하는 줄까지 칸을 선택해 복사한 뒤, 아래 칸에 붙여 넣으세요.":"In Excel or Google Sheets, select the cells from the header row (artist, album…) down to the rows you want, copy, and paste them below.",
+  "미리보기":"Preview",
   "이 형식은 읽을 수 없어요. 엑셀에서 .xlsx 또는 CSV 로 저장해 올려주세요.":"This file type can't be read. Save it as .xlsx or CSV in Excel and upload again.",
   "파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.":"Something went wrong while reading the file. Check the template.",
   "가져올 행이 없어요. 양식을 확인해주세요.":"No rows to import. Check the template.",
@@ -7662,6 +7689,7 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-card">
+      <div class="set-row tap" id="set-imp-paste"><div class="set-l"><div class="set-t">📋 표 붙여넣기로 한번에 등록</div><div class="set-d">엑셀·구글 시트에서 칸을 복사해 붙여 넣으면 바로 등록돼요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
     </div>
@@ -7714,6 +7742,7 @@ function renderSettings(){
   // 내보내기
   { const b=$('#set-imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
+  { const b=$('#set-imp-paste'); if(b) b.onclick=()=>{ hide('settings'); openPasteImport(); }; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
   { const tb=$('#set-tour'); if(tb) tb.onclick=()=>{ hide('settings'); startTour(); }; }
   { const tg=$('#set-ttguide'); if(tg) tg.onclick=replayTurntableGuide; }
@@ -8617,8 +8646,8 @@ function importRowsToItems(rows){
 }
 // 미리보기 시트: 체크로 골라서 일괄 등록 (중복 앨범은 표시 + 기본 제외)
 let _impItems=[];
-function openImportPreview(items, srcLabel){
-  _impItems=items||[];
+function openImportPreview(items, srcLabel, skipped){
+  _impItems=items||[]; skipped=skipped||0;
   const wrap=$('#imp-list'); if(!wrap) return;
   const exist=new Set(DATA.map(x=>artKey(x.artist,x.album)));
   let dup=0;
@@ -8638,7 +8667,10 @@ function openImportPreview(items, srcLabel){
   $('#imp-title').textContent=srcLabel||'가져오기 미리보기';
   const paint=()=>{
     const n=wrap.querySelectorAll('.imp-chk:checked').length;
-    $('#imp-summary').textContent=`${_impItems.length}건 중 ${n}건 선택${dup?` · 이미 있는 앨범 ${dup}건은 기본 제외`:''}`;
+    const N=v=>Number(v).toLocaleString();
+    $('#imp-summary').textContent = isEN()
+      ? `${N(n)} of ${N(_impItems.length)} selected${dup?` · ${N(dup)} already in your library are unchecked`:''}${skipped?` · ${N(skipped)} rows without artist/album skipped`:''}`
+      : `${N(_impItems.length)}건 중 ${N(n)}건 선택${dup?` · 이미 있는 앨범 ${N(dup)}건은 기본 제외`:''}${skipped?` · 가수·앨범명이 없는 ${N(skipped)}줄은 건너뜀`:''}`;
     const btn=$('#imp-confirm'); btn.textContent=n?`${n}장 가져오기`:'가져오기'; btn.disabled=!n;
   };
   wrap.querySelectorAll('.imp-chk').forEach(c=>c.onchange=paint);
@@ -8656,7 +8688,9 @@ function openImportPreview(items, srcLabel){
     }catch(e){ console.error('bulk save', e); }
     hide('import');
     renderChips(); renderGrid(); renderStats(); buildCoverFlow();
-    previewToast(`${sel.length}장을 등록했어요 ✓`);
+    // 많이 가져오면 커버·미리듣기는 둘러보는 동안 차례로 채워진다는 걸 알려 준다 (한꺼번에 찾으면 요청 한도에 걸림)
+    if(sel.length>30) appAlert(isEN()?`${sel.length.toLocaleString()} records added. Covers and previews fill in as you browse your library.`:`${sel.length.toLocaleString()}장을 등록했어요. 커버와 미리듣기는 보관함을 둘러보는 동안 차례로 찾아 채워져요.`, {title:isEN()?'Import complete ✓':'가져오기 완료 ✓'});
+    else previewToast(isEN()?`Added ${sel.length} records ✓`:`${sel.length}장을 등록했어요 ✓`);
   };
   show('import');
 }
@@ -8675,8 +8709,37 @@ async function importFromFile(file){
   const rows2=rows.filter(r=>(r.artist||r.album));
   if(!rows2.length){ appAlert('가져올 행이 없어요. 양식을 확인해주세요.'); return; }
   const {items}=importRowsToItems(rows2);
-  openImportPreview(items, `파일 가져오기 · ${items.length}장`);
+  openImportPreview(items, (isEN()?'File import · ':'파일 가져오기 · ')+items.length.toLocaleString()+(isEN()?'':'장'), rows.length-rows2.length);
 }
+// 표 붙여넣기: 엑셀·구글 시트에서 복사한 칸(탭으로 나뉨)을 그대로 읽는다. 머리글이 없으면 양식 순서로
+const IMP_DEFAULT_ORDER=['artist','album','color','status','store','price','listPrice','buy','genre','year','note'];
+function _pasteRows(text){
+  const aoa=parseCSV(text);
+  if(!aoa.length) return { rows:[], noHeader:false };
+  let rows=rowsFromAoa(aoa), noHeader=false;
+  if(rows===null){ noHeader=true; rows=aoa.map(r=>{ const o={}; IMP_DEFAULT_ORDER.forEach((k,i)=>o[k]=String(r[i]==null?'':r[i]).trim()); return o; }); }
+  return { rows, noHeader };
+}
+function _pasteInfo(){
+  const t=$('#paste-ta').value, el=$('#paste-info'), go=$('#paste-go');
+  if(!t.trim()){ el.textContent=''; go.disabled=true; return; }
+  const {rows,noHeader}=_pasteRows(t), n=rows.filter(r=>r.artist||r.album).length;
+  el.classList.toggle('warn', !n);
+  el.textContent = !n ? (isEN()?'No rows with an artist or album found.':'가수나 앨범명이 있는 줄을 찾지 못했어요.')
+    : isEN() ? `${n.toLocaleString()} rows ready`+(noHeader?' · no header row, so columns are read in template order (artist, album, color, status, store, price…)':'')
+             : `${n.toLocaleString()}줄을 읽었어요`+(noHeader?' · 머리글이 없어 양식 순서(가수, 앨범명, 컬러, 구분, 구매처, 구매가…)로 읽어요':'');
+  go.disabled=!n;
+}
+function openPasteImport(){ const ta=$('#paste-ta'); ta.value=''; _pasteInfo(); show('paste'); }
+{ const ta=$('#paste-ta'); if(ta){ let t=0; ta.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(_pasteInfo, 200); });
+    ta.addEventListener('paste',()=>setTimeout(()=>{ ta.scrollLeft=0; ta.scrollTop=0; },0)); } }   // 붙여 넣은 뒤엔 첫 칸부터 보이게
+{ const go=$('#paste-go'); if(go) go.onclick=()=>{
+    const {rows}=_pasteRows($('#paste-ta').value), ok=rows.filter(r=>r.artist||r.album); if(!ok.length) return;
+    const {items}=importRowsToItems(ok);
+    hide('paste');
+    setTimeout(()=>openImportPreview(items, (isEN()?'Pasted · ':'붙여넣기 · ')+items.length.toLocaleString()+(isEN()?'':'장'), rows.length-ok.length), 250);
+}; }
+{ const ov=$('#ov-paste'); if(ov) ov.onclick=()=>hide('paste'); }
 // 엑셀 양식(CSV) 받기 — BOM 포함(엑셀에서 한글 안 깨짐).
 // 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일을 올려 OS 공유시트/브라우저로 전달한다.
 async function downloadImportTemplate(){
