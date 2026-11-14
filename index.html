@@ -2233,8 +2233,8 @@ const I18N = {
   "커버 수정":"Edit cover",
   "좋아요":"Like",
   "디스크 꾸미기":"Decorate disc",
-  "📦 배송완료로 표시":"📦 Mark as delivered",
-  "🛒 구매완료로 표시":"🛒 Mark as purchased",
+  "📦 배송완료":"📦 Delivered",
+  "🛒 구매완료":"🛒 Purchased",
   "✏️ 정보 수정":"✏️ Edit details",
   "정보 수정":"Edit details",
   "판매/교환가 (원)":"Sale/Exchange price (KRW)",
@@ -2504,8 +2504,8 @@ const I18N = {
   /* --- 가져오기 (엑셀·CSV) --- */
   "📄 엑셀·CSV 파일로 한번에 등록":"📄 Bulk add from an Excel or CSV file",
   "양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요":"Upload a file in the template format to add many records at once",
-  "엑셀 양식(CSV) 받기":"Download the CSV template",
-  "머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요":"A template with the headers filled in — open it in Excel, fill it in, then upload",
+  "엑셀 양식 받기":"Get the Excel template",
+  "드롭다운·작성 방법이 들어 있는 엑셀 파일 — 채운 뒤 위에서 올리세요":"An Excel file with dropdowns and instructions — fill it in, then upload it above",
   "가져오기 미리보기":"Import preview",
   "전체 선택":"Select all",
   "전체 해제":"Clear all",
@@ -2513,6 +2513,7 @@ const I18N = {
   "이미 있음":"Already added",
   "가져올 항목이 없어요.":"Nothing to import.",
   "가져올 컬렉션이 비어 있어요.":"The collection is empty.",
+  "미리보기":"Preview",
   "이 형식은 읽을 수 없어요. 엑셀에서 .xlsx 또는 CSV 로 저장해 올려주세요.":"This file type can't be read. Save it as .xlsx or CSV in Excel and upload again.",
   "파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.":"Something went wrong while reading the file. Check the template.",
   "가져올 행이 없어요. 양식을 확인해주세요.":"No rows to import. Check the template.",
@@ -2550,7 +2551,7 @@ const I18N = {
   "왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.":"Tap the top-left button or swipe down, and the disc slides back into its sleeve.",
   "이 환경에서는 공유할 수 없어요":"Sharing is not available here",
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
-  "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent","인스타 스토리·카톡으로 보내 보세요":"Send it to your Instagram story or friends",
+  "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent",
   "이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.":"This device can't make videos. Please update the app.","동영상을 만드는 중 오류가 발생했어요.":"Something went wrong while making the video.",
   "톤암":"Tonearm","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
   "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 톤암을 끌어 디스크 위에 놓으면 그 자리부터 들려요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap the center to pause, or drag the tonearm onto the disc to play from that spot. Swipe down to close.",
@@ -4394,7 +4395,7 @@ function _ttvPanel(state, p){
   if(state==='off') return;
   _tt$('tt-vid-t').textContent = state==='make' ? tr('동영상 만드는 중') : tr('동영상이 준비됐어요');
   _tt$('tt-vid-bar').style.width=Math.round((p||0)*100)+'%';
-  _tt$('tt-vid-d').textContent = state==='make' ? (tr('30초 영상으로 만들고 있어요')+' · '+Math.round((p||0)*100)+'%') : (TTV.silent ? tr('음원을 받지 못해 소리 없이 만들었어요') : tr('인스타 스토리·카톡으로 보내 보세요'));
+  _tt$('tt-vid-d').textContent = state==='make' ? (tr('30초 영상으로 만들고 있어요')+' · '+Math.round((p||0)*100)+'%') : (TTV.silent ? tr('음원을 받지 못해 소리 없이 만들었어요') : '');
   _tt$('tt-vid-x').textContent = state==='make' ? tr('취소') : tr('닫기');
   _tt$('tt-vid-go').hidden = state!=='done';
   const v=_tt$('tt-vid-v'); v.hidden = state!=='done';
@@ -4562,8 +4563,8 @@ function openDetail(id, mode){
   rows.push(`<div class="dt-row"><span class="k">음원 연결</span><span class="v dt-pv-v"><span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span></span></div>`);
   const g=statusGroup(it.status);
   let action='';
-  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료로 표시</button>`;
-  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료로 표시</button>`;
+  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료</button>`;
+  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료</button>`;
   // 같은 앨범이 여러 장이면, 이 장의 커버를 달력·모아보기 '대표 이미지'로 지정할 수 있게
   const sameAlbum=DATA.filter(x=>artKey(x.artist,x.album)===key);
   if(sameAlbum.length>1){
@@ -4969,6 +4970,15 @@ function cropToVinyl(imgEl, stageEl, t){
   });
 }
 
+// 배송완료·구매완료 폼은 누른 버튼 자리에 펼친다 (예전엔 맨 아래 삭제 버튼 밑에 열려서 눌러도 변화가 안 보였음)
+function _inlOpen(btnId){
+  const box=$('#dt-inline'), btn=$('#'+btnId); if(!box) return;
+  if(btn){ btn.after(box); btn.style.display='none'; }
+  requestAnimationFrame(()=>{
+    box.scrollIntoView({behavior:'smooth', block:'center'});
+    const c=$('#inl-cancel'); if(c) c.onclick=()=>{ box.innerHTML=''; if(btn) btn.style.display=''; };
+  });
+}
 // 배송완료: pick arrival date (or skip) + opened/sealed, then move to 보유중
 function showArriveForm(it){
   const today=new Date().toISOString().slice(0,10);
@@ -4977,7 +4987,9 @@ function showArriveForm(it){
     <label class="inl-check"><input type="checkbox" id="inl-nodate"> 도착일 입력 생략</label>
     <div class="fld" id="inl-datewrap"><label>도착일</label><input type="date" id="inl-arrive" value="${today}"></div>
     <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option></select></div>
-    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
+    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>
+    <button class="act-btn" id="inl-cancel" style="margin-top:8px">취소</button>`;
+  _inlOpen('act-arrive');
   $('#inl-nodate').onchange=e=>{ $('#inl-datewrap').style.display=e.target.checked?'none':''; };
   $('#inl-save').onclick=()=>{
     it.arrive=$('#inl-nodate').checked?null:($('#inl-arrive').value||null);
@@ -4985,6 +4997,7 @@ function showArriveForm(it){
     persistItem(it);
     hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();
+    previewToast(isEN()?'Delivered ✓':'배송완료 ✓');
   };
 }
 
@@ -5001,7 +5014,9 @@ function showBuyForm(it){
       <div class="fld"><label>구매일자</label><input id="inl-buy" type="date" value="${today}"></div>
       <div class="fld"><label>상태</label><select id="inl-open"><option value="미개봉">미개봉</option><option value="개봉">개봉</option><option value="배송전">배송전</option></select></div>
     </div>
-    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>`;
+    <button class="act-btn solid" id="inl-save">보유중으로 이동</button>
+    <button class="act-btn" id="inl-cancel" style="margin-top:8px">취소</button>`;
+  _inlOpen('act-buy');
   $('#inl-save').onclick=()=>{
     it.price=Number($('#inl-price').value)||null;
     const _lp=Number($('#inl-list').value)||null; if(_lp!=null) it.listPrice=_lp;
@@ -5011,6 +5026,7 @@ function showBuyForm(it){
     persistItem(it);
     hide('detail');
     renderChips();renderGrid();renderStats();buildCoverFlow();
+    previewToast(isEN()?'Purchased ✓':'구매완료 ✓');
   };
 }
 
@@ -5600,17 +5616,33 @@ function _cardImgFetch(src){
   return p;
 }
 // 기다리는 시간은 부르는 쪽마다 따로: 느린 커버는 오래 기다리지 않고 원판 그림으로
-function _loadCardImg(src, timeout=2500){
+function _loadCardImg(src, timeout=2500, patient=false){
   if(!src) return Promise.resolve(null);
   if(_cardImgDone.has(src)) return Promise.resolve(_cardImgDone.get(src));
-  if(_cardImgSlow.has(src)) return Promise.resolve(null);   // 지난번에 늦었던 커버는 기다리지 않음 (뒤에서 계속 받는 중)
+  if(_cardImgSlow.has(src) && !patient) return Promise.resolve(null);   // 지난번에 늦었던 커버는 기다리지 않음 (뒤에서 계속 받는 중)
   return Promise.race([_cardImgFetch(src), new Promise(res=>setTimeout(()=>{ if(!_cardImgDone.has(src)) _cardImgSlow.add(src); res(null); }, timeout))]);
 }
-// 커버가 없거나 못 불러온 칸: 그 판의 바이닐 색으로 원판을 그린다
-function _drawCardDisc(x, cx, cy, size, color){
+// 공유 카드 칸 하나: 커버 → 없으면 판 사진. 직접 올린 사진(저장소)은 휴대폰 망에서 느릴 수 있어 넉넉히 기다린다
+//  (예전엔 2.5초만 기다려서 직접 올린 커버가 원판 그림으로 나오곤 했음)
+async function _loadCardTile(d, px){
+  const cov=artFor(d);
+  if(cov){ const src=_cardSrc(cov,px), quick=/mzstatic\.com|dzcdn\.net/.test(src);
+    const im=await _loadCardImg(src, quick?3000:8000, !quick); if(im) return {d, im}; }
+  if(d.discPhoto){ const ph=await _loadCardImg(d.discPhoto, 8000, true); if(ph) return {d, im:null, disc:ph}; }
+  return {d, im:null};
+}
+// 커버가 없거나 못 불러온 칸: 그 판의 바이닐 색으로 원판을 그린다 (판 사진이 있으면 그 사진으로)
+function _drawCardDisc(x, cx, cy, size, color, photo){
   x.fillStyle='#1d1a22'; x.fillRect(cx, cy, size, size);
   const r=size*0.42, mx=cx+size/2, my=cy+size/2;
   x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.fillStyle=color||'#222'; x.fill();
+  if(photo){
+    x.save(); x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.clip();
+    const sc=Math.max(2*r/photo.naturalWidth, 2*r/photo.naturalHeight), w=photo.naturalWidth*sc, h=photo.naturalHeight*sc;
+    x.drawImage(photo, mx-w/2, my-h/2, w, h); x.restore();
+    x.strokeStyle='rgba(255,255,255,.22)'; x.lineWidth=2; x.beginPath(); x.arc(mx,my,r,0,Math.PI*2); x.stroke();
+    return;
+  }
   // 광택 + 테두리: 검은 판도 어두운 배경에서 보이게
   const sh=x.createLinearGradient(mx-r,my-r,mx+r,my+r);
   sh.addColorStop(0,'rgba(255,255,255,.16)'); sh.addColorStop(.45,'rgba(255,255,255,0)'); sh.addColorStop(.55,'rgba(255,255,255,0)'); sh.addColorStop(1,'rgba(255,255,255,.10)');
@@ -5646,15 +5678,13 @@ async function _drawStoryCard(o){
   let tiles;
   if(o.preferLoaded){
     const cand=items.filter(d=>artFor(d)).slice(0,12);
-    const loaded=await Promise.all(cand.map(d=>_loadCardImg(_cardSrc(artFor(d),300))));
-    const ok=cand.map((d,i)=>({d,im:loaded[i]})).filter(t=>t.im);
+    const ok=(await Promise.all(cand.map(d=>_loadCardTile(d,300)))).filter(t=>t.im);
     const okSet=new Set(ok.map(t=>t.d));
     tiles=ok.concat(items.filter(d=>!okSet.has(d)).map(d=>({d,im:null}))).slice(0,9);
   } else {
     const nine=items.slice(0,9);
     const px = nine.length===1 ? 600 : nine.length<=4 ? 500 : 300;
-    const loaded=await Promise.all(nine.map(d=>_loadCardImg(_cardSrc(artFor(d),px))));
-    tiles=nine.map((d,i)=>({d,im:loaded[i]}));
+    tiles=await Promise.all(nine.map(d=>_loadCardTile(d,px)));
   }
   const extra=o.fixed9 ? 0 : Math.max(0, items.length-9);   // 월별 카드만 '+N' (컬렉션 카드는 9장 꽉 채움)
 
@@ -5677,7 +5707,7 @@ async function _drawStoryCard(o){
     x.beginPath(); if(x.roundRect) x.roundRect(cx,cy,cell,cell,20); else x.rect(cx,cy,cell,cell); x.clip();
     if(t && t.im){ const im=t.im, sc=Math.max(cell/im.naturalWidth, cell/im.naturalHeight), w=im.naturalWidth*sc, h=im.naturalHeight*sc;
       x.drawImage(im, cx+(cell-w)/2, cy+(cell-h)/2, w, h); }
-    else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color));
+    else if(t) _drawCardDisc(x, cx, cy, cell, t.d.colorHex||discColor(t.d.color), t.disc);
     else { x.fillStyle='rgba(255,255,255,.04)'; x.fillRect(cx,cy,cell,cell); }
     if(t && !(extra && i===cellsToDraw-1)){   // 커버 아래쪽: 앨범명 · 아티스트
       const gh=cell*0.44, gg=x.createLinearGradient(0,cy+cell-gh,0,cy+cell);
@@ -7663,7 +7693,7 @@ function renderSettings(){
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
+      <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식 받기</div><div class="set-d">드롭다운·작성 방법이 들어 있는 엑셀 파일 — 채운 뒤 위에서 올리세요</div></div><span class="set-chev">⤓</span></div>
     </div>
     <div class="set-card">
       <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
@@ -8544,6 +8574,10 @@ const IMP_HEADERS={
   price:['구매가','구입가','구매가격','구입가격','가격','금액','구매금액','결제금액','price','cost','paid'],
   listPrice:['정가','소비자가','listprice','msrp'],
   buy:['구매일','구매일자','구입일','구입일자','구매날짜','구입날짜','주문일','날짜','일자','buy','date','purchasedate','purchased','orderdate'],
+  arrive:['도착일','도착일자','수령일','받은날','배송완료일','arrived','arrivaldate'],
+  openDate:['개봉일','개봉일자','개봉날짜','opened','opendate'],
+  rpm:['rpm','회전수'],
+  inch:['인치','사이즈','크기','size','inch','inches'],
   genre:['장르','genre'],
   year:['발매년도','발매연도','발매년','연도','발매일','출시연도','year','releaseyear','released'],
   note:['비고','메모','노트','코멘트','note','notes','memo','comment']
@@ -8564,7 +8598,8 @@ function rowsFromAoa(aoa){
     const g=k=> idx[k]!==undefined ? String(r[idx[k]]==null?'':r[idx[k]]).trim() : '';
     return { artist:g('artist'), album:g('album'), color:g('color'), status:g('status'),
              store:g('store'), price:g('price'), listPrice:g('listPrice'), buy:g('buy'),
-             genre:g('genre'), year:g('year'), note:g('note') };
+             genre:g('genre'), year:g('year'), note:g('note'),
+             arrive:g('arrive'), openDate:g('openDate'), rpm:g('rpm'), inch:g('inch') };
   });
 }
 // 날짜: 2024-03-05 · 2024.3.5 · 2024. 3. 5. · 2024/3/5 · 2024년 3월 5일 · 24.03.05 · 3/5/2024 · 20240305 · 엑셀 날짜 숫자
@@ -8598,18 +8633,20 @@ function importRowsToItems(rows){
     const ar=(r.artist||'').trim(), al=(r.album||'').trim();
     if(!ar && !al){ errors.push(r); return; }
     const toNum=v=>{ if(v==null||v==='') return null; const n=Number(String(v).replace(/[^\d.]/g,'')); return isNaN(n)||!n?null:n; };
-    const price=toNum(r.price);
+    const price=toNum(r.price), status=_impStatus(r.status);
+    const rpm=/45/.test(r.rpm||'')?'45':(/33|3[34]/.test(r.rpm||'')?'33':'');
+    const inch=/12/.test(r.inch||'')?'12"':/10/.test(r.inch||'')?'10"':/(^|\D)7(\D|$)/.test(r.inch||'')?'7"':'';
     const it={ id:'u'+(base+i), no:DATA.length+items.length+1,
       artist:ar||'-', album:al, color:(r.color||'').trim()||'블랙', colorHex:null,
       discPhoto:null, discOpacity:null,
       store:(r.store||'').trim(), price, orig:price, listPrice:toNum(r.listPrice), pay:'',
-      buy:_impDate(r.buy), arrive:null, openDate:null,
-      status:_impStatus(r.status), sellDate:null, sellPrice:null, profit:null,
+      buy:_impDate(r.buy), arrive:_impDate(r.arrive), openDate:status==='개봉'?_impDate(r.openDate):null,
+      status, sellDate:null, sellPrice:null, profit:null,
       sleeveGrade:'', mediaGrade:'',
       previewAlbumId:null, previewAlbumName:null,
       rating:0, note:(r.note||'').trim(),
-      genre:(r.genre||'').trim(), year:(parseInt(r.year,10)||null),
-      rpm:'', inch:'' };
+      genre:(r.genre||'').trim()?(canonGenre(r.genre.trim())||r.genre.trim()):'', year:(parseInt(r.year,10)||null),
+      rpm, inch };
     if(r.cover){ it._art=r.cover; it.cover=r.cover; }
     items.push(it);
   });
@@ -8617,8 +8654,8 @@ function importRowsToItems(rows){
 }
 // 미리보기 시트: 체크로 골라서 일괄 등록 (중복 앨범은 표시 + 기본 제외)
 let _impItems=[];
-function openImportPreview(items, srcLabel){
-  _impItems=items||[];
+function openImportPreview(items, srcLabel, skipped){
+  _impItems=items||[]; skipped=skipped||0;
   const wrap=$('#imp-list'); if(!wrap) return;
   const exist=new Set(DATA.map(x=>artKey(x.artist,x.album)));
   let dup=0;
@@ -8638,7 +8675,10 @@ function openImportPreview(items, srcLabel){
   $('#imp-title').textContent=srcLabel||'가져오기 미리보기';
   const paint=()=>{
     const n=wrap.querySelectorAll('.imp-chk:checked').length;
-    $('#imp-summary').textContent=`${_impItems.length}건 중 ${n}건 선택${dup?` · 이미 있는 앨범 ${dup}건은 기본 제외`:''}`;
+    const N=v=>Number(v).toLocaleString();
+    $('#imp-summary').textContent = isEN()
+      ? `${N(n)} of ${N(_impItems.length)} selected${dup?` · ${N(dup)} already in your library are unchecked`:''}${skipped?` · ${N(skipped)} rows without artist/album skipped`:''}`
+      : `${N(_impItems.length)}건 중 ${N(n)}건 선택${dup?` · 이미 있는 앨범 ${N(dup)}건은 기본 제외`:''}${skipped?` · 가수·앨범명이 없는 ${N(skipped)}줄은 건너뜀`:''}`;
     const btn=$('#imp-confirm'); btn.textContent=n?`${n}장 가져오기`:'가져오기'; btn.disabled=!n;
   };
   wrap.querySelectorAll('.imp-chk').forEach(c=>c.onchange=paint);
@@ -8655,8 +8695,13 @@ function openImportPreview(items, srcLabel){
       else sel.forEach(it=>cloudSaveItem(it));
     }catch(e){ console.error('bulk save', e); }
     hide('import');
+    // RPM·인치를 적어 온 경우 그 칸이 보이도록 설정을 켠다 (꺼져 있으면 기록해도 안 보임)
+    if(sel.some(it=>it.rpm) && !SETTINGS.showRpm){ SETTINGS.showRpm=true; saveSettings(); }
+    if(sel.some(it=>it.inch) && !SETTINGS.showInch){ SETTINGS.showInch=true; saveSettings(); }
     renderChips(); renderGrid(); renderStats(); buildCoverFlow();
-    previewToast(`${sel.length}장을 등록했어요 ✓`);
+    // 많이 가져오면 커버·미리듣기는 둘러보는 동안 차례로 채워진다는 걸 알려 준다 (한꺼번에 찾으면 요청 한도에 걸림)
+    if(sel.length>30) appAlert(isEN()?`${sel.length.toLocaleString()} records added. Covers and previews fill in as you browse your library.`:`${sel.length.toLocaleString()}장을 등록했어요. 커버와 미리듣기는 보관함을 둘러보는 동안 차례로 찾아 채워져요.`, {title:isEN()?'Import complete ✓':'가져오기 완료 ✓'});
+    else previewToast(isEN()?`Added ${sel.length} records ✓`:`${sel.length}장을 등록했어요 ✓`);
   };
   show('import');
 }
@@ -8675,25 +8720,23 @@ async function importFromFile(file){
   const rows2=rows.filter(r=>(r.artist||r.album));
   if(!rows2.length){ appAlert('가져올 행이 없어요. 양식을 확인해주세요.'); return; }
   const {items}=importRowsToItems(rows2);
-  openImportPreview(items, `파일 가져오기 · ${items.length}장`);
+  openImportPreview(items, (isEN()?'File import · ':'파일 가져오기 · ')+items.length.toLocaleString()+(isEN()?'':'장'), rows.length-rows2.length);
 }
-// 엑셀 양식(CSV) 받기 — BOM 포함(엑셀에서 한글 안 깨짐).
-// 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일을 올려 OS 공유시트/브라우저로 전달한다.
+// 엑셀 양식 받기 — 드롭다운·작성 방법이 들어 있는 .xlsx (templates/, scripts/make-import-template.py 로 만듦)
+// 앱(웹뷰)은 블롭 다운로드를 무시하므로 파일로 저장해 휴대폰 공유창으로 보낸다 (업로드 없이, 인터넷 없이)
 async function downloadImportTemplate(){
-  const csv='\uFEFF가수,앨범명,컬러,구분,구매처,구매가,정가,구매일,장르,발매년도,비고\r\nTom Misch,Geography,블랙,미개봉,yes24,45000,49000,2026-01-15,팝,2018,예시 행은 지우고 사용하세요\r\n';
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+  const name='turnit-import-template.xlsx', src='templates/'+name;
+  const C=window.Capacitor;
+  if(C && C.isNativePlatform && C.isNativePlatform()){
+    const P=C.Plugins||{}, FS=P.Filesystem, Sh=P.Share;
     try{
-      previewToast('양식 파일 준비 중…');
-      const url=await window.LPCloud.uploadImage(blob,'csv');
-      const Sh=window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
-      if(Sh && Sh.share){ await Sh.share({ title:'바이닐 등록 양식 (CSV)', text:'엑셀에서 열어 채운 뒤 앱에 업로드하세요', url, dialogTitle:'양식 받기' }); return; }
-      window.open(url,'_blank'); return;
-    }catch(e){ console.error('template share', e); appAlert('양식을 준비하지 못했어요. 로그인과 네트워크를 확인해주세요.'); return; }
+      const blob=await (await fetch(src)).blob();
+      const w=await FS.writeFile({ path:name, data:await _blobToBase64(blob), directory:'CACHE' });
+      await Sh.share({ title:isEN()?'Turnit import template':'Turnit 바이닐 등록 양식', text:isEN()?'Fill it in with Excel or Google Sheets, then upload it in the app.':'엑셀·구글 시트에서 채운 뒤 앱에서 올려 주세요.', files:[w.uri], dialogTitle:isEN()?'Get template':'양식 받기' });
+    }catch(e){ if(!/cancel/i.test(String((e&&e.message)||e))){ console.error('template share', e); appAlert(isEN()?'Could not prepare the template.':'양식을 준비하지 못했어요.'); } }
+    return;
   }
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='lp-import-template.csv'; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  const a=document.createElement('a'); a.href=src; a.download=name; document.body.appendChild(a); a.click(); a.remove();
 }
 { const f=$('#imp-fileinput'); if(f) f.onchange=e=>{ const file=e.target.files[0]; if(file) importFromFile(file); }; }
 { const ov=$('#ov-import'); if(ov) ov.onclick=()=>hide('import'); }
