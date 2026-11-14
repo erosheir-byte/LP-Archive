@@ -1486,7 +1486,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </div>
   <div class="coll-list" id="coll-list"></div>
 
-  <input type="file" id="imp-fileinput" accept=".xlsx,.xls,.csv,text/csv" hidden>
+  <input type="file" id="imp-fileinput" accept=".xlsx,.csv,.tsv,.txt,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 
   <div class="my-sec-head" style="margin-top:22px">
     <h3>취향 요약</h3>
@@ -2513,8 +2513,7 @@ const I18N = {
   "이미 있음":"Already added",
   "가져올 항목이 없어요.":"Nothing to import.",
   "가져올 컬렉션이 비어 있어요.":"The collection is empty.",
-  "엑셀 해석 도구를 불러오는 중…":"Loading the spreadsheet reader…",
-  "엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.":"Could not load the spreadsheet reader. Check your connection, or save the file as CSV and upload that.",
+  "이 형식은 읽을 수 없어요. 엑셀에서 .xlsx 또는 CSV 로 저장해 올려주세요.":"This file type can't be read. Save it as .xlsx or CSV in Excel and upload again.",
   "파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.":"Something went wrong while reading the file. Check the template.",
   "가져올 행이 없어요. 양식을 확인해주세요.":"No rows to import. Check the template.",
   "양식 파일 준비 중…":"Preparing the template…",
@@ -8215,6 +8214,7 @@ function refreshGenreChips(){
 
 /* ---------- Cover Flow ---------- */
 let cfItems=[], cfIndex=0, cfCards=[], cfMode='cover';   // 'cover' | 'vinyl'
+var _cfArtDone=new Set();   // 커버를 이미 불러온(또는 불러오는 중인) 카드
 function applyCfMode(){
   const stage=$('#cf-stage'); if(stage) stage.classList.toggle('vinyl-mode', cfMode==='vinyl');
   const btn=$('#cf-mode-toggle'); if(btn){ btn.classList.toggle('on', cfMode==='vinyl'); btn.title = cfMode==='vinyl' ? '커버 보기로 전환' : '디스크 보기로 전환'; }
@@ -8247,12 +8247,8 @@ function buildCoverFlow(){
     </div>`;
   }).join('');
   cfCards=[...track.querySelectorAll('.cf-card')];
-  // load art for each cover-flow card (reuse cache)
-  cfItems.forEach(async it=>{
-    const img=track.querySelector(`img[data-cf="${it.id}"]`);
-    const url=it._art||pickedArt[artKey(it.artist,it.album)]||await fetchArt(it.artist,it.album);
-    if(url&&img){img.src=url;img.onload=()=>{const ph=img.parentElement.querySelector('.cf-ph'); if(ph) ph.style.display='none';};}
-  });
+  // 커버는 가운데 근처만 불러오고 넘길 때마다 이어서 (전부 한꺼번에 찾으면 수백~수천 건이 몰려 실패·버벅임)
+  _cfArtDone=new Set();
   cfIndex=Math.min(cfIndex,cfItems.length-1);
   layoutCoverFlow();
   applyCfMode();
@@ -8316,8 +8312,20 @@ function layoutCoverFlow(){
     c.querySelector('.cf-art').style.boxShadow=off===0?'0 22px 38px rgba(0,0,0,.6)':'0 14px 22px rgba(0,0,0,.45)';
     c.querySelector('.cf-art').style.filter=off===0?'none':'brightness(.7)';
   });
+  cfLoadArt();
   const it=cfItems[cfIndex]; if(!it)return;
   $('#cf-info').innerHTML=`<h3>${it.album||'—'}</h3>${starsView(it.rating)}<p>${it.artist||'—'}</p><div class="tap"><span>탭하면 미리듣기 · 길게 누르면 상세</span>${it.genre?' · '+tr(it.genre):''}${it.color?' · '+it.color:''}</div>`;
+}
+function cfLoadArt(){
+  const track=$('#cf-track'); if(!track || !cfItems.length) return;
+  for(let i=Math.max(0,cfIndex-8); i<=Math.min(cfItems.length-1,cfIndex+8); i++){
+    const it=cfItems[i]; if(!it || _cfArtDone.has(it.id)) continue; _cfArtDone.add(it.id);
+    (async()=>{
+      const img=track.querySelector(`img[data-cf="${it.id}"]`);
+      const url=it._art||pickedArt[artKey(it.artist,it.album)]||await fetchArt(it.artist,it.album);
+      if(url&&img){ img.src=url; img.onload=()=>{ const ph=img.parentElement.querySelector('.cf-ph'); if(ph) ph.style.display='none'; }; }
+    })();
+  }
 }
 function cfMove(d){ cfIndex=Math.max(0,Math.min(cfItems.length-1,cfIndex+d)); layoutCoverFlow();
   if(_preview.id && (!cfItems[cfIndex] || _preview.id!==cfItems[cfIndex].id)) stopPreview();   // 다른 앨범으로 넘기면 정지
@@ -8442,9 +8450,14 @@ window.bootApp=function(items){
 };
 
 /* ===== 대량 가져오기: 엑셀/CSV (환경설정의 가져오기) ===== */
-// CSV 파서 — 따옴표 필드·쉼표/줄바꿈 포함 값·CRLF·BOM 처리
-function parseCSV(text){
-  text=String(text||'').replace(/^\uFEFF/,'');
+// CSV/TSV 파서 — 따옴표 필드·구분자/줄바꿈 포함 값·CRLF·BOM 처리. 구분자는 첫 줄들을 보고 쉼표/탭/세미콜론 중에서 고른다
+function parseCSV(text, delim){
+  text=String(text||'').replace(/^﻿/,'');
+  if(!delim){
+    const head=text.split(/\r?\n/).slice(0,5).join('\n');
+    const cnt=d=>(head.match(new RegExp(d==='\t'?'\t':'\\'+d,'g'))||[]).length;
+    delim=[',','\t',';'].sort((a,b)=>cnt(b)-cnt(a))[0];
+  }
   const rows=[]; let row=[], cur='', inQ=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i];
@@ -8452,8 +8465,8 @@ function parseCSV(text){
       if(ch==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; }
       else cur+=ch;
     }else{
-      if(ch==='"') inQ=true;
-      else if(ch===','){ row.push(cur); cur=''; }
+      if(ch==='"' && cur==='') inQ=true;
+      else if(ch===delim){ row.push(cur); cur=''; }
       else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n') i++; row.push(cur); cur=''; rows.push(row); row=[]; }
       else cur+=ch;
     }
@@ -8461,61 +8474,137 @@ function parseCSV(text){
   if(cur!==''||row.length){ row.push(cur); rows.push(row); }
   return rows.filter(r=>r.some(c=>String(c).trim()!==''));
 }
-// 머리글 이름 → 필드 매핑 (한국어/영어 모두 허용)
-const IMP_HEADERS={
-  artist:['가수','아티스트','artist'],
-  album:['앨범명','앨범','album','title','제목'],
-  color:['컬러','색상','color'],
-  status:['구분','상태','status'],
-  store:['구매처','store','shop'],
-  price:['구매가','구매가(원)','구매가 (원)','price'],
-  listPrice:['정가','정가(원)','정가 (원)','listprice','list price'],
-  buy:['구매일','구매일자','구매 일자','buy','date','purchase date'],
-  genre:['장르','genre'],
-  year:['발매년도','연도','발매 연도','year'],
-  note:['비고','메모','note','memo']
-};
-function mapHeaderRow(cells){
-  const low=(cells||[]).map(c=>String(c==null?'':c).trim().toLowerCase());
-  const idx={};
-  Object.entries(IMP_HEADERS).forEach(([k,names])=>{
-    const i=low.findIndex(h=>names.includes(h));
-    if(i>=0) idx[k]=i;
+// 파일 글자 인코딩: UTF-8 이 아니면 한국어 윈도우 엑셀의 기본 저장 형식(CP949/EUC-KR)으로 읽는다
+async function _impReadText(file){
+  const buf=new Uint8Array(await file.arrayBuffer());
+  try{ return new TextDecoder('utf-8',{fatal:true}).decode(buf); }
+  catch(e){ try{ return new TextDecoder('euc-kr').decode(buf); }catch(_){ return new TextDecoder().decode(buf); } }
+}
+// 엑셀(.xlsx) 읽기 — 외부 도구 없이 직접 (zip 을 풀고 첫 시트의 값만). 날짜 서식 칸은 YYYY-MM-DD 로
+async function _readXlsx(ab){
+  const u8=new Uint8Array(ab), dv=new DataView(ab);
+  let eocd=-1; for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; } }
+  if(eocd<0) throw new Error('not a zip');
+  const n=dv.getUint16(eocd+10,true); let p=dv.getUint32(eocd+16,true); const files={};
+  const dec=new TextDecoder();
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    files[dec.decode(u8.subarray(p+46,p+46+nl))]={method,csize,off}; p+=46+nl+xl+cl;
+  }
+  const read=async name=>{
+    const f=files[name]; if(!f) return null;
+    const start=f.off+30+dv.getUint16(f.off+26,true)+dv.getUint16(f.off+28,true), data=u8.subarray(start,start+f.csize);
+    if(f.method===0) return dec.decode(data);
+    const st=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return await new Response(st).text();
+  };
+  const xml=t=>t?new DOMParser().parseFromString(t,'application/xml'):null;
+  const tags=(d,t)=>d?[...d.getElementsByTagName(t)]:[];
+  // 첫 시트 경로
+  let sheetPath='xl/worksheets/sheet1.xml';
+  try{ const wb=xml(await read('xl/workbook.xml')), rels=xml(await read('xl/_rels/workbook.xml.rels'));
+    const rid=tags(wb,'sheet')[0]?.getAttribute('r:id'), rel=tags(rels,'Relationship').find(r=>r.getAttribute('Id')===rid);
+    if(rel){ const t=rel.getAttribute('Target'); sheetPath=t.startsWith('/')?t.slice(1):'xl/'+t.replace(/^\.\//,''); } }catch(e){}
+  const ss=tags(xml(await read('xl/sharedStrings.xml')),'si').map(si=>tags(si,'t').map(t=>t.textContent).join(''));
+  // 날짜 서식 (기본 14~22·45~47, 사용자 서식은 y/d 가 들어가면)
+  const styles=xml(await read('xl/styles.xml')), custom={};
+  tags(styles,'numFmt').forEach(f=>{ custom[f.getAttribute('numFmtId')]=f.getAttribute('formatCode')||''; });
+  const isDateFmt=id=>{ id=+id; if((id>=14&&id<=22)||(id>=45&&id<=47)) return true;
+    const c=(custom[id]||'').replace(/"[^"]*"|\[[^\]]*\]/g,''); return /[yd]/i.test(c); };
+  const cellXfs=tags(styles,'cellXfs')[0], xfs=cellXfs?[...cellXfs.children].map(x=>isDateFmt(x.getAttribute('numFmtId')||0)):[];
+  const colIdx=ref=>{ const m=/^([A-Z]+)/.exec(ref||''); if(!m) return -1; let n=0; for(const ch of m[1]) n=n*26+(ch.charCodeAt(0)-64); return n-1; };
+  const serialDate=v=>{ const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000); return d.toISOString().slice(0,10); };
+  const aoa=[];
+  tags(xml(await read(sheetPath)),'row').forEach(r=>{
+    const out=[]; let ci=0;
+    [...r.getElementsByTagName('c')].forEach(c=>{
+      const at=colIdx(c.getAttribute('r')); if(at>=0) ci=at;
+      const t=c.getAttribute('t'), v=c.getElementsByTagName('v')[0]?.textContent ?? '';
+      let val;
+      if(t==='s') val=ss[+v]??'';
+      else if(t==='inlineStr') val=tags(c,'t').map(x=>x.textContent).join('');
+      else if(t==='b') val=v==='1'?'TRUE':'FALSE';
+      else if(t==='str'||t==='e') val=v;
+      else if(v!=='' && xfs[+(c.getAttribute('s')||0)] && !isNaN(+v)) val=serialDate(+v);
+      else val=v;
+      out[ci++]=val;
+    });
+    aoa.push(Array.from(out,x=>x==null?'':x));
   });
+  return aoa.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+// 머리글 이름 → 필드 매핑 (한국어/영어, 띄어쓰기·괄호 무시: '구매가 (원)' = '구매가')
+const IMP_HEADERS={
+  artist:['가수','가수명','아티스트','아티스트명','뮤지션','artist','artists','artistname'],
+  album:['앨범명','앨범','앨범이름','앨범제목','음반','음반명','타이틀','제목','lp명','album','albumname','albumtitle','title','release'],
+  color:['컬러','색상','색','디스크컬러','디스크색','바이닐컬러','판색','color','colour','vinylcolor'],
+  status:['구분','상태','소장상태','보관상태','status'],
+  store:['구매처','구입처','쇼핑몰','구매몰','판매처','store','shop','seller'],
+  price:['구매가','구입가','구매가격','구입가격','가격','금액','구매금액','결제금액','price','cost','paid'],
+  listPrice:['정가','소비자가','listprice','msrp'],
+  buy:['구매일','구매일자','구입일','구입일자','구매날짜','구입날짜','주문일','날짜','일자','buy','date','purchasedate','purchased','orderdate'],
+  genre:['장르','genre'],
+  year:['발매년도','발매연도','발매년','연도','발매일','출시연도','year','releaseyear','released'],
+  note:['비고','메모','노트','코멘트','note','notes','memo','comment']
+};
+const _impNorm=h=>String(h==null?'':h).toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[\s_\-·.:/]/g,'');
+function mapHeaderRow(cells){
+  const low=(cells||[]).map(_impNorm), idx={};
+  Object.entries(IMP_HEADERS).forEach(([k,names])=>{ const i=low.findIndex(h=>h && names.includes(h)); if(i>=0) idx[k]=i; });
   return idx;
 }
-// [머리글행, 데이터행...] → 표준 행 객체 배열 (머리글 인식 실패 시 null)
+// [..., 머리글행, 데이터행...] → 표준 행 객체 배열. 머리글은 위쪽 10줄 안에서 찾는다(맨 위에 제목 줄이 있어도 됨). 못 찾으면 null
 function rowsFromAoa(aoa){
   if(!aoa||!aoa.length) return [];
-  const idx=mapHeaderRow(aoa[0]);
-  if(idx.artist===undefined && idx.album===undefined) return null;
-  return aoa.slice(1).map(r=>{
+  let h=-1, idx=null;
+  for(let r=0;r<Math.min(10,aoa.length);r++){ const m=mapHeaderRow(aoa[r]); if(m.artist!==undefined || m.album!==undefined){ h=r; idx=m; break; } }
+  if(h<0) return null;
+  return aoa.slice(h+1).map(r=>{
     const g=k=> idx[k]!==undefined ? String(r[idx[k]]==null?'':r[idx[k]]).trim() : '';
     return { artist:g('artist'), album:g('album'), color:g('color'), status:g('status'),
              store:g('store'), price:g('price'), listPrice:g('listPrice'), buy:g('buy'),
              genre:g('genre'), year:g('year'), note:g('note') };
   });
 }
-// 표준 행 → 앱 항목 객체 (id 유일성 보장: 'u'+시각+'-'+순번)
+// 날짜: 2024-03-05 · 2024.3.5 · 2024. 3. 5. · 2024/3/5 · 2024년 3월 5일 · 24.03.05 · 3/5/2024 · 20240305 · 엑셀 날짜 숫자
+function _impDate(v){
+  if(v==null) return null; const t=String(v).trim(); if(!t) return null;
+  const ok=(y,m,d)=>{ y=+y; m=+m; d=+d; if(y<1900||y>2100||m<1||m>12||d<1||d>31) return null; return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; };
+  let m;
+  if(/^\d{5}(\.\d+)?$/.test(t)){ const d=new Date(Date.UTC(1899,11,30)+Math.round(parseFloat(t))*86400000); return d.toISOString().slice(0,10); }
+  if((m=t.match(/^(\d{4})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})/))) return ok(m[1],m[2],m[3]);
+  if((m=t.match(/^(\d{4})(\d{2})(\d{2})$/))) return ok(m[1],m[2],m[3]);
+  if((m=t.match(/^(\d{2})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{1,2})\.?$/))) return ok('20'+m[1],m[2],m[3]);
+  if((m=t.match(/^(\d{1,2})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{4})$/))) return +m[1]>12 ? ok(m[3],m[2],m[1]) : ok(m[3],m[1],m[2]);
+  return null;
+}
+// 구분(상태): 적힌 말이 조금 달라도 앱의 구분으로 맞춘다
+function _impStatus(v){
+  const t=String(v||'').replace(/\s+/g,'');
+  if(!t) return '미개봉';
+  if(/^(미개봉|새상품|신품|밀봉|sealed|new)/i.test(t)) return '미개봉';
+  if(/개봉|played|opened/i.test(t)) return '개봉';
+  if(/배송|주문|예약|preorder|shipping|ordered/i.test(t)) return '배송전';
+  if(/위시|구매예정|사고싶|wish/i.test(t)) return '위시';
+  if(/판매|팔았|sold/i.test(t)) return '판매';
+  if(/교환|trade/i.test(t)) return '교환';
+  return '미개봉';
+}
+// 표준 행 → 앱 항목 객체. 등록 순서: 파일의 아래 행일수록 최근 (id = 지금보다 조금 이른 시각 + 순번)
 function importRowsToItems(rows){
-  const now=Date.now(); const items=[]; const errors=[];
-  const normDate=v=>{ if(!v) return null;
-    const m=String(v).trim().replace(/[./]/g,'-').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-    return m ? `${m[1]}-${String(+m[2]).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}` : null; };
-  const normStatus=v=>{ const t=String(v||'').trim();
-    if(['미개봉','개봉','배송전','위시','판매','교환'].includes(t)) return t;
-    return '미개봉'; };
+  const now=Date.now(), base=now-rows.length-1; const items=[]; const errors=[];
   rows.forEach((r,i)=>{
     const ar=(r.artist||'').trim(), al=(r.album||'').trim();
     if(!ar && !al){ errors.push(r); return; }
     const toNum=v=>{ if(v==null||v==='') return null; const n=Number(String(v).replace(/[^\d.]/g,'')); return isNaN(n)||!n?null:n; };
     const price=toNum(r.price);
-    const it={ id:'u'+now+'-'+i, no:DATA.length+items.length+1,
+    const it={ id:'u'+(base+i), no:DATA.length+items.length+1,
       artist:ar||'-', album:al, color:(r.color||'').trim()||'블랙', colorHex:null,
       discPhoto:null, discOpacity:null,
       store:(r.store||'').trim(), price, orig:price, listPrice:toNum(r.listPrice), pay:'',
-      buy:normDate(r.buy), arrive:null, openDate:null,
-      status:normStatus(r.status), sellDate:null, sellPrice:null, profit:null,
+      buy:_impDate(r.buy), arrive:null, openDate:null,
+      status:_impStatus(r.status), sellDate:null, sellPrice:null, profit:null,
       sleeveGrade:'', mediaGrade:'',
       previewAlbumId:null, previewAlbumName:null,
       rating:0, note:(r.note||'').trim(),
@@ -8571,24 +8660,15 @@ function openImportPreview(items, srcLabel){
   };
   show('import');
 }
-// 엑셀(.xlsx)/CSV 파일 가져오기 — xlsx 해석 도구는 필요할 때만 CDN에서 로드
+// 엑셀(.xlsx)/CSV 파일 가져오기 — 인터넷 없이 앱 안에서 바로 읽는다
 async function importFromFile(file){
   const name=(file.name||'').toLowerCase();
   let aoa=null;
   try{
-    if(name.endsWith('.csv') || file.type==='text/csv'){
-      aoa=parseCSV(await file.text());
-    }else{
-      previewToast('엑셀 해석 도구를 불러오는 중…');
-      let X=null;
-      try{ X=await import('https://esm.sh/xlsx@0.18.5'); }
-      catch(e1){ try{ X=await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm'); }catch(e2){} }
-      const XLSX=X && ((X.default&&X.default.read)?X.default:X);
-      if(!XLSX || !XLSX.read){ appAlert('엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.'); return; }
-      const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
-    }
+    if(/\.(xls|numbers)$/.test(name)){ appAlert('이 형식은 읽을 수 없어요. 엑셀에서 .xlsx 또는 CSV 로 저장해 올려주세요.'); return; }
+    const head=new Uint8Array(await file.slice(0,4).arrayBuffer());
+    if(name.endsWith('.xlsx') || (head[0]===0x50 && head[1]===0x4b)) aoa=await _readXlsx(await file.arrayBuffer());   // zip(PK) = xlsx
+    else aoa=parseCSV(await _impReadText(file));
   }catch(e){ console.error('file import', e); appAlert('파일을 읽는 중 오류가 발생했어요. 양식을 확인해주세요.'); return; }
   const rows=rowsFromAoa(aoa);
   if(rows===null){ appAlert('머리글 행을 인식하지 못했어요. 첫 행에 "가수, 앨범명, ..." 같은 제목을 넣어주세요. (엑셀 양식 받기 참고)'); return; }
