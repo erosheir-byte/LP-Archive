@@ -2551,7 +2551,7 @@ const I18N = {
   "왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.":"Tap the top-left button or swipe down, and the disc slides back into its sleeve.",
   "이 환경에서는 공유할 수 없어요":"Sharing is not available here",
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
-  "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent","인스타 스토리·카톡으로 보내 보세요":"Send it to your Instagram story or friends",
+  "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent",
   "이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.":"This device can't make videos. Please update the app.","동영상을 만드는 중 오류가 발생했어요.":"Something went wrong while making the video.",
   "톤암":"Tonearm","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
   "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 톤암을 끌어 디스크 위에 놓으면 그 자리부터 들려요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap the center to pause, or drag the tonearm onto the disc to play from that spot. Swipe down to close.",
@@ -4395,7 +4395,7 @@ function _ttvPanel(state, p){
   if(state==='off') return;
   _tt$('tt-vid-t').textContent = state==='make' ? tr('동영상 만드는 중') : tr('동영상이 준비됐어요');
   _tt$('tt-vid-bar').style.width=Math.round((p||0)*100)+'%';
-  _tt$('tt-vid-d').textContent = state==='make' ? (tr('30초 영상으로 만들고 있어요')+' · '+Math.round((p||0)*100)+'%') : (TTV.silent ? tr('음원을 받지 못해 소리 없이 만들었어요') : tr('인스타 스토리·카톡으로 보내 보세요'));
+  _tt$('tt-vid-d').textContent = state==='make' ? (tr('30초 영상으로 만들고 있어요')+' · '+Math.round((p||0)*100)+'%') : (TTV.silent ? tr('음원을 받지 못해 소리 없이 만들었어요') : '');
   _tt$('tt-vid-x').textContent = state==='make' ? tr('취소') : tr('닫기');
   _tt$('tt-vid-go').hidden = state!=='done';
   const v=_tt$('tt-vid-v'); v.hidden = state!=='done';
