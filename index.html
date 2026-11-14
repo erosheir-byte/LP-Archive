@@ -1822,7 +1822,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   <div class="form">
     <h2>표 붙여넣기</h2>
     <p class="paste-d">엑셀·구글 시트에서 머리글(가수, 앨범명…)부터 원하는 줄까지 칸을 선택해 복사한 뒤, 아래 칸에 붙여 넣으세요.</p>
-    <textarea id="paste-ta" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="가수&#9;앨범명&#9;컬러&#9;구매가&#9;구매일&#10;검정치마&#9;TEAM BABY&#9;블랙&#9;38000&#9;2024-03-05"></textarea>
+    <textarea id="paste-ta" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="가수&#9;앨범명&#9;컬러&#9;상태&#9;구매처&#9;구매가&#9;…&#10;검정치마&#9;TEAM BABY&#9;블랙&#9;개봉&#9;yes24&#9;38000&#9;…"></textarea>
     <div class="paste-info" id="paste-info"></div>
     <div class="btnrow">
       <button class="btn ghost" data-close="paste">취소</button>
@@ -8722,7 +8722,7 @@ async function importFromFile(file){
   openImportPreview(items, (isEN()?'File import · ':'파일 가져오기 · ')+items.length.toLocaleString()+(isEN()?'':'장'), rows.length-rows2.length);
 }
 // 표 붙여넣기: 엑셀·구글 시트에서 복사한 칸(탭으로 나뉨)을 그대로 읽는다. 머리글이 없으면 양식 순서로
-const IMP_DEFAULT_ORDER=['artist','album','color','status','store','price','listPrice','buy','genre','year','note'];
+const IMP_DEFAULT_ORDER=['artist','album','color','status','store','price','listPrice','buy','arrive','openDate','rpm','inch','genre','year','note'];   // = 엑셀 양식 열 순서
 function _pasteRows(text){
   const aoa=parseCSV(text);
   if(!aoa.length) return { rows:[], noHeader:false };
@@ -8737,7 +8737,7 @@ function _pasteInfo(){
   el.classList.toggle('warn', !n);
   el.textContent = !n ? (isEN()?'No rows with an artist or album found.':'가수나 앨범명이 있는 줄을 찾지 못했어요.')
     : isEN() ? `${n.toLocaleString()} rows ready`+(noHeader?' · no header row, so columns are read in template order (artist, album, color, status, store, price…)':'')
-             : `${n.toLocaleString()}줄을 읽었어요`+(noHeader?' · 머리글이 없어 양식 순서(가수, 앨범명, 컬러, 구분, 구매처, 구매가…)로 읽어요':'');
+             : `${n.toLocaleString()}줄을 읽었어요`+(noHeader?' · 머리글이 없어 엑셀 양식 순서(가수, 앨범명, 컬러, 상태, 구매처, 구매가…)로 읽어요':'');
   go.disabled=!n;
 }
 function openPasteImport(){ const ta=$('#paste-ta'); ta.value=''; _pasteInfo(); show('paste'); }
