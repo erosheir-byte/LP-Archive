@@ -751,7 +751,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .art-manual-toggle{display:block;width:100%;padding:9px;background:none;border:none;color:var(--dim);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;text-decoration:underline;text-underline-offset:3px}
 .art-manual-toggle:active{opacity:.7}
 .art-manual-box{display:flex;flex-direction:column;gap:8px}
-/* 상태 등급 선택 (슬리브/음반, Discogs 기준) */
+/* 상태 등급 선택 (슬리브/음반, 업계 표준 등급) */
 .gradewrap{margin-bottom:2px}
 .gradewrap .grade-help{color:var(--dim);font-size:11px;cursor:help}
 .gradesel{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-family:inherit;font-size:13px;font-weight:700;padding:10px 10px;outline:none;cursor:pointer}
@@ -771,10 +771,6 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .bc-manual input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:13px}
 .bc-manual button{flex:0 0 auto;padding:0 16px;border-radius:11px;border:none;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:700;cursor:pointer}
 .bc-status{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.5;min-height:16px}
-/* Discogs 토큰 입력 */
-.set-token{display:flex;gap:8px}
-.set-token input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:12.5px}
-.set-token button{flex:0 0 auto;padding:0 16px;border-radius:11px;border:none;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09;font-family:inherit;font-weight:700;cursor:pointer}
 .pk-url{display:flex;gap:7px}
 .pk-url input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--txt);font-size:13px;font-family:inherit;outline:none;min-width:0}
 .pk-url input:focus{border-color:var(--accent)}
@@ -2410,7 +2406,6 @@ const I18N = {
   "규격":"Format",
   "기본 보기 모드":"Default view",
   "보관함을 열 때 기본 레이아웃":"Default layout when opening the Library",
-  "Discogs 토큰":"Discogs token",
   "바코드 스캔으로 앨범 정보를 불러올 때 사용해요":"Used to fetch record info when scanning a barcode",
   "데이터 내보내기 / 백업":"Export data / Backup",
   "전체 기록을 JSON 파일로 저장":"Save your entire collection as a JSON file",
@@ -2427,10 +2422,8 @@ const I18N = {
   "바코드를 카메라에 비춰주세요…":"Point the camera at the barcode…",
   "카메라를 열 수 없어요. 아래에 번호를 직접 입력하세요.":"Couldn't open the camera. Enter the number manually below.",
   "바코드 번호를 인식하지 못했어요.":"Couldn't read a barcode number.",
-  "Discogs 토큰이 없어요. 마이페이지 환경설정에서 입력하세요.":"No Discogs token. Add one in My Page → Settings.",
   "이 바코드로 앨범을 찾지 못했어요. 번호를 확인하거나 직접 입력하세요.":"No record found for this barcode. Check the number or enter it manually.",
   "조회 중 오류가 발생했어요. 네트워크를 확인하세요.":"An error occurred during lookup. Please check your network.",
-  "Discogs 커버로 저장돼요 ✓":"Discogs cover will be saved ✓",
   /* --- condition grade --- */
   "상태 등급":"Condition grade",
   "레코드 컨디션 등급(Goldmine 기준)":"Record condition grade (Goldmine standard)",
@@ -2494,7 +2487,6 @@ const I18N = {
   /* --- 설정 --- */
   "발매년도 표기":"Show release year",
   "카드와 상세에 발매년도를 표시해요":"Show the release year on cards and detail",
-  "Discogs 연동":"Discogs",
   "컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)":"Used for importing a collection (barcode scanning needs no setup)",
   "이 계정의 바이닐 전체 삭제":"Delete every record in this account",
   "이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)":"Empties the account by deleting every record saved to it (cannot be undone)",
@@ -2509,9 +2501,7 @@ const I18N = {
   "정말 탈퇴하시겠어요? 이 작업은 취소할 수 없습니다.":"Are you sure? This cannot be undone.",
   "탈퇴 처리 중…":"Deleting your account…",
   "탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사합니다.":"Your account has been deleted. Thank you for using the app.",
-  /* --- 가져오기 (Discogs / 엑셀·CSV) --- */
-  "💿 Discogs 컬렉션 가져오기":"💿 Import a Discogs collection",
-  "Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)":"Add a whole Discogs collection at once (needs the username above)",
+  /* --- 가져오기 (엑셀·CSV) --- */
   "📄 엑셀·CSV 파일로 한번에 등록":"📄 Bulk add from an Excel or CSV file",
   "양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요":"Upload a file in the template format to add many records at once",
   "엑셀 양식(CSV) 받기":"Download the CSV template",
@@ -2522,11 +2512,6 @@ const I18N = {
   "가져오기":"Import",
   "이미 있음":"Already added",
   "가져올 항목이 없어요.":"Nothing to import.",
-  "환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.":"Enter your username in the Discogs card in Settings first.",
-  "Discogs 컬렉션을 불러오는 중…":"Loading the Discogs collection…",
-  "Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.":"Discogs user not found. Check the username.",
-  "컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.":"The collection is private or not permitted. Enter your own Discogs token in Settings.",
-  "Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.":"Something went wrong while querying Discogs. Please try again in a moment.",
   "가져올 컬렉션이 비어 있어요.":"The collection is empty.",
   "엑셀 해석 도구를 불러오는 중…":"Loading the spreadsheet reader…",
   "엑셀 해석 도구를 불러오지 못했어요. 인터넷 연결을 확인하거나, 엑셀에서 CSV로 저장해 올려주세요.":"Could not load the spreadsheet reader. Check your connection, or save the file as CSV and upload that.",
@@ -2547,7 +2532,6 @@ const I18N = {
   "그날의 느낌이나 한마디":"How it felt, or a quick note",
   "가수명":"Artist",
   "🔍 앨범·가수 검색":"🔍 Search albums or artists",
-  "Discogs 사용자명 (Username)":"Discogs username",
   "· 공유된 컬렉션":"· shared collection",
   /* --- 첫 사용 가이드 --- */
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
@@ -2780,7 +2764,7 @@ async function searchItunes(term, limit){
 /* ===== 장르 기준: 애플 뮤직 장르 =====
    앱이 앨범 정보를 가져오는 애플 뮤직(iTunes)의 공식 장르를 기준으로 한다. 이름은 자연스러운 한국어로
    (Anime '일본 만화 영화' → 애니메이션, K-Pop 은 한국어 화면에선 '가요' · 영어 화면에선 'K-Pop'). 자주 안 쓰는 장르(어린이·종교·코미디 등)는 '기타'로 묶는다.
-   iTunes·Deezer·Discogs·AI 추출 등 어디서 온 이름이든 canonGenre() 로 이 목록에 맞추고,
+   iTunes·Deezer·AI 추출 등 어디서 온 이름이든 canonGenre() 로 이 목록에 맞추고,
    목록에 없는 이름은 사용자가 직접 입력한 장르로 보고 그대로 둔다 (genreCustom 표시가 있으면 손대지 않음). */
 const GENRES=['가요','팝','록','얼터너티브','R&B/소울','힙합/랩','일렉트로닉','댄스','재즈','블루스','클래식','사운드트랙','애니메이션','싱어송라이터','포크','컨트리','J-Pop','뉴에이지','월드','라틴','레게','홀리데이','기타'];
 const _gKey=v=>String(v||'').toLowerCase().replace(/[\s·・\/&\-_.,+'’()]/g,'');
@@ -3245,7 +3229,7 @@ function setupColorField(prefix){   // prefix: 'f' or 'e'
 
 /* ---------- helpers ---------- */
 /* ===== 환경설정 ===== */
-const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', discogsToken:'', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark', tonearm:'black' };
+const DEFAULT_SETTINGS={ dedupeFlow:true, hideMoney:false, defaultView:'grid', showGenre:true, showYear:true, accent:'#e8643c', showGrade:true, showRpm:false, showInch:false, crackleLevel:'low', theme:'dark', tonearm:'black' };
 let SETTINGS=Object.assign({}, DEFAULT_SETTINGS);
 const ACCENTS=[['코랄','#e8643c','#f2a444'],['로즈','#e0617a','#f29ab0'],['퍼플','#8a6fd6','#b49af0'],['블루','#3a8fd6','#6ab8f0'],['그린','#36a35a','#6cc78a'],['앰버','#e0a23c','#f0c86a']];
 function loadSettings(){
@@ -5388,7 +5372,7 @@ $('#f-file').onchange=async e=>{
   finally{ try{ e.target.value=''; }catch(_){} }   // 같은 파일 다시 선택 가능하도록
 };
 
-/* ===== 바코드 스캔 → Discogs 조회 ===== */
+/* ===== 바코드 스캔 → 앨범 조회 ===== */
 let _bcStream=null, _bcRAF=null, _bcDetector=null, _bcReader=null, _bcControls=null;
 function bcStatus(msg){ const s=$('#bc-status'); if(s) s.textContent=msg||''; }
 function bcT(en,ko){ return isEN()?en:ko; }
@@ -5479,7 +5463,6 @@ function stopBarcodeScan(){
 }
 /* 바코드 조회 — 키(토큰) 없이 되는 곳부터 순서대로 시도
    ① Deezer UPC (JSONP, 키 불필요)  ② MusicBrainz 바코드 (키 불필요)
-   ③ Discogs (토큰을 직접 넣은 사용자만, 바이닐 정보가 가장 정확)
    ①②는 호출 한도가 사용자 IP 단위라 사용자가 늘어도 안전하다. */
 function _dzUPC(code){
   return new Promise(res=>{
@@ -5517,25 +5500,6 @@ async function _mbBarcode(code){
              genre:'', src:'MusicBrainz' };
   }catch(e){ return null; }
 }
-async function _dgBarcode(code){
-  const token=(SETTINGS && SETTINGS.discogsToken||'').trim();
-  if(!token) return null;
-  try{
-    const url='https://api.discogs.com/database/search?type=release&barcode='+encodeURIComponent(code)+'&per_page=5&token='+encodeURIComponent(token);
-    const res=await fetch(url);
-    if(!res.ok) return null;
-    const data=await res.json();
-    const r=((data&&data.results)||[])[0];
-    if(!r) return null;
-    let artist='', album='';
-    if(r.title && r.title.includes(' - ')){ const p=r.title.split(' - '); artist=p[0].trim(); album=p.slice(1).join(' - ').trim(); }
-    else { album=(r.title||'').trim(); }
-    const cover=r.cover_image||r.thumb||'';
-    return { artist, album, year:String(r.year||'').slice(0,4),
-             cover:(cover && !/spacer\.gif/.test(cover))?cover:'',
-             genre:(r.genre&&r.genre[0])||'', src:'Discogs' };
-  }catch(e){ return null; }
-}
 async function lookupBarcode(code){
   code=String(code||'').replace(/\D/g,'');
   if(!code){ bcStatus(bcT('Could not read the barcode number.','바코드 번호를 인식하지 못했어요.')); return; }
@@ -5544,7 +5508,6 @@ async function lookupBarcode(code){
   try{
     hit = await _dzUPC(code);
     if(!hit) hit = await _mbBarcode(code);
-    if(!hit) hit = await _dgBarcode(code);   // 토큰을 직접 넣은 사용자만
   }catch(err){
     bcStatus(bcT('Lookup error. Please check your network.','조회 중 오류가 발생했어요. 네트워크를 확인하세요.')); return;
   }
@@ -7700,14 +7663,6 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-card">
-      <div class="set-row col" style="cursor:default">
-        <div class="set-l"><div class="set-t">Discogs 연동</div><div class="set-d">컬렉션 가져오기에 사용해요 (바코드 스캔은 설정 없이 바로 됩니다)</div></div>
-        <div class="set-token"><input id="set-discogs" placeholder="Discogs Personal Token" value="${escapeHtml(SETTINGS.discogsToken||'')}"><button type="button" id="set-discogs-save">저장</button></div>
-        <div class="set-token" style="margin-top:8px"><input id="set-discogs-user" placeholder="Discogs 사용자명 (Username)" value="${escapeHtml(SETTINGS.discogsUser||'')}"><button type="button" id="set-discogs-user-save">저장</button></div>
-      </div>
-    </div>
-    <div class="set-card">
-      <div class="set-row tap" id="set-imp-discogs"><div class="set-l"><div class="set-t">💿 Discogs 컬렉션 가져오기</div><div class="set-d">Discogs 계정의 컬렉션을 한 번에 등록해요 (위 사용자명 필요)</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
       <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식(CSV) 받기</div><div class="set-d">머리글이 채워진 양식 파일 — 엑셀에서 열어 채운 뒤 올리세요</div></div><span class="set-chev">⤓</span></div>
     </div>
@@ -7758,7 +7713,6 @@ function renderSettings(){
     filter.view=SETTINGS.defaultView; // 즉시 반영
   });
   // 내보내기
-  { const b=$('#set-imp-discogs'); if(b) b.onclick=importFromDiscogs; }
   { const b=$('#set-imp-file'); if(b) b.onclick=()=>{ const f=$('#imp-fileinput'); if(f){ f.value=''; f.click(); } }; }
   { const b=$('#set-imp-template'); if(b) b.onclick=downloadImportTemplate; }
   { const ex=$('#set-export'); if(ex) ex.onclick=exportData; }
@@ -7766,9 +7720,6 @@ function renderSettings(){
   { const tg=$('#set-ttguide'); if(tg) tg.onclick=replayTurntableGuide; }
   // 광고 보고 배너 잠시 끄기 (보상형)
   { const af=$('#set-adfree'); if(af) af.onclick=()=>{ try{ watchRewardedAdFree(); }catch(e){} }; }
-  // Discogs 토큰 저장
-  { const sv=$('#set-discogs-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsToken=$('#set-discogs').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
-  { const sv=$('#set-discogs-user-save'); if(sv) sv.onclick=()=>{ SETTINGS.discogsUser=$('#set-discogs-user').value.trim(); saveSettings(); sv.textContent='저장됨 ✓'; setTimeout(()=>sv.textContent='저장',1200); }; }
   // 계정 비우기 (이 계정의 모든 LP 삭제)
   { const cl=$('#set-clear'); if(cl) cl.onclick=async()=>{
       if(!(window.LPCloud && window.LPCloud.clearAll)){ appAlert('미리보기에서는 동작하지 않아요. 실제 앱에서 사용하세요.'); return; }
@@ -8490,7 +8441,7 @@ window.bootApp=function(items){
   }
 };
 
-/* ===== 대량 가져오기: Discogs 컬렉션 · 엑셀/CSV (마이페이지 '데이터 가져오기') ===== */
+/* ===== 대량 가져오기: 엑셀/CSV (환경설정의 가져오기) ===== */
 // CSV 파서 — 따옴표 필드·쉼표/줄바꿈 포함 값·CRLF·BOM 처리
 function parseCSV(text){
   text=String(text||'').replace(/^\uFEFF/,'');
@@ -8571,7 +8522,6 @@ function importRowsToItems(rows){
       genre:(r.genre||'').trim(), year:(parseInt(r.year,10)||null),
       rpm:'', inch:'' };
     if(r.cover){ it._art=r.cover; it.cover=r.cover; }
-    if(r.discogsId!=null) it.discogsId=r.discogsId;
     items.push(it);
   });
   return {items, errors};
@@ -8620,44 +8570,6 @@ function openImportPreview(items, srcLabel){
     previewToast(`${sel.length}장을 등록했어요 ✓`);
   };
   show('import');
-}
-// Discogs 컬렉션 가져오기 (환경설정의 사용자명 필요, 토큰은 있으면 사용)
-async function importFromDiscogs(){
-  const user=(SETTINGS.discogsUser||'').trim();
-  if(!user){
-    appAlert('환경설정의 Discogs 카드에 사용자명(Username)을 먼저 입력해주세요.');
-    renderSettings(); show('settings');
-    return;
-  }
-  const token=(SETTINGS.discogsToken||'').trim();
-  previewToast('Discogs 컬렉션을 불러오는 중…');
-  const all=[]; let page=1, pages=1;
-  try{
-    while(page<=pages && all.length<1000){
-      const url='https://api.discogs.com/users/'+encodeURIComponent(user)+'/collection/folders/0/releases?per_page=100&sort=added&page='+page+(token?('&token='+encodeURIComponent(token)):'');
-      const res=await fetch(url);
-      if(res.status===404){ appAlert('Discogs 사용자를 찾지 못했어요. 사용자명을 확인해주세요.'); return; }
-      if(res.status===401||res.status===403){ appAlert('컬렉션이 비공개이거나 권한이 없어요. 환경설정에서 본인 Discogs 토큰을 입력해주세요.'); return; }
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const j=await res.json();
-      pages=(j.pagination&&j.pagination.pages)||1;
-      (j.releases||[]).forEach(rel=>{
-        const b=rel.basic_information||{};
-        const artist=((b.artists&&b.artists[0]&&b.artists[0].name)||'').replace(/\s*\(\d+\)\s*$/,'').trim();   // Discogs 동명 표기 "(2)" 제거
-        all.push({ artist, album:(b.title||'').trim(),
-          year:b.year||'', genre:(b.genres&&b.genres[0])||'',
-          cover:(b.cover_image&&!/spacer\.gif/.test(b.cover_image))?b.cover_image:'',
-          buy:(rel.date_added||'').slice(0,10),
-          discogsId:rel.id||b.id||null });
-      });
-      previewToast(`Discogs에서 ${all.length}장 불러오는 중…`);
-      page++;
-      if(page<=pages) await new Promise(r=>setTimeout(r,1100));   // rate limit(분당 60회) 여유
-    }
-  }catch(e){ console.error('discogs import', e); appAlert('Discogs 조회 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'); return; }
-  if(!all.length){ appAlert('가져올 컬렉션이 비어 있어요.'); return; }
-  const {items}=importRowsToItems(all);
-  openImportPreview(items, `Discogs 컬렉션 · ${items.length}장`);
 }
 // 엑셀(.xlsx)/CSV 파일 가져오기 — xlsx 해석 도구는 필요할 때만 CDN에서 로드
 async function importFromFile(file){

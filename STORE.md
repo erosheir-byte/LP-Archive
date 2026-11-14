@@ -99,7 +99,7 @@ Turn it, hear it,
 
 ■ 편리하게
 • 이메일·구글 로그인으로 기기가 바뀌어도 그대로 (클라우드 동기화)
-• Discogs 컬렉션·엑셀(CSV)로 한 번에 가져오기
+• 엑셀·CSV 파일로 한 번에 가져오기
 • 한국어/영어, 다크/라이트 테마
 
 ■ 이런 분께
@@ -178,7 +178,7 @@ Keep every record you own in one beautiful place, spin it with your finger to li
 
 ■ Made easy
 • Sign in with email or Google — your shelf syncs across devices
-• Import a Discogs collection or a spreadsheet (CSV) in one go
+• Import a spreadsheet (Excel/CSV) in one go
 • Korean/English, dark/light themes
 
 Your data is stored only in your account, and you can delete your account and all data anytime in Settings → Delete account.
