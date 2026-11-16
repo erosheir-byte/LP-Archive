@@ -965,6 +965,8 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .wz-in[hidden],#wz-eta-wrap[hidden]{display:none}
 #wz-more-in.no-eta #f-eta-row{display:none!important}
 #wz-store-in{margin-top:10px}
+.wz-store-wrap{position:relative}
+.wz-store-wrap .sug-box{text-align:left}
 /* 6 완성 */
 .wz-final{position:relative;height:min(62vw,280px);margin-top:10px}
 /* 고른 판 크기(인치)대로 자켓+판을 함께 실제 비율로 (12"=1, 10"≈.83, 7"≈.58) — 통통 튀며 바뀜 */
@@ -1782,7 +1784,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
     <label class="wz-mini"><span>정가</span><input id="wz-list" inputmode="numeric" placeholder="선택" autocomplete="off"></label>
     <div class="wz-flab">어디서 샀나요?</div>
     <div class="wz-chips" id="wz-stores"></div>
-    <input class="wz-in" id="wz-store-in" placeholder="구매처 입력" hidden>
+    <div class="wz-store-wrap"><input class="wz-in" id="wz-store-in" placeholder="구매처 입력" autocomplete="off" hidden></div>
     <div class="wz-flab" id="wz-date-lab">언제 샀나요?</div>
     <input class="wz-in" type="date" id="wz-buy">
     <div id="wz-eta-wrap" hidden><div class="wz-flab" id="wz-eta-lab">언제 도착할 예정인가요?</div><input class="wz-in" type="date" id="wz-eta"></div>
@@ -6090,6 +6092,8 @@ function attachSuggest(inputId, getItems, opts){
 function refreshFieldSuggestions(){   // 폼 열 때 호출 — 최초 1회만 실제로 연결됨
   attachSuggest('f-store', _storeSuggestions);
   attachSuggest('e-store', _storeSuggestions);
+  // 등록 단계 화면의 '직접 입력': 내가 쓴 구매처 전체 + 기본 목록을 드롭다운으로
+  attachSuggest('wz-store-in', ()=>{ const seen=new Set(); return _storeSuggestions().concat(WZ_STORES_DEFAULT).filter(n=>{ const k=String(n).toLowerCase(); if(seen.has(k)) return false; seen.add(k); return true; }); });
 }
 function openAdd(initStatus, presetDate, opts){   // opts.silent: 칸만 초기화하고 시트는 열지 않음(단계 화면용)
   refreshFieldSuggestions();
