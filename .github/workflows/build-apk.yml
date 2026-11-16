@@ -254,4 +254,4 @@ jobs:
             > ⚠️ 이 APK 는 디버그 서명본으로 **스토어 업로드용이 아닙니다.**
             > 구글 플레이 업로드용 서명 AAB 는 "Release Android (signed AAB)" 워크플로를 사용하세요.
           files: dist/LP-Archive.apk
-          make_latest: "true"
+          make_latest: "false"   # '최신 릴리스'는 출시용 서명 APK(turnit-latest)
