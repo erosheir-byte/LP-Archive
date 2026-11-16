@@ -27,7 +27,7 @@
 
 | # | 보조 문구 | 메인 문구 (한국어 / 영어) | 화면 |
 |---|---|---|---|
-| 1 | Turn it, | 돌리면, 음악이 흘러요 / Spin the disc, hear the music | 카드에서 꺼낸 디스크 + 회전 표시 |
+| 1 | Turn it, | 돌리면, 음악이 흘러요 / Spin the disc, hear the music | 턴테이블 화면(톤암·Now Playing) |
 | 2 | Keep it, | 모아온 바이닐을 한곳에 / Every record, one shelf | 보관함 |
 | 3 | Find it, | 검색 한 번이면 커버와 노래까지 / One search finds the cover and songs | 등록: 이 앨범이 맞나요? |
 | 4 | Match it, | 디스크 색까지 내 것 그대로 / Right down to your disc color | 등록: 디스크 컬러·투명도·RPM·인치 |
@@ -38,7 +38,8 @@
 그래픽 이미지: 보조 문구 **Turn it, hear it,** + 메인 문구 돌려 듣는 내 바이닐 보관함 / Your vinyl, ready to spin
 
 - 스크린샷 속 앨범은 모두 **가상의 앨범과 직접 그린 커버**입니다(실제 앨범 아트 저작권 문제 방지).
-- 다시 만들 때는 같은 데모 데이터로 앱을 띄워 캡처한 뒤 문구를 얹었습니다. 화면이 바뀌면 다시 만들어 주세요.
+- 플레이 스크린샷·그래픽 이미지는 `scripts/make-store-shots.mjs` 로 다시 만듭니다(같은 데모 데이터로 앱을 띄워 캡처한 뒤 문구를 얹음). 화면이 바뀌면 다시 돌려 주세요.
+- 앱스토어용(`store-assets/app-store/`)은 아직 예전 화면입니다. iOS 제출 전에 같은 방식으로 다시 만들어야 합니다.
 - 앱스토어는 6.7" 규격 한 벌이면 다른 아이폰 크기에도 자동으로 쓰입니다.
 
 ---
