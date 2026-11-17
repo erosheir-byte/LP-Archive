@@ -141,14 +141,14 @@ jobs:
               print('added androidx.media dependency')
           PY
 
-      - name: Target/compile SDK 35 (Google Play 최소 API 레벨 충족)
+      - name: Target/compile SDK 36 (Google Play 대상 API 요구사항 — Android 16)
         run: |
           VARS=android/variables.gradle
-          sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 35/' "$VARS"
-          sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 35/' "$VARS"
-          # compileSdk 35 를 지원하는 AGP / Gradle 로 상향
-          sed -i -E 's#com\.android\.tools\.build:gradle:[0-9.]+#com.android.tools.build:gradle:8.7.2#' android/build.gradle
-          sed -i -E 's#gradle-[0-9.]+-(all|bin)\.zip#gradle-8.9-all.zip#' android/gradle/wrapper/gradle-wrapper.properties
+          sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 36/' "$VARS"
+          sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 36/' "$VARS"
+          # compileSdk 36 을 지원하는 AGP 8.9.1 / Gradle 8.11.1 로 상향
+          sed -i -E 's#com\.android\.tools\.build:gradle:[0-9.]+#com.android.tools.build:gradle:8.9.1#' android/build.gradle
+          sed -i -E 's#gradle-[0-9.]+-(all|bin)\.zip#gradle-8.11.1-all.zip#' android/gradle/wrapper/gradle-wrapper.properties
           echo "----- variables.gradle -----"; cat "$VARS"
           grep -E "gradle:" android/build.gradle
           grep distributionUrl android/gradle/wrapper/gradle-wrapper.properties
