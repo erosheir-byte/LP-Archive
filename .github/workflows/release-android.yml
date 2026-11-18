@@ -144,6 +144,8 @@ jobs:
           VARS=android/variables.gradle
           sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 36/' "$VARS"
           sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 36/' "$VARS"
+          # Play 자동 보호는 minSdk 24(Android 7.0) 이상 필요 (Capacitor 6 기본값 22)
+          sed -i -E 's/minSdkVersion = [0-9]+/minSdkVersion = 24/' "$VARS"
           # compileSdk 36 을 지원하는 AGP 8.9.1 / Gradle 8.11.1 로 상향
           sed -i -E 's#com\.android\.tools\.build:gradle:[0-9.]+#com.android.tools.build:gradle:8.9.1#' android/build.gradle
           sed -i -E 's#gradle-[0-9.]+-(all|bin)\.zip#gradle-8.11.1-all.zip#' android/gradle/wrapper/gradle-wrapper.properties
