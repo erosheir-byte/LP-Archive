@@ -1361,41 +1361,31 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .dl-item{border:none;border-radius:14px}
 .dl-row.picked .dl-item{box-shadow:inset 0 0 0 1.5px var(--accent)}
 html[data-theme="light"] .lst-item,html[data-theme="light"] .dl-item,html[data-theme="light"] .tile,html[data-theme="light"] .dl-empty2 i,html[data-theme="light"] .lst-add,html[data-theme="light"] .coll-new-btn,html[data-theme="light"] .bc-btn{background:var(--card2)}
-/* ===== 가이드 (iOS 느낌): 점선 대신 부드러운 빛 테두리, 둥근 카드, 단계 아이콘, 알약 버튼 ===== */
-.tour-hl{border-radius:16px;box-shadow:0 0 0 200vmax rgba(6,5,9,.66),0 0 0 2px rgba(255,255,255,.9),0 0 26px 4px rgba(242,164,68,.35)}
+/* ===== 가이드: 반투명 말풍선(B) — 짚는 곳만 밝게, 짧은 문구, ✕ 로 닫기, 글자 버튼 ===== */
+.tour-hl,.tour-hl.none{box-shadow:0 0 0 200vmax rgba(5,4,8,.58)}
+.tour-hl{border-radius:16px}
 .tour-hl svg{display:none}
-.tour-hl.none{box-shadow:0 0 0 200vmax rgba(6,5,9,.66)}
-.tour-card{background:#211e27;border:none;border-radius:24px;padding:18px 18px 16px;max-width:350px;
-  box-shadow:0 0 0 .5px rgba(255,255,255,.09),0 24px 60px rgba(0,0,0,.55)}
-.tour-arrow{width:14px;height:14px;background:#211e27;border:none;border-radius:3px}
-.tour-card.below .tour-arrow{top:-6px}
-.tour-card.above .tour-arrow{bottom:-6px}
-.tour-top{display:flex;align-items:center;gap:9px;margin-bottom:12px}
-.tour-ic{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent)}
-.tour-ic svg{width:18px;height:18px}
-.tour-cnt{font-size:12px;font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
-.tour-top .tour-skip{margin-left:auto}
-.tour-t{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
-.tour-d{font-size:14px;line-height:1.6;color:var(--muted)}
-.tour-btns{margin-top:16px;gap:8px}
-.tour-dots{margin:0;gap:4px}
-.tour-dots i{width:5px;height:5px;background:rgba(255,255,255,.16)}
-.tour-dots i.on{width:14px;border-radius:3px;background:var(--txt)}
-.tour-skip,.tour-btns .tour-skip{background:none;border:none;color:var(--dim);font-family:inherit;font-size:13px;font-weight:600;padding:6px 2px;cursor:pointer}
-.tour-btns .tour-prev{width:40px;height:40px;padding:0;border:none;border-radius:50%;background:rgba(255,255,255,.07);color:var(--txt);display:flex;align-items:center;justify-content:center}
-.tour-btns .tour-prev svg{width:18px;height:18px}
-.tour-next{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:11px 20px;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:-.01em;cursor:pointer;box-shadow:0 8px 20px -10px rgba(232,100,60,.9)}
-.tour-btns .tour-next{background:var(--accent);color:#fff;border-radius:100px;padding:11px 20px;font-weight:700}
-.tour-next:active,.tour-prev:active{transform:scale(.96)}
-.tour-card.welcome{text-align:center;padding:26px 22px 14px}
-.tour-appic{width:64px;height:64px;border-radius:16px;display:block;margin:0 auto 14px;box-shadow:0 8px 22px rgba(0,0,0,.4)}
-.tour-card.welcome .tour-t{font-size:21px}
-.tour-next.wide{display:block;width:100%;margin-top:20px;padding:14px}
-.tour-skip.wide{display:block;width:100%;margin-top:6px;padding:10px}
-html[data-theme="light"] .tour-card,html[data-theme="light"] .tour-arrow{background:#fff}
-html[data-theme="light"] .tour-card{box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 24px 60px rgba(0,0,0,.25)}
-html[data-theme="light"] .tour-dots i{background:rgba(0,0,0,.14)}
-html[data-theme="light"] .tour-btns .tour-prev{background:rgba(0,0,0,.06)}
+.tour-card{max-width:310px;padding:15px 16px 12px;border:none;border-radius:20px;background:rgba(48,45,56,.74);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  box-shadow:0 0 0 .5px rgba(255,255,255,.12),0 18px 40px rgba(0,0,0,.45)}
+.tour-arrow{display:none}
+.tp-head{display:flex;align-items:flex-start;gap:10px}
+.tp-t{flex:1;font-size:16px;font-weight:800;letter-spacing:-.02em;color:var(--txt);margin-top:2px;line-height:1.35}
+.tp-x{flex:none;width:26px;height:26px;border:none;border-radius:50%;background:rgba(255,255,255,.1);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tp-x svg{width:13px;height:13px}
+.tp-d{font-size:14px;line-height:1.5;color:var(--muted);margin-top:5px;white-space:pre-line;word-break:keep-all}
+.tp-foot{display:flex;align-items:center;margin-top:12px}
+.tp-cnt{font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.tp-prev{margin-left:auto;border:none;background:none;color:var(--muted);font-family:inherit;font-size:14.5px;font-weight:600;padding:6px 10px;cursor:pointer}
+.tp-next{border:none;background:none;color:var(--accent2);font-family:inherit;font-size:14.5px;font-weight:700;padding:6px 2px 6px 8px;display:flex;align-items:center;gap:2px;cursor:pointer}
+.tp-next svg{width:15px;height:15px}
+.tp-sp{margin-left:auto}
+.tp-appic{width:52px;height:52px;border-radius:13px;display:block;margin:2px 0 12px}
+.tp-main{display:block;width:100%;margin-top:16px;padding:12px;border:none;border-radius:13px;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.tp-sub{display:block;width:100%;margin-top:4px;padding:9px;border:none;background:none;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.tp-x:active,.tp-next:active,.tp-prev:active,.tp-main:active{opacity:.7}
+html[data-theme="light"] .tour-card{background:rgba(255,255,255,.82);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 18px 40px rgba(0,0,0,.22)}
+html[data-theme="light"] .tp-x{background:rgba(0,0,0,.06)}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -2601,6 +2591,7 @@ const I18N = {
   "🔍 앨범·가수 검색":"🔍 Search albums or artists",
   "· 공유된 컬렉션":"· shared collection",
   /* --- 첫 사용 가이드 --- */
+  "바이닐을 모으고, 돌려 듣고, 기록하는 앱이에요.\n30초만 같이 둘러볼까요?":"Collect your vinyl, spin it, and keep a log.\nTake a 30-second tour?","+ 버튼으로 앨범을 검색하거나 바코드를 찍어 등록해요.":"Tap + to search an album or scan its barcode.","커버를 탭하면 30초 미리듣기가 흘러요. 길게 누르면 상세 화면이에요.":"Tap a cover for a 30-second preview. Press and hold for details.","디스크 돌리기":"Spin the disc","디스크를 탭하면 턴테이블이 열려요. 손가락으로 돌리면 노래가 흘러요.":"Tap the disc to open the turntable, then spin it with your finger.","상세 화면에서 커버의 수정 버튼으로 다른 커버를 골라요.":"Use the edit button on the cover to pick another one.","컬러 팔레트 맨 끝 버튼으로 디스크 사진을 넣을 수 있어요.":"Use the last button in the palette to add a photo of your disc.","커버 대신, 등록할 때 고른 색의 디스크로 볼 수 있어요.":"See your records as discs in the colors you picked.","구매·도착·청음 기록이 날짜별로 모여요.":"Purchases, arrivals and listens, gathered by date.","기록이 여러 개인 날은 핀으로 달력에 보일 기록을 골라요.":"On busy days, pin the record to show on the calendar.","얼마나 모았는지, 무엇을 많이 들었는지 정리해 줘요.":"See how much you have collected and what you play most.","테마별 컬렉션을 만들고 링크로 공유해요.":"Make themed collections and share them with a link.","언어·테마를 바꾸고, 이 가이드를 다시 볼 수 있어요.":"Change the language and theme, or replay this guide.","이제 디스크로 음악 듣는 법을 알려드릴게요.":"Now let us show you how to listen with the disc.","디스크를 탭하면 턴테이블에 올라가고 노래가 흘러요.":"Tap the disc to put it on the turntable and start the music.","시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.":"One turn clockwise for the next song, counter-clockwise for the previous one.","다시 탭하면 이어서 재생돼요.":"Tap again to keep playing.","톤암을 디스크 위에 놓은 자리부터 들려요. 밖으로 빼면 멈춰요.":"Drop the tonearm on the disc to play from there. Move it off to stop.","디스크가 도는 30초 영상을 만들어 공유해요.":"Make a 30-second video of your spinning disc and share it.","아래로 쓸어내리면 디스크가 자켓으로 돌아가요.":"Swipe down to slide the disc back into its sleeve.","나중에":"Later",
   "Turnit 에 오신 걸 환영해요":"Welcome to Turnit",
   "내 바이닐을 등록하고, 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?":"Log your records, spin them to listen, and look back through the calendar and stats. Want a 30-second tour of the main features?",
   "바이닐 등록":"Add a record",
@@ -8121,23 +8112,23 @@ function renderCollPick(q){
    설정 > 앱 가이드 다시 보기 로 재실행. */
 const TOUR_STEPS=[
   { title:'Turnit 에 오신 걸 환영해요',
-    desc:'내 바이닐을 등록하고, 돌려 듣고, 달력과 통계로 돌아보는 앱이에요. 주요 기능을 30초만 같이 둘러볼까요?' },
+    desc:'바이닐을 모으고, 돌려 듣고, 기록하는 앱이에요.\n30초만 같이 둘러볼까요?' },
   { tab:'coll', target:'#fab', round:true, title:'바이닐 등록',
-    desc:'왼쪽 위 + 버튼으로 바이닐을 등록해요. 앨범을 검색하거나 바코드를 찍으면 커버와 음원을 자동으로 찾아줘요.' },
+    desc:'+ 버튼으로 앨범을 검색하거나 바코드를 찍어 등록해요.' },
   { tab:'coll', target:'#cf-stage', pad:4, title:'커버 탭해서 미리듣기',
-    desc:'커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.' },
-  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'디스크 직접 돌리기',
-    desc:'커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 톤암을 끌어 디스크 위에 놓으면 그 자리부터 들려요. 아래로 쓸어내리면 닫혀요.' },
+    desc:'커버를 탭하면 30초 미리듣기가 흘러요. 길게 누르면 상세 화면이에요.' },
+  { tab:'coll', target:'#grid .lp .artwrap', pad:10, title:'디스크 돌리기',
+    desc:'디스크를 탭하면 턴테이블이 열려요. 손가락으로 돌리면 노래가 흘러요.' },
   { tab:'coll', target:'#dt-change', round:true, noScroll:true, title:'커버 변경하기',
     open:()=>{ if(DATA.length) openDetail(DATA[0].id); }, leave:()=>{ try{ hide('detail'); }catch(e){} },
-    desc:'상세 화면에서 커버의 수정 버튼을 누르면 다른 커버를 고르거나 저장된 이미지로 변경할 수 있어요.' },
+    desc:'상세 화면에서 커버의 수정 버튼으로 다른 커버를 골라요.' },
   { tab:'coll', target:'#e-palette .sw-photo', round:true, pad:10, title:'디스크 이미지 변경하기',
     open:()=>{ if(DATA.length){ openDetail(DATA[0].id); showEditForm(DATA[0]); } }, leave:()=>{ try{ hide('edit'); }catch(e){} try{ hide('detail'); }catch(e){} },
-    desc:'수정 화면의 컬러 팔레트 맨 끝 수정 버튼을 누르면 디스크 이미지를 변경할 수 있어요.' },
+    desc:'컬러 팔레트 맨 끝 버튼으로 디스크 사진을 넣을 수 있어요.' },
   { tab:'coll', target:'#cf-mode-toggle', round:true, title:'디스크 보기',
-    desc:'커버 대신 컬러 디스크 모습으로 볼 수 있어요. 등록할 때 고른 색이 그대로 보여요.' },
+    desc:'커버 대신, 등록할 때 고른 색의 디스크로 볼 수 있어요.' },
   { tab:'cal', target:'#cal-grid', title:'달력',
-    desc:'구매·도착·개봉·청음 기록이 달력에 표시돼요. 날짜를 누르면 그날의 기록과 앨범을 볼 수 있어요.' },
+    desc:'구매·도착·청음 기록이 날짜별로 모여요.' },
   { tab:'cal', target:'#daylist .dl-row .dl-pin', round:true, pad:6, noScroll:true, title:'달력 대표 이미지 정하기',
     open:()=>{ const by={}; calEvents().forEach(e=>{ (by[e.date]=by[e.date]||[]).push(e); });
       const day=Object.keys(by).filter(k=>by[k].length>1).sort().pop();
@@ -8147,13 +8138,13 @@ const TOUR_STEPS=[
       const today=new Date(); const ds=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
       openDayList(ds, [{date:ds, kind:'arrive', it},{date:ds, kind:'listen', it, note:isEN()?'First listen':'첫 청음'}]); },
     leave:()=>{ try{ hide('daylist'); }catch(e){} },
-    desc:'한 날짜에 바이닐 기록이 여러 개일 땐 원하는 기록을 핀으로 선택하여 대표 이미지로 설정할 수 있어요.' },
+    desc:'기록이 여러 개인 날은 핀으로 달력에 보일 기록을 골라요.' },
   { tab:'stats', target:'#stats2', title:'통계',
-    desc:'얼마나 모았는지, 어디서 많이 샀는지, 가장 많이 들은 앨범은 무엇인지 자동으로 정리해줘요.' },
+    desc:'얼마나 모았는지, 무엇을 많이 들었는지 정리해 줘요.' },
   { tab:'my', target:'#coll-new', title:'컬렉션과 공유',
-    desc:'테마별 컬렉션을 만들고 링크로 공유할 수 있어요. 마이페이지에서는 취향 카드도 만들 수 있어요.' },
+    desc:'테마별 컬렉션을 만들고 링크로 공유해요.' },
   { tab:'my', target:'#my-gear', round:true, title:'설정',
-    desc:'언어·테마·표시 옵션은 여기에서 바꿔요. 이 가이드는 설정의 「앱 가이드 다시 보기」로 언제든 다시 볼 수 있어요.' },
+    desc:'언어·테마를 바꾸고, 이 가이드를 다시 볼 수 있어요.' },
 ];
 let _tour={ i:-1, on:false, steps:TOUR_STEPS, kind:'main' };   // steps: 지금 보여주는 가이드(기본 = 첫 사용 가이드)
 function _tourSwitchTab(v){
@@ -8184,36 +8175,22 @@ function _tourLayout(){
     const cr=card.getBoundingClientRect(); const cx=r.left+r.width/2-cr.left;
     ar.style.left=Math.max(18,Math.min(cr.width-18,cx))+'px'; });
 }
-// 단계마다 짚는 곳에 맞는 아이콘 (가이드 카드 왼쪽 위)
-function _tourIcon(st){
-  const t=String(st.target||'');
-  const M=[['#fab','plus','#f08a45'],['#cf-stage','listen','#9b7cf0'],['.artwrap','disc','#f08a45'],['#tt-stage','disc','#f08a45'],['#tt-cbtn','listen','#9b7cf0'],
-    ['#tt-armb','listen','#9b7cf0'],['#tt-share','down','#5b9bf0'],['#tt-close','chev','#8a8494'],['#dt-change','image','#5b9bf0'],['sw-photo','disc','#e0617a'],
-    ['#cf-mode-toggle','disc','#3fb7a8'],['#cal-grid','cal','#4fbf7f'],['dl-pin','pin','#4fbf7f'],['#stats2','chart','#5b9bf0'],['#coll-new','heart','#e0617a'],['#my-gear','gear','#8a8494']];
-  const m=M.find(([k])=>t.includes(k)); return m ? {svg:UI_IC[m[1]], c:m[2]} : {svg:UI_IC.disc, c:'#f08a45'};
-}
 function _tourRender(){
-  const S=_tour.steps, st=S[_tour.i], n=S.length, last=_tour.i===n-1, first=_tour.i===0;
+  const S=_tour.steps, st=S[_tour.i], n=S.length, i=_tour.i, last=i===n-1, first=i===0;
   const card=$('#tour-card');
-  card.classList.toggle('welcome', first && !st.target);
-  if(first && !st.target){   // 첫 화면: 앱 아이콘 + 큰 제목 + 꽉 찬 버튼
-    card.innerHTML=`<img class="tour-appic" src="icons/icon-192.png" alt="">
-      <div class="tour-t">${st.title}</div>
-      <div class="tour-d">${st.desc}</div>
-      <button type="button" class="tour-next wide" id="tour-next">${n>1?'둘러보기':'확인'}</button>
-      ${n>1?'<button type="button" class="tour-skip wide" id="tour-skip">나중에 볼게요</button>':''}`;
+  if(first && !st.target){   // 첫 화면: 앱 아이콘 + 제목 + 둘러보기 / 나중에
+    card.innerHTML=`<img class="tp-appic" src="icons/icon-192.png" alt="">
+      <div class="tp-t">${st.title}</div>
+      <div class="tp-d">${st.desc}</div>
+      <button type="button" class="tp-main" id="tour-next">${n>1?'둘러보기':'확인'}</button>
+      ${n>1?'<button type="button" class="tp-sub" id="tour-skip">나중에</button>':''}`;
   } else {
-    const ic=_tourIcon(st);
-    card.innerHTML=`<div class="tour-arrow"></div>
-    <div class="tour-top"><span class="tour-ic" style="--c:${ic.c}">${ic.svg}</span><span class="tour-cnt">${_tour.i} / ${n-1}</span>
-      ${last?'':'<button type="button" class="tour-skip" id="tour-skip">건너뛰기</button>'}</div>
-    <div class="tour-t">${st.title}</div>
-    <div class="tour-d">${st.desc}</div>
-    <div class="tour-btns">
-      <div class="tour-dots">${S.map((_,k)=>`<i class="${k===_tour.i?'on':''}"></i>`).join('')}</div><span class="sp"></span>
-      <button type="button" class="tour-prev" id="tour-prev" aria-label="이전">${UI_IC.left}</button>
-      <button type="button" class="tour-next" id="tour-next">${last?'시작하기':'다음'}</button>
-    </div>`;
+    const x=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>`;
+    card.innerHTML=`<div class="tp-head"><div class="tp-t">${st.title}</div><button type="button" class="tp-x" id="tour-skip" aria-label="닫기">${x}</button></div>
+      <div class="tp-d">${st.desc}</div>
+      <div class="tp-foot"><span class="tp-cnt">${i} / ${n-1}</span>
+        ${i>1?'<button type="button" class="tp-prev" id="tour-prev">이전</button>':'<span class="tp-sp"></span>'}
+        <button type="button" class="tp-next" id="tour-next">${last?'시작하기':'다음'}${UI_IC.right}</button></div>`;
   }
   const sk=$('#tour-skip'); if(sk) sk.onclick=endTour;
   const pv=$('#tour-prev'); if(pv) pv.onclick=()=>tourGo(_tour.i-1);
@@ -8280,19 +8257,19 @@ function startTurntableGuide(it, force){
   const closed=()=>{ if(TT.open) closeTurntable(); };
   startTour([
     force ? { title:'턴테이블 사용법', open:closed, desc:'디스크로 음악 듣는 법을 다시 알려드릴게요.' }   // 설정에서 다시 볼 때
-          : { title:'첫 바이닐을 등록했어요 🎉', open:closed, desc:'이제 Turnit 의 핵심, 디스크로 음악 듣는 법을 알려드릴게요.' },
+          : { title:'첫 바이닐을 등록했어요 🎉', open:closed, desc:'이제 디스크로 음악 듣는 법을 알려드릴게요.' },
     { tab:'coll', target:cardSel+' .artwrap', pad:10, title:'디스크를 탭해 보세요', open:closed,
-      desc:'커버 아래로 살짝 보이는 디스크를 탭하면 자켓에서 디스크가 나와 턴테이블에 올라가고, 톤암이 내려앉으며 노래가 흘러요.' },
+      desc:'디스크를 탭하면 턴테이블에 올라가고 노래가 흘러요.' },
     { target:'#tt-stage', round:true, pad:14, noScroll:true, relayout:1800, title:'돌려서 곡 넘기기', open:opened,
-      desc:'디스크를 손가락으로 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.' },
+      desc:'시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요.' },
     { target:'#tt-cbtn', round:true, pad:10, noScroll:true, relayout:1800, title:'가운데를 탭하면 일시정지', open:opened,
-      desc:'디스크 가운데를 탭하면 멈추고, 다시 탭하면 이어서 재생돼요.' },
+      desc:'다시 탭하면 이어서 재생돼요.' },
     { target:'#tt-armb', pad:8, noScroll:true, relayout:1800, title:'톤암으로 원하는 부분부터', open:opened,
-      desc:'톤암을 잡아 디스크 위에 놓으면 그 자리부터 들려요. 바깥쪽은 곡의 처음, 안쪽일수록 뒷부분이에요. 디스크 밖으로 빼면 멈춰요.' },
+      desc:'톤암을 디스크 위에 놓은 자리부터 들려요. 밖으로 빼면 멈춰요.' },
     { target:'#tt-share', round:true, pad:6, noScroll:true, title:'30초 영상으로 공유', open:opened,
-      desc:'공유 버튼을 누르면 지금 듣는 곡에 맞춰 디스크가 도는 30초 영상을 만들어요. 원하는 곳에 편하게 공유해요.' },
+      desc:'디스크가 도는 30초 영상을 만들어 공유해요.' },
     { target:'#tt-close', round:true, pad:6, noScroll:true, title:'닫기', open:opened,
-      desc:'왼쪽 위 버튼을 누르거나 화면을 아래로 쓸어내리면 디스크가 다시 자켓으로 들어가요.' },
+      desc:'아래로 쓸어내리면 디스크가 자켓으로 돌아가요.' },
   ], 'tt');
 }
 // 설정 > 턴테이블 가이드 다시 보기: 보관함으로 가서 맨 앞 카드로 다시 안내 (이미 바이닐이 있는 사용자도)
