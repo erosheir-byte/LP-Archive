@@ -1361,6 +1361,41 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .dl-item{border:none;border-radius:14px}
 .dl-row.picked .dl-item{box-shadow:inset 0 0 0 1.5px var(--accent)}
 html[data-theme="light"] .lst-item,html[data-theme="light"] .dl-item,html[data-theme="light"] .tile,html[data-theme="light"] .dl-empty2 i,html[data-theme="light"] .lst-add,html[data-theme="light"] .coll-new-btn,html[data-theme="light"] .bc-btn{background:var(--card2)}
+/* ===== 가이드 (iOS 느낌): 점선 대신 부드러운 빛 테두리, 둥근 카드, 단계 아이콘, 알약 버튼 ===== */
+.tour-hl{border-radius:16px;box-shadow:0 0 0 200vmax rgba(6,5,9,.66),0 0 0 2px rgba(255,255,255,.9),0 0 26px 4px rgba(242,164,68,.35)}
+.tour-hl svg{display:none}
+.tour-hl.none{box-shadow:0 0 0 200vmax rgba(6,5,9,.66)}
+.tour-card{background:#211e27;border:none;border-radius:24px;padding:18px 18px 16px;max-width:350px;
+  box-shadow:0 0 0 .5px rgba(255,255,255,.09),0 24px 60px rgba(0,0,0,.55)}
+.tour-arrow{width:14px;height:14px;background:#211e27;border:none;border-radius:3px}
+.tour-card.below .tour-arrow{top:-6px}
+.tour-card.above .tour-arrow{bottom:-6px}
+.tour-top{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.tour-ic{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent)}
+.tour-ic svg{width:18px;height:18px}
+.tour-cnt{font-size:12px;font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
+.tour-top .tour-skip{margin-left:auto}
+.tour-t{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.tour-d{font-size:14px;line-height:1.6;color:var(--muted)}
+.tour-btns{margin-top:16px;gap:8px}
+.tour-dots{margin:0;gap:4px}
+.tour-dots i{width:5px;height:5px;background:rgba(255,255,255,.16)}
+.tour-dots i.on{width:14px;border-radius:3px;background:var(--txt)}
+.tour-skip,.tour-btns .tour-skip{background:none;border:none;color:var(--dim);font-family:inherit;font-size:13px;font-weight:600;padding:6px 2px;cursor:pointer}
+.tour-btns .tour-prev{width:40px;height:40px;padding:0;border:none;border-radius:50%;background:rgba(255,255,255,.07);color:var(--txt);display:flex;align-items:center;justify-content:center}
+.tour-btns .tour-prev svg{width:18px;height:18px}
+.tour-next{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:11px 20px;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:-.01em;cursor:pointer;box-shadow:0 8px 20px -10px rgba(232,100,60,.9)}
+.tour-btns .tour-next{background:var(--accent);color:#fff;border-radius:100px;padding:11px 20px;font-weight:700}
+.tour-next:active,.tour-prev:active{transform:scale(.96)}
+.tour-card.welcome{text-align:center;padding:26px 22px 14px}
+.tour-appic{width:64px;height:64px;border-radius:16px;display:block;margin:0 auto 14px;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.tour-card.welcome .tour-t{font-size:21px}
+.tour-next.wide{display:block;width:100%;margin-top:20px;padding:14px}
+.tour-skip.wide{display:block;width:100%;margin-top:6px;padding:10px}
+html[data-theme="light"] .tour-card,html[data-theme="light"] .tour-arrow{background:#fff}
+html[data-theme="light"] .tour-card{box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 24px 60px rgba(0,0,0,.25)}
+html[data-theme="light"] .tour-dots i{background:rgba(0,0,0,.14)}
+html[data-theme="light"] .tour-btns .tour-prev{background:rgba(0,0,0,.06)}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -2601,7 +2636,7 @@ const I18N = {
   "테마별 컬렉션을 만들고 링크로 공유할 수 있어요. 마이페이지에서는 취향 카드도 만들 수 있어요.":"Build themed collections and share them by link. You can also make a taste card from My page.",
   "설정":"Settings",
   "언어·테마·표시 옵션은 여기에서 바꿔요. 이 가이드는 설정의 「앱 가이드 다시 보기」로 언제든 다시 볼 수 있어요.":"Change language, theme and display options here. You can replay this guide any time from Settings › Replay app guide.",
-  "건너뛰기":"Skip",
+  "건너뛰기":"Skip","나중에 볼게요":"Maybe later",
   "둘러보기":"Take the tour",
   "이전":"Back",
   "다음":"Next",
@@ -7074,6 +7109,14 @@ const UI_IC = (()=>{ const sv=(d,w=1.9)=>`<svg viewBox="0 0 24 24" fill="none" s
     play:   sv('<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/>'),
     guide:  sv('<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.6 4-4 1.6 1.6-4z"/>'),
     scan:   sv('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 9v6M11 9v6M14 9v6M17 9v6"/>'),
+    cal:    sv('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+    chart:  sv('<path d="M5 20V11M10.5 20V5M16 20v-7M3 20h18"/>'),
+    gear:   sv('<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/>'),
+    image:  sv('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-4.5-4.5-8.5 8"/>'),
+    pin:    sv('<path d="M12 17v4.5"/><path d="M9 10.8V4h6v6.8a2 2 0 0 0 .5 1.3l1.9 2.1a1 1 0 0 1-.7 1.8H7.3a1 1 0 0 1-.7-1.8l1.9-2.1a2 2 0 0 0 .5-1.3z"/>'),
+    heart:  sv('<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>'),
+    left:   sv('<path d="M14.5 6l-6 6 6 6"/>',2.2),
+    right:  sv('<path d="M9.5 6l6 6-6 6"/>',2.2),
   }; })();
 function openDayList(dateStr, items){
   const wrap=$('#daylist'); if(!wrap) return;
@@ -8141,19 +8184,37 @@ function _tourLayout(){
     const cr=card.getBoundingClientRect(); const cx=r.left+r.width/2-cr.left;
     ar.style.left=Math.max(18,Math.min(cr.width-18,cx))+'px'; });
 }
+// 단계마다 짚는 곳에 맞는 아이콘 (가이드 카드 왼쪽 위)
+function _tourIcon(st){
+  const t=String(st.target||'');
+  const M=[['#fab','plus','#f08a45'],['#cf-stage','listen','#9b7cf0'],['.artwrap','disc','#f08a45'],['#tt-stage','disc','#f08a45'],['#tt-cbtn','listen','#9b7cf0'],
+    ['#tt-armb','listen','#9b7cf0'],['#tt-share','down','#5b9bf0'],['#tt-close','chev','#8a8494'],['#dt-change','image','#5b9bf0'],['sw-photo','disc','#e0617a'],
+    ['#cf-mode-toggle','disc','#3fb7a8'],['#cal-grid','cal','#4fbf7f'],['dl-pin','pin','#4fbf7f'],['#stats2','chart','#5b9bf0'],['#coll-new','heart','#e0617a'],['#my-gear','gear','#8a8494']];
+  const m=M.find(([k])=>t.includes(k)); return m ? {svg:UI_IC[m[1]], c:m[2]} : {svg:UI_IC.disc, c:'#f08a45'};
+}
 function _tourRender(){
   const S=_tour.steps, st=S[_tour.i], n=S.length, last=_tour.i===n-1, first=_tour.i===0;
   const card=$('#tour-card');
-  card.innerHTML=`<div class="tour-arrow"></div>
-    ${first?'':`<div class="tour-step">${_tour.i} / ${n-1}</div>`}
+  card.classList.toggle('welcome', first && !st.target);
+  if(first && !st.target){   // 첫 화면: 앱 아이콘 + 큰 제목 + 꽉 찬 버튼
+    card.innerHTML=`<img class="tour-appic" src="icons/icon-192.png" alt="">
+      <div class="tour-t">${st.title}</div>
+      <div class="tour-d">${st.desc}</div>
+      <button type="button" class="tour-next wide" id="tour-next">${n>1?'둘러보기':'확인'}</button>
+      ${n>1?'<button type="button" class="tour-skip wide" id="tour-skip">나중에 볼게요</button>':''}`;
+  } else {
+    const ic=_tourIcon(st);
+    card.innerHTML=`<div class="tour-arrow"></div>
+    <div class="tour-top"><span class="tour-ic" style="--c:${ic.c}">${ic.svg}</span><span class="tour-cnt">${_tour.i} / ${n-1}</span>
+      ${last?'':'<button type="button" class="tour-skip" id="tour-skip">건너뛰기</button>'}</div>
     <div class="tour-t">${st.title}</div>
     <div class="tour-d">${st.desc}</div>
-    <div class="tour-dots">${S.map((_,k)=>`<i class="${k===_tour.i?'on':''}"></i>`).join('')}</div>
     <div class="tour-btns">
-      <button type="button" class="tour-skip" id="tour-skip">${last?'':'건너뛰기'}</button><span class="sp"></span>
-      ${first?'':'<button type="button" class="tour-prev" id="tour-prev">이전</button>'}
-      <button type="button" class="tour-next" id="tour-next">${first?'둘러보기':(last?'시작하기':'다음')}</button>
+      <div class="tour-dots">${S.map((_,k)=>`<i class="${k===_tour.i?'on':''}"></i>`).join('')}</div><span class="sp"></span>
+      <button type="button" class="tour-prev" id="tour-prev" aria-label="이전">${UI_IC.left}</button>
+      <button type="button" class="tour-next" id="tour-next">${last?'시작하기':'다음'}</button>
     </div>`;
+  }
   const sk=$('#tour-skip'); if(sk) sk.onclick=endTour;
   const pv=$('#tour-prev'); if(pv) pv.onclick=()=>tourGo(_tour.i-1);
   $('#tour-next').onclick=()=>last?endTour():tourGo(_tour.i+1);
