@@ -6919,7 +6919,7 @@ function saveLiked(it){ cloudSaveItem(it); }
 function saveGenre(it){ cloudSaveItem(it); }
 function saveLocal(){ /* 클라우드 모드: 항목별 저장(cloudSaveItem)이 영속성을 담당 */ }
 // 변경된 LP 한 장을 Firebase에 저장 (로그인 모듈이 window.LPCloud를 제공)
-function cloudSaveItem(it){ if(it && it.genre && !it.genreCustom) it.genre=canonGenre(it.genre); if(window.LPCloud && window.LPCloud.saveItem) window.LPCloud.saveItem(it); }
+function cloudSaveItem(it){ if(it && it._demo) return; if(it && it.genre && !it.genreCustom) it.genre=canonGenre(it.genre); if(window.LPCloud && window.LPCloud.saveItem) window.LPCloud.saveItem(it); }
 function cloudDeleteItem(id){ if(window.LPCloud && window.LPCloud.deleteItem) window.LPCloud.deleteItem(id); }
 function deleteRecord(id){
   const idx=DATA.findIndex(x=>String(x.id)===String(id));
@@ -7440,23 +7440,30 @@ const COLL_COLORS=['#e8643c','#e8a23c','#5ec27e','#3a9fd6','#8a6fd6','#e07aa8','
 let COLLECTIONS=[];
 let _collEditId=null, _collOpenId=null, _collPickColor=COLL_COLORS[0];
 
+function _collOwner(){ try{ return (window.LPCloud && window.LPCloud.uid && window.LPCloud.uid()) || ''; }catch(e){ return ''; } }
 function loadCollections(){
-  try{ COLLECTIONS=JSON.parse(localStorage.getItem('lp_collections')||'[]'); }catch(e){ COLLECTIONS=[]; }
+  const uid=_collOwner();
+  let owner=''; try{ owner=localStorage.getItem('lp_collections_uid')||''; }catch(e){}
+  // 이 기기의 로컬 사본이 다른 계정 것이면 쓰지 않는다 (예전엔 새 계정에 그대로 옮겨졌음)
+  try{ COLLECTIONS = (!uid || owner===uid) ? (JSON.parse(localStorage.getItem('lp_collections')||'[]')||[]) : []; }catch(e){ COLLECTIONS=[]; }
   if(window.LPCloud && window.LPCloud.loadCollections){
     try{ window.LPCloud.loadCollections().then(cs=>{
       if(!Array.isArray(cs)) return;                          // 미지원/미로그인 → 로컬 유지
       if(cs.length){                                          // 클라우드에 있으면 그걸 사용
         COLLECTIONS=cs;
-        try{ localStorage.setItem('lp_collections', JSON.stringify(cs)); }catch(e){}
+        try{ localStorage.setItem('lp_collections', JSON.stringify(cs)); localStorage.setItem('lp_collections_uid', uid); }catch(e){}
         renderCollections();
-      } else if(COLLECTIONS.length && window.LPCloud.saveCollections){
-        window.LPCloud.saveCollections(COLLECTIONS);          // 클라우드 비었고 로컬에 있으면 1회 이전
+      } else if(COLLECTIONS.length && uid && owner===uid && window.LPCloud.saveCollections){
+        window.LPCloud.saveCollections(COLLECTIONS);          // 같은 계정의 로컬 사본만 클라우드로 (저장 실패 복구용)
+      } else {
+        COLLECTIONS=[]; try{ localStorage.setItem('lp_collections','[]'); localStorage.setItem('lp_collections_uid', uid); }catch(e){}
+        renderCollections();
       }
     }).catch(()=>{}); }catch(e){}
   }
 }
 function saveCollections(){
-  try{ localStorage.setItem('lp_collections', JSON.stringify(COLLECTIONS)); }catch(e){}
+  try{ localStorage.setItem('lp_collections', JSON.stringify(COLLECTIONS)); localStorage.setItem('lp_collections_uid', _collOwner()); }catch(e){}
   if(window.LPCloud && window.LPCloud.saveCollections){ try{ window.LPCloud.saveCollections(COLLECTIONS); }catch(e){} }
 }
 function collArtThumb(it){
@@ -8178,6 +8185,7 @@ function tourGo(i){
 function startTour(steps, kind){
   if(_tour.on) return;
   _tour.steps=Array.isArray(steps)?steps:TOUR_STEPS; _tour.kind=kind||'main';
+  if(_tour.kind==='main') _demoOn();
   try{ stopPreview(); }catch(e){}
   document.querySelectorAll('.sheet.show').forEach(sh=>{ try{ hide(sh.id.replace(/^sheet-/,'')); }catch(e){} });
   _tour.on=true;
@@ -8196,6 +8204,7 @@ function endTour(){
   window.removeEventListener('scroll',_tourLayout);
   if(kind==='tt'){ try{ localStorage.setItem('lp_ttguide_done','1'); }catch(e){} return; }   // 턴테이블 가이드: 열린 화면 그대로 두고 직접 해 보게
   _tourSwitchTab('coll');
+  _demoOff();
   try{ localStorage.setItem('lp_tour_done','1'); }catch(e){}
   try{ if(window.LPCloud&&LPCloud.markTourDone) LPCloud.markTourDone(); }catch(e){}
 }
@@ -8237,8 +8246,12 @@ function replayTurntableGuide(){
   setTimeout(()=>startTurntableGuide(it, true), 450);
 }
 // 로그인 직후 호출: 계정에 본 기록이 없고 이 기기에도 없으면 한 번 보여준다
-window.__maybeStartTour=function(cloudDone){
+window.__maybeStartTour=function(cloudDone, isNew){
   if(cloudDone) return;
+  if(isNew){   // 새로 만든 계정: 이 기기에서 다른 계정으로 가이드를 봤어도 다시 보여준다 (턴테이블 가이드도 첫 등록 때 다시)
+    try{ localStorage.removeItem('lp_tour_done'); localStorage.removeItem('lp_ttguide_done'); }catch(e){}
+    setTimeout(startTour, 700); return;
+  }
   let local=false; try{ local=localStorage.getItem('lp_tour_done')==='1'; }catch(e){}
   if(local){ try{ if(window.LPCloud&&LPCloud.markTourDone) LPCloud.markTourDone(); }catch(e){} return; }
   setTimeout(startTour, 700);
@@ -8496,14 +8509,24 @@ function dataURLToBlob(dataURL){
 const SAMPLE_LP={ no:1, artist:"Tom Misch", album:"Geography", color:"그레이", store:"", orig:null, price:null, pay:"", buy:null, arrive:null, status:"개봉", sellDate:null, sellPrice:null, profit:null, note:"샘플 바이닐이에요 🎵 눌러서 수정하거나 삭제하고, 나만의 컬렉션을 채워보세요.", genre:"R&B·소울" };
 // 최초 로그인 시 계정에 넣을 초기 데이터 — 신규 계정은 샘플 1장만 받는다.
 // (joyoy 등 이미 데이터가 있는 계정은 이 함수가 호출되지 않고 클라우드 데이터를 그대로 사용)
-window.buildInitialData=function(){
-  return [{ ...SAMPLE_LP, id:'sample' }];
-};
+window.buildInitialData=function(){ return []; };   // 새 계정은 빈 상태로 시작 (샘플은 가이드 동안만 _demoOn)
+// 가이드는 바이닐 카드·상세 화면을 짚어 주므로, 보관함이 비어 있으면 가이드 동안만 샘플 1장을 보여준다(저장 안 함)
+function _demoRender(){ renderChips(); renderStats(); renderGrid(); buildCoverFlow(); try{ if(typeof renderCal==='function') renderCal(); }catch(e){} }
+function _demoOn(){ if(DATA.length) return; DATA.unshift({ ...SAMPLE_LP, id:'sample', _demo:true }); _demoRender(); }
+function _demoOff(){ if(!DATA.some(d=>d._demo)) return; DATA=DATA.filter(d=>!d._demo); _demoRender(); }
+// 예전 새 계정에 저장됐던 손대지 않은 샘플(톰 미시)은 정리한다 — 별점·좋아요·청음·메모를 바꿨다면 그대로 둔다
+function _dropUntouchedSample(){
+  const i=DATA.findIndex(d=>d.id==='sample' && d.artist===SAMPLE_LP.artist && d.album===SAMPLE_LP.album && d.note===SAMPLE_LP.note
+    && !d.rating && !d.liked && !(Array.isArray(d.listens)&&d.listens.length) && !d.price && !d.buy);
+  if(i<0) return;
+  DATA.splice(i,1); try{ cloudDeleteItem('sample'); }catch(e){}
+}
 // 헤더 계정칩에 이메일 표시
 window.setAccount=function(email){ const e=$('#acct-email'); if(e) e.textContent=email||'계정'; };
 // 로그인 + 데이터 로드 완료 후 앱을 그림
 window.bootApp=function(items){
   DATA=Array.isArray(items)?items:[];
+  _dropUntouchedSample();
   DATA.forEach(it=>{ if(it && it.genre && !it.genreCustom) it.genre=canonGenre(it.genre); });   // 예전 장르 이름도 기준 장르로 (다음 저장 때 반영), 직접 입력은 그대로
   // 이전 사용자 흔적 제거 후, 저장된 커버를 캐시에 반영
   Object.keys(pickedArt).forEach(k=>delete pickedArt[k]);
@@ -9199,6 +9222,7 @@ function start(){
       try{ await setDoc(doc(db,'users',currentUser.uid,'meta','state'),{initialized:true},{merge:true}); }catch(e){}
       return ids.length;
     },
+    uid(){ return currentUser ? currentUser.uid : ''; },
     // 첫 사용 가이드를 봤다는 표식 — 다른 기기에서 로그인해도 다시 뜨지 않게 계정에 남긴다
     async markTourDone(){
       if(!currentUser) return;
@@ -9307,7 +9331,8 @@ function start(){
       // → '계정 비우기'로 비운 계정이 재로그인할 때 샘플이 되살아나지 않게 하기 위함.
       let inited=false, tourDone=false;
       try{ const ms=await getDoc(doc(db,'users',user.uid,'meta','state')); inited = ms.exists() && ms.data().initialized===true; tourDone = ms.exists() && ms.data().tourDone===true; }catch(e){}
-      if(items.length===0 && !inited){
+      const isNew = items.length===0 && !inited;
+      if(isNew){
         const seed=window.buildInitialData?window.buildInitialData():[];
         if(seed.length) await migrate(user.uid, seed);
         items=seed;
@@ -9317,7 +9342,7 @@ function start(){
       if(window.setAccount) window.setAccount(user.email||user.displayName||'계정');
       if(window.bootApp) window.bootApp(items);
       setState('app');
-      try{ if(window.__maybeStartTour) window.__maybeStartTour(tourDone); }catch(e){}
+      try{ if(window.__maybeStartTour) window.__maybeStartTour(tourDone, isNew); }catch(e){}
     }catch(e){
       console.error(e);
       setState('auth');
