@@ -233,7 +233,7 @@ h1 .em{color:var(--accent)}
 /* reflection */
 .cf-card .cf-art::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.28),transparent 40%);pointer-events:none}
 .cf-info{text-align:center;padding:12px 20px 2px;min-height:40px}
-.cf-info h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:17px;line-height:1.15;letter-spacing:-.01em}
+.cf-info h3{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:17px;line-height:1.25;letter-spacing:-.02em}
 .cf-info p{color:var(--accent2);font-size:12.5px;font-weight:600;margin-top:2px}
 .cf-info .tap{color:var(--dim);font-size:10.5px;margin-top:6px;padding-bottom:6px}
 /* 보기 전환 버튼 (자켓 ↔ LP판) — 헤더 우측 상단 아이콘 버튼 */
@@ -2637,7 +2637,12 @@ const I18N = {
   /* --- misc --- */
   "닫기":"Close"
 };
-let LANG = localStorage.getItem('lp_lang') || (navigator.language && navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
+let LANG = localStorage.getItem('lp_lang') || (()=>{   // 첫 실행: 기기 언어 목록에 한국어가 하나라도 있거나 한국 시간대면 한국어
+  try{ const ls=[].concat(navigator.languages||[], navigator.language||[]).map(x=>String(x).toLowerCase());
+    if(ls.some(x=>x.startsWith('ko'))) return 'ko';
+    if((Intl.DateTimeFormat().resolvedOptions().timeZone||'')==='Asia/Seoul') return 'ko';
+  }catch(e){}
+  return 'en'; })();
 function tr(ko){ return (LANG==='en' && I18N[ko]!=null) ? I18N[ko] : ko; }
 
 (function(){
@@ -3076,7 +3081,7 @@ async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 
     const t=ar ? (x.latin+' '+(al||'')).trim() : base.replace(x.ko, x.latin).trim();
     let r=await searchTerm(t, 8);
     if(!r.length && t!==x.latin) r=await searchTerm(x.latin, 8);   // 앨범명이 한글이라 못 찾으면 가수 앨범 전체
-    all=all.concat(r.map(c=>Object.assign({}, c, { _alias:x.latin })));
+    all=all.concat(r.map(c=>Object.assign({}, c, { _alias:x.latin, _aliasKo:x.ko })));
   }
   // 한글 앨범명인데 제목이 똑같은 결과가 없으면: 한글 제목 앨범의 가수·발매년도로 찾기 (항해 → AKMU 2019 'SAILING')
   if(opts && opts.alias && /[가-힣]/.test(al||ar)){
@@ -3096,8 +3101,14 @@ async function fetchCandidates(artist, album, opts){   // opts.alias: 사람이 
   { const at={}, merged=[];
     all.forEach(c=>{ const i=at[c.img];
       if(i===undefined){ at[c.img]=merged.length; merged.push(c); return; }
-      const p=merged[i]; if((c._hint&&!p._hint) || (c._alias&&!p._alias)) merged[i]=Object.assign({}, p, { _hint:p._hint||c._hint, _alias:p._alias||c._alias }); });
+      const p=merged[i]; if((c._hint&&!p._hint) || (c._alias&&!p._alias)) merged[i]=Object.assign({}, p, { _hint:p._hint||c._hint, _alias:p._alias||c._alias, _aliasKo:p._aliasKo||c._aliasKo }); });
     all=merged; }
+  // 한국어 화면에서 한글 가수명으로 찾았으면, 영문 표기로 찾은 결과도 내가 입력한 한글 이름으로 보여준다
+  // (애플 검색이 영문 가수명만 주는 경우가 있음: 검정치마 → The Black Skirts)
+  if(opts && opts.alias && !(typeof isEN==='function' && isEN())){
+    const nl=v=>String(v||'').toLowerCase().replace(/\s+/g,'');
+    all=all.map(c=> (c._aliasKo && c._alias && nl(c.artist)===nl(c._alias)) ? Object.assign({}, c, { artist:c._aliasKo }) : c);
+  }
   // 관련도 점수: 앨범명·가수명이 일치할수록 상위. 무관한 결과는 아래로.
   const norm=s=>(s||'').toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/\s+/g,' ').trim();
   const wAl=norm(album), wAr=norm(ar);
