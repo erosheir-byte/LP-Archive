@@ -1333,6 +1333,34 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-vid-btns button{flex:1;padding:12px;border-radius:11px;border:none;font:inherit;font-weight:700;font-size:14px;cursor:pointer;background:rgba(255,255,255,.08);color:#fff}
 .tt-vid-btns button[hidden]{display:none}
 .tt-vid-btns .go{background:linear-gradient(150deg,var(--accent2,#f2a444),var(--accent,#e8643c));color:#1a0d06}
+/* ===== 타일형 버튼(B) · 선 아이콘 ===== */
+.tile-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;min-width:0;padding:16px 6px 14px;border-radius:18px;border:none;background:var(--card);color:var(--txt);font-family:inherit;font-size:13px;font-weight:600;letter-spacing:-.01em;line-height:1.25;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .15s}
+.tile:active{transform:scale(.97);background:var(--card2)}
+.tile .ic{flex:none;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--c,var(--accent2));background:color-mix(in srgb,var(--c,var(--accent)) 17%,transparent)}
+.tile .ic svg{width:21px;height:21px}
+.tile.on{box-shadow:inset 0 0 0 1.5px var(--c,var(--accent))}
+.tile.danger{--c:#e0617a}
+.sec-lab{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin:22px 4px 9px}
+.dl-empty2{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 0 2px;color:var(--dim);font-size:13px}
+.dl-empty2 i{width:44px;height:44px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.dl-empty2 i svg{width:22px;height:22px}
+.dl-note svg,.lst-ttl i svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
+.lst-ttl{display:inline-flex;align-items:center;gap:2px}
+.lst-ttl i{display:inline-flex;color:var(--muted)}
+.lst-ttl em{font-style:normal}
+.lst-add,.coll-new-btn{display:inline-flex;align-items:center;gap:4px;background:var(--card);border:none;color:var(--txt);font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 12px 7px 9px;border-radius:100px;cursor:pointer}
+.lst-add svg,.coll-new-btn svg{width:15px;height:15px;color:var(--accent2)}
+.set-ic{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--c);background:color-mix(in srgb,var(--c) 17%,transparent)}
+.set-ic svg{width:17px;height:17px}
+.set-row.tap .set-chev svg{width:15px;height:15px;display:block}
+.bc-btn{display:flex;align-items:center;justify-content:center;gap:7px;border:none;background:var(--card);color:var(--txt);font-weight:600}
+.bc-btn svg{width:18px;height:18px;color:var(--accent2)}
+.lst-item{border:none;background:var(--card);border-radius:12px}
+.lst-date{color:var(--txt);font-weight:600}
+.dl-item{border:none;border-radius:14px}
+.dl-row.picked .dl-item{box-shadow:inset 0 0 0 1.5px var(--accent)}
+html[data-theme="light"] .lst-item,html[data-theme="light"] .dl-item,html[data-theme="light"] .tile,html[data-theme="light"] .dl-empty2 i,html[data-theme="light"] .lst-add,html[data-theme="light"] .coll-new-btn,html[data-theme="light"] .bc-btn{background:var(--card2)}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -1484,7 +1512,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
   </div>
   <div class="my-sec-head">
     <h3>내 컬렉션</h3>
-    <button class="coll-new-btn" id="coll-new">+ 새 컬렉션</button>
+    <button class="coll-new-btn" id="coll-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg><span>새 컬렉션</span></button>
   </div>
   <div class="coll-list" id="coll-list"></div>
 
@@ -1624,7 +1652,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
       <div class="pt" id="pt-prev">가수·앨범 입력 후 미리보기</div>
     </div>
     <div class="pk-manual" style="margin-bottom:13px">
-      <button class="bc-btn" id="bc-scan" type="button">🔎 바코드로 찾기</button>
+      <button class="bc-btn" id="bc-scan" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 9v6M11 9v6M14 9v6M17 9v6"/></svg><span>바코드로 찾기</span></button>
       <div class="bc-box" id="bc-box" style="display:none">
         <video id="bc-video" playsinline muted style="display:none"></video>
         <div class="bc-manual">
@@ -2235,6 +2263,7 @@ const I18N = {
   "커버 수정":"Edit cover",
   "좋아요":"Like",
   "디스크 꾸미기":"Decorate disc",
+  "기록 추가":"Add a record","청음 기록":"Listening log","같은 앨범 추가":"Add another copy","배송완료":"Delivered","구매완료":"Purchased","추가":"Add","바코드로 찾기":"Find by barcode","엑셀·CSV 파일로 한번에 등록":"Bulk add from an Excel or CSV file",
   "📦 배송완료":"📦 Delivered",
   "🛒 구매완료":"🛒 Purchased",
   "✏️ 정보 수정":"✏️ Edit details",
@@ -4579,14 +4608,15 @@ function openDetail(id, mode){
   rows.push(`<div class="dt-row"><span class="k">음원 연결</span><span class="v dt-pv-v"><span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span></span></div>`);
   const g=statusGroup(it.status);
   let action='';
-  if(g==='배송전') action=`<button class="act-btn" id="act-arrive">📦 배송완료</button>`;
-  else if(it.status==='위시') action=`<button class="act-btn" id="act-buy">🛒 구매완료</button>`;
+  if(g==='배송전') action=`<button type="button" class="tile" id="act-arrive" style="--c:#f08a45"><span class="ic">${UI_IC.box}</span>배송완료</button>`;
+  else if(it.status==='위시') action=`<button type="button" class="tile" id="act-buy" style="--c:#f08a45"><span class="ic">${UI_IC.buy}</span>구매완료</button>`;
   // 같은 앨범을 또 살 때: 이 앨범 정보를 복사해 등록 화면을 미리 채움
-  action+=`<button class="act-btn" id="act-clone" style="margin-top:8px">📄 같은 앨범 추가</button>`;
-  action+=`<button class="act-btn danger" id="act-delete" style="margin-top:8px">🗑 삭제</button>`;
+  action+=`<button type="button" class="tile" id="act-clone" style="--c:#5b9bf0"><span class="ic">${UI_IC.copy}</span>같은 앨범 추가</button>`;
+  action+=`<button type="button" class="tile danger" id="act-delete"><span class="ic">${UI_IC.trash}</span>삭제</button>`;
+  action=`<div class="tile-row">${action}</div>`;
   // 청음 기록 섹션
   const listens=Array.isArray(it.listens)?it.listens.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
-  let listenHTML=`<div class="lst-head"><span>🎧 청음 기록${listens.length?` · ${listens.length}회`:''}</span><button class="lst-add" id="lst-add">+ 청음 기록</button></div>`;
+  let listenHTML=`<div class="lst-head"><span class="lst-ttl"><i>${UI_IC.listen}</i><span>청음 기록</span>${listens.length?`<em> · ${listens.length}회</em>`:''}</span><button class="lst-add" id="lst-add">${UI_IC.plus}<span>추가</span></button></div>`;
   if(listens.length){
     listenHTML+=`<div class="lst-list">${listens.map((l,i)=>`
       <div class="lst-item">
@@ -4974,10 +5004,10 @@ function cropToVinyl(imgEl, stageEl, t){
 // 배송완료·구매완료 폼은 누른 버튼 자리에 펼친다 (예전엔 맨 아래 삭제 버튼 밑에 열려서 눌러도 변화가 안 보였음)
 function _inlOpen(btnId){
   const box=$('#dt-inline'), btn=$('#'+btnId); if(!box) return;
-  if(btn){ btn.after(box); btn.style.display='none'; }
+  if(btn){ (btn.closest('.tile-row')||btn).after(box); btn.classList.add('on'); }
   requestAnimationFrame(()=>{
     box.scrollIntoView({behavior:'smooth', block:'center'});
-    const c=$('#inl-cancel'); if(c) c.onclick=()=>{ box.innerHTML=''; if(btn) btn.style.display=''; };
+    const c=$('#inl-cancel'); if(c) c.onclick=()=>{ box.innerHTML=''; if(btn) btn.classList.remove('on'); };
   });
 }
 // 배송완료: pick arrival date (or skip) + opened/sealed, then move to 보유중
@@ -7026,6 +7056,25 @@ function renderCal(){
 
 /* 달력: 하루에 여러 앨범이 있을 때 목록 팝업 */
 const KIND_LABEL={open:'개봉',sold:'판매',arrive:'도착',buy:'구매',listen:'청음'};
+// 화면 공통 선 아이콘 (직접 그림 — 이모지 대신)
+const UI_IC = (()=>{ const sv=(d,w=1.9)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  return {
+    listen: sv('<path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.6"/><rect x="16.5" y="14" width="4" height="6" rx="1.6"/>'),
+    buy:    sv('<path d="M5.5 8.5h13l-1.1 11a1.5 1.5 0 0 1-1.5 1.3H8.1a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/>'),
+    swap:   sv('<path d="M5 8.5h13"/><path d="M15 5.5l3 3-3 3"/><path d="M19 15.5H6"/><path d="M9 12.5l-3 3 3 3"/>'),
+    box:    sv('<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4"/><path d="M12 12v8"/>'),
+    copy:   sv('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/>'),
+    trash:  sv('<path d="M4.5 7h15"/><path d="M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2"/><path d="M6.5 7l.9 12a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-12"/>'),
+    plus:   sv('<path d="M12 6v12M6 12h12"/>',2.2),
+    chev:   sv('<path d="M9.5 6l6 6-6 6"/>',2.2),
+    disc:   sv('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/>',1.7),
+    doc:    sv('<path d="M7 3.5h7l4 4v12a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 5.5 19.5v-14.5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5V8H18"/><path d="M9 13h6M9 16.5h4"/>'),
+    down:   sv('<path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/>'),
+    archive:sv('<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.2"/><path d="M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9"/><path d="M10 13h4"/>'),
+    play:   sv('<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/>'),
+    guide:  sv('<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.6 4-4 1.6 1.6-4z"/>'),
+    scan:   sv('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 9v6M11 9v6M14 9v6M17 9v6"/>'),
+  }; })();
 function openDayList(dateStr, items){
   const wrap=$('#daylist'); if(!wrap) return;
   const d=new Date(dateStr+'T00:00:00');
@@ -7046,7 +7095,7 @@ function openDayList(dateStr, items){
         ? `<img src="${art}" alt="">`
         : `<div class="dl-ph" style="background:${discColor(it.color)}"></div>`;
       const kind=KIND_LABEL[ev.kind]||'';
-      const sub = ev.kind==='listen' && ev.note ? `<div class="dl-note">🎧 ${escapeHtml(ev.note)}</div>` : '';
+      const sub = ev.kind==='listen' && ev.note ? `<div class="dl-note">${UI_IC.listen}${escapeHtml(ev.note)}</div>` : '';
       const on = showPins && !!pk && pk.id===it.id && (!pk.kind || pk.kind===ev.kind);
       const item=`<button type="button" class="dl-item" data-id="${it.id}">
         <div class="dl-thumb">${thumb}</div>
@@ -7062,11 +7111,13 @@ function openDayList(dateStr, items){
       return `<div class="dl-row${on?' picked':''}">${item}${pin}</div>`;
     }).join('');
   } else {
-    html+=`<div class="dl-emptyday">이 날에는 기록이 없어요.</div>`;
+    html+=`<div class="dl-empty2"><i>${UI_IC.disc}</i>이 날에는 기록이 없어요.</div>`;
   }
-  html+=`<button type="button" class="dl-addlisten" id="dl-addlisten">🎧 청음 기록 추가</button>`;
-  html+=`<button type="button" class="dl-addlisten" id="dl-addbuy">🛒 구매내역 추가</button>`;
-  html+=`<button type="button" class="dl-addlisten" id="dl-addsx">🔁 판매·교환 내역 추가</button>`;
+  html+=`<div class="sec-lab">기록 추가</div><div class="tile-row">
+    <button type="button" class="tile" id="dl-addlisten" style="--c:#9b7cf0"><span class="ic">${UI_IC.listen}</span>청음 기록</button>
+    <button type="button" class="tile" id="dl-addbuy" style="--c:#f08a45"><span class="ic">${UI_IC.buy}</span>구매</button>
+    <button type="button" class="tile" id="dl-addsx" style="--c:#4fbf7f"><span class="ic">${UI_IC.swap}</span>판매·교환</button>
+  </div>`;
   wrap.innerHTML=html;
   wrap.querySelectorAll('.dl-item').forEach(b=>b.onclick=()=>{ hide('daylist'); openDetail(b.dataset.id); });
   wrap.querySelectorAll('.dl-pin').forEach(b=>b.onclick=(e)=>{
@@ -7699,20 +7750,20 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-card">
-      <div class="set-row tap" id="set-imp-file"><div class="set-l"><div class="set-t">📄 엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap" id="set-imp-template"><div class="set-l"><div class="set-t">엑셀 양식 받기</div><div class="set-d">드롭다운·작성 방법이 들어 있는 엑셀 파일 — 채운 뒤 위에서 올리세요</div></div><span class="set-chev">⤓</span></div>
+      <div class="set-row tap" id="set-imp-file"><span class="set-ic" style="--c:#f08a45">${UI_IC.doc}</span><div class="set-l"><div class="set-t">엑셀·CSV 파일로 한번에 등록</div><div class="set-d">양식에 맞춘 파일을 올려 여러 장을 한 번에 등록해요</div></div><span class="set-chev">${UI_IC.chev}</span></div>
+      <div class="set-row tap" id="set-imp-template"><span class="set-ic" style="--c:#5b9bf0">${UI_IC.down}</span><div class="set-l"><div class="set-t">엑셀 양식 받기</div><div class="set-d">드롭다운·작성 방법이 들어 있는 엑셀 파일 — 채운 뒤 위에서 올리세요</div></div><span class="set-chev">${UI_IC.chev}</span></div>
     </div>
     <div class="set-card">
-      <div class="set-row tap" id="set-export"><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">⤓</span></div>
-      <div class="set-row tap" id="set-adfree"><div class="set-l"><div class="set-t">광고 보고 하루 광고 끄기</div><div class="set-d">짧은 광고를 보면 24시간 동안 배너·전면광고가 모두 나오지 않아요 (앱 전용)</div></div><span class="set-chev">▶</span></div>
+      <div class="set-row tap" id="set-export"><span class="set-ic" style="--c:#3fb7a8">${UI_IC.archive}</span><div class="set-l"><div class="set-t">데이터 내보내기 / 백업</div><div class="set-d">전체 기록을 JSON 파일로 저장</div></div><span class="set-chev">${UI_IC.chev}</span></div>
+      <div class="set-row tap" id="set-adfree"><span class="set-ic" style="--c:#e3b23c">${UI_IC.play}</span><div class="set-l"><div class="set-t">광고 보고 하루 광고 끄기</div><div class="set-d">짧은 광고를 보면 24시간 동안 배너·전면광고가 모두 나오지 않아요 (앱 전용)</div></div><span class="set-chev">${UI_IC.chev}</span></div>
     </div>
     <div class="set-card">
-      <div class="set-row tap" id="set-tour"><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap" id="set-ttguide"><div class="set-l"><div class="set-t">턴테이블 가이드 다시 보기</div><div class="set-d">디스크 돌리기·톤암·공유 방법을 다시 안내해요</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap" id="set-tour"><span class="set-ic" style="--c:#9b7cf0">${UI_IC.guide}</span><div class="set-l"><div class="set-t">앱 가이드 다시 보기</div><div class="set-d">주요 기능을 처음처럼 다시 안내해요</div></div><span class="set-chev">${UI_IC.chev}</span></div>
+      <div class="set-row tap" id="set-ttguide"><span class="set-ic" style="--c:#9b7cf0">${UI_IC.disc}</span><div class="set-l"><div class="set-t">턴테이블 가이드 다시 보기</div><div class="set-d">디스크 돌리기·톤암·공유 방법을 다시 안내해요</div></div><span class="set-chev">${UI_IC.chev}</span></div>
       <div class="set-row" style="cursor:default"><div class="set-l"><div class="set-t">앱 정보</div><div class="set-d" id="set-appver">Turnit</div></div></div>
-      <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 바이닐 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">→</span></div>
-      <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">→</span></div>
+      <div class="set-row tap danger" id="set-clear"><div class="set-l"><div class="set-t" style="color:#e0617a">이 계정의 바이닐 전체 삭제</div><div class="set-d">이 계정에 저장된 모든 바이닐을 삭제해 계정을 비웁니다 (되돌릴 수 없음)</div></div><span class="set-chev">${UI_IC.chev}</span></div>
+      <div class="set-row tap danger" id="set-delete"><div class="set-l"><div class="set-t" style="color:#e0617a">회원 탈퇴</div><div class="set-d">계정과 모든 데이터(바이닐·컬렉션·사진 기록)를 영구 삭제합니다 (되돌릴 수 없음)</div></div><span class="set-chev">${UI_IC.chev}</span></div>
+      <div class="set-row tap danger" id="set-logout"><div class="set-l"><div class="set-t" style="color:#e0617a">로그아웃</div></div><span class="set-chev">${UI_IC.chev}</span></div>
     </div>`;
 
   // 토글
