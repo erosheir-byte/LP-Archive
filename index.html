@@ -1431,6 +1431,25 @@ html[data-theme="light"] .sl-st.sold{color:#c94456}html[data-theme="light"] .sl-
 .dt-cell .v .grade-badge{margin-right:2px}
 html[data-theme="light"] .dt-cell{background:var(--card2)}
 html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,transparent)}
+/* ===== 설정: 계정 카드 + 묶음 목록 → 세부 화면 ===== */
+.set-page{display:none}
+.set-page.on{display:block;animation:setin .22s ease-out}
+@keyframes setin{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.set-page[data-page="root"].on{animation:none}
+.set-acct{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px}
+.set-av{flex:none;width:52px;height:52px;border-radius:50%;background:linear-gradient(150deg,var(--accent2),var(--accent));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+.set-acct-t{min-width:0}
+.set-acct-t b{display:block;font-size:16px;font-weight:800;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-acct-t span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.set-grp{align-items:center}
+.set-gic{flex:none;width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--c)}
+.set-gic svg{width:17px;height:17px}
+.set-cnt{color:var(--dim);font-size:13px;margin-right:2px}
+.set-back{display:inline-flex;align-items:center;gap:2px;border:none;background:none;color:var(--accent2);font-family:inherit;font-size:15px;font-weight:600;padding:4px 6px 4px 0;margin:-2px 0 6px -4px;cursor:pointer}
+.set-back svg{width:20px;height:20px}
+.set-subt{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--txt);margin:0 2px 14px}
+#sheet-settings.set-sub h2{display:none}
+#sheet-settings{height:calc(88vh - var(--adh,0px))}   /* 묶음을 오가도 시트 높이가 그대로 */
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -2258,7 +2277,7 @@ const I18N = {
   "확인필요":"Needs check",
   "도착 전":"Pre-arrival",
   /* --- counts / empty states --- */
-  "장 표시 중":" shown","앨범 정보":"Album","개봉일":"Opened on","구매 정보":"Purchase","판매 정보":"Sale","등록일":"Date added","가격":"Price","최신 순":"Newest first","오래된 순":"Oldest first","가나다 순":"A to Z","역순":"Z to A","높은 순":"Highest first","낮은 순":"Lowest first","정렬":"Sort",
+  "장 표시 중":" shown","앨범 정보":"Album","일반":"General","보관함 보기":"Library view","기록 항목":"Record fields","소리 · 턴테이블":"Sound & turntable","가져오기 · 내보내기":"Import & export","광고":"Ads","도움말":"Help","계정 관리":"Account","개봉일":"Opened on","구매 정보":"Purchase","판매 정보":"Sale","등록일":"Date added","가격":"Price","최신 순":"Newest first","오래된 순":"Oldest first","가나다 순":"A to Z","역순":"Z to A","높은 순":"Highest first","낮은 순":"Lowest first","정렬":"Sort",
   "장":" items",
   "총 ":"Total ",
   "보유 ":"Owned ",
@@ -7975,6 +7994,50 @@ function renderSettings(){
       if(window.LPCloud && window.LPCloud.logout){ appConfirm('로그아웃할까요?', {okText:'로그아웃'}).then(ok=>{ if(ok) window.LPCloud.logout(); }); }
       else appAlert('미리보기에서는 로그아웃이 동작하지 않아요. 실제 앱에서 사용하세요.');
   }; }
+  _settingsPaginate(wrap);
+}
+// 설정을 iOS 설정 앱처럼: 첫 화면은 계정 카드 + 묶음 목록, 묶음을 누르면 그 묶음의 세부 화면.
+// 위에서 만든 줄(이벤트가 이미 연결된 요소)을 그대로 옮겨 담기만 한다.
+const SET_GROUPS=[
+  ['일반',['언어 / Language','테마'],'gear','#8a8494'],
+  ['보관함 보기',['기본 보기 모드','장르 표기','발매년도 표기','모아보기 중복 앨범 한 장만','금액 표시 숨기기'],'disc','#f08a45'],
+  ['기록 항목',['상태 등급 선택','RPM 선택','인치 선택'],'doc','#5b9bf0'],
+  ['소리 · 턴테이블',['바이닐 지직거림 사운드','톤암'],'listen','#9b7cf0'],
+  ['가져오기 · 내보내기',['엑셀·CSV 파일로 한번에 등록','엑셀 양식 받기','데이터 내보내기 / 백업'],'archive','#3fb7a8'],
+  ['광고',['광고 보고 하루 광고 끄기'],'play','#e3b23c'],
+  ['도움말',['앱 가이드 다시 보기','턴테이블 가이드 다시 보기','앱 정보'],'guide','#4fbf7f'],
+  ['계정 관리',['이 계정의 바이닐 전체 삭제','회원 탈퇴'],'heart','#e0617a'],
+];
+function _settingsPaginate(wrap){
+  const rows=[...wrap.querySelectorAll('.set-card > .set-row')];
+  const byT={}; rows.forEach(r=>{ const t=r.querySelector('.set-t'); if(t) byT[t.textContent.trim()]=r; });
+  const logout=wrap.querySelector('#set-logout');
+  const email=(($('#acct-email')||{}).textContent||'').trim();
+  const owned=(typeof DATA!=='undefined'&&DATA)?DATA.filter(d=>statusGroup(d.status)!=='위시').length:0;
+  const colls=(typeof COLLECTIONS!=='undefined'&&COLLECTIONS)?COLLECTIONS.length:0;
+  const pages=document.createElement('div'); pages.className='set-pages';
+  const root=document.createElement('div'); root.className='set-page on'; root.dataset.page='root';
+  root.innerHTML=`<div class="set-acct"><div class="set-av">${escapeHtml((email[0]||'T').toUpperCase())}</div><div class="set-acct-t"><b>${escapeHtml(email && email!=='계정' ? email : 'Turnit')}</b><span>${isEN()?`${owned} records · ${colls} collections`:`바이닐 ${owned}장 · 컬렉션 ${colls}개`}</span></div></div>`;
+  const list=document.createElement('div'); list.className='set-card set-grps';
+  const subs=[];
+  SET_GROUPS.forEach(([g,keys,ic,c],i)=>{
+    const items=keys.map(k=>byT[k]).filter(Boolean); if(!items.length) return;
+    list.insertAdjacentHTML('beforeend',`<div class="set-row tap set-grp" data-g="${i}"><span class="set-gic" style="--c:${c}">${UI_IC[ic]}</span><div class="set-l"><div class="set-t">${g}</div></div><span class="set-cnt">${items.length}</span><span class="set-chev">${UI_IC.chev}</span></div>`);
+    const pg=document.createElement('div'); pg.className='set-page'; pg.dataset.page=String(i);
+    pg.innerHTML=`<button type="button" class="set-back">${UI_IC.left}<span>환경설정</span></button><div class="set-subt">${g}</div>`;
+    const card=document.createElement('div'); card.className='set-card'; items.forEach(r=>card.append(r)); pg.append(card); subs.push(pg);
+  });
+  root.append(list);
+  if(logout){ const lc=document.createElement('div'); lc.className='set-card'; lc.style.marginTop='16px'; lc.append(logout); root.append(lc); }
+  pages.append(root, ...subs);
+  wrap.innerHTML=''; wrap.append(pages);
+  const sheet=$('#sheet-settings');
+  const go=id=>{ pages.querySelectorAll('.set-page').forEach(p=>p.classList.toggle('on', p.dataset.page===id));
+    if(sheet){ sheet.classList.toggle('set-sub', id!=='root'); sheet.scrollTop=0; } };
+  list.querySelectorAll('.set-grp').forEach(r=>r.onclick=()=>go(r.dataset.g));
+  pages.querySelectorAll('.set-back').forEach(b=>b.onclick=()=>go('root'));
+  window.__settingsBack=()=>{ const on=pages.querySelector('.set-page.on'); if(on && on.dataset.page!=='root' && sheet && sheet.classList.contains('show')){ go('root'); return true; } return false; };
+  go('root');
 }
 function exportData(){
   try{
@@ -8992,6 +9055,7 @@ function handleAppBack(){
   // 1) 열린 시트(가장 위) 닫기
   const sheets=document.querySelectorAll('.sheet.show');
   if(sheets.length && sheets[sheets.length-1].id==='sheet-wiz' && typeof wzBack==='function' && WZ.step>1){ wzBack(); return; }
+  if(sheets.length && sheets[sheets.length-1].id==='sheet-settings' && window.__settingsBack && window.__settingsBack()) return;
   if(sheets.length){
     try{ if(typeof stopBarcodeScan==='function') stopBarcodeScan(); }catch(e){}
     const top=sheets[sheets.length-1];
