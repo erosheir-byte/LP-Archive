@@ -1409,6 +1409,16 @@ html[data-theme="light"] .sp-dir{box-shadow:inset 0 -1px 0 rgba(0,0,0,.08)}
 html[data-theme="light"] .sp-dir button.on{background:rgba(0,0,0,.07)}
 html[data-theme="light"] .sp-it+.sp-it{box-shadow:inset 0 1px 0 rgba(0,0,0,.06)}
 html[data-theme="light"] .sort-btn{background:var(--card)}
+/* ===== 보관함 카드: 앨범명 한 줄 + '● 상태 · 장르' 한 줄 (카드 높이 고르게) ===== */
+.meta .al{-webkit-line-clamp:1;min-height:0}
+.metabtm{display:block;margin-top:6px}
+.sline{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-st{font-weight:700}
+.sl-st i{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:5px;vertical-align:1px}
+.sl-st.own{color:#9cc0f0}.sl-st.open{color:#f2bf7a}.sl-st.seal{color:#86d6a4}.sl-st.sold{color:#f09aa4}.sl-st.gift{color:#c3a4f0}.sl-st.wish{color:#f0cf8a}
+.sl-sep{color:var(--dim);margin:0 4px}
+html[data-theme="light"] .sl-st.own{color:#3a73c9}html[data-theme="light"] .sl-st.open{color:#c77a1e}html[data-theme="light"] .sl-st.seal{color:#2f9a58}
+html[data-theme="light"] .sl-st.sold{color:#c94456}html[data-theme="light"] .sl-st.gift{color:#7b56c9}html[data-theme="light"] .sl-st.wish{color:#b8862a}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -3427,6 +3437,15 @@ function statusChip(s){
   return '<span class="st own">보유중</span>';
 }
 
+// 카드 아래 한 줄 정보: ● 상태 · 장르 (태그 테두리 없이, 넘치면 … 으로)
+function statusLine(it){
+  const s=it.status;
+  const M={ '판매':['판매완료','sold'], '교환':['교환','sold'], '선물':['선물함','gift'], '위시':['위시','wish'], '미개봉':['미개봉','seal'], '개봉':['개봉','open'],
+            '도착 전':['배송전','own'], '배송전':['배송전','own'], '확인필요':['확인필요','own'] };
+  const [lab,cls]=M[s]||['보유중','own'];
+  const g=(it.genre && !(typeof SETTINGS!=='undefined' && SETTINGS.showGenre===false)) ? `<span class="sl-sep">·</span><span class="sl-g">${escapeHtml(it.genre)}</span>` : '';
+  return `<div class="sline"><span class="sl-st ${cls}"><i></i>${lab}</span>${g}</div>`;
+}
 /* ---------- render grid ---------- */
 let filter={q:'',chip:'전체',sub:'',sort:'added',sortDir:'asc',genre:'',view:'grid'};   // view: 'grid'|'list'
 let gridDisc = (()=>{ try{ return localStorage.getItem('lp_griddisc')==='1'; }catch(e){ return false; } })();   // 그리드 LP판 보기
@@ -3523,7 +3542,7 @@ function renderGrid(){
       <div class="meta">
         <div class="al">${it.album||'—'}</div>
         <div class="ar">${it.artist||'—'}${(it.year && (typeof SETTINGS==='undefined'||SETTINGS.showYear!==false))?` <span class="yr">· ${it.year}</span>`:''}</div>
-        <div class="metabtm">${statusChip(it.status)}${genreTag(it.genre)}</div>
+        <div class="metabtm">${statusLine(it)}</div>
       </div>
       <div class="list-player">
         <button class="lp-ctrl lp-prev" data-prev="${it.id}" aria-label="이전 곡"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2.2v12H6zM20 6v12l-9-6z"/></svg></button>
