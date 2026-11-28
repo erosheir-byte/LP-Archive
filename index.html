@@ -632,6 +632,7 @@ body.fs-open #ov-vinyl.show{opacity:1!important;pointer-events:auto}
 .set-toggle.on .set-knob{transform:translateX(19px)}
 .set-seg{display:flex;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:4px}
 .set-seg button{flex:1;padding:9px;border:none;border-radius:8px;background:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.set-sub{font-size:11.5px;font-weight:700;color:var(--muted);margin:2px 2px -4px}
 .set-seg button.on{background:linear-gradient(150deg,var(--accent2),var(--accent));color:#160d09}
 .set-row.tap .set-chev{color:var(--dim);font-size:16px;flex:0 0 auto}
 .set-row.tap:active{background:rgba(255,255,255,.04)}
@@ -1303,7 +1304,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-logo{height:40px;width:auto;display:block;pointer-events:none}
 .tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none;margin-top:40px}
 /* 디스크는 열 때 캔버스에 한 번 그려 두고 돌리기만 한다 (CSS 그라데이션 여러 겹은 휴대폰에서 다시 그리기가 무거움) */
-.tt-disc{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border-radius:50%;will-change:transform;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.tt-disc{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border-radius:50%;will-change:transform;cursor:grab;touch-action:none;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 30px 80px rgba(0,0,0,.55)}
 .tt-disc:active{cursor:grabbing}
 .tt-shine{position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;
   background:conic-gradient(from 210deg,transparent 0 8%,rgba(255,255,255,.12) 12%,transparent 18% 58%,rgba(255,255,255,.08) 62%,transparent 68%)}
@@ -1313,14 +1314,28 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-armw{position:absolute;inset:0;z-index:3;pointer-events:none}
 .tt-armw[hidden]{display:none}
 .tt-plate{position:absolute;left:87.6%;top:-6.4%;width:16.8%;height:16.8%;border-radius:50%;background:#17161b;box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.tt-armw[data-arm="slim"] .tt-plate,.tt-armw[data-arm="s"] .tt-plate{background:radial-gradient(circle at 40% 35%,#27262c,#121115 72%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.075),0 6px 16px rgba(0,0,0,.5)}
+.tt-armw[data-arm="line"] .tt-plate{background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .tt-armsh,.tt-armb{position:absolute;display:block;will-change:transform;pointer-events:none}
 .tt-armb{left:84%;top:-14%;width:24%;height:82%;transform-origin:50% 19.512%}
 .tt-armsh{left:82%;top:-16%;width:28%;height:86%;transform-origin:50% 20.93%}
 .tt-arm{--tta-tube:url(#tta-blk);--tta-tubeE:url(#tta-blkE);--tta-metal:url(#tta-blkR);--tta-lift:#55525d}   /* <use> 안쪽까지 전달되도록 변수로 색 지정 */
 .tt-arm.silver{--tta-tube:url(#tta-sil);--tta-tubeE:url(#tta-silE);--tta-metal:url(#tta-silR);--tta-lift:#d8d5dc}
-.tt-info{text-align:center;padding:106px 28px 0;width:100%;flex:none}
-.tt-np{font-size:12px;color:var(--accent2,#f2a444);font-weight:800;letter-spacing:.2em;text-transform:uppercase}
-.tt-title{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.02em;line-height:1.3;transition:opacity .25s,transform .25s;
+.tt-info{text-align:center;padding:96px 28px 0;width:100%;flex:none}
+.tt-np{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--accent2,#f2a444);font-weight:800;letter-spacing:.24em;text-transform:uppercase;transition:color .3s}
+/* 재생 상태: 이퀄라이저 막대 + NOW PLAYING / 멈추면 막대가 낮게 서고 회색 PAUSED */
+.tt-np .eq{display:inline-flex;align-items:flex-end;gap:2px;height:10px}
+.tt-np .eq i{width:2.5px;height:100%;border-radius:2px;background:currentColor;transform-origin:bottom;animation:tteq 1s ease-in-out infinite}
+.tt-np .eq i:nth-child(2){animation-delay:-.35s;animation-duration:.8s}
+.tt-np .eq i:nth-child(3){animation-delay:-.6s;animation-duration:1.15s}
+@keyframes tteq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.tt-np .np-off{display:none}
+.tt.paused .tt-np{color:rgba(255,255,255,.42)}
+.tt.paused .tt-np .eq i{animation:none;transform:scaleY(.3)}
+.tt.paused .tt-np .np-on{display:none}
+.tt.paused .tt-np .np-off{display:inline}
+@media (prefers-reduced-motion:reduce){.tt-np .eq i{animation:none;transform:scaleY(.6)}}
+.tt-title{font-size:23px;font-weight:800;margin-top:6px;letter-spacing:-.025em;line-height:1.3;transition:opacity .25s,transform .25s;
   white-space:nowrap;overflow:hidden}
 /* 긴 제목: 한 줄로 두고 가로로 천천히 흐름 (처음에 잠깐 멈췄다가 → 이어 붙인 같은 제목으로 끊김 없이 반복) */
 .tt-title .mq-in{display:inline-block}
@@ -1329,7 +1344,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-title.mq .mq-in span+span{padding-left:48px}
 @keyframes tt-mq{0%,18%{transform:translateX(0)}100%{transform:translateX(calc(-1 * var(--mq-d,0px)))}}
 .tt-title.swap{opacity:0;transform:translateY(6px)}
-.tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:rgba(255,255,255,.72);font-size:14px;min-width:0}
+.tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;color:rgba(255,255,255,.58);font-size:13.5px;min-width:0}
 .tt-aa span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tt-gap{flex:1;min-height:16px}
 .tt-gap.b{flex:1.4}
@@ -2191,7 +2206,7 @@ html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,tra
       </svg>
     </div>
     <div class="tt-info tt-fade">
-      <div class="tt-np">Now playing</div>
+      <div class="tt-np"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span class="np-on">Now playing</span><span class="np-off">Paused</span></div>
       <div class="tt-title" id="tt-title"></div>
       <div class="tt-aa"><span id="tt-aa"></span></div>
     </div>
@@ -2708,7 +2723,7 @@ const I18N = {
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
   "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent",
   "이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.":"This device can't make videos. Please update the app.","동영상을 만드는 중 오류가 발생했어요.":"Something went wrong while making the video.",
-  "톤암":"Tonearm","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
+  "톤암":"Tonearm","모양":"Style","슬림":"Slim","볼드":"Bold","S자":"S-shape","미니멀":"Minimal","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
   "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 톤암을 끌어 디스크 위에 놓으면 그 자리부터 들려요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap the center to pause, or drag the tonearm onto the disc to play from that spot. Swipe down to close.",
   "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "커버 변경하기":"Change the cover",
@@ -4124,11 +4139,54 @@ const _tt$=id=>document.getElementById(id);
 function _ttPlaying(){ return !!(TT.it && _preview.id===TT.it.id && !_preview.paused); }
 function _ttRate(){ return (TT.it && String(TT.it.rpm)==='45') ? 270 : 200; }   // °/초 — 33⅓ RPM = 200, 45 RPM = 270
 function _ttArmMode(){ const v=(typeof SETTINGS!=='undefined' && SETTINGS.tonearm) || 'black'; return v; }
+// 톤암 모양: slim(기본) · classic(볼드: 주황 카트리지, 첫 버전 디자인) · s(S자) · line(미니멀)
+function _ttArmStyle(){ const v=(typeof SETTINGS!=='undefined' && SETTINGS.tonearmStyle) || 'slim'; return ['slim','classic','s','line'].includes(v)?v:'slim'; }
+// 새 톤암 모양 SVG (회전축 0,0 / viewBox -12 -16 24 82 — 기존과 같은 좌표라 위치·회전 계산은 그대로)
+function _ttArmSVG(style, silver){
+  const P = silver
+    ? { t:['#8d8a94','#f4f3f6','#c4c1ca','#6f6c77'], w:['#5c5965','#d9d7de','#9c99a4','#4f4c57'], p:['#ffffff','#bdbac3','#6b6873'], lift:'#c9c6cf', ridge:'rgba(0,0,0,.25)', hl:'rgba(255,255,255,.35)', flat:'#d2d0d6', flatE:'rgba(0,0,0,.35)' }
+    : { t:['#1b1a1f','#6a6772','#3a3840','#141317'], w:['#151418','#4b4952','#2a2930','#111014'], p:['#5b5964','#26252b','#121115'], lift:'#77747e', ridge:'rgba(255,255,255,.13)', hl:'rgba(255,255,255,.16)', flat:'#1d1c21', flatE:'rgba(255,255,255,.16)' };
+  const lg=(id,c)=>`<linearGradient id="${id}" x1="0" x2="1">${c.map((x,i)=>`<stop offset="${[0,.4,.65,1][i]}" stop-color="${x}"/>`).join('')}</linearGradient>`;
+  const defs=`<defs>${lg('aT',P.t)}${lg('aW',P.w)}
+    <linearGradient id="aS" x1="0" x2="1"><stop offset="0" stop-color="#1b1a20"/><stop offset=".48" stop-color="#3d3b44"/><stop offset="1" stop-color="#17161b"/></linearGradient>
+    <radialGradient id="aP" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="${P.p[0]}"/><stop offset=".55" stop-color="${P.p[1]}"/><stop offset="1" stop-color="${P.p[2]}"/></radialGradient></defs>`;
+  const pivot=`<circle r="4.15" fill="url(#aP)"/><circle r="4.15" fill="none" stroke="rgba(0,0,0,.3)" stroke-width=".25"/><circle r="1.55" fill="#1b1a1f"/><circle r=".48" fill="#e8643c"/>`;
+  const head=(lift)=>`<g transform="translate(0 52) rotate(22)">
+    <rect x="-1" y="-.55" width="2" height="2.25" rx=".45" fill="url(#aT)"/>
+    <path d="M-2.05 1.4 L2.05 1.4 L2.35 10 Q2.35 11 1.45 11 L-1.45 11 Q-2.35 11 -2.35 10 Z" fill="url(#aS)" stroke="rgba(255,255,255,.1)" stroke-width=".18"/>
+    <path d="M2.25 4.3 Q4.3 3.4 5.8 3.15" stroke="${lift}" stroke-width=".46" fill="none" stroke-linecap="round"/>
+    <rect x="-1.28" y="6.65" width="2.56" height="3.95" rx=".45" fill="#0c0b0f"/>
+    ${style==='s' ? '<rect x="-1.28" y="6.65" width="2.56" height=".5" rx=".2" fill="#e8643c"/>' : '<circle cx="0" cy="8.3" r=".42" fill="#e8643c"/>'}
+    <path d="M0 10.6 L0 11.6" stroke="#e2dfe6" stroke-width=".32" stroke-linecap="round"/></g>`;
+  if(style==='line'){
+    return `<defs>${lg('aT',silver?['#9a97a1','#e9e7ec','#c4c1ca','#9a97a1']:['#2b2a30','#57555e','#3a3940','#2b2a30'])}</defs>
+      <circle cy="-9.6" r="3.1" fill="${P.flat}" stroke="${P.flatE}" stroke-width=".25"/><circle cy="-9.6" r="1.6" fill="none" stroke="${P.flatE}" stroke-width=".22" opacity=".6"/>
+      <rect x="-.55" y="-6.5" width="1.1" height="6.5" fill="url(#aT)"/><rect x="-.55" y="0" width="1.1" height="52" rx=".55" fill="url(#aT)"/>
+      <g transform="translate(0 52) rotate(22)">
+        <rect x="-1.8" y=".6" width="3.6" height="9.6" rx="1.1" fill="#222127" stroke="rgba(255,255,255,.14)" stroke-width=".22"/>
+        <path d="M1.8 3.6 L4.6 3" stroke="rgba(255,255,255,.35)" stroke-width=".35" stroke-linecap="round"/>
+        <circle cx="0" cy="8.4" r=".38" fill="#e8643c"/><path d="M0 10.2 L0 11.4" stroke="#e9e7ec" stroke-width=".3" stroke-linecap="round"/></g>
+      <circle r="3.6" fill="${P.flat}" stroke="${P.flatE}" stroke-width=".25"/><circle r=".9" fill="#e8643c"/>`;
+  }
+  if(style==='s'){
+    const S='M0 0 C0 12 3.4 18 3.4 28 C3.4 38 0 42 0 52';
+    return defs+`<rect x="-3.1" y="-13.4" width="6.2" height="7" rx="3" fill="url(#aW)"/><rect x="-3.1" y="-10.3" width="6.2" height=".35" fill="${P.ridge}"/>
+      <rect x="-.7" y="-6.4" width="1.4" height="6.4" fill="url(#aT)"/>
+      <path d="${S}" stroke="url(#aT)" stroke-width="1.45" fill="none" stroke-linecap="round"/>
+      <path d="${S}" stroke="${P.hl}" stroke-width=".3" fill="none" transform="translate(-.25 0)"/>`+head(P.lift)+pivot;
+  }
+  // slim (기본)
+  return defs+`<rect x="-3.3" y="-13.2" width="6.6" height="6.8" rx="1.3" fill="url(#aW)"/>
+    ${[-11.3,-9.9,-8.5].map(y=>`<rect x="-3.3" y="${y}" width="6.6" height=".3" fill="${P.ridge}"/>`).join('')}
+    <rect x="-.75" y="-6.4" width="1.5" height="6.4" fill="url(#aT)"/>
+    <path d="M-.85 0 L.85 0 L.62 52 L-.62 52 Z" fill="url(#aT)"/>`+head(P.lift)+pivot;
+}
 // 톤암 이미지(SVG)와 흐린 그림자(캔버스)를 지금 크기·색으로 한 번 만들어 둔다
 function _ttSyncArm(){
   const w=_tt$('tt-armw'), m=_ttArmMode(); w.hidden=(m==='off'); if(m==='off') return;
   const stW=_tt$('tt-stage').getBoundingClientRect().width || 300, dpr=Math.min(2.5, window.devicePixelRatio||1);
-  const u=stW/100*dpr, key=m+'|'+Math.round(u*10);
+  const st=_ttArmStyle(); w.dataset.arm=st;
+  const u=stW/100*dpr, key=m+'|'+st+'|'+Math.round(u*10);
   if(TT._armKey===key) return; TT._armKey=key;
   _ttvArmImg(u).then(im=>{
     if(!im || TT._armKey!==key) return;
@@ -4198,7 +4256,9 @@ function _ttInfo(){
     if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ _ttSetTitle(el, TT.title); el.classList.remove('swap'); },180); }
     else _ttSetTitle(el, title);
   }
-  const cb=_tt$('tt-cbtn'), pl=_ttPlaying(), show=!pl && !TT.drag && !TT.armDrag && _tt$('tt').classList.contains('ui');
+  const cb=_tt$('tt-cbtn'), pl=_ttPlaying();
+  if(pl!==TT._pl){ TT._pl=pl; _tt$('tt').classList.toggle('paused', !pl); }   // NOW PLAYING ↔ PAUSED
+  const show=!pl && !TT.drag && !TT.armDrag && _tt$('tt').classList.contains('ui');
   if(show!==TT._show){ TT._show=show; cb.classList.toggle('show', show); }
   if(!cb.classList.contains('flash') && pl!==TT._ci){ TT._ci=pl; _tt$('tt-ci').innerHTML = pl ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>' : '<path d="M8 5v14l11-7z"/>'; }
 }
@@ -4435,8 +4495,12 @@ function _ttvFit(x, text, maxW){
 }
 // 톤암 그림: 화면의 SVG 정의를 그대로 가져와 지금 설정한 색으로 바꿔 이미지로 만든다
 function _ttvArmImg(u){
+  const silver=_ttArmMode()==='silver', style=_ttArmStyle();
+  if(style!=='classic'){
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -16 24 82" width="${24*u}" height="${82*u}">${_ttArmSVG(style, silver)}</svg>`;
+    return new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
+  }
   const svgEl=document.getElementById('tt-arm'); if(!svgEl) return Promise.resolve(null);
-  const silver=_ttArmMode()==='silver';
   const map=silver ? {tube:'url(#tta-sil)',tubeE:'url(#tta-silE)',metal:'url(#tta-silR)',lift:'#d8d5dc'} : {tube:'url(#tta-blk)',tubeE:'url(#tta-blkE)',metal:'url(#tta-blkR)',lift:'#55525d'};
   const defs=svgEl.querySelector('defs').innerHTML.replace(/var\(--tta-(\w+)\)/g,(m,k)=>map[k]||m);
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-12 -16 24 82" width="${24*u}" height="${82*u}"><defs>${defs}</defs><use href="#tta-shape" xlink:href="#tta-shape"/>`+
@@ -4457,7 +4521,9 @@ async function _ttvScene(it, track){
   b.fillStyle=g; b.fillRect(0,0,W,H);
   if(wm){ const h=74, w=wm.naturalWidth*h/wm.naturalHeight; b.drawImage(wm,(W-w)/2,66,w,h); }
   b.save(); b.shadowColor='rgba(0,0,0,.55)'; b.shadowBlur=80; b.shadowOffsetY=30; b.beginPath(); b.arc(W/2,sy+S/2,S/2-2,0,Math.PI*2); b.fillStyle='#000'; b.fill(); b.restore();
-  b.save(); b.translate(sx+96*u, sy+2*u); b.beginPath(); b.arc(0,0,8.4*u,0,Math.PI*2); b.fillStyle='#17161b'; b.fill(); b.lineWidth=.4*u; b.strokeStyle='rgba(255,255,255,.09)'; b.stroke(); b.restore();
+  { const st=_ttArmStyle(); b.save(); b.translate(sx+96*u, sy+2*u); b.beginPath(); b.arc(0,0,8.4*u,0,Math.PI*2);
+    if(st!=='line'){ let f='#17161b'; if(st!=='classic'){ f=b.createRadialGradient(-1.7*u,-2.5*u,0,0,0,8.4*u); f.addColorStop(0,'#27262c'); f.addColorStop(.72,'#121115'); } b.fillStyle=f; b.fill(); }
+    b.lineWidth=.4*u; b.strokeStyle= st==='line'?'rgba(255,255,255,.14)':'rgba(255,255,255,.09)'; b.stroke(); b.restore(); }
   const ty=sy+S+148; b.textAlign='center';
   b.fillStyle='#f2a444'; b.font='800 22px "Noto Sans KR",sans-serif'; if('letterSpacing' in b) b.letterSpacing='4px';
   b.fillText('NOW PLAYING', W/2, ty); if('letterSpacing' in b) b.letterSpacing='0px';
@@ -7904,6 +7970,14 @@ function renderSettings(){
       </div>
       <div class="set-row col">
         <div class="set-l"><div class="set-t">톤암</div><div class="set-d">디스크를 크게 돌리는 화면에 보이는 바늘</div></div>
+        <div class="set-sub">모양</div>
+        <div class="set-seg" id="set-armst">
+          <button type="button" class="${_ttArmStyle()==='slim'?'on':''}" data-armst="slim">슬림</button>
+          <button type="button" class="${_ttArmStyle()==='classic'?'on':''}" data-armst="classic">볼드</button>
+          <button type="button" class="${_ttArmStyle()==='s'?'on':''}" data-armst="s">S자</button>
+          <button type="button" class="${_ttArmStyle()==='line'?'on':''}" data-armst="line">미니멀</button>
+        </div>
+        <div class="set-sub">색상</div>
         <div class="set-seg" id="set-arm">
           <button type="button" class="${(SETTINGS.tonearm||'black')==='black'?'on':''}" data-arm="black">블랙</button>
           <button type="button" class="${SETTINGS.tonearm==='silver'?'on':''}" data-arm="silver">실버</button>
@@ -7976,6 +8050,11 @@ function renderSettings(){
     wrap.querySelectorAll('#set-crackle button').forEach(x=>x.classList.toggle('on',x===b));
     saveSettings();
     try{ if(SETTINGS.crackleLevel==='off') VinylNoise.stop(); }catch(e){}
+  });
+  wrap.querySelectorAll('#set-armst button').forEach(b=>b.onclick=()=>{
+    SETTINGS.tonearmStyle=b.dataset.armst;
+    wrap.querySelectorAll('#set-armst button').forEach(x=>x.classList.toggle('on',x===b));
+    saveSettings();
   });
   wrap.querySelectorAll('#set-arm button').forEach(b=>b.onclick=()=>{
     SETTINGS.tonearm=b.dataset.arm;
