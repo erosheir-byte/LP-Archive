@@ -1044,6 +1044,15 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .mstat-cnt span{font-size:12px;color:var(--muted);font-weight:600;margin-left:2px}
 .mstat-sub{font-size:10.5px;color:var(--muted);margin-top:5px}
 .mstat-empty{text-align:center;color:var(--dim);font-size:12.5px;padding:16px 0 4px}
+/* 빈 화면 안내: 원형 아이콘 + 한 줄 */
+.es{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 24px 30px}
+.es.sm{padding:22px 20px 10px}
+.es-ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--accent2);background:var(--card2);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.es-ic svg{width:22px;height:22px}
+.es-s{color:var(--dim);font-size:13px;line-height:1.55;margin-top:12px;word-break:keep-all}
+.es .lst-add{margin-top:14px;display:inline-flex;align-items:center;gap:5px;padding:7px 14px}
+.es-pick{width:100%;max-width:340px;margin-top:14px}
+.es-pick[hidden],.es .lst-add[hidden]{display:none}
 /* 청음 기록 */
 .lst-sec{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .lst-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
@@ -1574,6 +1583,7 @@ html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,tra
 
 <!-- STATS VIEW -->
 <div class="view" id="view-stats">
+  <div id="stats-empty"></div>
   <div class="stats" id="stats2" style="padding-top:16px"></div>
   <div class="export-note" id="bigstats"></div>
   <!-- 장부 성격 카드(자주 간 구매처·수집 히스토리) — 마이페이지에서 이동 -->
@@ -2286,6 +2296,8 @@ const I18N = {
   "검색 결과가 없어요":"No results found",
   "위시가 비어 있어요 — 왼쪽 위 + 버튼으로 추가하세요":"Your wishlist is empty — add one with the + button at the top left",
   "이 달에는 기록이 없어요":"No records this month",
+  "갖고 싶은 바이닐을 담아보세요":"Add the records you want","일치하는 바이닐이 없어요":"No matching records","기록 남기기":"Add a record",
+  "바이닐을 등록하면 통계가 채워져요":"Stats fill in as you add records","보유 바이닐이 쌓이면 취향을 정리해 드려요":"Your taste summary appears as your collection grows",
   "표시할 바이닐이 없어요":"No records to show",
   /* --- FAB / add sheet --- */
   "바이닐 추가":"Add Vinyl",
@@ -3558,7 +3570,7 @@ function renderGrid(){
   // FAB: 모양은 모든 탭 동일(위시 버전), 문구·동작만 컨텍스트 반영
   const fab=$('#fab');
   if(fab){ fab.title = isWish ? '위시 추가' : '바이닐 추가'; fab.setAttribute('aria-label', fab.title); }
-  if(!list.length){$('#grid').innerHTML='<div class="empty" style="grid-column:1/-1">'+(isWish?'위시가 비어 있어요 — 왼쪽 위 + 버튼으로 추가하세요':'검색 결과가 없어요')+'</div>';return;}
+  if(!list.length){$('#grid').innerHTML=isWish?emptyHint('heart','갖고 싶은 바이닐을 담아보세요'):emptyHint('search','일치하는 바이닐이 없어요');return;}
   $('#grid').innerHTML=list.map((it,i)=>`
     <div class="lp" data-id="${it.id}" style="animation-delay:${Math.min(i*30,400)}ms">
       <div class="artwrap">
@@ -7163,7 +7175,7 @@ function renderCal(){
     html+=`<div class="cal-cell ${isToday?'today':''} ${inner?'has':''}" data-date="${dateStr}" ${d===1?`style="grid-column-start:${startDow+1}"`:''}>${inner}<span class="dnum">${d}</span></div>`;
   }
   $('#cal-grid').innerHTML=html;
-  $('#cal-empty').textContent = ev.length ? '' : '이 달에는 기록이 없어요';
+  $('#cal-empty').textContent = '';   // 빈 달 안내는 아래 월별 요약 자리에서 한 번만
   // 날짜 클릭 → 그날 항목 보기 + 청음 추가
   $('#cal-grid').querySelectorAll('.cal-cell[data-date]').forEach(cell=>{
     const items=byDay[+cell.dataset.date.slice(-2)]||[];
@@ -7201,10 +7213,13 @@ const UI_IC = (()=>{ const sv=(d,w=1.9)=>`<svg viewBox="0 0 24 24" fill="none" s
     gear:   sv('<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M18 6l-1.6 1.6M7.6 16.4L6 18M18 18l-1.6-1.6M7.6 7.6L6 6"/>'),
     image:  sv('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-4.5-4.5-8.5 8"/>'),
     pin:    sv('<path d="M12 17v4.5"/><path d="M9 10.8V4h6v6.8a2 2 0 0 0 .5 1.3l1.9 2.1a1 1 0 0 1-.7 1.8H7.3a1 1 0 0 1-.7-1.8l1.9-2.1a2 2 0 0 0 .5-1.3z"/>'),
+    search: sv('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>'),
     heart:  sv('<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>'),
     left:   sv('<path d="M14.5 6l-6 6 6 6"/>',2.2),
     right:  sv('<path d="M9.5 6l6 6-6 6"/>',2.2),
   }; })();
+// 빈 화면 안내 — 원형 아이콘 + 한 줄 (extra: 버튼 등 추가 마크업)
+function emptyHint(ic, text, cls, extra){ return `<div class="es${cls?' '+cls:''}"><div class="es-ic">${UI_IC[ic]||''}</div><div class="es-s">${text}</div>${extra||''}</div>`; }
 function openDayList(dateStr, items){
   const wrap=$('#daylist'); if(!wrap) return;
   const d=new Date(dateStr+'T00:00:00');
@@ -7415,6 +7430,7 @@ function renderStats(){
   const wish=DATA.filter(d=>statusGroup(d.status)==='위시').length;
   const totalBuy=real.reduce((s,d)=>s+(d.price||0),0);                 // 총 구매가(위시 제외)
   const totalSell=sold.reduce((s,d)=>s+(d.sellPrice||0),0);            // 총 판매가
+  { const se=$('#stats-empty'); if(se) se.innerHTML = real.length ? '' : emptyHint('chart','바이닐을 등록하면 통계가 채워져요','sm'); }
   $('#stats2').innerHTML=`
     <div class="stat tap" data-slist="own" role="button" tabindex="0"><div class="lab">보유 중 <span class="stat-more">›</span></div><div class="val">${owned.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">♪</div></div>
     <div class="stat tap" data-slist="deal" role="button" tabindex="0"><div class="lab">판매·교환 <span class="stat-more">›</span></div><div class="val">${soldExch.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">↻</div></div>
@@ -7529,7 +7545,21 @@ function renderMonthStat(m){
     return `<div class="ms-li" data-id="${ev.it.id}"><span class="ms-li-al">${escapeHtml(ev.it.album||'—')}</span><span class="ms-li-ar">${escapeHtml(ev.it.artist||'')}</span>${ev.note?`<span class="ms-li-note">🎧 ${escapeHtml(ev.note)}</span>`:''}<span class="ms-li-amt">${dateLabel}</span></div>`;
   };
   if(!buy.length && !soldM.length && !exchM.length && !listenEv.length){
-    body.innerHTML=`<div class="ms-head">이 달의 기록</div><div class="mstat-empty">이 달에는 구매·판매·교환·청음 기록이 없어요.</div>`;
+    // 기록 남기기 → 구매 / 청음 기록 / 판매·교환 중 선택 (이번 달이면 오늘, 아니면 그 달 1일로)
+    const t=new Date(), today=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+    const ds = today.slice(0,7)===m ? today : m+'-01';
+    body.innerHTML=emptyHint('cal','이 달에는 기록이 없어요','sm',
+      `<button type="button" class="lst-add" id="ms-add">${UI_IC.plus}<span>기록 남기기</span></button>
+       <div class="tile-row es-pick" id="ms-pick" hidden>
+         <button type="button" class="tile" data-k="buy" style="--c:#f08a45"><span class="ic">${UI_IC.buy}</span>구매</button>
+         <button type="button" class="tile" data-k="listen" style="--c:#9b7cf0"><span class="ic">${UI_IC.listen}</span>청음 기록</button>
+         <button type="button" class="tile" data-k="sx" style="--c:#4fbf7f"><span class="ic">${UI_IC.swap}</span>판매·교환</button>
+       </div>`);
+    $('#ms-add').onclick=()=>{ $('#ms-add').hidden=true; $('#ms-pick').hidden=false; };
+    $('#ms-pick').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{
+      const k=b.dataset.k;
+      if(k==='buy') openWizard(undefined, ds); else if(k==='listen') openListenPicker(ds); else openSellExchange(ds);
+    });
     return;
   }
   body.innerHTML=`
@@ -7663,7 +7693,7 @@ async function _fillAppVersion(){
 function renderTaste(){
   const wrap=$('#taste'); if(!wrap) return;
   const owned=DATA.filter(d=>statusGroup(d.status)!=='위시');   // 위시 제외, 보유/판매/교환 포함
-  if(!owned.length){ wrap.innerHTML=`<div class="coll-empty">아직 데이터가 부족해요.</div>`; return; }
+  if(!owned.length){ wrap.innerHTML=emptyHint('disc','보유 바이닐이 쌓이면 취향을 정리해 드려요','sm'); return; }
 
   // 집계 헬퍼
   const tally=(key)=>{ const m={}; owned.forEach(d=>{ const k=(d[key]||'').trim(); if(!k||k==='-')return; m[k]=(m[k]||0)+1; }); return m; };
