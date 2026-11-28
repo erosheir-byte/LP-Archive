@@ -1419,6 +1419,18 @@ html[data-theme="light"] .sort-btn{background:var(--card)}
 .sl-sep{color:var(--dim);margin:0 4px}
 html[data-theme="light"] .sl-st.own{color:#3a73c9}html[data-theme="light"] .sl-st.open{color:#c77a1e}html[data-theme="light"] .sl-st.seal{color:#2f9a58}
 html[data-theme="light"] .sl-st.sold{color:#c94456}html[data-theme="light"] .sl-st.gift{color:#7b56c9}html[data-theme="light"] .sl-st.wish{color:#b8862a}
+/* ===== LP 상세 정보: 앨범/구매/판매/메모 묶음 + 2열 칸 ===== */
+.dt-info{margin-top:6px}
+.dt-sec{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin:18px 4px 8px}
+.dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:color-mix(in srgb,var(--txt) 7%,transparent);border-radius:16px;overflow:hidden}
+.dt-cell{background:var(--card);padding:11px 14px;min-width:0}
+.dt-cell.wide{grid-column:1/-1}
+.dt-cell .k{font-size:11px;color:var(--muted)}
+.dt-cell .v{font-size:14px;font-weight:600;margin-top:3px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dt-cell.wide .v{white-space:normal;word-break:keep-all;line-height:1.45}
+.dt-cell .v .grade-badge{margin-right:2px}
+html[data-theme="light"] .dt-cell{background:var(--card2)}
+html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,transparent)}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -2246,7 +2258,7 @@ const I18N = {
   "확인필요":"Needs check",
   "도착 전":"Pre-arrival",
   /* --- counts / empty states --- */
-  "장 표시 중":" shown","등록일":"Date added","가격":"Price","최신 순":"Newest first","오래된 순":"Oldest first","가나다 순":"A to Z","역순":"Z to A","높은 순":"Highest first","낮은 순":"Lowest first","정렬":"Sort",
+  "장 표시 중":" shown","앨범 정보":"Album","개봉일":"Opened on","구매 정보":"Purchase","판매 정보":"Sale","등록일":"Date added","가격":"Price","최신 순":"Newest first","오래된 순":"Oldest first","가나다 순":"A to Z","역순":"Z to A","높은 순":"Highest first","낮은 순":"Lowest first","정렬":"Sort",
   "장":" items",
   "총 ":"Total ",
   "보유 ":"Owned ",
@@ -4650,7 +4662,7 @@ function openDetail(id, mode){
   $('#dt-art').innerHTML = (art?`<img src="${art}" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div class=ph style=&quot;position:absolute;inset:0;display:flex;align-items:center;justify-content:center&quot;><div class=vinyl style=&quot;width:80px;height:80px&quot;></div></div>')">`:`<div class="ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div class="vinyl" style="width:80px;height:80px"></div></div>`)
     + `<button class="dt-edit-btn" id="dt-change" aria-label="커버 수정"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><div class="picker" id="dt-picker"></div>`;
   const rows=[];
-  const R=(k,v)=>{if(v||v===0)rows.push(`<div class="dt-row"><span class="k">${k}</span><span class="v">${v}</span></div>`)};
+  const R=(k,v)=>{ if(v||v===0) rows.push({k,v}); };   // 아래에서 앨범/구매/판매/메모 묶음의 2열 칸으로 그린다
   R('컬러', it.color?`${it.color} <span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-left:4px;background:${it.colorHex||swatch(it.color)}"></span>`:'');
   R('상태', it.status);
   if(it.status==='개봉' && it.openDate) R('개봉일', it.openDate==='모름' ? '모름' : it.openDate);
@@ -4686,7 +4698,17 @@ function openDetail(id, mode){
   R('비고', it.note);
   // 음원 연결: 표시 전용(수동 지정 > 자동 매칭 > 없음). 변경은 '수정' 화면에서.
   const pv=pvDisplay(it);
-  rows.push(`<div class="dt-row"><span class="k">음원 연결</span><span class="v dt-pv-v"><span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span></span></div>`);
+  rows.push({k:'음원 연결', v:`<span class="dt-pv-name${pv.dim?' dim':''}">${escapeHtml(pv.text)}</span>`});
+  // 정보 묶음: 작은 제목 + 2열 칸 (긴 값인 음원 연결·비고는 한 줄 전체)
+  const DT_GROUPS=[['앨범 정보',['컬러','상태','개봉일','슬리브 상태','디스크 상태','규격','장르','발매년도','음원 연결']],
+    ['구매 정보',['구매처','구매가','정가','결제','구매일','배송 예정일','도착일']], ['판매 정보',['판매일','판매가','차익']], ['메모',['비고']]];
+  const WIDE=['음원 연결','비고'];
+  const cell=(r,w)=>`<div class="dt-cell${w?' wide':''}"><div class="k">${r.k}</div><div class="v">${r.v}</div></div>`;
+  const infoHTML=DT_GROUPS.map(([title,keys])=>{
+    const list=rows.filter(r=>keys.includes(r.k)); if(!list.length) return '';
+    const nar=list.filter(r=>!WIDE.includes(r.k)), wid=list.filter(r=>WIDE.includes(r.k));
+    return `<div class="dt-sec">${title}</div><div class="dt-grid">${nar.map(r=>cell(r)).join('')}${nar.length%2?'<div class="dt-cell"></div>':''}${wid.map(r=>cell(r,1)).join('')}</div>`;
+  }).join('');
   const g=statusGroup(it.status);
   let action='';
   if(g==='배송전') action=`<button type="button" class="tile" id="act-arrive" style="--c:#f08a45"><span class="ic">${UI_IC.box}</span>배송완료</button>`;
@@ -4710,7 +4732,7 @@ function openDetail(id, mode){
   }
   $('#dt-body').innerHTML=`<div class="dt-titlerow"><h2>${it.album||'—'}</h2><button class="like-btn ${it.liked?'on':''}" id="dt-like" aria-label="좋아요">${heartSVG(it.liked)}</button></div><div class="dar">${it.artist||'—'}</div>`
     +`<div class="dt-raterow"><div class="dt-rate">${starsEdit(it)}</div><button class="dt-editfab" id="dt-edit" aria-label="정보 수정"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>수정</button></div>`
-    +`<div class="dt-rows">${rows.join('')}</div>`
+    +`<div class="dt-info">${infoHTML}</div>`
     +`<div class="lst-sec">${listenHTML}</div>`
     +(action?`<div class="dt-act">${action}</div>`:'')
     +`<div class="dt-inline" id="dt-inline"></div>`;
