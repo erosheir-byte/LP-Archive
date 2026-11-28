@@ -181,7 +181,8 @@ h1 .em{color:var(--accent)}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:6px 20px 16px}
 .stat{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:18px;padding:14px 15px;position:relative;overflow:hidden}
 .stat .lab{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em}
-.stat .val{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:25px;margin-top:5px;letter-spacing:-.02em}
+.stat .val{font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:25px;margin-top:5px;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.stat .val .cur{font-size:.62em;font-weight:600;color:var(--muted);margin-right:3px;vertical-align:.12em}
 .stat .val.sm{font-size:21px}
 .stat.pos .val{color:var(--green)}
 .stat .deco{position:absolute;right:-8px;bottom:-10px;font-size:54px;opacity:.07;font-family:'Bricolage Grotesque'}
@@ -1040,7 +1041,7 @@ html[data-theme="light"] .dt-art .picker .pk-actions{background:rgba(255,255,255
 .mstat-card{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 10px;text-align:center;position:relative;font-family:inherit;color:inherit;display:block;width:100%}
 .mstat-dot{width:8px;height:8px;border-radius:50%;margin:0 auto 7px}
 .mstat-lab{font-size:12px;color:var(--muted);font-weight:600}
-.mstat-cnt{font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;color:var(--txt);margin-top:3px;line-height:1}
+.mstat-cnt{font-family:'Noto Sans KR',sans-serif;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;font-size:26px;color:var(--txt);margin-top:3px;line-height:1}
 .mstat-cnt span{font-size:12px;color:var(--muted);font-weight:600;margin-left:2px}
 .mstat-sub{font-size:10.5px;color:var(--muted);margin-top:5px}
 .mstat-empty{text-align:center;color:var(--dim);font-size:12.5px;padding:16px 0 4px}
@@ -3417,6 +3418,8 @@ const won=n=>{
   if(typeof SETTINGS!=='undefined' && SETTINGS.hideMoney) return '••••';
   return (n||n===0) ? '₩'+Number(n).toLocaleString('ko-KR') : '–';
 };
+// 통계 카드용: ₩ 기호를 작게 분리
+const curWon=n=>won(n).replace(/^₩/,'<span class="cur">₩</span>');
 const $=s=>document.querySelector(s);
 function statusBadge(s){
   if(s==='판매') return '<span class="badge sold">판매완료</span>';
@@ -7434,8 +7437,8 @@ function renderStats(){
   $('#stats2').innerHTML=`
     <div class="stat tap" data-slist="own" role="button" tabindex="0"><div class="lab">보유 중 <span class="stat-more">›</span></div><div class="val">${owned.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">♪</div></div>
     <div class="stat tap" data-slist="deal" role="button" tabindex="0"><div class="lab">판매·교환 <span class="stat-more">›</span></div><div class="val">${soldExch.length}${isEN()?'':'<span style="font-size:14px;color:var(--muted)">장</span>'}</div><div class="deco">↻</div></div>
-    <div class="stat tap" data-plist="buy" role="button" tabindex="0"><div class="lab">총 구매가 <span class="stat-more">›</span></div><div class="val sm">${won(totalBuy)}</div></div>
-    <div class="stat tap" data-plist="sell" role="button" tabindex="0"><div class="lab">총 판매가 <span class="stat-more">›</span></div><div class="val sm">${won(totalSell)}</div></div>
+    <div class="stat tap" data-plist="buy" role="button" tabindex="0"><div class="lab">총 구매가 <span class="stat-more">›</span></div><div class="val sm">${curWon(totalBuy)}</div></div>
+    <div class="stat tap" data-plist="sell" role="button" tabindex="0"><div class="lab">총 판매가 <span class="stat-more">›</span></div><div class="val sm">${curWon(totalSell)}</div></div>
 `;
   $('#stats2').querySelectorAll('[data-plist]').forEach(el=>el.onclick=()=>openPriceList(el.dataset.plist));
   $('#stats2').querySelectorAll('[data-slist]').forEach(el=>el.onclick=()=>openStatusList(el.dataset.slist));
