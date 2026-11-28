@@ -1386,6 +1386,29 @@ html[data-theme="light"] .lst-item,html[data-theme="light"] .dl-item,html[data-t
 .tp-x:active,.tp-next:active,.tp-prev:active,.tp-main:active{opacity:.7}
 html[data-theme="light"] .tour-card{background:rgba(255,255,255,.82);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 18px 40px rgba(0,0,0,.22)}
 html[data-theme="light"] .tp-x{background:rgba(0,0,0,.06)}
+/* ===== 보관함 정렬: 아이콘 버튼 + 반투명 메뉴 ===== */
+.sort-btn{position:relative;flex:none;width:34px;height:32px;border:none;border-radius:10px;background:var(--card);color:var(--txt);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.sort-btn svg{width:17px;height:17px}
+.sort-btn.dot::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.sort-btn:active{opacity:.7}
+.sort-ov{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.18)}
+.sort-pop{position:fixed;z-index:71;width:230px;border-radius:16px;overflow:hidden;background:rgba(48,45,56,.86);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  box-shadow:0 0 0 .5px rgba(255,255,255,.12),0 18px 44px rgba(0,0,0,.5);animation:sortpop .16s ease-out;transform-origin:top right}
+@keyframes sortpop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.sp-dir{display:flex;gap:6px;padding:8px;box-shadow:inset 0 -1px 0 rgba(255,255,255,.1)}
+.sp-dir button{flex:1;padding:8px 6px;border:none;border-radius:9px;background:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.sp-dir button.on{background:rgba(255,255,255,.12);color:var(--txt)}
+.sp-it{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 14px;border:none;background:none;color:var(--txt);font-family:inherit;font-size:14.5px;font-weight:500;text-align:left;cursor:pointer}
+.sp-it+.sp-it{box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.sp-it.on{font-weight:700}
+.sp-it svg{width:17px;height:17px;color:var(--accent2)}
+.sp-it:active,.sp-dir button:active{background:rgba(255,255,255,.08)}
+html[data-theme="light"] .sort-pop{background:rgba(255,255,255,.9);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 18px 44px rgba(0,0,0,.2)}
+html[data-theme="light"] .sp-dir{box-shadow:inset 0 -1px 0 rgba(0,0,0,.08)}
+html[data-theme="light"] .sp-dir button.on{background:rgba(0,0,0,.07)}
+html[data-theme="light"] .sp-it+.sp-it{box-shadow:inset 0 1px 0 rgba(0,0,0,.06)}
+html[data-theme="light"] .sort-btn{background:var(--card)}
 </style>
 <script>
 // 안드로이드 앱: 화면이 상태바 아래까지 그려지는데(Android 15 엣지투엣지) 웹뷰가 safe-area 값을 0 으로 줄 수 있어 최소 여백을 둔다
@@ -1482,7 +1505,7 @@ html[data-theme="light"] .tp-x{background:rgba(0,0,0,.06)}
   <div class="countrow">
     <div class="count" id="count"></div>
     <div class="ctrls">
-      <select id="sort" class="sortsel">
+      <select id="sort" class="sortsel" hidden>
         <option value="added">등록일순</option>
         <option value="purchase">구매순</option>
         <option value="album">앨범명 순</option>
@@ -1490,10 +1513,11 @@ html[data-theme="light"] .tp-x{background:rgba(0,0,0,.06)}
         <option value="rating">별점 순</option>
         <option value="price">가격순</option>
       </select>
-      <select id="sortdir" class="sortsel">
+      <select id="sortdir" class="sortsel" hidden>
         <option value="asc">오름차순</option>
         <option value="desc">내림차순</option>
       </select>
+      <button type="button" class="sort-btn" id="sort-btn" aria-label="정렬" title="정렬"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3.5 16.5L7 20l3.5-3.5"/><path d="M17 20V4M13.5 7.5L17 4l3.5 3.5"/></svg></button>
       <div class="viewtoggle">
         <button id="view-grid-btn" class="vt on" title="앨범형" aria-label="앨범형">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -2212,7 +2236,7 @@ const I18N = {
   "확인필요":"Needs check",
   "도착 전":"Pre-arrival",
   /* --- counts / empty states --- */
-  "장 표시 중":" shown",
+  "장 표시 중":" shown","등록일":"Date added","가격":"Price","최신 순":"Newest first","오래된 순":"Oldest first","가나다 순":"A to Z","역순":"Z to A","높은 순":"Highest first","낮은 순":"Lowest first","정렬":"Sort",
   "장":" items",
   "총 ":"Total ",
   "보유 ":"Owned ",
@@ -3478,7 +3502,8 @@ function renderGrid(){
   }[filter.sort];
   if(cmp) list=[...list].sort(cmp);
   if(filter.sortDir==='desc') list=(cmp?list:[...list]).reverse();       // 내림차순이면 뒤집기
-  $('#count').innerHTML=`<b>${list.length}</b>장 표시 중`;
+  $('#count').innerHTML=`<b>${list.length}</b>장`;
+  { const sb=$('#sort-btn'); if(sb) sb.classList.toggle('dot', !(filter.sort==='added' && filter.sortDir==='asc')); }   // 기본 정렬이 아니면 점 표시
   const isWish=filter.chip==='위시';
   // FAB: 모양은 모든 탭 동일(위시 버전), 문구·동작만 컨텍스트 반영
   const fab=$('#fab');
@@ -8328,6 +8353,29 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
 
 $('#q').oninput=e=>{filter.q=e.target.value;renderGrid();};
 $('#sort').onchange=e=>{filter.sort=e.target.value;renderGrid();};
+// 정렬: 아이콘 버튼 → 버튼 아래 반투명 메뉴 (위: 방향, 아래: 기준). 숨긴 select 값을 바꿔 기존 정렬 로직을 그대로 쓴다
+const SORT_KEYS=[['added','등록일'],['purchase','구매일'],['album','앨범명'],['artist','가수'],['rating','별점'],['price','가격']];
+const SORT_DIRS={ added:['최신 순','오래된 순'], purchase:['최신 순','오래된 순'], album:['가나다 순','역순'], artist:['가나다 순','역순'], rating:['높은 순','낮은 순'], price:['낮은 순','높은 순'] };
+function _sortPopClose(){ const p=$('#sort-pop'), o=$('#sort-ov'); if(p) p.remove(); if(o) o.remove(); window.removeEventListener('scroll',_sortPopClose); }
+function _sortPopOpen(){
+  _sortPopClose();
+  const btn=$('#sort-btn'); if(!btn) return;
+  const key=filter.sort in SORT_DIRS ? filter.sort : 'added', dir=filter.sortDir==='desc'?1:0, L=SORT_DIRS[key];
+  const chk='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12.5l4.5 4.5 8.5-9.5"/></svg>';
+  const ov=document.createElement('div'); ov.id='sort-ov'; ov.className='sort-ov'; ov.onclick=_sortPopClose;
+  const pop=document.createElement('div'); pop.id='sort-pop'; pop.className='sort-pop'; pop.setAttribute('role','menu');
+  pop.innerHTML=`<div class="sp-dir">${L.map((l,i)=>`<button type="button" class="${i===dir?'on':''}" data-dir="${i?'desc':'asc'}">${l}</button>`).join('')}</div>`
+    + SORT_KEYS.map(([k,l])=>`<button type="button" class="sp-it${k===key?' on':''}" data-k="${k}" role="menuitemradio" aria-checked="${k===key}">${l}${k===key?chk:''}</button>`).join('');
+  document.body.append(ov, pop);
+  const r=btn.getBoundingClientRect();
+  pop.style.top=(r.bottom+8)+'px'; pop.style.right=Math.max(12, innerWidth-r.right)+'px';
+  pop.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{ const sd=$('#sortdir'); sd.value=b.dataset.dir; sd.dispatchEvent(new Event('change')); _sortPopOpen(); });
+  pop.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ const so=$('#sort'), sd=$('#sortdir');
+    if(b.dataset.k!==filter.sort){ sd.value='asc'; filter.sortDir='asc'; }   // 기준을 바꾸면 그 기준의 기본 방향으로
+    so.value=b.dataset.k; so.dispatchEvent(new Event('change')); _sortPopClose(); });
+  window.addEventListener('scroll',_sortPopClose,{passive:true,once:true});
+}
+{ const sb=$('#sort-btn'); if(sb) sb.onclick=()=>{ if($('#sort-pop')) _sortPopClose(); else _sortPopOpen(); }; }
 { const sd=$('#sortdir'); if(sd) sd.onchange=e=>{filter.sortDir=e.target.value;renderGrid();}; }
 $('#view-grid-btn').onclick=()=>{filter.view='grid';$('#view-grid-btn').classList.add('on');$('#view-list-btn').classList.remove('on');renderGrid();};
 $('#view-list-btn').onclick=()=>{filter.view='list';$('#view-list-btn').classList.add('on');$('#view-grid-btn').classList.remove('on');renderGrid();};
