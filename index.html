@@ -2723,7 +2723,7 @@ const I18N = {
   "동영상 만드는 중":"Making your video","동영상이 준비됐어요":"Your video is ready","30초 영상으로 만들고 있어요":"Rendering a 30-second clip",
   "음원을 받지 못해 소리 없이 만들었어요":"Couldn't load the audio, so the video is silent",
   "이 기기에서는 동영상을 만들 수 없어요. 앱을 최신 버전으로 업데이트해 주세요.":"This device can't make videos. Please update the app.","동영상을 만드는 중 오류가 발생했어요.":"Something went wrong while making the video.",
-  "톤암":"Tonearm","모양":"Style","슬림":"Slim","기존":"Classic","S자":"S-shape","미니멀":"Minimal","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
+  "톤암":"Tonearm","모양":"Style","슬림":"Slim","레트로":"Retro","S자":"S-shape","미니멀":"Minimal","디스크를 크게 돌리는 화면에 보이는 바늘":"The arm shown on the full-screen turntable",
   "커버 아래로 살짝 보이는 디스크를 탭하면 턴테이블 화면이 열려요. 손가락으로 디스크를 돌리면 노래가 흘러요. 시계 방향으로 한 바퀴 돌리면 다음 곡, 반대로 돌리면 이전 곡이에요. 가운데를 탭하면 멈추고, 톤암을 끌어 디스크 위에 놓으면 그 자리부터 들려요. 아래로 쓸어내리면 닫혀요.":"Tap the disc peeking out below a cover to open the turntable. Spin it with your finger and the music plays. One full turn clockwise skips to the next track, counter-clockwise goes back. Tap the center to pause, or drag the tonearm onto the disc to play from that spot. Swipe down to close.",
   "커버를 탭하면 디스크가 돌아가며 30초 미리듣기가 흘러요. 길게 누르면 상세 화면으로 들어가요.":"Tap a cover and the record spins while a 30-second preview plays. Press and hold to open the details.",
   "커버 변경하기":"Change the cover",
@@ -4139,7 +4139,7 @@ const _tt$=id=>document.getElementById(id);
 function _ttPlaying(){ return !!(TT.it && _preview.id===TT.it.id && !_preview.paused); }
 function _ttRate(){ return (TT.it && String(TT.it.rpm)==='45') ? 270 : 200; }   // °/초 — 33⅓ RPM = 200, 45 RPM = 270
 function _ttArmMode(){ const v=(typeof SETTINGS!=='undefined' && SETTINGS.tonearm) || 'black'; return v; }
-// 톤암 모양: slim(기본) · classic(기존) · s(S자) · line(미니멀)
+// 톤암 모양: slim(기본) · classic(레트로: 주황 카트리지, 첫 버전 디자인) · s(S자) · line(미니멀)
 function _ttArmStyle(){ const v=(typeof SETTINGS!=='undefined' && SETTINGS.tonearmStyle) || 'slim'; return ['slim','classic','s','line'].includes(v)?v:'slim'; }
 // 새 톤암 모양 SVG (회전축 0,0 / viewBox -12 -16 24 82 — 기존과 같은 좌표라 위치·회전 계산은 그대로)
 function _ttArmSVG(style, silver){
@@ -7973,7 +7973,7 @@ function renderSettings(){
         <div class="set-sub">모양</div>
         <div class="set-seg" id="set-armst">
           <button type="button" class="${_ttArmStyle()==='slim'?'on':''}" data-armst="slim">슬림</button>
-          <button type="button" class="${_ttArmStyle()==='classic'?'on':''}" data-armst="classic">기존</button>
+          <button type="button" class="${_ttArmStyle()==='classic'?'on':''}" data-armst="classic">레트로</button>
           <button type="button" class="${_ttArmStyle()==='s'?'on':''}" data-armst="s">S자</button>
           <button type="button" class="${_ttArmStyle()==='line'?'on':''}" data-armst="line">미니멀</button>
         </div>
