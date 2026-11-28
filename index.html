@@ -1303,7 +1303,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-logo{height:40px;width:auto;display:block;pointer-events:none}
 .tt-stage{position:relative;width:var(--tts);height:var(--tts);flex:none;margin-top:40px}
 /* 디스크는 열 때 캔버스에 한 번 그려 두고 돌리기만 한다 (CSS 그라데이션 여러 겹은 휴대폰에서 다시 그리기가 무거움) */
-.tt-disc{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border-radius:50%;will-change:transform;cursor:grab;touch-action:none;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.tt-disc{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border-radius:50%;will-change:transform;cursor:grab;touch-action:none;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 30px 80px rgba(0,0,0,.55)}
 .tt-disc:active{cursor:grabbing}
 .tt-shine{position:absolute;inset:0;z-index:2;border-radius:50%;pointer-events:none;
   background:conic-gradient(from 210deg,transparent 0 8%,rgba(255,255,255,.12) 12%,transparent 18% 58%,rgba(255,255,255,.08) 62%,transparent 68%)}
@@ -1318,9 +1318,21 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-armsh{left:82%;top:-16%;width:28%;height:86%;transform-origin:50% 20.93%}
 .tt-arm{--tta-tube:url(#tta-blk);--tta-tubeE:url(#tta-blkE);--tta-metal:url(#tta-blkR);--tta-lift:#55525d}   /* <use> 안쪽까지 전달되도록 변수로 색 지정 */
 .tt-arm.silver{--tta-tube:url(#tta-sil);--tta-tubeE:url(#tta-silE);--tta-metal:url(#tta-silR);--tta-lift:#d8d5dc}
-.tt-info{text-align:center;padding:106px 28px 0;width:100%;flex:none}
-.tt-np{font-size:12px;color:var(--accent2,#f2a444);font-weight:800;letter-spacing:.2em;text-transform:uppercase}
-.tt-title{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.02em;line-height:1.3;transition:opacity .25s,transform .25s;
+.tt-info{text-align:center;padding:96px 28px 0;width:100%;flex:none}
+.tt-np{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--accent2,#f2a444);font-weight:800;letter-spacing:.24em;text-transform:uppercase;transition:color .3s}
+/* 재생 상태: 이퀄라이저 막대 + NOW PLAYING / 멈추면 막대가 낮게 서고 회색 PAUSED */
+.tt-np .eq{display:inline-flex;align-items:flex-end;gap:2px;height:10px}
+.tt-np .eq i{width:2.5px;height:100%;border-radius:2px;background:currentColor;transform-origin:bottom;animation:tteq 1s ease-in-out infinite}
+.tt-np .eq i:nth-child(2){animation-delay:-.35s;animation-duration:.8s}
+.tt-np .eq i:nth-child(3){animation-delay:-.6s;animation-duration:1.15s}
+@keyframes tteq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.tt-np .np-off{display:none}
+.tt.paused .tt-np{color:rgba(255,255,255,.42)}
+.tt.paused .tt-np .eq i{animation:none;transform:scaleY(.3)}
+.tt.paused .tt-np .np-on{display:none}
+.tt.paused .tt-np .np-off{display:inline}
+@media (prefers-reduced-motion:reduce){.tt-np .eq i{animation:none;transform:scaleY(.6)}}
+.tt-title{font-size:23px;font-weight:800;margin-top:6px;letter-spacing:-.025em;line-height:1.3;transition:opacity .25s,transform .25s;
   white-space:nowrap;overflow:hidden}
 /* 긴 제목: 한 줄로 두고 가로로 천천히 흐름 (처음에 잠깐 멈췄다가 → 이어 붙인 같은 제목으로 끊김 없이 반복) */
 .tt-title .mq-in{display:inline-block}
@@ -1329,7 +1341,7 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .tt-title.mq .mq-in span+span{padding-left:48px}
 @keyframes tt-mq{0%,18%{transform:translateX(0)}100%{transform:translateX(calc(-1 * var(--mq-d,0px)))}}
 .tt-title.swap{opacity:0;transform:translateY(6px)}
-.tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:rgba(255,255,255,.72);font-size:14px;min-width:0}
+.tt-aa{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;color:rgba(255,255,255,.58);font-size:13.5px;min-width:0}
 .tt-aa span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tt-gap{flex:1;min-height:16px}
 .tt-gap.b{flex:1.4}
@@ -2191,7 +2203,7 @@ html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,tra
       </svg>
     </div>
     <div class="tt-info tt-fade">
-      <div class="tt-np">Now playing</div>
+      <div class="tt-np"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span class="np-on">Now playing</span><span class="np-off">Paused</span></div>
       <div class="tt-title" id="tt-title"></div>
       <div class="tt-aa"><span id="tt-aa"></span></div>
     </div>
@@ -4198,7 +4210,9 @@ function _ttInfo(){
     if(el.textContent){ el.classList.add('swap'); setTimeout(()=>{ _ttSetTitle(el, TT.title); el.classList.remove('swap'); },180); }
     else _ttSetTitle(el, title);
   }
-  const cb=_tt$('tt-cbtn'), pl=_ttPlaying(), show=!pl && !TT.drag && !TT.armDrag && _tt$('tt').classList.contains('ui');
+  const cb=_tt$('tt-cbtn'), pl=_ttPlaying();
+  if(pl!==TT._pl){ TT._pl=pl; _tt$('tt').classList.toggle('paused', !pl); }   // NOW PLAYING ↔ PAUSED
+  const show=!pl && !TT.drag && !TT.armDrag && _tt$('tt').classList.contains('ui');
   if(show!==TT._show){ TT._show=show; cb.classList.toggle('show', show); }
   if(!cb.classList.contains('flash') && pl!==TT._ci){ TT._ci=pl; _tt$('tt-ci').innerHTML = pl ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>' : '<path d="M8 5v14l11-7z"/>'; }
 }
