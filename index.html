@@ -1236,6 +1236,13 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .auth-err{display:none;color:#f09aa4;font-size:12.5px;margin-top:12px;line-height:1.5;
   background:rgba(232,92,106,.1);border:1px solid rgba(232,92,106,.3);border-radius:11px;padding:10px 12px}
 .auth-err.show{display:block}
+.auth-err.ok{color:#8fd6a8;background:rgba(79,191,127,.1);border-color:rgba(79,191,127,.3)}
+.auth-forgot{display:block;margin:2px 2px 0 auto;padding:4px 2px;border:none;background:none;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.auth-forgot:active{color:var(--accent2)}
+.pw-hint{font-size:12px;line-height:1.4;margin:-4px 4px 0;color:var(--dim)}
+.pw-hint:empty{display:none}
+.pw-hint.bad{color:#f09aa4}.pw-hint.good{color:#8fd6a8}
+.auth-btn:disabled{opacity:.7;cursor:default}
 .auth-btn{width:100%;padding:14px;border-radius:14px;border:none;font-family:inherit;
   font-weight:700;font-size:15px;cursor:pointer;margin-top:16px;display:flex;
   align-items:center;justify-content:center;gap:9px;transition:.15s}
@@ -1489,10 +1496,13 @@ html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,tra
       <button class="auth-tab" data-mode="signup">회원가입</button>
     </div>
     <div class="auth-fields">
-      <input id="auth-email" type="email" placeholder="이메일" autocomplete="email">
-      <div class="pw-wrap"><input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"><button type="button" class="pw-eye" data-for="auth-pw" aria-label="비밀번호 보기" title="비밀번호 보기"></button></div>
-      <div class="pw-wrap" id="auth-pw2-wrap" style="display:none"><input id="auth-pw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password"><button type="button" class="pw-eye" data-for="auth-pw2" aria-label="비밀번호 보기" title="비밀번호 보기"></button></div>
+      <input id="auth-email" type="email" placeholder="이메일" autocomplete="email" enterkeyhint="next">
+      <div class="pw-wrap"><input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" enterkeyhint="go"><button type="button" class="pw-eye" data-for="auth-pw" aria-label="비밀번호 보기" title="비밀번호 보기"></button></div>
+      <div class="pw-hint" id="auth-pw-hint" aria-live="polite"></div>
+      <div class="pw-wrap" id="auth-pw2-wrap" style="display:none"><input id="auth-pw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" enterkeyhint="go"><button type="button" class="pw-eye" data-for="auth-pw2" aria-label="비밀번호 보기" title="비밀번호 보기"></button></div>
+      <div class="pw-hint" id="auth-pw2-hint" aria-live="polite"></div>
     </div>
+    <button type="button" class="auth-forgot" id="auth-forgot">비밀번호를 잊으셨나요?</button>
     <div class="auth-err" id="auth-err"></div>
     <button class="auth-btn primary" id="auth-submit">로그인</button>
     <div class="auth-or"><span>또는</span></div>
@@ -1501,7 +1511,6 @@ html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,tra
       Google로 계속하기
     </button>
   </div>
-  <div class="auth-foot">로그인하면 이 기기의 기존 기록이 계정으로 한 번 옮겨집니다.</div>
 </div>
 
 <div class="wrap">
@@ -2244,6 +2253,10 @@ const I18N = {
   "이 로그인 방식이 콘솔에서 켜져 있지 않아요. (Authentication → Sign-in method)":"This sign-in method isn't enabled in the console. (Authentication → Sign-in method)",
   "이 도메인이 인증에 등록되지 않았어요. (콘솔 → Authentication → 설정 → 승인된 도메인)":"This domain isn't authorized for auth. (Console → Authentication → Settings → Authorized domains)",
   "비밀번호가 서로 달라요.":"Passwords don't match.",
+  "비밀번호를 잊으셨나요?":"Forgot password?","비밀번호가 일치해요 ✓":"Passwords match ✓","비밀번호가 서로 달라요":"Passwords don't match",
+  "가입하는 중…":"Signing up…","로그인하는 중…":"Signing in…","이메일을 입력해 주세요.":"Please enter your email.",
+  "재설정 메일을 받을 이메일을 위 칸에 입력해 주세요.":"Enter the email to send the reset link to.",
+  "비밀번호 재설정 메일을 보냈어요. 메일함(스팸함 포함)을 확인해 주세요.":"We sent a password reset email. Check your inbox (and spam).",
   /* --- header / nav --- */
   "커버/디스크 보기 전환":"Toggle cover / disc view",
   "커버 ↔ 디스크 보기":"Cover ↔ disc view",
@@ -9279,7 +9292,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/fireba
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, signOut, GoogleAuthProvider,
          signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
-         deleteUser, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider }
+         deleteUser, reauthenticateWithCredential, reauthenticateWithPopup, EmailAuthProvider,
+         sendPasswordResetEmail }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch }
   from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
@@ -9304,7 +9318,7 @@ const firebaseConfig = {
 
 const $ = s=>document.querySelector(s);
 const setState = s=>{ document.body.className='state-'+s; };
-const showErr = msg=>{ const e=$('#auth-err'); if(!e)return; e.textContent=msg||''; e.classList.toggle('show',!!msg); };
+const showErr = (msg,ok)=>{ const e=$('#auth-err'); if(!e)return; e.textContent=msg||''; e.classList.toggle('show',!!msg); e.classList.toggle('ok',!!(msg&&ok)); };
 
 // ===== 공유(읽기전용) 컬렉션 뷰: ?c=<shareId> 로 열면 로그인 없이 표시 =====
 function _shEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -9612,7 +9626,17 @@ function start(){
 
   // ===== 인증 UI =====
   let mode='login';
-  function resetInputs(){ ['#auth-email','#auth-pw','#auth-pw2'].forEach(s=>{const el=$(s);if(el)el.value='';}); pwEyeReset(); }
+  function resetInputs(){ ['#auth-email','#auth-pw','#auth-pw2'].forEach(s=>{const el=$(s);if(el)el.value='';}); pwEyeReset(); pwHints(); }
+  // 회원가입: 입력하는 동안 비밀번호 길이·일치 여부를 칸 아래에 바로 안내
+  function pwHints(){
+    const h1=$('#auth-pw-hint'), h2=$('#auth-pw2-hint'); if(!h1||!h2) return;
+    const set=(h,t,c)=>{ h.textContent=t; h.className='pw-hint'+(c?' '+c:''); };
+    if(mode!=='signup'){ set(h1,''); set(h2,''); return; }
+    const p=$('#auth-pw').value, p2=$('#auth-pw2').value;
+    if(p && p.length<6) set(h1,((typeof isEN==='function'&&isEN())?'At least 6 characters':'6자 이상 입력해 주세요')+` (${p.length}/6)`,'bad'); else set(h1,'');
+    if(!p2) set(h2,''); else if(p2===p) set(h2,'비밀번호가 일치해요 ✓','good'); else set(h2,'비밀번호가 서로 달라요','bad');
+  }
+  ['#auth-pw','#auth-pw2'].forEach(q=>$(q).addEventListener('input',pwHints));
   // 비밀번호 보기/숨기기 (눈 모양)
   const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   const EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.6A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3.5 3.5l17 17"/></svg>';
@@ -9632,8 +9656,11 @@ function start(){
     mode=m;
     document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('on',t.dataset.mode===m));
     $('#auth-pw2-wrap').style.display = m==='signup'?'':'none';
+    $('#auth-forgot').style.display = m==='signup'?'none':'';
+    $('#auth-pw').setAttribute('enterkeyhint', m==='signup'?'next':'go');
+    $('#auth-pw').setAttribute('autocomplete', m==='signup'?'new-password':'current-password');
     $('#auth-submit').textContent = m==='signup'?'회원가입':'로그인';
-    showErr('');
+    showErr(''); pwHints();
   }
   document.querySelectorAll('.auth-tab').forEach(t=>t.onclick=()=>setMode(t.dataset.mode));
 
@@ -9641,6 +9668,7 @@ function start(){
     const m={
       'auth/invalid-email':'이메일 형식이 올바르지 않아요.',
       'auth/missing-password':'비밀번호를 입력해 주세요.',
+      'auth/missing-email':'이메일을 입력해 주세요.',
       'auth/weak-password':'비밀번호는 6자 이상이어야 해요.',
       'auth/email-already-in-use':'이미 가입된 이메일이에요. 로그인해 주세요.',
       'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않아요.',
@@ -9654,22 +9682,37 @@ function start(){
     return m[code]||('오류가 발생했어요. ('+code+')');
   }
   async function submit(){
+    const btn=$('#auth-submit'); if(btn.disabled) return;
     const email=$('#auth-email').value.trim();
     const pw=$('#auth-pw').value;
-    showErr(''); const btn=$('#auth-submit'); btn.disabled=true;
+    showErr('');
+    if(mode==='signup' && pw!==$('#auth-pw2').value){ showErr('비밀번호가 서로 달라요.'); return; }
+    // 진행 중 표시 (느린 네트워크에서 멈춘 것처럼 보이지 않게)
+    const label=mode==='signup'?'회원가입':'로그인';
+    btn.disabled=true; btn.textContent = mode==='signup'?'가입하는 중…':'로그인하는 중…';
     try{
-      if(mode==='signup'){
-        if(pw!==$('#auth-pw2').value){ showErr('비밀번호가 서로 달라요.'); btn.disabled=false; return; }
-        await createUserWithEmailAndPassword(auth,email,pw);
-      }else{
-        await signInWithEmailAndPassword(auth,email,pw);
-      }
+      if(mode==='signup') await createUserWithEmailAndPassword(auth,email,pw);
+      else await signInWithEmailAndPassword(auth,email,pw);
     }catch(e){ showErr(mapErr(e.code)); }
-    btn.disabled=false;
+    btn.disabled=false; btn.textContent=label;
   }
   $('#auth-submit').onclick=submit;
-  $('#auth-pw').addEventListener('keydown',e=>{ if(e.key==='Enter'&&mode==='login')submit(); });
-  $('#auth-pw2').addEventListener('keydown',e=>{ if(e.key==='Enter')submit(); });
+  // 키보드 '다음/이동' 키: 이메일 → 비밀번호 → (가입이면) 비밀번호 확인 → 제출
+  $('#auth-email').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#auth-pw').focus(); } });
+  $('#auth-pw').addEventListener('keydown',e=>{ if(e.key!=='Enter') return; e.preventDefault(); if(mode==='signup') $('#auth-pw2').focus(); else submit(); });
+  $('#auth-pw2').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+  // 비밀번호 재설정 메일 (Firebase 기본 메일)
+  $('#auth-forgot').onclick=async()=>{
+    const email=$('#auth-email').value.trim();
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('재설정 메일을 받을 이메일을 위 칸에 입력해 주세요.'); $('#auth-email').focus(); return; }
+    const b=$('#auth-forgot'); if(b.disabled) return; b.disabled=true;
+    try{
+      auth.languageCode = (typeof isEN==='function'&&isEN()) ? 'en' : 'ko';
+      await sendPasswordResetEmail(auth, email);
+      showErr('비밀번호 재설정 메일을 보냈어요. 메일함(스팸함 포함)을 확인해 주세요.', true);
+    }catch(e){ showErr(mapErr(e.code)); }
+    b.disabled=false;
+  };
   // 리다이렉트 로그인으로 돌아왔을 때 결과/에러 처리 (구글 에러 메시지를 그대로 표면화)
   getRedirectResult(auth).catch(e=>{ if(e&&e.code) showErr(mapErr(e.code)); });
   const _isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
