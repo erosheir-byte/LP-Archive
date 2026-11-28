@@ -1227,6 +1227,12 @@ html[data-theme="light"] .auth-wordmark.wm-light{display:block}
 .auth-fields input{width:100%;background:var(--card);border:1px solid var(--line);
   border-radius:14px;padding:14px 15px;color:var(--txt);font-size:15px;font-family:inherit;outline:none}
 .auth-fields input:focus{border-color:var(--accent)}
+/* 비밀번호 보기(눈) 버튼 */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:50px}
+.pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:none;background:none;color:var(--dim);display:grid;place-items:center;cursor:pointer;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.pw-eye svg{width:20px;height:20px}
+.pw-eye.on{color:var(--accent2)}
 .auth-err{display:none;color:#f09aa4;font-size:12.5px;margin-top:12px;line-height:1.5;
   background:rgba(232,92,106,.1);border:1px solid rgba(232,92,106,.3);border-radius:11px;padding:10px 12px}
 .auth-err.show{display:block}
@@ -1484,8 +1490,8 @@ html[data-theme="light"] .dt-grid{background:color-mix(in srgb,var(--txt) 8%,tra
     </div>
     <div class="auth-fields">
       <input id="auth-email" type="email" placeholder="이메일" autocomplete="email">
-      <input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
-      <input id="auth-pw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" style="display:none">
+      <div class="pw-wrap"><input id="auth-pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"><button type="button" class="pw-eye" data-for="auth-pw" aria-label="비밀번호 보기" title="비밀번호 보기"></button></div>
+      <div class="pw-wrap" id="auth-pw2-wrap" style="display:none"><input id="auth-pw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password"><button type="button" class="pw-eye" data-for="auth-pw2" aria-label="비밀번호 보기" title="비밀번호 보기"></button></div>
     </div>
     <div class="auth-err" id="auth-err"></div>
     <button class="auth-btn primary" id="auth-submit">로그인</button>
@@ -8471,6 +8477,21 @@ window.__startTour=startTour;
 // 가이드 중에는 뒤 화면이 손가락/휠로 스크롤되지 않게 (스크롤은 단계 이동 때만 코드로)
 { const tv=$('#tour'); if(tv){ tv.addEventListener('touchmove',e=>e.preventDefault(),{passive:false}); tv.addEventListener('wheel',e=>e.preventDefault(),{passive:false}); } }
 window.__endTour=endTour;
+// 로그아웃·탈퇴 → 로그인 화면으로: 떠 있던 시트·팝업·가이드·턴테이블을 모두 닫고 보관함 첫 화면으로 되돌린다
+// (시트는 열 때 인라인 z-index 가 로그인 화면보다 커지므로, 닫지 않으면 로그인 화면 위에 그대로 남는다)
+window.__resetAppUI=function(){
+  try{ if(_tour.on) endTour(); }catch(e){}
+  try{ if(window._ttOpen) closeTurntable(); }catch(e){}
+  try{ stopPreview(); }catch(e){}
+  try{ if(typeof stopBarcodeScan==='function') stopBarcodeScan(); }catch(e){}
+  try{ _sortPopClose(); }catch(e){}
+  document.querySelectorAll('.sheet.show,.ov.show').forEach(el=>{ el.classList.remove('show'); el.style.transform=''; });
+  ['exit-confirm'].forEach(id=>{ const el=document.getElementById(id); if(el) el.remove(); });
+  try{ clearAddDraft(); }catch(e){}   // 작성 중이던 초안이 다음 계정에 복구되지 않게
+  document.body.classList.remove('fs-open','scroll-lock'); document.body.style.top='';
+  try{ const home=document.querySelector('.nav button[data-v="coll"]'); if(home) home.click(); }catch(e){}
+  window.scrollTo(0,0);
+};
 window.__tourOn=()=>_tour.on;
 
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
@@ -9522,7 +9543,11 @@ function start(){
       await setDoc(doc(db,'shared',String(shareId)), payload);
       return shareId;
     },
-    logout(){ return signOut(auth); },
+    async logout(){
+      // 앱: 네이티브 구글 세션도 끊어서 다음 로그인 때 계정을 다시 고를 수 있게
+      try{ const GA=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.GoogleAuth; if(GA&&GA.signOut&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()) await GA.signOut(); }catch(e){}
+      return signOut(auth);
+    },
     // 회원 탈퇴: 이 계정의 모든 데이터(Firestore lps·meta, Storage 이미지) + 인증 계정 자체를 삭제.
     // deleteUser 는 최근 로그인 상태를 요구 → requires-recent-login 이면 재인증(이메일=비번, 구글=팝업) 후 재시도.
     async deleteAccount(password){
@@ -9558,7 +9583,7 @@ function start(){
   // ===== 로그인 상태 감지 =====
   onAuthStateChanged(auth, async user=>{
     currentUser=user;
-    if(!user){ setState('auth'); showErr(''); resetInputs(); return; }
+    if(!user){ try{ if(window.__resetAppUI) window.__resetAppUI(); }catch(e){} setState('auth'); showErr(''); resetInputs(); return; }
     setState('boot');
     try{
       let items=await loadItems(user.uid);
@@ -9587,11 +9612,26 @@ function start(){
 
   // ===== 인증 UI =====
   let mode='login';
-  function resetInputs(){ ['#auth-email','#auth-pw','#auth-pw2'].forEach(s=>{const el=$(s);if(el)el.value='';}); }
+  function resetInputs(){ ['#auth-email','#auth-pw','#auth-pw2'].forEach(s=>{const el=$(s);if(el)el.value='';}); pwEyeReset(); }
+  // 비밀번호 보기/숨기기 (눈 모양)
+  const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.6A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3.5 3.5l17 17"/></svg>';
+  const _pwEyeLab=on=>{ const en=(typeof isEN==='function')&&isEN(); return on?(en?'Hide password':'비밀번호 숨기기'):(en?'Show password':'비밀번호 보기'); };
+  function pwEyeSet(btn, on){
+    const inp=$('#'+btn.dataset.for); if(!inp) return;
+    inp.type=on?'text':'password'; btn.classList.toggle('on',on);
+    btn.innerHTML=on?EYE_OFF:EYE; btn.setAttribute('aria-label',_pwEyeLab(on)); btn.title=_pwEyeLab(on);
+  }
+  function pwEyeReset(){ document.querySelectorAll('.pw-eye').forEach(b=>pwEyeSet(b,false)); }
+  document.querySelectorAll('.pw-eye').forEach(b=>{
+    pwEyeSet(b,false);
+    b.addEventListener('mousedown',e=>e.preventDefault());   // 눌러도 입력칸 포커스(키보드)가 유지되게
+    b.onclick=()=>{ const inp=$('#'+b.dataset.for); const pos=inp.selectionStart; pwEyeSet(b, inp.type==='password'); try{ inp.setSelectionRange(pos,pos); }catch(e){} };
+  });
   function setMode(m){
     mode=m;
     document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('on',t.dataset.mode===m));
-    $('#auth-pw2').style.display = m==='signup'?'':'none';
+    $('#auth-pw2-wrap').style.display = m==='signup'?'':'none';
     $('#auth-submit').textContent = m==='signup'?'회원가입':'로그인';
     showErr('');
   }
